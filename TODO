@@ -10,6 +10,7 @@
 
 ========================
 - pure DOM renderer.
+- integrate spike-svg
 - Popup on canvas map
 - externalise canvas style configuration (radius, backgrounds, wordwrap limits...)
 - context sensitive menus
