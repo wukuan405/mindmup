@@ -332,6 +332,7 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 	mapRepository.addEventListener('mapLoaded', function (idea, mapId, notSharable) {
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 		changed = false;
+		navigation.confirmationRequired(false);
 		setNotSharable(notSharable);
 		if (!mapLoaded) {
 			jQuery(window).bind('beforeunload', function () {
@@ -367,7 +368,7 @@ MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
 		var mapId = navigation.currentMapId();
 		if (mapId && mapId !== newMapId) {
-			navigation.changeMapId(newMapId || 'nil');
+			navigation.changeMapId(newMapId || 'nil', true);
 		}
 	});
 	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {

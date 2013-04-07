@@ -61,6 +61,9 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 		navigation.addEventListener('mapIdChanged', function () {
 			modal.modal('hide');
 		});
+		navigation.addEventListener('mapIdChangeConfirmationRequired', function () {
+			modal.modal('hide');
+		});
 	}
     template.detach();
 	modal.find('[data-mm-mimetype]').click(function () {

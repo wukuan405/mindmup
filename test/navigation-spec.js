@@ -113,6 +113,13 @@ describe('MM.navigation', function () {
 				underTest.changeMapId('newMapId');
 				expect(confirmationListener).toHaveBeenCalledWith('newMapId');
 			});
+			it('should not notify listeners when confirmation required but forced', function () {
+				var confirmationListener = jasmine.createSpy();
+				underTest.confirmationRequired(true);
+				underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
+				underTest.changeMapId('newMapId', true);
+				expect(confirmationListener).not.toHaveBeenCalledWith('newMapId');
+			});
 		});
 		describe('when there is no window address hash', function () {
 			beforeEach(function () {

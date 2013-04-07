@@ -78,6 +78,9 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 		navigation.addEventListener('mapIdChanged', function () {
 			modal.modal('hide');
 		});
+		navigation.addEventListener('mapIdChangeConfirmationRequired', function () {
+			modal.modal('hide');
+		});
 	}
     template.detach();
     modal.on('show', function () {

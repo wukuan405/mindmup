@@ -46,13 +46,13 @@ MM.navigation = function (config) {
 			$(link).attr('href', '#' +  hashMapId(calcCurrentMapId()));
 		}
 	};
-	self.changeMapId = function (newMapId) {
+	self.changeMapId = function (newMapId, force) {
 		if (newMapId && currentMapId && newMapId === currentMapId) {
 			return false;
 		}
 		var previousMapId = currentMapId || calcCurrentMapId();
 		if (useHash()) {
-			if (confirmationRequired) {
+			if (confirmationRequired && !force) {
 				self.dispatchEvent('mapIdChangeConfirmationRequired', newMapId);
 			} else {
 				currentMapId = newMapId;
