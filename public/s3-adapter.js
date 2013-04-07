@@ -1,6 +1,6 @@
 /*jslint forin: true*/
 /*global FormData, jQuery, MM */
-MM.S3Adapter = function (s3Url, folder, activityLog) {
+MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyLoadUrl) {
 	'use strict';
 	this.description = 'S3_CORS';
 
@@ -17,7 +17,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog) {
 			loadMapUsingProxy = function () {
 				activityLog.log('Map', 'ProxyLoad', mapId);
 				jQuery.ajax(
-					'/s3proxy/' + mapId,
+					proxyLoadUrl + mapId,
 					{ dataType: 'json', success: onMapLoaded, error: deferred.reject }
 				);
 			};
@@ -60,7 +60,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog) {
 			};
 		activityLog.log('Fetching publishing config');
 		jQuery.ajax(
-			'/publishingConfig',
+			publishingConfigUrl,
 			{ dataType: 'json', cache: false }
 		).then(
 			submitS3Form,
