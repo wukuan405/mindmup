@@ -85,7 +85,7 @@ MM.main = function (config) {
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
 		jQuery('[data-category]').trackingWidget(activityLog);
 		if (!isTouch()) {
-			jQuery('[rel=tooltip]').tooltip();
+			jQuery('[rel=tooltip]').tooltip({container: 'body'});
 		}
 		MM.MapRepository.mapLocationChange(mapRepository, navigation);
 		mapRepository.loadMap(navigation.currentMapId());
