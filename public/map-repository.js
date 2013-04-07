@@ -1,5 +1,5 @@
 /*global _, jQuery, MAPJS, MM, observable, window, setTimeout*/
-MM.MapRepository = function (activityLog, alert, adapters) {
+MM.MapRepository = function (adapters) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
 	observable(this);
@@ -45,9 +45,6 @@ MM.MapRepository = function (activityLog, alert, adapters) {
 			};
 		};
 
-	MM.MapRepository.activityTracking(this, activityLog);
-	MM.MapRepository.alerts(this, alert);
-	MM.MapRepository.toolbarAndUnsavedChangesDialogue(this, activityLog);
 
 	this.setMap = setMap;
 	this.currentMapId = function () {
@@ -156,6 +153,13 @@ MM.MapRepository = function (activityLog, alert, adapters) {
 	};
 };
 
+MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation) {
+	'use strict';
+	MM.MapRepository.mapLocationChange(mapRepository, navigation);
+	MM.MapRepository.activityTracking(mapRepository, activityLog);
+	MM.MapRepository.alerts(mapRepository, alert, navigation);
+	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation);
+};
 MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
@@ -202,7 +206,7 @@ MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 		activityLog.log('Map', 'networkError', JSON.stringify(reason));
 	});
 };
-MM.MapRepository.alerts = function (mapRepository, alert) {
+MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 	'use strict';
 	var alertId,
 		showAlertWithCallBack = function (message, prompt, type, callback) {
@@ -221,6 +225,17 @@ MM.MapRepository.alerts = function (mapRepository, alert) {
 			alert.hide(alertId);
 			alertId = alert.show(title, message, 'error');
 		};
+	navigation.addEventListener('mapIdChangeConfirmationRequired', function (newMapId) {
+		showAlertWithCallBack(
+			'There are unsaved changes in the loaded map.',
+			'Click here to continue (unsaved changes will be lost)',
+			'warning',
+			function () {
+				navigation.confirmationRequired(false);
+				navigation.changeMapId(newMapId);
+			}
+		);
+	});
 	mapRepository.addEventListener('mapLoading', function (mapUrl, progressMessage) {
 		alert.hide(alertId);
 		alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, loading the map...', (progressMessage || ''));
@@ -295,7 +310,7 @@ MM.MapRepository.alerts = function (mapRepository, alert) {
 		});
 	});
 };
-MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog) {
+MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation) {
 	'use strict';
 	var changed, saving, mapLoaded,
 		setNotSharable = function (notSharable) {
@@ -310,6 +325,7 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 			if (!changed) {
 				jQuery('body').removeClass('map-unchanged').addClass('map-changed');
 				activityLog.log('Map', 'Edit');
+				navigation.confirmationRequired(true);
 				changed = true;
 			}
 		};
@@ -342,6 +358,7 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 	mapRepository.addEventListener('mapSaved', function () {
 		saving = false;
 		changed = false;
+		navigation.confirmationRequired(false);
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 	});
 };

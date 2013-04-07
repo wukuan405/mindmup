@@ -69,6 +69,18 @@ describe('MM.navigation', function () {
 			});
 		});
 	});
+	describe('confirmationRequired', function () {
+		it('should return false', function () {
+			expect(underTest.confirmationRequired()).toBe(false);
+		});
+		it('should return true or false once set', function () {
+			expect(underTest.confirmationRequired(true)).toBe(true);
+			expect(underTest.confirmationRequired()).toBe(true);
+			expect(underTest.confirmationRequired(false)).toBe(false);
+			expect(underTest.confirmationRequired()).toBe(false);
+		});
+
+	});
 	describe('changeMapId', function () {
 		describe('when mapId is from window address hash', function () {
 			var listener;
@@ -93,6 +105,13 @@ describe('MM.navigation', function () {
 				expect(underTest.changeMapId('mapIdInHash')).toBe(false);
 				expect(window.location.hash).toBe('#m:mapIdInHash');
 				expect(listener).not.toHaveBeenCalled();
+			});
+			it('should notify listeners when confirmation required', function () {
+				var confirmationListener = jasmine.createSpy();
+				underTest.confirmationRequired(true);
+				underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
+				underTest.changeMapId('newMapId');
+				expect(confirmationListener).toHaveBeenCalledWith('newMapId');
 			});
 		});
 		describe('when there is no window address hash', function () {

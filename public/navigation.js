@@ -18,8 +18,17 @@ MM.navigation = function (config) {
 		useHash = function () {
 			return !config.mapId || getMapIdFromHash();
 		},
-		currentMapId = calcCurrentMapId();
+		currentMapId = calcCurrentMapId(),
+		confirmationRequired = false;
 
+	self.confirmationRequired = function (val) {
+		if (val === undefined) {
+			return confirmationRequired;
+		}
+		confirmationRequired = val ? true : false;
+		console.log('confirmationRequired', confirmationRequired, 'for', currentMapId);
+		return confirmationRequired;
+	};
 	self.hashMapId = hashMapId;
 	self.currentMapId = calcCurrentMapId;
 	self.wireLinkForMapId = function (newMapId, link) {
@@ -42,12 +51,17 @@ MM.navigation = function (config) {
 			return false;
 		}
 		var previousMapId = currentMapId || calcCurrentMapId();
-		currentMapId = newMapId;
 		if (useHash()) {
-			window.location.hash = hashMapId(newMapId);
-			self.dispatchEvent('mapIdChanged', newMapId, previousMapId);
+			if (confirmationRequired) {
+				self.dispatchEvent('mapIdChangeConfirmationRequired', newMapId);
+			} else {
+				currentMapId = newMapId;
+				window.location.hash = hashMapId(newMapId);
+				self.dispatchEvent('mapIdChanged', newMapId, previousMapId);
+			}
 			return true;
 		} else {
+			currentMapId = newMapId;
 			document.location = '/map/' + newMapId;
 		}
 	};

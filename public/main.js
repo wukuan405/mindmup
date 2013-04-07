@@ -29,7 +29,7 @@ MM.main = function (config) {
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(MM.jsonStorage(localStorage), 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
-			mapRepository = new MM.MapRepository(activityLog, alert, [s3Adapter, googleDriveAdapter, offlineAdapter]),
+			mapRepository = new MM.MapRepository([s3Adapter, googleDriveAdapter, offlineAdapter]),
 			pngExporter = new MAPJS.PNGExporter(mapRepository),
 			mapModel = new MAPJS.MapModel(mapRepository,
 				MAPJS.KineticMediator.layoutCalculator,
@@ -87,7 +87,7 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip({container: 'body'});
 		}
-		MM.MapRepository.mapLocationChange(mapRepository, navigation);
+		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation);
 		mapRepository.loadMap(navigation.currentMapId());
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously);
