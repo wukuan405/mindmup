@@ -7,13 +7,23 @@ describe('MM.navigation', function () {
 	});
 	describe('currentMapId', function () {
 		it('should return mapId from window address hash', function () {
-			window.location.hash = 'mapIdInHash';
+			window.location.hash = 'm:mapIdInHash';
 			expect(underTest.currentMapId()).toBe('mapIdInHash');
 		});
 		it('should return mapId from config if there is no window address hash', function () {
 			window.location.hash = '';
 			expect(underTest.currentMapId()).toBe('mapIdInConfig');
 		});
+		it('should ignore window address hash if it does not match format', function () {
+			window.location.hash = 'mapIdInHash';
+			expect(underTest.currentMapId()).toBe('mapIdInConfig');
+		});
+		it('should return default as fallback', function () {
+			window.location.hash = '';
+			underTest = new MM.navigation({});
+			expect(underTest.currentMapId()).toBe('default');
+		});
+
 	});
 	describe('wireLinkForMapId', function () {
 		var link;
@@ -25,11 +35,11 @@ describe('MM.navigation', function () {
 		});
 		describe('when mapId is from window address hash', function () {
 			beforeEach(function () {
-				window.location.hash = 'mapIdInHash';
+				window.location.hash = 'm:mapIdInHash';
 			});
 			it('should set # as href', function () {
 				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.attr('href')).toBe('#newMapId');
+				expect(link.attr('href')).toBe('#m:newMapId');
 			});
 			it('should set click event', function () {
 				spyOn(link, 'click').andCallThrough();
@@ -64,7 +74,7 @@ describe('MM.navigation', function () {
 		describe('when mapId is from window address hash', function () {
 			var listener;
 			beforeEach(function () {
-				window.location.hash = 'mapIdInHash';
+				window.location.hash = 'm:mapIdInHash';
 				underTest = new MM.navigation({mapId: 'mapIdInConfig'});
 				listener = jasmine.createSpy();
 				underTest.addEventListener('mapIdChanged', listener);
@@ -74,7 +84,7 @@ describe('MM.navigation', function () {
 			});
 			it('should set window address hash to new mapId', function () {
 				underTest.changeMapId('newMapId');
-				expect(window.location.hash).toBe('#newMapId');
+				expect(window.location.hash).toBe('#m:newMapId');
 			});
 			it('should notify listeners of newMapId', function () {
 				underTest.changeMapId('newMapId');
@@ -82,7 +92,7 @@ describe('MM.navigation', function () {
 			});
 			it('should return false when mapId is the same', function () {
 				expect(underTest.changeMapId('mapIdInHash')).toBe(false);
-				expect(window.location.hash).toBe('#mapIdInHash');
+				expect(window.location.hash).toBe('#m:mapIdInHash');
 				expect(listener).not.toHaveBeenCalled();
 			});
 		});

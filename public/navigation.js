@@ -3,19 +3,28 @@ MM.navigation = function (config) {
 	'use strict';
 	observable(this);
 	var self = this,
+		mapIdRegEx = /[Mm]:([^,;]*)/,
 		getMapIdFromHash = function () {
-			var windowHash = window && window.location && window.location.hash;
-			return windowHash && windowHash.length && windowHash.length > 1 && windowHash.substring && windowHash.substring(1);
+			var windowHash = window && window.location && window.location.hash,
+				found = windowHash && mapIdRegEx.exec(windowHash);
+			return found && found[1];
 		},
 		calcCurrentMapId = function () {
-			return getMapIdFromHash() || config.mapId;
+			return getMapIdFromHash() || config.mapId || 'default';
+		},
+		hashMapId = function (mapId) {
+			return 'm:' + mapId;
+		},
+		useHash = function () {
+			return !config.mapId || getMapIdFromHash();
 		},
 		currentMapId = calcCurrentMapId();
 
+	self.hashMapId = hashMapId;
 	self.currentMapId = calcCurrentMapId;
 	self.wireLinkForMapId = function (newMapId, link) {
-		if (getMapIdFromHash()) {
-			link.attr('href', '#' + newMapId);
+		if (useHash()) {
+			link.attr('href', '#' + hashMapId(newMapId));
 			link.data('link-fixed', 'true');
 			link.click(function () {self.changeMapId(newMapId); });
 		} else {
@@ -23,9 +32,8 @@ MM.navigation = function (config) {
 		}
 	};
 	self.setSimpleLink = function (link) {
-		var mapId = getMapIdFromHash();
-		if (mapId && !$(link).data('link-fixed')) {
-			$(link).attr('href', '#' + mapId);
+		if (useHash() && !$(link).data('link-fixed')) {
+			$(link).attr('href', '#' +  hashMapId(calcCurrentMapId()));
 		}
 	};
 	self.changeMapId = function (newMapId) {
@@ -34,14 +42,17 @@ MM.navigation = function (config) {
 		}
 		var previousMapId = currentMapId || calcCurrentMapId();
 		currentMapId = newMapId;
-		if (getMapIdFromHash()) {
-			window.location.hash = newMapId;
+		if (useHash()) {
+			window.location.hash = hashMapId(newMapId);
 			self.dispatchEvent('mapIdChanged', newMapId, previousMapId);
 			return true;
 		} else {
 			document.location = '/map/' + newMapId;
 		}
 	};
+	// window.addEventListener('hashchange', function () {
+	// 	console.log('hashchange', calcCurrentMapId());
+	// });
 	return self;
 };
 
@@ -54,7 +65,7 @@ $.fn.navigationWidget = function (navigation) {
 				navigation.setSimpleLink(link);
 			});
 			if (previousMapId) {
-				_.each(self.find('a[href="#' + previousMapId + '"]'), function (link) {
+				_.each(self.find('a[href="#' + navigation.hashMapId(previousMapId) + '"]'), function (link) {
 					navigation.setSimpleLink(link);
 				});
 			}
