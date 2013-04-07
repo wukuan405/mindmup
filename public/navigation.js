@@ -3,7 +3,7 @@ MM.navigation = function (config) {
 	'use strict';
 	observable(this);
 	var self = this,
-		mapIdRegEx = /[Mm]:([^,;]*)/,
+		mapIdRegEx = /[Mm]:([^,;#]*)/,
 		getMapIdFromHash = function () {
 			var windowHash = window && window.location && window.location.hash,
 				found = windowHash && mapIdRegEx.exec(windowHash);
