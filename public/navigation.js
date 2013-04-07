@@ -51,9 +51,15 @@ MM.navigation = function (config) {
 			document.location = '/map/' + newMapId;
 		}
 	};
-	// window.addEventListener('hashchange', function () {
-	// 	console.log('hashchange', calcCurrentMapId());
-	// });
+	window.addEventListener('hashchange', function () {
+		var newMapId = getMapIdFromHash();
+		if (!newMapId) {
+			return;
+		}
+		if (!currentMapId || currentMapId !== newMapId) {
+			self.changeMapId(newMapId);
+		}
+	});
 	return self;
 };
 
