@@ -328,9 +328,9 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 		// } else {
 		// 	toggleChange();
 		// }
-		// if (!mapId || mapId.length < 3) { /* imported, no repository ID */
-		// 	toggleChange();
-		// }
+		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
+			toggleChange();
+		}
 		idea.addEventListener('changed', function (command, args) {
 			toggleChange();
 			activityLog.log(['Map', command].concat(args));
@@ -347,6 +347,13 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 };
 MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 	'use strict';
+	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
+		var mapId = navigation.currentMapId();
+		console.log('mapLoaded', newMapId, mapId);
+		if (mapId && mapId !== newMapId) {
+			navigation.changeMapId(newMapId || 'new');
+		}
+	});
 	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
 		if (idHasChanged) {
 			navigation.changeMapId(newMapId);

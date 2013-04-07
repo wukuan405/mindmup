@@ -71,7 +71,7 @@ MM.main = function (config) {
 		jQuery(document).titleUpdateWidget(mapRepository);
 		jQuery('[data-mm-role=share]').shareWidget();
 		jQuery('#modalShareEmail').shareEmailWidget();
-		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog);
+		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog, mapRepository);
 		jQuery('#modalImport').importWidget(activityLog, mapRepository);
 		jQuery('[data-mm-role=save]').saveWidget(mapRepository);
 		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);

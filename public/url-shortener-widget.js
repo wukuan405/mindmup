@@ -1,9 +1,12 @@
-/*global MM,jQuery,document, setTimeout*/
-jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog) {
+/*global jQuery,document, setTimeout*/
+jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapRepository) {
 	'use strict';
 	var list = this,
 		shortenerRetriesLeft = 5,
 		fireShortener = function () {
+			if (document.location.protocol === 'file:') {
+				return;
+			}
 			jQuery.ajax({
 				type: 'post',
 				url: 'https://www.googleapis.com/urlshortener/v1/url?key=' + googleShortenerApiKey,
@@ -14,8 +17,8 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog) {
 					list.each(function () {
 						jQuery(this).data('mm-url', result.id);
 					});
-					list.filter('[data-mm-role=short-url]').show().val(result.id).
-						on('input', function () {
+					list.filter('[data-mm-role=short-url]').show().val(result.id)
+						.on('input', function () {
 							jQuery(this).val(result.id);
 						}).click(function () {
 							if (this.setSelectionRange) {
@@ -30,13 +33,15 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog) {
 						shortenerRetriesLeft--;
 						setTimeout(fireShortener, 1000);
 					} else {
-						activityLog.log('Map', 'URL shortener failed', err + " " + msg);
+						activityLog.log('Map', 'URL shortener failed', err + ' ' + msg);
 					}
 				}
 			});
 		};
-	if (document.location.protocol !== 'file:') {
-		fireShortener();
+	if (mapRepository) {
+		mapRepository.addEventListener('mapLoaded', function () {
+			fireShortener();
+		});
 	}
 	return list;
 };

@@ -32,7 +32,7 @@ jQuery.fn.saveWidget = function (mapRepository) {
 		if (document.location.hash === '#google-drive') {
 			repository = 'g';
 		}
-		element.find('[data-mm-role=currentrepo]').removeClass('repo-a repo-g').addClass('repo-' + repository);
+		element.find('[data-mm-role=currentrepo]').removeClass('repo-a repo-g repo-o').addClass('repo-' + repository);
 		idea.addEventListener('changed', mapChangedListener);
 		mapChanged = false;
 	});
