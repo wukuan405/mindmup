@@ -30,6 +30,7 @@ MM.navigation = function (config) {
 		} else {
 			link.attr('href', '/map/' + newMapId);
 		}
+		return link;
 	};
 	self.setSimpleLink = function (link) {
 		if (useHash() && !$(link).data('link-fixed')) {
