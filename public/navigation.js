@@ -26,7 +26,6 @@ MM.navigation = function (config) {
 			return confirmationRequired;
 		}
 		confirmationRequired = val ? true : false;
-		console.log('confirmationRequired', confirmationRequired, 'for', currentMapId);
 		return confirmationRequired;
 	};
 	self.hashMapId = hashMapId;
