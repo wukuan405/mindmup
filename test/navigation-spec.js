@@ -50,7 +50,6 @@ describe('MM.navigation', function () {
 				underTest = new MM.navigation({mapId: 'mapIdInConfig'});
 				spyOn(underTest, 'changeMapId');
 				underTest.wireLinkForMapId('newMapId', link);
-				console.log(link);
 				link.click();
 				expect(underTest.changeMapId).toHaveBeenCalledWith('newMapId');
 			});

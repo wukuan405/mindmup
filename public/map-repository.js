@@ -349,9 +349,8 @@ MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 	'use strict';
 	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
 		var mapId = navigation.currentMapId();
-		console.log('mapLoaded', newMapId, mapId);
 		if (mapId && mapId !== newMapId) {
-			navigation.changeMapId(newMapId || 'new');
+			navigation.changeMapId(newMapId || 'nil');
 		}
 	});
 	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
@@ -360,8 +359,11 @@ MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 		}
 	});
 	navigation.addEventListener('mapIdChanged', function (newMapId) {
+		if (!newMapId || newMapId === 'nil') {
+			return;
+		}
 		var mapId = mapRepository.currentMapId();
-		if (mapId && mapId !== newMapId) {
+		if (!mapId || mapId !== newMapId) {
 			mapRepository.loadMap(newMapId);
 		}
 	});
