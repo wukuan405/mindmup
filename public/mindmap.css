@@ -254,7 +254,8 @@ body.offline-enabled .offline-disabled-hidden {
 }
 #attachEditArea {
 	overflow: scroll;
-	border: 1px solid rgb(204, 204, 204); 
+  outline: none;
+  border: 1px solid rgb(204, 204, 204); 
 	padding: 4px; 
 	margin: 10px;
 	box-sizing: content-box; 
