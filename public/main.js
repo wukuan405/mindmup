@@ -78,7 +78,7 @@ MM.main = function (config) {
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapRepository);
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, navigation);
-		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage);
+		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, navigation);
 		jQuery('body')
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 			.navigationWidget(navigation);

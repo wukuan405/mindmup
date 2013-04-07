@@ -1,5 +1,5 @@
 /*global $, _ */
-$.fn.localStorageOpenWidget = function (offlineMapStorage) {
+$.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
     'use strict';
     var modal = this,
         template = this.find('[data-mm-role=template]'),
@@ -20,6 +20,14 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage) {
 				callback();
 			});
 
+		},
+        wireLink = function (link, file) {
+			if (navigation) {
+				return navigation.wireLinkForMapId(file.id, link);
+			}
+			else {
+				return link.attr('href', '/map/' + file.id);
+			}
 		},
 		restoreMap = function (mapId, map, mapInfo) {
 			offlineMapStorage.restore(mapId, map, mapInfo);
@@ -45,7 +53,7 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage) {
 	                var added;
 					if (file) {
 						added = template.clone().appendTo(parent);
-						added.find('a[data-mm-role=file-link]').attr('href', '/map/' + file.id).text(file.title);
+						wireLink(added.find('a[data-mm-role=file-link]'), file).text(file.title);
 						added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedDate).toLocaleString());
 						added.find('[data-mm-role=map-delete]').click(deleteMap.bind(undefined, file.id, file.info));
 					}
@@ -66,6 +74,11 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage) {
 				showAlert('Unable to retrieve files from browser storage', 'error');
 			}
 		};
+	if (navigation) {
+		navigation.addEventListener('mapIdChanged', function () {
+			modal.modal('hide');
+		});
+	}
     template.detach();
     modal.on('show', function () {
 		fileRetrieval();
