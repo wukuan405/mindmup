@@ -47,6 +47,14 @@ describe("Freemind Import", function () {
 				'<richcontent TYPE="NODE"><html><head></head><body><p>HTML</p></body></html></richcontent></node></map>').attr.attachment)
 			.toEqual({ contentType: 'text/html', content: '<p>HTML</p>'});
 	});
+	it('child attachment are done recursively rich content into node attachment', function () {
+		var result = MM.freemindImport('<map version="0.7.1"><node CREATED="1355321040271" ID="ID_1673010612" MODIFIED="1355321149601">' +
+				'<richcontent TYPE="NODE"><html><head></head><body><p>ROOT</p></body></html></richcontent>' +
+				'<node><richcontent TYPE="NODE"><html><head></head><body><p>CHILD</p></body></html></richcontent></node>' +
+				'</node></map>');
+		expect(result.attr.attachment).toEqual({ contentType: 'text/html', content: '<p>ROOT</p>'});
+		expect(result.ideas[1].attr.attachment).toEqual({ contentType: 'text/html', content: '<p>CHILD</p>'});
+	});
 	it('collapses non-leaf children of collapsed nodes', function () {
 		var result = MM.freemindImport('<map version="0.7.1">' +
 			'<node ID="1" TEXT="A" FOLDED="true">' +

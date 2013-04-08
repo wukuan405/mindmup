@@ -11,7 +11,7 @@ MM.freemindImport = function (xml, start, progress) {
 		if ((parentStyle && parentStyle.collapsed) || node.attr("FOLDED") === "true") {
 			style.collapsed = 'true';
 		}
-		attachment = node.find('richcontent body');
+		attachment = node.children('richcontent').find('body');
 		if (attachment.length > 0) {
 			style.attachment = { contentType: 'text/html', content: toStr(attachment.children()) };
 		}
