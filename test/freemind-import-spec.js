@@ -39,7 +39,14 @@ describe("Freemind Import", function () {
 	it('converts xml entities into string equivalents while parsing xml', function () {
 		expect(MM.freemindImport('<map version="0.7.1"><node ID="1" TEXT="Text&quot;&lt;&gt;&quot;&lt;&gt;More"></node></map>').title).toBe('Text"<>"<>More');
 	});
-
+	it('converts nodes with no text into nodes with empty text', function () {
+		expect(MM.freemindImport('<map version="0.7.1"><node ID="1"></node></map>')).toEqual({'title': '', formatVersion: 2 });
+	});
+	it('converts rich content into node attachment', function () {
+		expect(MM.freemindImport('<map version="0.7.1"><node CREATED="1355321040271" ID="ID_1673010612" MODIFIED="1355321149601">' +
+				'<richcontent TYPE="NODE"><html><head></head><body><p>HTML</p></body></html></richcontent></node></map>').attr.attachment)
+			.toEqual({ contentType: 'text/html', content: '<p>HTML</p>'});
+	});
 	it('collapses non-leaf children of collapsed nodes', function () {
 		var result = MM.freemindImport('<map version="0.7.1">' +
 			'<node ID="1" TEXT="A" FOLDED="true">' +

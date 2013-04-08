@@ -26,6 +26,7 @@ $.fn.file_reader_upload = function (start, complete, fail) {
 			return;
 		}
 		oFReader.readAsText(fileInfo, "UTF-8");
+		element.val('');
 	});
     return element;
 }

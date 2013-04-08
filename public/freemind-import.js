@@ -2,19 +2,25 @@
 MM.freemindImport = function (xml, start, progress) {
 	'use strict';
 	var nodeStyle = function (node, parentStyle) {
-		var style = {};
+		var style = {}, attachment, toStr = function (xmlObj) {
+			return $('<div>').append(xmlObj).html();
+		};
 		if (node.attr("BACKGROUND_COLOR")) {
 			style.style = {background : node.attr("BACKGROUND_COLOR")};
 		}
 		if ((parentStyle && parentStyle.collapsed) || node.attr("FOLDED") === "true") {
 			style.collapsed = 'true';
 		}
+		attachment = node.find('richcontent body');
+		if (attachment.length > 0) {
+			style.attachment = { contentType: 'text/html', content: toStr(attachment.children()) };
+		}
 		return style;
 	},
 		result,
 		xmlToJson = function (xml_node, parentStyle) {
 			var node = $(xml_node),
-				result = {"title" : node.attr("TEXT") },
+				result = {"title" : node.attr("TEXT") || ''},
 				childNodes = node.children('node'),
 				style = nodeStyle(node, parentStyle),
 				children = _.map(childNodes, function (child) {return xmlToJson(child, style); }),

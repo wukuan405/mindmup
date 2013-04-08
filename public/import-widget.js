@@ -48,18 +48,19 @@ $.fn.importWidget = function (activityLog, mapRepository) {
 			}
 			try {
 				jsonContent = parseFile(fileContent, type);
+
+				spinner('Initialising map');
+				counter = 0;
+				idea = MAPJS.content(jsonContent, function () {
+					if (counter % 1000 === 0) {
+						spinner('Initialised ' + counter + 'nodes');
+					}
+					counter++;
+				});
 			} catch (e) {
 				fail('invalid file content', e);
 				return;
 			}
-			spinner('Initialising map');
-			counter = 0;
-			idea = MAPJS.content(jsonContent, function () {
-				if (counter % 1000 === 0) {
-					spinner('Initialised ' + counter + 'nodes');
-				}
-				counter++;
-			});
 			spinner('Done');
 			activityLog.log('Map', 'import:complete');
 			statusDiv.empty();
