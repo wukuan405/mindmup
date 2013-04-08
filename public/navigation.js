@@ -60,6 +60,9 @@ MM.navigation = function (config) {
 			}
 			return true;
 		} else {
+			if (!newMapId || newMapId == 'nil') {
+				return;
+			}
 			currentMapId = newMapId;
 			document.location = '/map/' + newMapId;
 		}
