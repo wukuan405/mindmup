@@ -1,12 +1,12 @@
-/*global _, jQuery, MAPJS, MM, observable, window, setTimeout*/
-MM.MapRepository = function (adapters) {
+/*global _, jQuery, MAPJS, MM, observable, setTimeout*/
+MM.MapRepository = function (adapters, storage) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
 	observable(this);
 	var jsonMimeType = 'application/json',
 		dispatchEvent = this.dispatchEvent,
 		mapInfo = {},
-		offlineFallback = new MM.OfflineFallback(MM.jsonStorage(localStorage)),
+		offlineFallback = new MM.OfflineFallback(MM.jsonStorage(storage)),
 		chooseAdapter = function (identifiers) {
 			// order of identifiers is important, the first identifier takes precedence
 			var idIndex, adapterIndex;
@@ -77,7 +77,6 @@ MM.MapRepository = function (adapters) {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
 			},
-			offlineFallbackMap,
 			loadFromAdapter = function () {
 				offlineFallback.remove(mapId);
 				var embeddedMap = MM && MM.Maps && mapId && MM.Maps[mapId.toLowerCase()];
@@ -95,13 +94,14 @@ MM.MapRepository = function (adapters) {
 				}
 			};
 		dispatchEvent('mapLoading', mapId);
-		offlineFallbackMap = offlineFallback.loadMap(mapId);
+		offlineFallback.loadMap(mapId).then(function (offlineFallbackMap) {
+			if (offlineFallbackMap) {
+				dispatchEvent('offlineFallbackExists', mapLoaded.bind(undefined, offlineFallbackMap, mapId, jsonMimeType, true), loadFromAdapter);
+			} else {
+				loadFromAdapter();
+			}
+		});
 
-		if (offlineFallbackMap) {
-			dispatchEvent('offlineFallbackExists', mapLoaded.bind(undefined, offlineFallbackMap, mapId, jsonMimeType, true), loadFromAdapter);
-		} else {
-			loadFromAdapter();
-		}
 	};
 
 	this.publishMap = function (adapterType) {
@@ -146,19 +146,28 @@ MM.MapRepository = function (adapters) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			},
-			fallbackMap = offlineFallback.loadMap(mapInfo.mapId);
+			};
 		dispatchEvent('mapSaving', adapter.description);
-		MM.retry(adapter.saveMap.bind(adapter, _.clone(mapInfo)), shouldRetry(fallbackMap ? 0 : 5), MM.linearBackoff()).then(mapSaved, mapSaveFailed).progress(progressEvent);
+		offlineFallback.loadMap(mapInfo.mapId).then(
+			function (fallbackMap) {
+				MM.retry(
+					adapter.saveMap.bind(adapter, _.clone(mapInfo)),
+					shouldRetry(fallbackMap ? 0 : 5),
+					MM.linearBackoff())
+				.then(
+					mapSaved,
+					mapSaveFailed)
+				.progress(progressEvent);
+			});
 	};
 };
 
-MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation) {
+MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, container) {
 	'use strict';
 	MM.MapRepository.mapLocationChange(mapRepository, navigation);
 	MM.MapRepository.activityTracking(mapRepository, activityLog);
 	MM.MapRepository.alerts(mapRepository, alert, navigation);
-	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation);
+	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation, container);
 };
 MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 	'use strict';
@@ -310,7 +319,7 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 		});
 	});
 };
-MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation) {
+MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation, container) {
 	'use strict';
 	var changed, saving, mapLoaded,
 		setNotSharable = function (notSharable) {
@@ -335,16 +344,13 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 		navigation.confirmationRequired(false);
 		setNotSharable(notSharable);
 		if (!mapLoaded) {
-			jQuery(window).bind('beforeunload', function () {
+			container.bindUnloadEvent(function () {
 				if (changed && !saving) {
 					return 'There are unsaved changes.';
 				}
 			});
 			mapLoaded = true;
 		}
-		// } else {
-		// 	toggleChange();
-		// }
 		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
 			toggleChange();
 		}

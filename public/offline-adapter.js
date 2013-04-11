@@ -7,13 +7,14 @@ MM.OfflineAdapter = function (storage) {
 		return mapId && mapId[0] === 'o';
 	};
 	this.loadMap = function (mapId) {
-		var result = jQuery.Deferred(),
-			map = storage.load(mapId);
-		if (map) {
-			result.resolve(map, mapId, 'application/json');
-		} else {
-			result.reject('not-found');
-		}
+		var result = jQuery.Deferred();
+		storage.load(mapId).then(function (map) {
+			if (map) {
+				result.resolve(map, mapId, 'application/json');
+			} else {
+				result.reject('not-found');
+			}
+		});
 		return result.promise();
 	};
 	this.saveMap = function (mapInfo) {
@@ -21,15 +22,19 @@ MM.OfflineAdapter = function (storage) {
 			resultMapInfo = _.clone(mapInfo);
 		try {
 			if (!this.recognises(mapInfo.mapId)) {
-				resultMapInfo.mapId = storage.saveNew(resultMapInfo.idea);
+				storage.saveNew(resultMapInfo.idea).then(function (mapId) {
+					resultMapInfo.mapId = mapId;
+					result.resolve(resultMapInfo);
+				});
 			} else {
 				storage.save(resultMapInfo.mapId, resultMapInfo.idea);
+				result.resolve(resultMapInfo);
 			}
 		} catch (e) {
 			console.log('e', e);
 			return result.reject('local-storage-failed', e.toString()).promise();
 		}
-		return result.resolve(resultMapInfo).promise();
+		return result.promise();
 	};
 };
 MM.OfflineFallback = function (storage) {
@@ -39,8 +44,12 @@ MM.OfflineFallback = function (storage) {
 		storage.setItem(localStoragePrefix + mapId, { map: map });
 	};
 	this.loadMap = function (mapId) {
-		var entry = storage.getItem(localStoragePrefix + mapId);
-		return entry && entry.map;
+		var deferred = jQuery.Deferred();
+		storage.getItem(localStoragePrefix + mapId).then(
+			function (entry) {
+				deferred.resolve((entry && entry.map) || null);
+			});
+		return deferred.promise();
 	};
 	this.remove = function (mapId) {
 		storage.remove(localStoragePrefix + mapId);
@@ -59,9 +68,14 @@ MM.OfflineMapStorage = function (storage, keyPrefix) {
 			return keyPrefix + '-map-' + nextFileNumber;
 		},
 		storedFileInformation = function () {
-			var files = storage.getItem(keyName) || { nextMapId: 1, maps: {}};
-			files.maps = files.maps || {};
-			return files;
+			var deferred = jQuery.Deferred();
+			storage.getItem(keyName).then(
+				function (files) {
+					files = files || { nextMapId: 1, maps: {}};
+					files.maps = files.maps || {};
+					deferred.resolve(files);
+				});
+			return deferred.promise();
 		},
 		store = function (fileId, fileContent, files) {
 			files.maps[fileId] = newFileInformation(fileContent.title);
@@ -69,36 +83,55 @@ MM.OfflineMapStorage = function (storage, keyPrefix) {
 			storage.setItem(keyName, files);
 		};
 	this.save = function (fileId, fileContent) {
-		var files = storedFileInformation();
-		store(fileId, fileContent, files);
+		storedFileInformation().then(
+			function (files) {
+				store(fileId, fileContent, files);
+			}
+		);
 	};
 	this.saveNew = function (fileContent) {
-		var files = storedFileInformation(),
-			fileId = newFileId(files.nextMapId);
-		files.nextMapId++;
-		store(fileId, fileContent, files);
-		return fileId;
+		var deferred = jQuery.Deferred();
+		storedFileInformation().then(
+			function (files) {
+				var fileId = newFileId(files.nextMapId);
+				files.nextMapId++;
+				store(fileId, fileContent, files);
+				deferred.resolve(fileId);
+			});
+		return deferred.promise();
 	};
 	this.remove = function (fileId) {
-		var files = storedFileInformation();
-		storage.remove(fileId);
-		delete files.maps[fileId];
-		storage.setItem(keyName, files);
-		dispatchEvent('mapDeleted', fileId);
+		storedFileInformation().then(
+			function (files) {
+				storage.remove(fileId);
+				delete files.maps[fileId];
+				storage.setItem(keyName, files);
+				dispatchEvent('mapDeleted', fileId);
+			});
 	};
 	this.restore = function (fileId, fileContent, fileInfo) {
-		var files = storedFileInformation();
-		files.maps[fileId] = fileInfo;
-		storage.setItem(fileId, {map: fileContent});
-		storage.setItem(keyName, files);
-		dispatchEvent('mapRestored', fileId, fileContent, fileInfo);
+		storedFileInformation().then(
+			function (files) {
+				files.maps[fileId] = fileInfo;
+				storage.setItem(fileId, {map: fileContent});
+				storage.setItem(keyName, files);
+				dispatchEvent('mapRestored', fileId, fileContent, fileInfo);
+			});
 	};
 	this.list = function () {
-		return storedFileInformation().maps;
+		var deferred = jQuery.Deferred();
+		storedFileInformation().then(function (files) {
+			deferred.resolve(files.maps);
+		});
+		return deferred.promise();
 	};
 	this.load = function (fileId) {
-		var item = storage.getItem(fileId);
-		return item && item.map;
+		var deferred = jQuery.Deferred();
+		storage.getItem(fileId).then(
+			function (item) {
+				deferred.resolve(item && item.map);
+			});
+		return deferred.promise();
 	};
 	return this;
 };

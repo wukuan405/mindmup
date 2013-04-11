@@ -32,7 +32,7 @@ describe('Map Repository', function () {
 			adapterActions = ['recognises'];
 		adapter1 = _.extend(qstub(adapterActions), adapterPrototype);
 		adapter2 = _.extend(qstub(adapterActions), adapterPrototype);
-		underTest = new MM.MapRepository([adapter1, adapter2]);
+		underTest = new MM.MapRepository([adapter1, adapter2], new MM.BrowserContainer().storage());
 	});
 	afterEach(function () {
 		clock.restore();

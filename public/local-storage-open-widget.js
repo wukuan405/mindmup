@@ -19,7 +19,6 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 				statusDiv.empty();
 				callback();
 			});
-
 		},
         wireLink = function (link, file) {
 			if (navigation) {
@@ -34,10 +33,11 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 			fileRetrieval();
 		},
 		deleteMap = function (mapId, mapInfo) {
-			var map = offlineMapStorage.load(mapId);
-			offlineMapStorage.remove(mapId);
-			fileRetrieval();
-			showAlert('Map "' + map.title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
+			offlineMapStorage.load(mapId).then(function (map) {
+				offlineMapStorage.remove(mapId);
+				fileRetrieval();
+				showAlert('Map "' + map.title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
+			});
 		},
         loaded = function (fileMap) {
 			statusDiv.empty();
@@ -66,10 +66,10 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 		fileRetrieval = function () {
 			parent.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
-			var fileMap;
 			try {
-				fileMap = offlineMapStorage.list();
-				loaded(fileMap);
+				offlineMapStorage.list().then(function (fileMap) {
+					loaded(fileMap);
+				});
 			} catch (e) {
 				showAlert('Unable to retrieve files from browser storage', 'error');
 			}

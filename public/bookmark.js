@@ -6,11 +6,20 @@ MM.jsonStorage = function (storage) {
 		storage.setItem(key, JSON.stringify(value));
 	};
 	self.getItem = function (key) {
-		try {
-			return JSON.parse(storage.getItem(key));
-		} catch (e) {
-			return undefined;
-		}
+		var deferred = jQuery.Deferred();
+		storage.getItem(key).then(
+			function (item) {
+				var json;
+				try {
+					json = JSON.parse(item);
+				} catch (e) {
+					json = undefined;
+				}
+				deferred.resolve(json);
+			},
+			function () {deferred.resolve(); }
+		);
+		return deferred.promise();
 	};
 	self.remove = function (key) {
 		storage.removeItem(key);
@@ -28,7 +37,7 @@ MM.Bookmark = function (mapRepository, storage, storageKey) {
 			}
 		};
 	if (storage && storageKey) {
-		list = storage.getItem(storageKey) || [];
+		storage.getItem(storageKey).then(function (item) {list = item || []; });
 	}
 	mapRepository.addEventListener('mapSaved', function (key, idea) {
 		self.store({
