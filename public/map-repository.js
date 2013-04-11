@@ -32,7 +32,7 @@ MM.MapRepository = function (adapters, storage) {
 				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
 			} else if (mimeType === 'application/octet-stream') {
 				json = JSON.parse(fileContent);
-			} else if (mimeType === 'application/x-freemind') {
+			} else if (mimeType === 'application/x-freemind' || mimeType === 'application/vnd-freemind') {
 				json = MM.freemindImport(fileContent);
 			}
 			idea = MAPJS.content(json);

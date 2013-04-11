@@ -118,7 +118,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			return deferred.promise();
 		},
 		loadFile = function (fileId) {
-			var allowUpdate = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false },
+			var allowUpdate = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false },
 				deferred = jQuery.Deferred(),
 				request = gapi.client.drive.files.get({
 					'fileId': fileId
