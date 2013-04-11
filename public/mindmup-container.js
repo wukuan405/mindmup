@@ -5,8 +5,7 @@ MM.BrowserContainer = function () {
 	self.bindUnloadEvent = function (onOnUnload) {
 		jQuery(window).bind('beforeunload', onOnUnload);
 	},
-	self.storage = function () {
-		return {
+	self.storage = {
 			removeItem: function (key) {
 				localStorage.removeItem(key);
 			},
@@ -18,7 +17,7 @@ MM.BrowserContainer = function () {
 				return deferred.resolve(localStorage.getItem(key)).promise();
 			}
 		};
-	};
+
 	self.classCachingWidget = function (element, keyPrefix, store) {
 		var key = keyPrefix + '-' + element.selector;
 		store = store || localStorage;
@@ -39,8 +38,7 @@ MM.ChromeAppContainer = function () {
 	},
 	this.classCachingWidget = function () {
 	};
-	this.storage = function () {
-		return {
+	this.storage = {
 			removeItem: function (key) {
 				storage.remove(key);
 			},
@@ -57,6 +55,5 @@ MM.ChromeAppContainer = function () {
 				return deferred.promise();
 			}
 		};
-	};
 	return self;
 };

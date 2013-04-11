@@ -5,7 +5,7 @@ describe('Local storage ', function () {
 		var jsonStorage, underTest;
 		beforeEach(function () {
 			localStorage.clear();
-			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage());
+			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage);
 			underTest = new MM.OfflineAdapter(new MM.OfflineMapStorage(jsonStorage, 'offline'));
 		});
 		it('recognises mapIds starting with "o"', function () {
@@ -84,7 +84,7 @@ describe('Local storage ', function () {
 		var jsonStorage, underTest, map;
 		beforeEach(function () {
 			localStorage.clear();
-			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage());
+			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage);
 			underTest = new MM.OfflineFallback(jsonStorage);
 			map = MAPJS.content({ title: 'Hello World!' });
 		});
@@ -125,7 +125,7 @@ describe('Local storage ', function () {
 		beforeEach(function () {
 			clock = sinon.useFakeTimers();
 			localStorage.clear();
-			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage());
+			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage);
 			map = MAPJS.content({ title: 'Hello World!' });
 			underTest = new MM.OfflineMapStorage(jsonStorage, 'offline');
 		});
