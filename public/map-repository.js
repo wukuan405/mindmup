@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable, setTimeout*/
+/*global _, jQuery, MAPJS, MM, observable, setTimeout, XMLHttpRequest*/
 MM.MapRepository = function (adapters, storage) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
@@ -32,7 +32,7 @@ MM.MapRepository = function (adapters, storage) {
 				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
 			} else if (mimeType === 'application/octet-stream') {
 				json = JSON.parse(fileContent);
-			} else if (mimeType === 'application/x-freemind') {
+			} else if (mimeType === 'application/x-freemind' || mimeType === 'application/vnd-freemind') {
 				json = MM.freemindImport(fileContent);
 			}
 			idea = MAPJS.content(json);
@@ -435,7 +435,7 @@ MM.linearBackoff = function () {
 
 (function () {
 	'use strict';
-	var oldXHR = jQuery.ajaxSettings.xhr;
+	var oldXHR = jQuery.ajaxSettings.xhr.bind(jQuery.ajaxSettings);
 	jQuery.ajaxSettings.xhr = function () {
 		var xhr = oldXHR();
 		if (xhr instanceof XMLHttpRequest) {
