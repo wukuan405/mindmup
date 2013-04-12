@@ -24,7 +24,7 @@ configure do
   set :network_timeout_millis, ENV['NETWORK_TIMEOUT_MILLIS']||10000
   set :publishing_config_url, '/publishingConfig'
   set :container_class, 'BrowserContainer'
-  set :proxy_load_url, '/s3proxy/'
+  set :proxy_load_url, 's3proxy/'
   offline =  ENV['OFFLINE'] || "online"
   set :online, offline == "offline" ? false : true
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)

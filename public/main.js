@@ -26,11 +26,12 @@ MM.main = function (config) {
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_trackPageview']];
 	jQuery(function () {
-		var container = new MM[config.containerClass](),
+		var navigation = MM.navigation(config, isOffline(), config.baseUrl),
+			container = new MM[config.containerClass](),
 			activityLog = new MM.ActivityLog(10000), oldShowPalette,
 			alert = new MM.Alert(),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
-			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.proxyLoadUrl),
+			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(MM.jsonStorage(container.storage), 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
@@ -40,8 +41,7 @@ MM.main = function (config) {
 				MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
-			mapBookmarks = new MM.Bookmark(mapRepository, MM.jsonStorage(container.storage), 'created-maps'),
-			navigation = MM.navigation(config, isOffline());
+			mapBookmarks = new MM.Bookmark(mapRepository, MM.jsonStorage(container.storage), 'created-maps');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -74,8 +74,8 @@ MM.main = function (config) {
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, navigation);
 		jQuery('#modalDownload').downloadWidget(pngExporter);
 		jQuery(document).titleUpdateWidget(mapRepository);
-		jQuery('[data-mm-role=share]').shareWidget();
-		jQuery('#modalShareEmail').shareEmailWidget();
+		jQuery('[data-mm-role=share]').shareWidget(navigation);
+		jQuery('#modalShareEmail').shareEmailWidget(navigation);
 		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog, mapRepository);
 		jQuery('#modalImport').importWidget(activityLog, mapRepository);
 		jQuery('[data-mm-role=save]').saveWidget(mapRepository);

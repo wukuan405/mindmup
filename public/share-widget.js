@@ -1,10 +1,10 @@
-/*global MM,$,document*/
-$.fn.shareWidget = function () {
+/*global $,document*/
+$.fn.shareWidget = function (container) {
 	'use strict';
 	return this.each(function () {
 		var self = $(this),
 			target = self.attr('data-mm-target');
-		self.data('mm-url', document.location.href);
+		self.data('mm-url', container.documentLocation());
 		if (!target) {
 			return;
 		}

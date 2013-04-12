@@ -1,5 +1,5 @@
-/*global MM,jQuery,document*/
-jQuery.fn.shareEmailWidget = function () {
+/*global jQuery,document*/
+jQuery.fn.shareEmailWidget = function (navigation) {
 	'use strict';
 	var shareModal = this,
 		formElement = shareModal.find('form'),
@@ -27,7 +27,7 @@ jQuery.fn.shareEmailWidget = function () {
 				shareModal.modal('hide');
 			}
 		};
-	shareModal.detach().appendTo('body').data('mm-url', document.location.href);
+	shareModal.detach().appendTo('body').data('mm-url', navigation.sharingUrl());
 	formElement.find('input').blur(function () { validate(jQuery(this)); });
 	shareModal.find('[data-mm-role=submit]').click(submitForm);
 	return shareModal;

@@ -1,5 +1,5 @@
 /*global jQuery,document, setTimeout*/
-jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapRepository) {
+jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapRepository, navigation) {
 	'use strict';
 	var list = this,
 		shortenerRetriesLeft = 5,
@@ -12,7 +12,7 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				url: 'https://www.googleapis.com/urlshortener/v1/url?key=' + googleShortenerApiKey,
 				dataType: 'json',
 				contentType: 'application/json',
-				data: '{"longUrl": "' + document.location.href + '"}',
+				data: '{"longUrl": "' + navigation.sharingUrl() + '"}',
 				success: function (result) {
 					list.each(function () {
 						jQuery(this).data('mm-url', result.id);

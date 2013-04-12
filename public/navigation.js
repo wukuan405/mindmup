@@ -1,5 +1,5 @@
 /*global MM, observable, $, _*/
-MM.navigation = function (config, offline) {
+MM.navigation = function (config, offline, baseUrl) {
 	'use strict';
 	observable(this);
 	var self = this,
@@ -28,6 +28,10 @@ MM.navigation = function (config, offline) {
 		confirmationRequired = val ? true : false;
 		return confirmationRequired;
 	};
+	self.sharingUrl = function () {
+		return baseUrl + 'map/' + self.currentMapId();
+	};
+
 	self.hashMapId = hashMapId;
 	self.currentMapId = calcCurrentMapId;
 	self.wireLinkForMapId = function (newMapId, link) {
