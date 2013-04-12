@@ -4,7 +4,7 @@ $.fn.shareWidget = function (container) {
 	return this.each(function () {
 		var self = $(this),
 			target = self.attr('data-mm-target');
-		self.data('mm-url', container.documentLocation());
+		self.data('mm-url', container.sharingUrl());
 		if (!target) {
 			return;
 		}
