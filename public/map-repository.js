@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable, setTimeout*/
+/*global _, jQuery, MAPJS, MM, observable, setTimeout, XMLHttpRequest*/
 MM.MapRepository = function (adapters, storage) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
@@ -435,7 +435,7 @@ MM.linearBackoff = function () {
 
 (function () {
 	'use strict';
-	var oldXHR = jQuery.ajaxSettings.xhr;
+	var oldXHR = jQuery.ajaxSettings.xhr.bind(jQuery.ajaxSettings);
 	jQuery.ajaxSettings.xhr = function () {
 		var xhr = oldXHR();
 		if (xhr instanceof XMLHttpRequest) {
