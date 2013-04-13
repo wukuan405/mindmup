@@ -285,6 +285,9 @@ body.offline-enabled .offline-disabled-hidden {
 #modalAttachmentEditor.mm-editable .viewer-topbar {
 	display: none;
 }
+#modalAttachmentEditor button.close {
+  margin-left: 5px;
+}
 #modalAttachmentEditor .editor-topbar > .btn-toolbar {
 	display: inline-block;
 	background-color:#eee;
