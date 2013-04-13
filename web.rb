@@ -78,7 +78,7 @@ end
 
 post "/echo" do
   content_type 'application/octet-stream'
-  attachment Rack::Utils.escape(params[:title])
+  attachment params[:title]
   params[:map]
 end
 
