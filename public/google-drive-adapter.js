@@ -139,7 +139,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 							if (allowUpdate[mimeType] === undefined) {
 								deferred.reject('format-error', 'Unsupported format ' + mimeType);
 							} else {
-								deferred.resolve(content, fileId, mimeType, allowUpdate[resp.mimeType]);
+								deferred.resolve(content, mimeType, allowUpdate[resp.mimeType]);
 							}
 						},
 						deferred.reject
@@ -223,7 +223,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			readySucceeded = function () {
 				loadFile(googleId).then(
 					function (content, mimeType, allowUpdate) {
-						deferred.resolve(content, mindMupId(allowUpdate && googleId), mimeType);
+						deferred.resolve(content, mapId, mimeType, allowUpdate);
 					},
 					deferred.reject
 				).progress(deferred.notify);

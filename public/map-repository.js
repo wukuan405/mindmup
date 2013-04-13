@@ -19,14 +19,14 @@ MM.MapRepository = function (adapters, storage) {
 			}
 			return adapters[0];
 		},
-		setMap = function (idea, mapId, notSharable) {
+		setMap = function (idea, mapId, notSharable, notEditable) {
 			mapInfo = {
 				idea: idea,
-				mapId: mapId
+				mapId: notEditable ? '' : mapId
 			};
 			dispatchEvent('mapLoaded', idea, mapId, notSharable);
 		},
-		mapLoaded = function (fileContent, mapId, mimeType, notSharable) {
+		mapLoaded = function (fileContent, mapId, mimeType, notSharable, allowUpdate) {
 			var json, idea;
 			if (mimeType === jsonMimeType) {
 				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
@@ -36,7 +36,7 @@ MM.MapRepository = function (adapters, storage) {
 				json = MM.freemindImport(fileContent);
 			}
 			idea = MAPJS.content(json);
-			setMap(idea, mapId, notSharable);
+			setMap(idea, mapId, notSharable, !allowUpdate);
 		},
 		shouldRetry = function (retries) {
 			var times = MM.retryTimes(retries);
@@ -58,8 +58,8 @@ MM.MapRepository = function (adapters, storage) {
 					message = ((evt && evt.loaded) ? Math.round(100 * done / total) + '%' : evt);
 				dispatchEvent('mapLoading', mapId, message);
 			},
-			adapterLoadedMap = function (fileContent, mapId, mimeType) {
-				mapLoaded(fileContent, mapId, mimeType, adapter.notSharable);
+			adapterLoadedMap = function (fileContent, mapId, mimeType, allowUpdate) {
+				mapLoaded(fileContent, mapId, mimeType, adapter.notSharable, allowUpdate);
 			},
 			mapLoadFailed = function (reason, label) {
 				var retryWithDialog = function () {
