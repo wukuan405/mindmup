@@ -21,12 +21,12 @@ MM.main = function (config) {
 		isTouch = function () {
 			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		},
-		isOffline = function () {
-			return jQuery('body').hasClass('offline');
+		isChromeApp = function () {
+			return jQuery('body').hasClass('chrome_app');
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_trackPageview']];
 	jQuery(function () {
-		var navigation = MM.navigation(config, isOffline(), config.baseUrl),
+		var navigation = MM.navigation(config, isChromeApp(), config.baseUrl),
 			container = new MM[config.containerClass](),
 			activityLog = new MM.ActivityLog(10000), oldShowPalette,
 			alert = new MM.Alert(),

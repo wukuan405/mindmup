@@ -1,5 +1,5 @@
 /*global MM, observable, $, _*/
-MM.navigation = function (config, offline, baseUrl) {
+MM.navigation = function (config, chromeApp, baseUrl) {
 	'use strict';
 	observable(this);
 	var self = this,
@@ -16,7 +16,7 @@ MM.navigation = function (config, offline, baseUrl) {
 			return 'm:' + mapId;
 		},
 		useHash = function () {
-			return !config.mapId || getMapIdFromHash() || offline;
+			return !config.mapId || getMapIdFromHash() || chromeApp;
 		},
 		currentMapId = calcCurrentMapId(),
 		confirmationRequired = false;
@@ -64,7 +64,7 @@ MM.navigation = function (config, offline, baseUrl) {
 			}
 			return true;
 		} else {
-			if (!newMapId || newMapId == 'nil') {
+			if (!newMapId || newMapId === 'nil') {
 				return;
 			}
 			currentMapId = newMapId;
