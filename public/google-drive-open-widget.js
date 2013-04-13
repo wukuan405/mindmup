@@ -68,7 +68,7 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
     template.detach();
 	modal.find('[data-mm-mimetype]').click(function () {
 		if ($(this).data('mm-mimetype')) {
-			query = "mimeType='" + $(this).data('mm-mimetype') + "' and not trashed";
+			query = "mimeType contains '" + $(this).data('mm-mimetype') + "' and not trashed";
 		} else {
 			query = undefined;
 		}
