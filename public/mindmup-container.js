@@ -50,7 +50,7 @@ MM.ChromeAppContainer = function () {
 			getItem: function (key) {
 				var deferred = jQuery.Deferred();
 				storage.get(key, function (result) {
-					deferred.resolve(result);
+					deferred.resolve(result[key]);
 				});
 				return deferred.promise();
 			}

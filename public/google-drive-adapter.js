@@ -139,7 +139,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 							if (allowUpdate[mimeType] === undefined) {
 								deferred.reject('format-error', 'Unsupported format ' + mimeType);
 							} else {
-								deferred.resolve(content, mimeType, allowUpdate[resp.mimeType]);
+								deferred.resolve(content, fileId, mimeType, allowUpdate[resp.mimeType]);
 							}
 						},
 						deferred.reject
