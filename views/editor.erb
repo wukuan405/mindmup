@@ -132,7 +132,8 @@
           baseUrl: '<%= settings.base_url%>',
           proxyLoadUrl: '<%= settings.proxy_load_url %>',
           scriptsToLoadAsynchronously: ['//www.google-analytics.com/ga.js', '//platform.twitter.com/widgets.js', '//connect.facebook.net/en_US/all.js#xfbml=1'],
-         networkTimeoutMillis: <%= settings.network_timeout_millis %>
+          networkTimeoutMillis: <%= settings.network_timeout_millis %>,
+          userCohort: '<%= user_cohort %>'
 		});
 	  }
 	  ScriptHelper.afterLoad({success: initMM, fail:showErrors});

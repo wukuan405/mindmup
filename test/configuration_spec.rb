@@ -18,4 +18,18 @@ describe 'Configuration' do
     get "/"
     last_response_config[:googleAnalyticsAccount].should=='abcd'
   end
+  it "creates a cohort tag based on current date if cohort is not defined" do
+    local_session={}
+    current_day = Time.now.strftime("%Y%m%d")
+    get "/",{}, {'rack.session'=>local_session}
+    last_response_config[:userCohort].should == current_day 
+    local_session["cohort"].should == current_day
+  end
+  it "uses existing cohort if cohort was defined" do
+    cohort = "19790501"
+    local_session={'cohort' => cohort}
+    get "/",{}, {'rack.session'=>local_session}
+    last_response_config[:userCohort].should == cohort
+    local_session["cohort"].should == cohort
+  end
 end

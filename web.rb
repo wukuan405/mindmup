@@ -152,6 +152,10 @@ helpers do
   def map_key mapid
     (mapid.include?("/") ?  "" : settings.s3_upload_folder + "/") + mapid + ".json"
   end
+  def user_cohort
+     session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
+     session["cohort"]
+  end
   def map_url mapid
     if !mapid
       ""
