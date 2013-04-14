@@ -4,14 +4,9 @@ MM.exportIdeas = function (contentAggregate, exporter) {
 	var traverse = function (iterator, idea, level) {
 		level = level || 0;
 		iterator(idea, level);
-		if (idea.ideas) {
-			var childKeys = _.groupBy(_.map(_.keys(idea.ideas), parseFloat), function (key) { return key > 0; }),
-				sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
-			_.each(sortedChildKeys, function (key) {
-				traverse(iterator, idea.ideas[key], level + 1);
-			});
-
-		}
+		_.each(idea.sortedSubIdeas(), function (subIdea) {
+			traverse(iterator, subIdea, level + 1);
+		});
 	};
 	if (exporter.begin) { exporter.begin(); }
 	traverse(exporter.each, contentAggregate);
@@ -34,7 +29,7 @@ MM.HtmlTableExporter = function () {
 	'use strict';
 	var result;
 	this.begin = function () {
-		result = $("<table>").wrap('<div></div'); /*parent needed for html generation*/
+		result = $("<table>").wrap('<div></div>'); /*parent needed for html generation*/
 	};
 	this.contents = function () {
 		return '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"> </head><body>' +
@@ -52,4 +47,36 @@ MM.HtmlTableExporter = function () {
 			$("<td>").prependTo(row).html("&nbsp;").attr('colspan', level);
 		}
 	};
+};
+MM.exportToHtmlDocument = function (idea) {
+	'use strict';
+	var result = $("<div>"), /*parent needed for html generation*/
+		toList = function (ideaList) {
+			var list = $("<ul>");
+			_.each(ideaList, function (subIdea) {
+				var element = $("<li>").appendTo(list);
+				if (MAPJS.URLHelper.containsLink(subIdea.title)) {
+					$('<a>').attr('href', MAPJS.URLHelper.getLink(subIdea.title))
+							.text(MAPJS.URLHelper.stripLink(subIdea.title) || subIdea.title)
+							.appendTo(element);
+				} else {
+					element.text(subIdea.title);
+				}
+				if (subIdea.attr && subIdea.attr.style && subIdea.attr.style.background) {
+					element.css('background-color', subIdea.attr.style.background);
+					element.css('color', MAPJS.contrastForeground(subIdea.attr.style.background));
+				}
+				if (!_.isEmpty(subIdea.ideas)) {
+					toList(subIdea.sortedSubIdeas()).appendTo(element);
+				}
+			});
+			return list;
+		};
+	$("<h1>").text(idea.title).appendTo(result);
+	if (!_.isEmpty(idea.ideas)) {
+		toList(idea.sortedSubIdeas()).appendTo(result);
+	}
+	return '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"> </head><body>' +
+		$(result).html() +
+		'</body></html>';
 };

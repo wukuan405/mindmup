@@ -1,4 +1,4 @@
-/*global Color, $, describe, it, expect, MM, MAPJS, jasmine*/
+/*global Color, $, describe, it, expect, MM, MAPJS, jasmine, beforeEach */
 describe("MM.exportIdeas", function () {
 	'use strict';
 	it("executes a begin callback, then each callback for for each idea, then end callback and then passes toString results to the callback", function () {
@@ -96,5 +96,67 @@ describe("MM.htmlTableExporter", function () {
 		cell = $(htmlExporter.contents()).find('tr').first().children('td').first();
 		expect(Color(cell.css('background-color'))).toEqual(Color('#FF0000'));
 		expect(Color(cell.css('color'))).toEqual(Color(MAPJS.contrastForeground('#FF0000')));
+	});
+});
+describe("MM.exportToHtmlDocument", function () {
+	'use strict';
+	it("adds a UTF header", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z'})),
+			result = $(doc).filter('meta');
+		expect(result.attr('http-equiv')).toBe('Content-Type');
+		expect(result.attr('content')).toBe('text/html; charset=utf-8');
+	});
+	it("transforms the top level idea into a H1 title", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z'})),
+			result = $(doc).filter('h1');
+		expect(result.length).toBe(1);
+		expect(result.text()).toBe("z");
+	});
+	it("transforms the first level subideas into UL/LI list, sorted by child rank", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}})),
+			result = $(doc).filter('ul');
+		expect(result.length).toBe(1);
+		expect(result.children().length).toBe(2);
+		expect(result.children().first()).toBe("li");
+		expect(result.children().first().text()).toBe("sub5");
+		expect(result.children().last()).toBe("li");
+		expect(result.children().last().text()).toBe("sub6");
+	});
+	it("transforms the lower level subideas into UL/LI lists, sorted by child rank, recursively", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 1: { title: '2', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}}}})),
+			result = $(doc).filter('ul');
+		expect(result.length).toBe(1);
+		expect(result.children().length).toBe(1);
+		expect(result.children().first()).toBe("li");
+		expect(result.children().first().clone().children().remove().end().text()).toBe("2");// have to do this uglyness to avoid matching subelements
+		expect(result.children().first().children("ul").length).toBe(1);
+		expect(result.children().first().children("ul").children("li").length).toBe(2);
+		expect(result.children().first().children("ul").children("li").first().text()).toBe('sub5');
+		expect(result.children().first().children("ul").children("li").last().text()).toBe('sub6');
+	});
+	it("paints the background color according to node", function () {
+		/*jslint newcap:true*/
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 's', attr : { style : { background: '#FF0000' }}}}})),
+			result = $(doc).filter('ul').children().first();
+		expect(Color(result.css('background-color'))).toEqual(Color('#FF0000'));
+		expect(Color(result.css('color'))).toEqual(Color(MAPJS.contrastForeground('#FF0000')));
+	});
+	it("converts ideas with URLs into hyperlinks", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+				6 : {title: 'zoro http://www.google.com'},
+			}})),
+			result = $(doc).filter('ul').children().first().children().first();
+		expect(result).toBe("a");
+		expect(result.attr("href")).toBe("http://www.google.com");
+		expect(result.text()).toBe("zoro ");
+	});
+	it("converts ideas with only URLs into hyperlinks using hyperlink as text", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+				6 : {title: 'http://www.google.com'},
+			}})),
+			result = $(doc).filter('ul').children().first().children().first();
+		expect(result).toBe("a");
+		expect(result.attr("href")).toBe("http://www.google.com");
+		expect(result.text()).toBe("http://www.google.com");
 	});
 });

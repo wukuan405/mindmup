@@ -34,6 +34,29 @@ var observable = function (base) {
 	};
 	return base;
 };
+/*global MAPJS */
+MAPJS.URLHelper = {
+	urlPattern: /(https?:\/\/|www\.)[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/i,
+	containsLink : function (text) {
+		'use strict';
+		return MAPJS.URLHelper.urlPattern.test(text);
+	},
+	getLink : function (text) {
+		'use strict';
+		var url = text.match(MAPJS.URLHelper.urlPattern);
+		if (url && url[0]) {
+			url = url[0];
+			if (!/https?:\/\//i.test(url)) {
+				url = 'http://' + url;
+			}
+		}
+		return url;
+	},
+	stripLink : function (text) {
+		'use strict';
+		return text.replace(MAPJS.URLHelper.urlPattern, '');
+	}
+};
 /*jslint eqeq: true, forin: true, nomen: true*/
 /*global _, MAPJS, observable*/
 MAPJS.content = function (contentAggregate, progressCallback) {
@@ -78,6 +101,18 @@ MAPJS.content = function (contentAggregate, progressCallback) {
 				return contentIdea.attr[name];
 			}
 			return false;
+		};
+		contentIdea.sortedSubIdeas = function () {
+			if (!contentIdea.ideas) {
+				return [];
+			}
+			var result = [],
+				childKeys = _.groupBy(_.map(_.keys(contentIdea.ideas), parseFloat), function (key) { return key > 0; }),
+				sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
+			_.each(sortedChildKeys, function (key) {
+				result.push(contentIdea.ideas[key]);
+			});
+			return result;
 		};
 		if (progressCallback) {
 			progressCallback();
@@ -1439,8 +1474,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 (function () {
 	'use strict';
 	/*shamelessly copied from http://james.padolsey.com/javascript/wordwrap-for-javascript */
-	var COLUMN_WORD_WRAP_LIMIT = 25,
-		urlPattern = /(https?:\/\/|www\.)[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/i;
+	var COLUMN_WORD_WRAP_LIMIT = 25;
 	function wordWrap(str, width, brk, cut) {
 		brk = brk || '\n';
 		width = width || 75;
@@ -1531,12 +1565,8 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 		this.rectbg2 = bgRect(4);
 		this.link = createLink();
 		this.link.on('click tap', function () {
-			var url = unformattedText.match(urlPattern);
-			if (url && url[0]) {
-				url = url[0];
-				if (!/https?:\/\//i.test(url)) {
-					url = 'http://' + url;
-				}
+			var url = MAPJS.URLHelper.getLink(unformattedText);
+			if (url) {
 				window.open(url, '_blank');
 			}
 		});
@@ -1565,10 +1595,11 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 		this.add(this.clip);
 		this.activeWidgets = [this.link, this.clip];
 		this.setText = function (text) {
-			var replacement = breakWords(text.replace(urlPattern, '')) || (text.substring(0, COLUMN_WORD_WRAP_LIMIT) + '...');
+			var replacement = breakWords(MAPJS.URLHelper.stripLink(text)) ||
+					(text.length < COLUMN_WORD_WRAP_LIMIT ? text : (text.substring(0, COLUMN_WORD_WRAP_LIMIT) + '...'));
 			unformattedText = text;
 			self.text.setText(replacement);
-			self.link.setVisible(urlPattern.test(text));
+			self.link.setVisible(MAPJS.URLHelper.containsLink(text));
 			self.setStyle();
 		};
 		this.setText(config.text);

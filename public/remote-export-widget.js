@@ -11,7 +11,7 @@ jQuery.fn.remoteExportWidget = function (mapRepository) {
 			exportFunctions = {
 				'mup' : JSON.stringify,
 				'mm' : MM.freemindExport,
-				'html': MM.exportIdeas.bind({}, loadedIdea, new MM.HtmlTableExporter()),
+				'html': MM.exportToHtmlDocument,
 				'txt': MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter())
 			},
 			format = $(this).data('mm-format'),
