@@ -159,4 +159,30 @@ describe("MM.exportToHtmlDocument", function () {
 		expect(result.attr("href")).toBe("http://www.google.com");
 		expect(result.text()).toBe("http://www.google.com");
 	});
+	it("root idea with URL is converted into a hyperlink", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'zoro http://www.google.com'})),
+			result = $(doc).filter('h1').children();
+		expect(result).toBe("a");
+		expect(result.attr("href")).toBe("http://www.google.com");
+		expect(result.text()).toBe("zoro ");
+	});
+	it("root idea with only URL is converted into a hyperlink using link text", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'http://www.google.com'})),
+			result = $(doc).filter('h1').children();
+		expect(result).toBe("a");
+		expect(result.attr("href")).toBe("http://www.google.com");
+		expect(result.text()).toBe("http://www.google.com");
+	});
+	it("exports HTML attachments", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+				6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}},
+			}})),
+			result = $(doc).filter('ul').children().first().children('div').first();
+		expect(result.html()).toBe("<b>Bold</b>");
+	});
+	it("exports HTML attachments to root nodes", function () {
+		var doc = MM.exportToHtmlDocument(MAPJS.content({title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}})),
+			result = $(doc).filter('div').first();
+		expect(result.html()).toBe("<b>Bold</b>");
+	});
 });

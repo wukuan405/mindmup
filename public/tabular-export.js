@@ -51,17 +51,27 @@ MM.HtmlTableExporter = function () {
 MM.exportToHtmlDocument = function (idea) {
 	'use strict';
 	var result = $("<div>"), /*parent needed for html generation*/
+		appendLinkOrText = function (element, text) {
+			if (MAPJS.URLHelper.containsLink(text)) {
+				$('<a>').attr('href', MAPJS.URLHelper.getLink(text))
+					.text(MAPJS.URLHelper.stripLink(text) || text)
+					.appendTo(element);
+			} else {
+				element.text(text);
+			}
+		},
+		appendAttachment = function (element, anIdea) {
+			var attachment = anIdea && anIdea.attr && anIdea.attr.attachment;
+			if (attachment && attachment.contentType === 'text/html') {
+				$("<div>").addClass('attachment').appendTo(element).html(attachment.content);
+			}
+		},
 		toList = function (ideaList) {
 			var list = $("<ul>");
 			_.each(ideaList, function (subIdea) {
 				var element = $("<li>").appendTo(list);
-				if (MAPJS.URLHelper.containsLink(subIdea.title)) {
-					$('<a>').attr('href', MAPJS.URLHelper.getLink(subIdea.title))
-							.text(MAPJS.URLHelper.stripLink(subIdea.title) || subIdea.title)
-							.appendTo(element);
-				} else {
-					element.text(subIdea.title);
-				}
+				appendLinkOrText(element, subIdea.title);
+				appendAttachment(element, subIdea);
 				if (subIdea.attr && subIdea.attr.style && subIdea.attr.style.background) {
 					element.css('background-color', subIdea.attr.style.background);
 					element.css('color', MAPJS.contrastForeground(subIdea.attr.style.background));
@@ -71,12 +81,17 @@ MM.exportToHtmlDocument = function (idea) {
 				}
 			});
 			return list;
-		};
-	$("<h1>").text(idea.title).appendTo(result);
+		},
+		heading = $("<h1>").appendTo(result);
+	appendLinkOrText(heading, idea.title);
+	appendAttachment(result, idea);
 	if (!_.isEmpty(idea.ideas)) {
 		toList(idea.sortedSubIdeas()).appendTo(result);
 	}
-	return '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"> </head><body>' +
+	return '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">' +
+		'<style type="text/css">' +
+		'body{font-family:"HelveticaNeue",Helvetica,Arial,sans-serif;font-size:14px;line-height:20px;color:#333333;margin-left:10%;margin-right:10%;}h1{display:block;font-size:38.5px;line-height:40px;font-family:inherit;}li{line-height:20px;padding-left:10px;}ul{list-style-type:none;}div.attachment{border:1px solid black;margin:5px;padding:5px;}</style>' +
+		'</head><body>' +
 		$(result).html() +
 		'</body></html>';
 };
