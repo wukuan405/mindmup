@@ -13,7 +13,7 @@ $.fn.commandLineWidget = function (keyBinding, mapModel) {
 				var color = value && Color(value.toLowerCase()),
 					valid = color &&
 						(color.hexString().toUpperCase() === value.toUpperCase() ||
-						(color.keyword() && color.keyword().toUpperCase() === value.toUpperCase()));
+						(color.keyword() && (color.keyword().toUpperCase() !== 'BLACK' || value.toUpperCase() === 'BLACK')));
 				if (valid) {
 					return color;
 				}
