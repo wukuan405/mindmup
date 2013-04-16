@@ -33,10 +33,22 @@ MM.BrowserContainer = function () {
 MM.ChromeAppContainer = function () {
 	'use strict';
 	var self = this,
-		storage = chrome.storage.local;
-	this.bindUnloadEvent = function () {
-	},
-	this.classCachingWidget = function () {
+		storage = chrome && chrome.storage && chrome.storage.local;
+	self.bindUnloadEvent = function () {
+	};
+	self.classCachingWidget = function (element, keyPrefix, store) {
+		var key = keyPrefix + '-' + element.selector, observer;
+			store = store || self.storage;
+			observer = new MutationObserver(function(mutations) {
+				store.setItem(key,  element.attr('class'));
+			});
+		$.each(element, function () {
+			observer.observe(this, { attributes: true, childList: false, characterData: false });
+		});
+		store.getItem(key).done(function(result) {
+			element.attr('class', result);
+		});
+		return this;
 	};
 	this.storage = {
 			removeItem: function (key) {
