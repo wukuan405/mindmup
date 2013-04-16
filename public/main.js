@@ -96,5 +96,5 @@ MM.main = function (config) {
 		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, container);
 		mapRepository.loadMap(navigation.currentMapId());
 	});
-	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously);
+	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };
