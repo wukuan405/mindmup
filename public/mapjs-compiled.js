@@ -1409,7 +1409,7 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 			controlPointOffset: 0.75
 		};
 	}, function () {
-		return _.toArray(arguments).join(',');
+		return Array.prototype.join.call(arguments, ',');
 	});
 	Kinetic.Connector.prototype = {
 		isVisible: function (offset) {
