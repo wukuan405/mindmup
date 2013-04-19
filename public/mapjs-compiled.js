@@ -1784,18 +1784,19 @@ Kinetic.Idea.prototype.setStyle = function () {
 		rectOffset += rectIncrement;
 		if (isDroppable) {
 			r.attrs.stroke = '#9F4F4F';
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
+			// r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
+			// r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
 			background = '#EF6F6F';
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, '#CF4F4F'];
+			// r.attrs.fillLinearGradientColorStops = [0, background, 1, '#CF4F4F'];
 		} else if (isSelected) {
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, background];
+			// r.attrs.fillLinearGradientColorStops = [0, background, 1, background];
 		} else {
 			r.attrs.stroke = '#888';
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
-			r.attrs.fillLinearGradientColorStops = [0, tintedBackground, 1, background];
+			// r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
+			// r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
+			// r.attrs.fillLinearGradientColorStops = [0, tintedBackground, 1, background];
 		}
+		r.attrs.fill = background;
 	});
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
