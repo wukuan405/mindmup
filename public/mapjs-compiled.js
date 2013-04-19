@@ -1936,7 +1936,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 	return container;
 };
 
-/*global _, document, jQuery, Kinetic*/
+/*global _, document, Kinetic*/
 var MAPJS = MAPJS || {};
 if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
@@ -2035,11 +2035,15 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 				duration: 0.4,
 				easing: 'ease-in-out'
 			});
-		},
-		isShiftPressed;
-	jQuery(document).bind('keyup keydown', function (e) {isShiftPressed = e.shiftKey; });
+		};
 	stage.add(layer);
-
+	document.body.style.cursor = 'move';
+	layer.on('mouseover', function () {
+		document.body.style.cursor = 'pointer';
+	});
+	layer.on('mouseout', function () {
+		document.body.style.cursor = 'move';
+	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll) {
 		var node = nodeByIdeaId[nodeId];
 		if (node) {
@@ -2055,11 +2059,9 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			mmAttr: n.attr,
 			opacity: 1
 		});
-
 		if (imageRendering) {
 			node = Kinetic.IdeaProxy(node, stage, layer);
 		}
-		/* in kinetic 4.3 cannot use click because click if fired on dragend */
 		node.on('click tap', mapModel.selectNode.bind(mapModel, n.id));
 		node.on('dblclick dbltap', mapModel.editNode.bind(mapModel, 'mouse', false));
 		node.on('dragstart', function () {
@@ -2073,13 +2075,13 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 				node.attrs.y
 			);
 		});
-		node.on('dragend', function () {
+		node.on('dragend', function (evt) {
 			node.setShadowOffset(4);
 			mapModel.nodeDragEnd(
 				n.id,
 				node.attrs.x,
 				node.attrs.y,
-				isShiftPressed
+				evt.shiftKey
 			);
 			if (n.level > 1) {
 				stage.setDraggable(true);
