@@ -20,7 +20,7 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 		},
 		currentMapId = calcCurrentMapId(),
 		confirmationRequired = false;
-
+	self.useHash = useHash;
 	self.confirmationRequired = function (val) {
 		if (val === undefined) {
 			return confirmationRequired;

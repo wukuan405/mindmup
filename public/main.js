@@ -93,7 +93,7 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, container);
+		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, container, config.baseUrl);
 		mapRepository.loadMap(navigation.currentMapId());
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));

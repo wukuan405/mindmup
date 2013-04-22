@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable, setTimeout, XMLHttpRequest*/
+/*global _, jQuery, MAPJS, MM, observable*/
 MM.MapRepository = function (adapters, storage) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
@@ -162,13 +162,15 @@ MM.MapRepository = function (adapters, storage) {
 	};
 };
 
-MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, container) {
+MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, container, baseUrl) {
 	'use strict';
-	MM.MapRepository.mapLocationChange(mapRepository, navigation);
+	MM.MapRepository.mapLocationChange(mapRepository, navigation, baseUrl);
 	MM.MapRepository.activityTracking(mapRepository, activityLog);
 	MM.MapRepository.alerts(mapRepository, alert, navigation);
 	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation, container);
 };
+
+
 MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
@@ -369,15 +371,26 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 	});
 };
-MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
+MM.MapRepository.mapLocationChange = function (mapRepository, navigation, baseUrl) {
 	'use strict';
+	var recordLastMap = function (mapId) {
+		if (!mapId || !navigation.useHash()) {
+			return;
+		}
+		jQuery.ajax({
+			url: baseUrl + 'lastMap/' + mapId,
+			type: 'POST'
+		});
+	};
 	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
 		var mapId = navigation.currentMapId();
+		recordLastMap(mapId);
 		if (mapId && mapId !== newMapId) {
 			navigation.changeMapId(newMapId || 'nil', true);
 		}
 	});
 	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
+		recordLastMap(newMapId);
 		if (idHasChanged) {
 			navigation.changeMapId(newMapId);
 		}

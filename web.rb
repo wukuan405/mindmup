@@ -40,9 +40,10 @@ get '/' do
     @mapid=settings.default_map
     show_map
   else
-    redirect "/map/#{session['mapid']}"
+    redirect "/m#m:#{session['mapid']}"
   end
 end
+
 get '/gd' do
 
   begin
@@ -52,7 +53,7 @@ get '/gd' do
     else
       mapid = "g1" + state['ids'][0]
     end
-    redirect "/map/"+mapid
+    redirect "/m#m:"+mapid
   rescue Exception=>e
     puts e
     halt 400, "Google drive state missing or invalid"
@@ -67,6 +68,9 @@ end
 get '/default' do
   @mapid=settings.default_map
   erb :editor
+end
+post "/lastMap/:mapid" do
+  session['mapid']=params[:mapid]
 end
 get "/s3/:mapid" do
   redirect "/map/#{params[:mapid]}"

@@ -36,9 +36,8 @@ describe 'Map request routing' do
     end
     it "uses the last viewed map as the homepage, if the user had a previous map" do
       get "/",{}, {'rack.session'=>{'mapid'=>'PreviousMap'}}
+      last_response.header["Location"].should=='http://example.org/m#m:PreviousMap'
       last_response.should be_redirect
-      follow_redirect!
-      last_request.url.should=='http://example.org/map/PreviousMap'
     end
   end
   describe "/default route" do
@@ -61,9 +60,8 @@ describe 'Map request routing' do
   describe "/gd" do
     it "parses JSON to retrieve google IDs and redirects to g1+ID" do
       get '/gd?state=%7B%22ids%22%3A%5B%220B79-DtmfqRMET0x2NHpoLWd5ZWM%22%5D%2C%22action%22%3A%22open%22%2C%22userId%22%3A%22110457656708424572832%22%7D'
+      last_response.header["Location"].should=='http://example.org/m#m:g10B79-DtmfqRMET0x2NHpoLWd5ZWM'
       last_response.should be_redirect
-      follow_redirect!
-      last_request.url.should=='http://example.org/map/g10B79-DtmfqRMET0x2NHpoLWd5ZWM'
     end
   end
   describe 'browser whitelisting' do
