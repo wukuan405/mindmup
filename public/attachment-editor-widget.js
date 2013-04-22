@@ -22,6 +22,7 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 		switchToViewMode = function () {
 			element.removeClass('mm-editable');
 			editorArea.attr('contenteditable', false);
+			editorArea.find('a').attr('target', '_blank');
 			isEditing = false;
 			editorArea.focus();
 		},
