@@ -55,7 +55,7 @@ window.addEventListener('message', function (message) {
 	if (data && data.type) {
 		if (data.type === '_gaq.push') {
 			console.log('message', '_gaq.push', data.args);
-			_gaq.push(message.data);
+			_gaq.push(data.args);
 		}
 	}
 //	
