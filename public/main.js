@@ -26,6 +26,7 @@ MM.main = function (config) {
 			return jQuery('body').hasClass('chrome_app');
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
+	MM.googleProxyInstall(window, '#embedded_google');
 	jQuery(function () {
 		var navigation = MM.navigation(config, isChromeApp(), config.baseUrl),
 			container = new MM[config.containerClass](),

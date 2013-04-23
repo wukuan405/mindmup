@@ -1,25 +1,31 @@
-// MM.GoogleDriveWrapper = function () {
-// 	'use strict';
-// 	var self = this;
-// 	self.saveFile = function (fileId, data) {
-// 	};
-// 	self.loadFile = function (fileId) {
-// 	};
-// 	self.retrieveAllFiles = function (searchCriteria) {
-// 	};
-// };
+var MM = MM || {},
+	cookies = {},
+	_gaq = _gaq || [],
+	gdrive,
+	messageHandlers = {
+		'_gaq.push': function (args) {
+			'use strict';
+			_gaq.push(args);
+		},
+		'gdrive.load': function (args, message) {
+			'use strict';
+			args.push(message);
+			gdrive.load.apply(gdrive, args);
+		}
+	};
 
-// MM.GoogleAnalyticsWrapper = function () {
-// 	'use strict';
-// 	var self = this;
-// 	self.push = function (pushArgs) {
-
-// 	}	
-// };
-
-var cookies = {};
-// initial cut, taken from https://github.com/GoogleChrome/chrome-app-samples/blob/master/analytics/embedded_ga.js
-// changed __defineGetter__, __defineGetter__ to non deprecated method calls
+MM.GoogleDriveWrapper = function () {
+	'use strict';
+	var self = this;
+	self.save = function (fileId, data) {
+	};
+	self.load = function (fileId, event) {
+		event.source.postMessage(JSON.stringify({type: 'gdrive.load', result: {title: 'foo'}}), event.origin);
+	};
+	self.list = function (searchCriteria) {
+	};
+};
+gdrive = new MM.GoogleDriveWrapper();
 Object.defineProperty(document, 'cookie', {
 	get: function () {
 		'use strict';
@@ -45,18 +51,17 @@ Object.defineProperty(history, 'length', {get: function () {
 	return 0;
 }});
 
-var _gaq = _gaq || [];
 window.addEventListener('message', function (message) {
 	'use strict';
+	if (message.origin && message.origin !== 'null' && window.location.origin !== message.origin) {
+		return;
+	}
 	if (!message.data) {
 		return;
 	}
 	var data = JSON.parse(message.data);
-	if (data && data.type) {
-		if (data.type === '_gaq.push') {
-			console.log('message', '_gaq.push', data.args);
-			_gaq.push(data.args);
-		}
+	if (data && data.type && messageHandlers[data.type]) {
+		messageHandlers[data.type](data.args, message);
 	}
 //	
 });
