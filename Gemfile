@@ -1,5 +1,5 @@
 source :rubygems
-gem 'sinatra', '1.3.2'
+gem 'sinatra', '1.4.2'
 gem 'uuid'
 gem 'aws-sdk'
 gem 'thin'

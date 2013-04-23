@@ -9,12 +9,12 @@ describe 'Configuration' do
     eval(n.xpath('//script[@id="main"]').text().match('MM.main\(([^)]*)\)')[1])
   end
   it "appends network timeout millis setting as newtworkTimeoutMillis" do
-    set :network_timeout_millis, 999
+    app.set :network_timeout_millis, 999
     get "/"
     last_response_config[:networkTimeoutMillis].should==999
   end
   it "appends google analytics account as googleAnalyticsAccount" do
-    set :google_analytics_account, 'abcd'
+    app.set :google_analytics_account, 'abcd'
     get "/"
     last_response_config[:googleAnalyticsAccount].should=='abcd'
   end
