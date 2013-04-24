@@ -5,10 +5,9 @@ MM.main = function (config) {
 
 	var setupTracking = function (activityLog, jotForm, mapModel) {
 		activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-/*		activityLog.addEventListener('error', function (message) {
+		activityLog.addEventListener('error', function (message) {
 			jotForm.sendError(message, activityLog.getLog());
 		});
-*/
 		mapModel.addEventListener('analytic', activityLog.log);
 	},
 		loadScriptsAsynchronously = function (d, s, urls) {
