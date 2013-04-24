@@ -31,10 +31,11 @@ MM.main = function (config) {
 			container = new MM[config.containerClass](),
 			activityLog = new MM.ActivityLog(10000), oldShowPalette,
 			alert = new MM.Alert(),
+      objectStorage = MM.jsonStorage(container.storage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
-			offlineMapStorage = new MM.OfflineMapStorage(MM.jsonStorage(container.storage), 'offline'),
+			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
 			mapRepository = new MM.MapRepository([s3Adapter, googleDriveAdapter, offlineAdapter], container.storage),
 			pngExporter = new MAPJS.PNGExporter(mapRepository),
@@ -42,7 +43,8 @@ MM.main = function (config) {
 				MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
-			mapBookmarks = new MM.Bookmark(mapRepository, MM.jsonStorage(container.storage), 'created-maps');
+			mapBookmarks = new MM.Bookmark(mapRepository, objectStorage, 'created-maps'),
+      autoSave = new MM.AutoSave(mapRepository, objectStorage);
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);

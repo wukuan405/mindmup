@@ -9,6 +9,7 @@ MM.AutoSave = function (mapRepository, storage) {
 			storage.getItem(prefix + mapId).done(function (value) {
 				if (value) {
 					self.dispatchEvent('unsavedChangesAvailable', mapId);
+          self.applyUnsavedChanges();
 				}
 			});
 		},
