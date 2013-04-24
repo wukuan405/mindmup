@@ -2114,6 +2114,9 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = nodeByIdeaId[ideaId];
+		if (!node) {
+			return;
+		}
 		node.setIsSelected(isSelected);
 		if (!isSelected) {
 			return;
