@@ -229,6 +229,14 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 				).progress(deferred.notify);
 			};
 		this.ready(showAuthenticationDialogs).then(readySucceeded, deferred.reject).progress(deferred.notify);
+		// MM.gdrive.load(mapId).then(
+		// 	function () {
+		// 		console.log('load', 'resolve', arguments);
+		// 	},
+		// 	function () {
+		// 		console.log('load', 'reject', arguments);
+		// 	}
+		// );
 		return deferred.promise();
 	};
 

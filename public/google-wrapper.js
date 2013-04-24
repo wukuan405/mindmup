@@ -11,18 +11,71 @@ var MM = MM || {},
 			'use strict';
 			args.push(message);
 			gdrive.load.apply(gdrive, args);
+		},
+		'gdrive.save': function (args, message) {
+			'use strict';
+			args.push(message);
+			gdrive.save.apply(gdrive, args);
+		},
+		'gdrive.list': function (args, message) {
+			'use strict';
+			args.push(message);
+			gdrive.list.apply(gdrive, args);
 		}
 	};
+
+MM.TinyDef = function () {
+	'use strict';
+	var self = this,
+		resolveFunc, resolveArgs,
+		rejectFunc, rejectArgs,
+		notifyFunc, notifyArgs,
+		doApply = function (func, args) {
+			if (func && args) {
+				func.apply(func, args);
+			}
+		};
+	self.promise = function () {
+		return {
+			then: self.then,
+			progress: self.progress
+		};
+	};
+	self.then = function (onResolve, onReject) {
+		resolveFunc = onResolve;
+		rejectFunc = onReject;
+		doApply(resolveFunc, resolveArgs);
+		doApply(rejectFunc, rejectArgs);
+	};
+	self.resolve = function () {
+		resolveArgs = arguments;
+		doApply(resolveFunc, resolveArgs);
+	};
+	self.reject = function () {
+		rejectArgs = arguments;
+		doApply(rejectFunc, rejectArgs);
+	};
+	self.notify = function () {
+		notifyArgs = arguments;
+		doApply(notifyFunc, notifyArgs);
+	};
+	self.progress = function (onProgress) {
+		notifyFunc = onProgress;
+		doApply(notifyFunc, notifyArgs);
+	};
+};
 
 MM.GoogleDriveWrapper = function () {
 	'use strict';
 	var self = this;
-	self.save = function (fileId, data) {
+	self.save = function (fileId, data, event) {
+		event.source.postMessage(JSON.stringify({type: 'gdrive.save', result: {id: fileId}}), event.origin);
 	};
 	self.load = function (fileId, event) {
 		event.source.postMessage(JSON.stringify({type: 'gdrive.load', result: {title: 'foo'}}), event.origin);
 	};
-	self.list = function (searchCriteria) {
+	self.list = function (searchCriteria, event) {
+		event.source.postMessage(JSON.stringify({type: 'gdrive.save', result: ['foo', 'bar']}), event.origin);
 	};
 };
 gdrive = new MM.GoogleDriveWrapper();
