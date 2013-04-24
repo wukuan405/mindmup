@@ -2,6 +2,30 @@
 describe('MM.BrowserContainer', function () {
 	'use strict';
 	var container = new MM.BrowserContainer();
+  describe('storage', function () {
+    it("removes item from local storage on removeItem", function () {
+      localStorage.setItem('x','y');
+      container.storage.removeItem('x');
+      expect(localStorage.getItem('x')).toBeNull();
+    });
+    it("sets an item in local storage on setItem", function () {
+      localStorage.removeItem('x');
+      container.storage.setItem('x','y');
+      expect(localStorage.getItem('x')).toBe('y');
+    });
+    it("provides a deferred interface for errors on setItem", function () {
+			var longItem = new Array(5000000).join('a'),
+        failed = jasmine.createSpy('storage failed');
+      container.storage.setItem('x',longItem).fail(failed);
+      expect(failed).toHaveBeenCalled();
+    });
+    it("provides a deferred interface to get an item from local storage", function () {
+      var result;
+      localStorage.setItem('x','z');
+      container.storage.getItem('x').done(function(res) { result = res; });
+      expect(result).toBe('z');
+    });
+  });
 	describe('Class caching wizard', function () {
 		var underTest;
 		beforeEach(function () {

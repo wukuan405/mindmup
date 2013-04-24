@@ -3,7 +3,7 @@ MM.jsonStorage = function (storage) {
 	'use strict';
 	var self = {};
 	self.setItem = function (key, value) {
-		storage.setItem(key, JSON.stringify(value));
+    return storage.setItem(key, JSON.stringify(value));
 	};
 	self.getItem = function (key) {
 		var deferred = jQuery.Deferred();

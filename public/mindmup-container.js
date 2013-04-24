@@ -10,7 +10,14 @@ MM.BrowserContainer = function () {
 			localStorage.removeItem(key);
 		},
 		setItem: function (key, value) {
-			localStorage.setItem(key, value);
+			var deferred = jQuery.Deferred();
+			try {
+        localStorage.setItem(key, value);
+        deferred.resolve();
+      } catch (e) {
+        deferred.reject(e);
+      };
+      return deferred.promise();
 		},
 		getItem: function (key) {
 			var deferred = jQuery.Deferred();

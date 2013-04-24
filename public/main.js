@@ -38,14 +38,14 @@ MM.main = function (config) {
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
-			mapRepository = new MM.MapRepository([s3Adapter, googleDriveAdapter, offlineAdapter], container.storage),
+			mapRepository = new MM.MapRepository([s3Adapter, googleDriveAdapter, offlineAdapter]),
 			pngExporter = new MAPJS.PNGExporter(mapRepository),
 			mapModel = new MAPJS.MapModel(mapRepository,
 				MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapRepository, objectStorage, 'created-maps'),
-			autoSave = new MM.AutoSave(mapRepository, objectStorage);
+			autoSave = new MM.AutoSave(mapRepository, objectStorage, alert);
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -92,7 +92,7 @@ MM.main = function (config) {
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 			.navigationWidget(navigation);
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
-		jQuery('#modalAutoSave').autoSaveWidget(autoSave, alert);
+		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('[data-category]').trackingWidget(activityLog);
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();

@@ -80,46 +80,6 @@ describe('Local storage ', function () {
 			});
 		});
 	});
-	describe('Offline Fallback', function () {
-		var jsonStorage, underTest, map;
-		beforeEach(function () {
-			localStorage.clear();
-			jsonStorage = MM.jsonStorage(new MM.BrowserContainer().storage);
-			underTest = new MM.OfflineFallback(jsonStorage);
-			map = MAPJS.content({ title: 'Hello World!' });
-		});
-		describe('Storing a map locally', function () {
-			it('should store map locally under fallback-mapId key', function () {
-				underTest.saveMap('g123', map);
-				expect(localStorage.getItem('fallback-g123')).toBe('{"map":{"title":"Hello World!","formatVersion":2,"id":1}}');
-			});
-		});
-		describe('Loading a map from fallback offline storage', function () {
-			it('should return null is there is no matching map', function () {
-				underTest.loadMap('g123').then(function (result) {
-					expect(result).toBeNull();
-				},
-				this.fail.bind(this, 'loadMap should succeed'));
-			});
-			it('should return a map if there is a matching one', function () {
-				localStorage.setItem('fallback-g123', '{"map":{"title":"Hello World!","id":1,"formatVersion":2}}');
-
-				underTest.loadMap('g123').then(function (result) {
-					expect(result).toEqual({ title: 'Hello World!', id: 1, formatVersion: 2 });
-				},
-				this.fail.bind(this, 'loadMap should succeed'));
-			});
-		});
-		describe('Removing a map from fallback offline storage', function () {
-			it('', function () {
-				localStorage.setItem('fallback-g123', '{"map":{"title":"Hello World!","formatVersion":2,"id":1}}');
-
-				underTest.remove('g123');
-
-				expect(localStorage.getItem('fallback-g123')).toBeNull();
-			});
-		});
-	});
 	describe('OfflineMapStorage', function () {
 		var jsonStorage, underTest, clock, map;
 		beforeEach(function () {

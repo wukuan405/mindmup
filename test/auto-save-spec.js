@@ -1,14 +1,16 @@
 /*global spyOn, MAPJS, jasmine, describe, it, MM, observable, expect, beforeEach*/
 describe('Auto save', function () {
 	'use strict';
-	var storage, mapRepository, autoSave, unsavedChangesAvailableListener, idea;
+	var storage, mapRepository, autoSave, unsavedChangesAvailableListener, idea, alert;
 	beforeEach(function () {
 		storage = MM.jsonStorage(new MM.BrowserContainer().storage);
 		mapRepository = observable({});
-		autoSave = new MM.AutoSave(mapRepository, storage);
+    alert = {show: function() {} };
+		autoSave = new MM.AutoSave(mapRepository, storage, alert);
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
 		idea = observable({});
 		storage.remove('auto-save-mapId');
+    spyOn(alert,'show');
 	});
 	it('should trigger unsavedChangesAvailable event when unsaved changes exist for loaded map', function () {
 		autoSave.addEventListener('unsavedChangesAvailable', unsavedChangesAvailableListener);
@@ -30,7 +32,7 @@ describe('Auto save', function () {
 			var changeCmd = 'updateTitle',
 				changeArgs = [1, 'new'];
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-			spyOn(storage, 'setItem');
+			spyOn(storage, 'setItem').andCallThrough();
 
 			idea.dispatchEvent('changed', changeCmd, changeArgs);
 
@@ -38,7 +40,7 @@ describe('Auto save', function () {
 		});
 		it('should append multiple change events to storage', function () {
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-			spyOn(storage, 'setItem');
+			spyOn(storage, 'setItem').andCallThrough();
 
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			idea.dispatchEvent('changed', 'cmd2', [2]);
@@ -50,17 +52,83 @@ describe('Auto save', function () {
 			mapRepository.dispatchEvent('mapLoaded', idea2, 'mapId2');
 			idea2.dispatchEvent('changed', 'cmd1', [1]);
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-			spyOn(storage, 'setItem');
+			spyOn(storage, 'setItem').andCallThrough();
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
 			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd2', args: [2]} ]);
 		});
-		it('should drop unsaved changes when a map is saved', function () {
-			expect(false).toBeTruthy();
+		it('should not record previously saved events', function () {
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
+			spyOn(storage, 'setItem').andCallThrough();
+
+			idea.dispatchEvent('changed', 'cmd2', [2]);
+
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd2', args: [2]} ]);
 		});
+		it('should drop unsaved changes from storage when a map is saved', function () {
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			spyOn(storage, 'remove');
+
+			mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
+
+			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
+    });
+		it('should drop unsaved changes even when map ID changes and the map is saved (s3 case, or transfer to new storage)', function () {
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			spyOn(storage, 'remove');
+
+			mapRepository.dispatchEvent('mapSaved', 'newMapId', idea);
+
+			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
+    });
 		it('should warn when changes could not be saved', function () {
-			expect(false).toBeTruthy();
+      var result = jQuery.Deferred().reject('failed').promise();
+      spyOn(storage, 'setItem').andReturn(result);
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+			
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      
+      expect(alert.show).toHaveBeenCalled();
+		});
+		it('should not warn for the same map twice', function () {
+      var result = jQuery.Deferred().reject('failed').promise();
+      spyOn(storage, 'setItem').andReturn(result);
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      alert.show.reset();
+ 
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      
+      expect(alert.show).not.toHaveBeenCalled();
+		});
+		it('should show warning after save', function () {
+      var result = jQuery.Deferred().reject('failed').promise();
+      spyOn(storage, 'setItem').andReturn(result);
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
+      alert.show.reset();
+ 
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      
+      expect(alert.show).toHaveBeenCalled();
+		});
+		it('should show warning after load', function () {
+      var result = jQuery.Deferred().reject('failed').promise();
+      spyOn(storage, 'setItem').andReturn(result);
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+      alert.show.reset();
+ 
+      idea.dispatchEvent('changed', 'cmd1', [1]);
+      
+      expect(alert.show).toHaveBeenCalled();
 		});
 	});
 	describe('applyUnsavedChanges', function () {
