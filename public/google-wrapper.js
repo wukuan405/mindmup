@@ -24,46 +24,6 @@ var MM = MM || {},
 		}
 	};
 
-MM.TinyDef = function () {
-	'use strict';
-	var self = this,
-		resolveFunc, resolveArgs,
-		rejectFunc, rejectArgs,
-		notifyFunc, notifyArgs,
-		doApply = function (func, args) {
-			if (func && args) {
-				func.apply(func, args);
-			}
-		};
-	self.promise = function () {
-		return {
-			then: self.then,
-			progress: self.progress
-		};
-	};
-	self.then = function (onResolve, onReject) {
-		resolveFunc = onResolve;
-		rejectFunc = onReject;
-		doApply(resolveFunc, resolveArgs);
-		doApply(rejectFunc, rejectArgs);
-	};
-	self.resolve = function () {
-		resolveArgs = arguments;
-		doApply(resolveFunc, resolveArgs);
-	};
-	self.reject = function () {
-		rejectArgs = arguments;
-		doApply(rejectFunc, rejectArgs);
-	};
-	self.notify = function () {
-		notifyArgs = arguments;
-		doApply(notifyFunc, notifyArgs);
-	};
-	self.progress = function (onProgress) {
-		notifyFunc = onProgress;
-		doApply(notifyFunc, notifyArgs);
-	};
-};
 
 MM.GoogleDriveWrapper = function () {
 	'use strict';
