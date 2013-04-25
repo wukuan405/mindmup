@@ -50,10 +50,16 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 				}).fail(function (evt) {
 					var errorReason = 'network-error',
 						errorLabel = (evt && evt.responseText) || 'network-error',
-						errorReasonMap = { 'EntityTooLarge': 'file-too-large' };
-					if (evt && evt.responseXML) {
-						errorReason = jQuery(evt.responseXML).find('Error Code').text() || errorReason;
-						errorLabel = jQuery(evt.responseXML).find('Error Message').text() || errorLabel;
+						errorReasonMap = { 'EntityTooLarge': 'file-too-large' },
+						errorDoc;
+					try {
+						errorDoc = evt && (evt.responseXML || jQuery.parseXML(evt.responseText));
+						if (errorDoc) {
+							errorReason = jQuery(errorDoc).find('Error Code').text() || errorReason;
+							errorLabel = jQuery(errorDoc).find('Error Message').text() || errorLabel;
+						}
+					} catch (e) {
+						// just ignore, the network error is set by default
 					}
 					deferred.reject(errorReasonMap[errorReason] || errorReason, errorLabel);
 				});
