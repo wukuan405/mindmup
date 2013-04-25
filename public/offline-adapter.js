@@ -37,24 +37,6 @@ MM.OfflineAdapter = function (storage) {
 		return result.promise();
 	};
 };
-MM.OfflineFallback = function (storage) {
-	'use strict';
-	var localStoragePrefix = 'fallback-';
-	this.saveMap = function (mapId, map) {
-		storage.setItem(localStoragePrefix + mapId, { map: map });
-	};
-	this.loadMap = function (mapId) {
-		var deferred = jQuery.Deferred();
-		storage.getItem(localStoragePrefix + mapId).then(
-			function (entry) {
-				deferred.resolve((entry && entry.map) || null);
-			});
-		return deferred.promise();
-	};
-	this.remove = function (mapId) {
-		storage.remove(localStoragePrefix + mapId);
-	};
-};
 MM.OfflineMapStorage = function (storage, keyPrefix) {
 	'use strict';
 	observable(this);

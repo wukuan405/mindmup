@@ -1,12 +1,11 @@
 /*global _, jQuery, MAPJS, MM, observable*/
-MM.MapRepository = function (adapters, storage) {
+MM.MapRepository = function (adapters) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
 	observable(this);
 	var jsonMimeType = 'application/json',
 		dispatchEvent = this.dispatchEvent,
 		mapInfo = {},
-		offlineFallback = new MM.OfflineFallback(MM.jsonStorage(storage)),
 		chooseAdapter = function (identifiers) {
 			// order of identifiers is important, the first identifier takes precedence
 			var idIndex, adapterIndex;
@@ -78,7 +77,6 @@ MM.MapRepository = function (adapters, storage) {
 				}
 			},
 			loadFromAdapter = function () {
-				offlineFallback.remove(mapId);
 				var embeddedMap = MM && MM.Maps && mapId && MM.Maps[mapId.toLowerCase()];
 				if (embeddedMap) {
 					mapLoaded(_.clone(embeddedMap), mapId, jsonMimeType, true);
@@ -94,20 +92,12 @@ MM.MapRepository = function (adapters, storage) {
 				}
 			};
 		dispatchEvent('mapLoading', mapId);
-		offlineFallback.loadMap(mapId).then(function (offlineFallbackMap) {
-			if (offlineFallbackMap) {
-				dispatchEvent('offlineFallbackExists', mapLoaded.bind(undefined, offlineFallbackMap, mapId, jsonMimeType, true), loadFromAdapter);
-			} else {
-				loadFromAdapter();
-			}
-		});
-
+    loadFromAdapter();
 	};
 
 	this.publishMap = function (adapterType) {
 		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
 			mapSaved = function (savedMapInfo) {
-				offlineFallback.remove(mapInfo.mapId);
 				dispatchEvent('mapSaved', savedMapInfo.mapId, savedMapInfo.idea, (mapInfo.mapId !== savedMapInfo.mapId));
 				mapInfo = savedMapInfo;
 			},
@@ -134,31 +124,19 @@ MM.MapRepository = function (adapters, storage) {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
 					dispatchEvent('authRequired', label, retryWithDialog);
-				} else if (reason === 'network-error') {
-					dispatchEvent('mapSavingFailed', reason, label, function () {
-						try {
-							offlineFallback.saveMap(mapInfo.mapId, mapInfo.idea);
-							dispatchEvent('mapSaved', mapInfo.mapId, mapInfo.idea, false);
-						} catch (e) {
-							dispatchEvent('mapSavingFailed', 'local-storage-failed', e.toString());
-						}
-					});
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
 			};
 		dispatchEvent('mapSaving', adapter.description);
-		offlineFallback.loadMap(mapInfo.mapId).then(
-			function (fallbackMap) {
-				MM.retry(
-					adapter.saveMap.bind(adapter, _.clone(mapInfo)),
-					shouldRetry(fallbackMap ? 0 : 5),
-					MM.linearBackoff())
-				.then(
-					mapSaved,
-					mapSaveFailed)
-				.progress(progressEvent);
-			});
+    MM.retry(
+        adapter.saveMap.bind(adapter, _.clone(mapInfo)),
+        shouldRetry(5),
+        MM.linearBackoff())
+      .then(
+        mapSaved,
+				mapSaveFailed)
+			.progress(progressEvent);
 	};
 };
 
@@ -294,8 +272,7 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 	mapRepository.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {
 			'file-too-large': ['Unfortunately, the file is too large for the selected storage provider.', 'Please select a different storage provider from the save dropdown menu'],
-			'network-error': ['There was a problem communicating with the server.', 'Click here to save a back-up copy locally in your browser'],
-			'local-storage-failed': ['There was a problem saving to local storage.', 'Not enough space']
+			'network-error': ['There was a network problem communicating with the server.', 'Please try again later. Don\'t worry, you have an auto-saved version in this browser profile that will be loaded the next time you open the map']
 		},
 			message = messages[reason] || ['Unfortunately, there was a problem saving the map.', 'Please try again later. We have sent an error report and we will look into this as soon as possible'];
 		if (callback) {
@@ -303,22 +280,6 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 		} else {
 			showErrorAlert(message[0], message[1]);
 		}
-	});
-	mapRepository.addEventListener('offlineFallbackExists', function (useLocalStorageCallback, useAdapterCallback) {
-		alert.hide(alertId);
-		alertId = alert.show(
-			'You saved a back-up copy of this map locally in your browser!',
-			'<a href="#" data-mm-role="localStorage">Click here to load from local back-up</a> or <a href="#" data-mm-role="adapterStorage">Click here to discard the local backup and load from the cloud</a>',
-			'warning'
-		);
-		jQuery('[data-mm-role=localStorage]').click(function () {
-			alert.hide(alertId);
-			useLocalStorageCallback();
-		});
-		jQuery('[data-mm-role=adapterStorage]').click(function () {
-			alert.hide(alertId);
-			useAdapterCallback();
-		});
 	});
 };
 MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation, container) {
