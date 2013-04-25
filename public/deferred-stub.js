@@ -56,17 +56,9 @@ MM.deferredStubProxy = function (objectToExtend, name, deferredStub, methods) {
 	'use strict';
 	_.each(methods, function (method) {
 		objectToExtend[method] = function () {
-			return deferredStub.postMessage({name: name, method: method, args: arguments});
+			return deferredStub.postMessage({name: name, method: method, args: _.toArray(arguments)});
 		};
 	});
 	return objectToExtend;
 };
 
-MM.RepositoryAdapterStub = function (name, prefix, deferredStub) {
-	'use strict';
-	var self = this;
-	self.recognises = function (mapId) {
-		return mapId && mapId[0] === prefix;
-	};
-	return MM.deferredStubProxy(self, name, deferredStub, ['loadMap', 'ready',  'retrieveAllFiles', 'saveMap']);
-};

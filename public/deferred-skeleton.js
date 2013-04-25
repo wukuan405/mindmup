@@ -1,4 +1,4 @@
-/*global MM*/
+var MM = MM || {};
 MM.DeferredSkeleton = function (objectMap, target) {
 	'use strict';
 	var self = this,
