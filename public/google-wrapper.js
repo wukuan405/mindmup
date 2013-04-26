@@ -1,7 +1,13 @@
 var MM = MM || {},
 	cookies = {},
 	_gaq = _gaq || [],
-	skeleton = new MM.DeferredSkeleton(window, window);
+	skeleton = new MM.DeferredSkeleton(window, window),
+  config = {
+    googleClientId: '693114381294.apps.googleusercontent.com',
+    googleShortenerApiKey: 'AIzaSyD7EYsWhygTPrZaYSVH4N8HyXOujmAjiyM',
+    networkTimeoutMillis: 60000
+  };
+window.gdrive = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json');
 
 Object.defineProperty(document, 'cookie', {
 	get: function () {
