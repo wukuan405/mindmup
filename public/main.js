@@ -8,7 +8,7 @@ MM.main = function (config) {
 		activityLog.addEventListener('error', function (message) {
 			jotForm.sendError(message, activityLog.getLog());
 		});
-		mapModel.addEventListener('analytic', activityLog.log);
+		//mapModel.addEventListener('analytic', activityLog.log);
 	},
 		loadScriptsAsynchronously = function (d, s, urls) {
 			urls.forEach(function (url) {
