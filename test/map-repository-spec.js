@@ -2,36 +2,24 @@
 /*global _, jasmine, observable, beforeEach, afterEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, sinon*/
 describe('Map Repository', function () {
 	'use strict';
-	var adapter1, adapter2, underTest, clock,
-		dummy = function () {},
-		qstub = function (functions) {
-			var ret = {};
-			_.each(functions, function (func) {
-				ret[func] = dummy;
-			});
-			return ret;
-		},
-		stubMapInfo = function (mapId) {
-			return {mapId: mapId, idea: qstub(['addEventListener'])};
-		};
+	var adapter1, adapter2, underTest, clock;
 	beforeEach(function () {
 		clock = sinon.useFakeTimers();
 		MM.MapRepository.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					var deferred = jQuery.Deferred();
-					deferred.resolve('{ "title": "hello" }', mapId, 'application/json');
-					return deferred.promise();
+					return jQuery.Deferred().
+						resolve('{ "title": "hello" }', mapId, 'application/json').
+						promise();
 				},
-				saveMap: function (saveMapinfo) {
-					var deferred = jQuery.Deferred();
-					deferred.resolve(stubMapInfo(saveMapinfo.mapId));
-					return deferred.promise();
+				saveMap: function (contentToSave, oldId) {
+					return jQuery.Deferred().resolve(oldId).promise();
+				},
+				recognises: function () {
 				}
-			}),
-			adapterActions = ['recognises'];
-		adapter1 = _.extend(qstub(adapterActions), adapterPrototype);
-		adapter2 = _.extend(qstub(adapterActions), adapterPrototype);
+			});
+		adapter1 = _.clone(adapterPrototype);
+		adapter2 = _.clone(adapterPrototype);
 		underTest = new MM.MapRepository([adapter1, adapter2], new MM.BrowserContainer().storage);
 	});
 	afterEach(function () {
@@ -140,8 +128,10 @@ describe('Map Repository', function () {
 		});
 	});
 	describe('saveMap', function () {
+		var map;
 		beforeEach(function () {
-			underTest.setMap(MAPJS.content({}), 'loadedMapId');
+			map = MAPJS.content({});
+			underTest.setMap(map, 'loadedMapId');
 		});
 		it('should use first adapter to load as a fallback option', function () {
 			spyOn(adapter1, 'saveMap').andCallThrough();
@@ -196,9 +186,7 @@ describe('Map Repository', function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSavingFailed', listener);
 			adapter1.saveMap = function () {
-				var deferred = jQuery.Deferred();
-				deferred.reject();
-				return deferred.promise();
+				return jQuery.Deferred().reject().promise();
 			};
 
 			underTest.publishMap();
@@ -206,25 +194,23 @@ describe('Map Repository', function () {
 			expect(listener).toHaveBeenCalled();
 		});
 		it('should dispatch mapSaved event if saveMap succeeds and mapId not changed', function () {
-			var listener = jasmine.createSpy(),
-				mapInfo = stubMapInfo('newMapId');
+			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSaved', listener);
 
 			underTest.publishMap();
 
-			expect(listener).toHaveBeenCalledWith('loadedMapId', mapInfo.idea, false);
+			expect(listener).toHaveBeenCalledWith('loadedMapId', map, false);
 		});
 		it('should dispatch mapSaved and mapSavedAsNew event if saveMap succeeds and mapId has changed', function () {
-			var listener = jasmine.createSpy(),
-				mapInfo = stubMapInfo('newMapId');
+			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSaved', listener);
 			adapter1.saveMap = function () {
-				return jQuery.Deferred().resolve(mapInfo).promise();
+				return jQuery.Deferred().resolve('newMapId').promise();
 			};
 
 			underTest.publishMap();
 
-			expect(listener).toHaveBeenCalledWith('newMapId', mapInfo.idea, true);
+			expect(listener).toHaveBeenCalledWith('newMapId', map, true);
 		});
 		it('should use retry', function () {
 			spyOn(MM, 'retry').andCallThrough();

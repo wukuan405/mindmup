@@ -35,17 +35,16 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			);
 			return deferred.promise();
 		},
-		saveFile = function (mapInfo) {
-			var	googleId =  googleMapId(mapInfo.mapId),
+		saveFile = function (contentToSave, mapId, fileName) {
+			var	googleId =  googleMapId(mapId),
 				deferred = jQuery.Deferred(),
 				boundary = '-------314159265358979323846',
 				delimiter = '\r\n--' + boundary + '\r\n',
 				closeDelim = '\r\n--' + boundary + '--',
 				metadata = {
-					'title': mapInfo.idea.title + '.mup',
+					'title': fileName,
 					'mimeType': contentType
 				},
-				data = JSON.stringify(mapInfo.idea),
 				multipartRequestBody =
 					delimiter +
 					'Content-Type: application/json\r\n\r\n' +
@@ -53,12 +52,12 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					delimiter +
 					'Content-Type: ' + contentType + '\r\n' +
 					'\r\n' +
-					data +
+					contentToSave +
 					closeDelim,
 				request = gapi.client.request({
 					'path': '/upload/drive/v2/files' + (googleId ? '/' + googleId : ''),
 					'method': (googleId ? 'PUT' : 'POST'),
-					'params': {'uploadType': 'multipart', 'useContentAsIndexableText': (data.length < 131072)}, /* google refuses indexable text larger than 128k, see https://developers.google.com/drive/file */
+					'params': {'uploadType': 'multipart', 'useContentAsIndexableText': (contentToSave.length < 131072)}, /* google refuses indexable text larger than 128k, see https://developers.google.com/drive/file */
 					'headers': {
 						'Content-Type': 'multipart/mixed; boundary=\'' + boundary + '\''
 					},
@@ -78,20 +77,18 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 						} else if (resp.error.code === 401) {
 							checkAuth(false).then(
 								function () {
-									saveFile(mapInfo).then(deferred.resolve, deferred.reject);
+									saveFile(contentToSave, mapId, fileName).then(deferred.resolve, deferred.reject, deferred.notify);
 								},
-								deferred.reject
-							).progress(deferred.notify);
+								deferred.reject,
+								deferred.notify
+							);
 						} else if (_.contains(retriable, resp.error.code)) {
 							deferred.reject('network-error');
 						} else {
 							deferred.reject(resp.error);
 						}
 					} else {
-						if (!googleId) {
-							mapInfo.mapId = mindMupId(resp.id);
-						}
-						deferred.resolve(mapInfo);
+						deferred.resolve(mindMupId(resp.id));
 					}
 				});
 			} catch (e) {
@@ -167,7 +164,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 		makeReady = function (showAuthenticationDialogs) {
 			var deferred = jQuery.Deferred();
 			if (driveLoaded) {
-				authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject).progress(deferred.notify);
+				authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
 			} else {
 				deferred.notify('Loading Google APIs');
 				loadApi(function () {
@@ -175,7 +172,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					gapi.client.setApiKey(apiKey);
 					gapi.client.load('drive', 'v2', function () {
 						driveLoaded = true;
-						authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject).progress(deferred.notify);
+						authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
 					});
 				});
 			}
@@ -188,7 +185,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 		if (driveLoaded && isAuthorised) {
 			deferred.resolve();
 		} else {
-			makeReady(showAuthenticationDialogs).then(deferred.resolve, deferred.reject).progress(deferred.notify);
+			makeReady(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
 		}
 		return deferred.promise();
 	};
@@ -228,15 +225,15 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					deferred.reject
 				).progress(deferred.notify);
 			};
-		this.ready(showAuthenticationDialogs).then(readySucceeded, deferred.reject).progress(deferred.notify);
+		this.ready(showAuthenticationDialogs).then(readySucceeded, deferred.reject, deferred.notify);
 		return deferred.promise();
 	};
 
-	this.saveMap = function (mapInfo, showAuthenticationDialogs) {
+	this.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred();
 		this.ready(showAuthenticationDialogs).then(
 			function () {
-				saveFile(mapInfo).then(deferred.resolve, deferred.reject).progress(deferred.notify);
+				saveFile(contentToSave, mapId, fileName).then(deferred.resolve, deferred.reject, deferred.notify);
 			},
 			deferred.reject
 		).progress(deferred.notify);

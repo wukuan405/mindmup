@@ -28,7 +28,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 		return deferred.promise();
 	};
 
-	this.saveMap = function (mapInfo) {
+	this.saveMap = function (contentToSave) {
 		var deferred = jQuery.Deferred(),
 			submitS3Form = function (publishingConfig) {
 				var formData = new FormData();
@@ -37,7 +37,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 				});
 				formData.append('acl', 'public-read');
 				formData.append('Content-Type', 'text/plain');
-				formData.append('file', JSON.stringify(mapInfo.idea));
+				formData.append('file', contentToSave);
 				jQuery.ajax({
 					url: s3Url,
 					type: 'POST',
@@ -45,8 +45,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 					contentType: false,
 					data: formData
 				}).done(function () {
-					mapInfo.mapId = publishingConfig.s3UploadIdentifier;
-					deferred.resolve(mapInfo);
+					deferred.resolve(publishingConfig.s3UploadIdentifier);
 				}).fail(function (evt) {
 					var errorReason = 'network-error',
 						errorLabel = (evt && evt.responseText) || 'network-error',
