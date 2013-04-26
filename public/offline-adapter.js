@@ -17,18 +17,16 @@ MM.OfflineAdapter = function (storage) {
 		});
 		return result.promise();
 	};
-	this.saveMap = function (mapInfo) {
-		var result = jQuery.Deferred(),
-			resultMapInfo = _.clone(mapInfo);
+	this.saveMap = function (contentToSave, mapId) {
+		var result = jQuery.Deferred();
 		try {
-			if (!this.recognises(mapInfo.mapId)) {
-				storage.saveNew(resultMapInfo.idea).then(function (mapId) {
-					resultMapInfo.mapId = mapId;
-					result.resolve(resultMapInfo);
+			if (!this.recognises(mapId)) {
+				storage.saveNew(contentToSave).then(function (mapId) {
+					result.resolve(mapId);
 				});
 			} else {
-				storage.save(resultMapInfo.mapId, resultMapInfo.idea);
-				result.resolve(resultMapInfo);
+				storage.save(mapId, contentToSave);
+				result.resolve(mapId);
 			}
 		} catch (e) {
 			console.log('e', e);

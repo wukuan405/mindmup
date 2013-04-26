@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable*/
+/*global _, jQuery, MAPJS, MM, observable, XMLHttpRequest*/
 MM.MapRepository = function (adapters) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
@@ -63,7 +63,7 @@ MM.MapRepository = function (adapters) {
 			mapLoadFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapLoading', mapId);
-					adapter.loadMap(mapId, true).then(adapterLoadedMap, mapLoadFailed).progress(progressEvent);
+					adapter.loadMap(mapId, true).then(adapterLoadedMap, mapLoadFailed, progressEvent);
 				}, adapterName = adapter.description ? ' [' + adapter.description + ']' : '';
 				label = label ? label + adapterName : adapterName;
 				if (reason === 'no-access-allowed') {
@@ -87,19 +87,22 @@ MM.MapRepository = function (adapters) {
 						MM.linearBackoff()
 					).then(
 						adapterLoadedMap,
-						mapLoadFailed
-					).progress(progressEvent);
+						mapLoadFailed,
+						progressEvent
+					);
 				}
 			};
 		dispatchEvent('mapLoading', mapId);
-    loadFromAdapter();
+		loadFromAdapter();
 	};
 
 	this.publishMap = function (adapterType) {
 		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
-			mapSaved = function (savedMapInfo) {
-				dispatchEvent('mapSaved', savedMapInfo.mapId, savedMapInfo.idea, (mapInfo.mapId !== savedMapInfo.mapId));
-				mapInfo = savedMapInfo;
+			contentToSave = JSON.stringify(mapInfo.idea),
+			fileName = mapInfo.idea.title + '.mup',
+			mapSaved = function (savedMapId) {
+				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, (mapInfo.mapId !== savedMapId));
+				mapInfo.mapId = savedMapId;
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
@@ -110,15 +113,13 @@ MM.MapRepository = function (adapters) {
 			mapSaveFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapSaving', adapter.description);
-					adapter.saveMap(_.clone(mapInfo), true).then(mapSaved, mapSaveFailed).progress(progressEvent);
+					adapter.saveMap(contentToSave, mapInfo.mapId, fileName, true).then(mapSaved, mapSaveFailed, progressEvent);
 				}, adapterName = adapter.description || '';
 				label = label ? label + adapterName : adapterName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapSavingUnAuthorized', function () {
 						dispatchEvent('mapSaving', adapter.description, 'Creating a new file');
-						var saveAsNewInfo = _.clone(mapInfo);
-						saveAsNewInfo.mapId = 'new';
-						adapter.saveMap(saveAsNewInfo, true).then(mapSaved, mapSaveFailed).progress(progressEvent);
+						adapter.saveMap(contentToSave, 'new', fileName, true).then(mapSaved, mapSaveFailed, progressEvent);
 					});
 				} else if (reason === 'failed-authentication') {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
@@ -129,14 +130,15 @@ MM.MapRepository = function (adapters) {
 				}
 			};
 		dispatchEvent('mapSaving', adapter.description);
-    MM.retry(
-        adapter.saveMap.bind(adapter, _.clone(mapInfo)),
-        shouldRetry(5),
-        MM.linearBackoff())
-      .then(
-        mapSaved,
-				mapSaveFailed)
-			.progress(progressEvent);
+		MM.retry(
+			adapter.saveMap.bind(adapter, contentToSave, mapInfo.mapId, fileName),
+			shouldRetry(5),
+			MM.linearBackoff()
+		).then(
+			mapSaved,
+			mapSaveFailed,
+			progressEvent
+		);
 	};
 };
 
@@ -384,8 +386,7 @@ MM.retry = function (task, shouldRetry, backoff) {
 					} else {
 						deferred.reject.apply(deferred, arguments);
 					}
-				}
-			).progress(
+				},
 				deferred.notify
 			);
 		};

@@ -40,38 +40,35 @@ describe('Local storage ', function () {
 		});
 		describe('saveMap', function () {
 			it('should save an existing map from another storage provider into local storage when saveMap method is invoked', function () {
-				underTest.saveMap({
-					mapId: 'g123',
-					idea: MAPJS.content({title: 'Hello World', id: 1})
-				}).then(function () {
-					expect(localStorage.getItem('offline-map-1')).toBe('{"map":{"title":"Hello World","id":1,"formatVersion":2}}');
+				underTest.saveMap(
+					'file content',
+					'g123'
+				).then(function () {
+					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
 					expect(JSON.parse(localStorage.getItem('offline-maps')).nextMapId).toBe(2);
-				},
-				this.fail.bind(this, 'saveMap should succeed'));
+				}, this.fail.bind(this, 'saveMap should succeed'));
 			});
 			it('should save an existing offline map into local storage when saveMap method is invoked', function () {
-				underTest.saveMap({
-					mapId: 'offline-map-123',
-					idea: MAPJS.content({title: 'Hello World', id: 1})
-				});
-
-				expect(localStorage.getItem('offline-map-123')).toBe('{"map":{"title":"Hello World","id":1,"formatVersion":2}}');
+				underTest.saveMap(
+					'file content',
+					'offline-map-123'
+				);
+				expect(localStorage.getItem('offline-map-123')).toBe('{"map":"file content"}');
 			});
 			it('should save a new map into local storage when saveMap method is invoked', function () {
-				underTest.saveMap({
-					mapId: 'new',
-					idea: MAPJS.content({title: 'Hello World', id: 1})
-				}).then(function () {
-					expect(localStorage.getItem('offline-map-1')).toBe('{"map":{"title":"Hello World","id":1,"formatVersion":2}}');
-				},
-				this.fail.bind(this, 'saveMap should succeed'));
+				underTest.saveMap(
+					'file content',
+					'new'
+				).then(function () {
+					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
+				}, this.fail.bind(this, 'saveMap should succeed'));
 			});
 			it('should fail with failed-offline when local storage throws an error (like quota exceeded)', function () {
 				spyOn(jsonStorage, 'setItem').andThrow('Quota exceeded');
-				underTest.saveMap({
-					mapId: 'new',
-					idea: MAPJS.content({title: 'a very large map', id: 1})
-				}).then(
+				underTest.saveMap(
+					'file content',
+					'new'
+				).then(
 					this.fail.bind(this, 'saveMap should not succeed'),
 					function (reason) {
 						expect(reason).toBe('local-storage-failed');
