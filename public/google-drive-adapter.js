@@ -95,7 +95,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					}
 				});
 			} catch (e) {
-				deferred.reject('network-error', e.toString() + 'stack: ' + e.stack);
+				deferred.reject('network-error', e.toString() + '\nstack: ' + e.stack + '\nauth: ' + JSON.stringify(gapi.auth.getToken()) + '\nnow: ' + Date.now());
 			}
 			return deferred.promise();
 		},
@@ -229,14 +229,6 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 				).progress(deferred.notify);
 			};
 		this.ready(showAuthenticationDialogs).then(readySucceeded, deferred.reject).progress(deferred.notify);
-		// MM.gdrive.load(mapId).then(
-		// 	function () {
-		// 		console.log('load', 'resolve', arguments);
-		// 	},
-		// 	function () {
-		// 		console.log('load', 'reject', arguments);
-		// 	}
-		// );
 		return deferred.promise();
 	};
 
