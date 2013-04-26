@@ -2,7 +2,9 @@
 MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, contentType) {
 	'use strict';
 	var driveLoaded,
-		isAuthorised,
+		isAuthorised = function () {
+			return !!(gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
+		},
 		recognises = function (mapId) {
 			return mapId && mapId[0] === 'g';
 		},
@@ -25,10 +27,8 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 				},
 				function (authResult) {
 					if (authResult) {
-						isAuthorised = true;
 						deferred.resolve();
 					} else {
-						isAuthorised = false;
 						deferred.reject('not-authenticated');
 					}
 				}
@@ -182,7 +182,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 
 	this.ready = function (showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred();
-		if (driveLoaded && isAuthorised) {
+		if (driveLoaded && isAuthorised()) {
 			deferred.resolve();
 		} else {
 			makeReady(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
