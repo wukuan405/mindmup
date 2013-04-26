@@ -12,7 +12,7 @@ MM.DeferredSkeleton = function (objectMap, target) {
 				promise,
 				reply = function (type) {
 					return function () {
-						message.source.postMessage({id: message.data.id, type: type, content: arguments}, '*');
+						message.source.postMessage({id: message.data.id, type: type, content: Array.prototype.slice.call(arguments)}, '*');
 					};
 				};
 			if (!obj) {

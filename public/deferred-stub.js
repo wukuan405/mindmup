@@ -26,6 +26,7 @@ MM.DeferredStub = function (targetSelector) {
 	self.postMessage = function (message) {
 		var id = nextId++;
 		deferred[id] = jQuery.Deferred();
+    deferred[id]._originalMessage = message;
 		if (target) {
 			target.postMessage({id: id, content: message}, '*');
 		} else {
@@ -37,7 +38,7 @@ MM.DeferredStub = function (targetSelector) {
 		var container = jQuery(targetSelector)[0];
 		target = container && container.contentWindow;
 		if (target) {
-			target.addEventListener('message', onMessageFromTarget);
+			window.addEventListener('message', onMessageFromTarget);
 			_.each(delayedMessages, function (msg) {
 				target.postMessage(msg, '*');
 			});
@@ -46,7 +47,7 @@ MM.DeferredStub = function (targetSelector) {
 	};
 	self.targetUnloaded = function () {
 		if (target) {
-			target.removeEventListener('message', onMessageFromTarget);
+			window.removeEventListener('message', onMessageFromTarget);
 			target = undefined;
 		}
 	};
