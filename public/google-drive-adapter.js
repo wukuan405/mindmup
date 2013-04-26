@@ -95,7 +95,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					}
 				});
 			} catch (e) {
-				deferred.reject('network-error', e.toString() + 'stack: ' + e.stack);
+				deferred.reject('network-error', e.toString() + '\nstack: ' + e.stack + '\nauth: ' + JSON.stringify(gapi.auth.getToken()) + '\nnow: ' + Date.now());
 			}
 			return deferred.promise();
 		},
