@@ -2114,9 +2114,6 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = nodeByIdeaId[ideaId];
-		if (!node) {
-			return;
-		}
 		node.setIsSelected(isSelected);
 		if (!isSelected) {
 			return;
@@ -2279,8 +2276,9 @@ MAPJS.PNGExporter = function (mapRepository) {
 	mapRepository.addEventListener('mapLoaded', function (anIdea) {
 		idea = anIdea;
 	});
-	this.exportMap = function () {
-		var layout = MAPJS.calculateLayout(idea, MAPJS.KineticMediator.dimensionProvider),
+	self.imageFromMap = function () {
+		var deferred = jQuery.Deferred(),
+			layout = MAPJS.calculateLayout(idea, MAPJS.KineticMediator.dimensionProvider),
 			frame = MAPJS.calculateFrame(layout.nodes, 10),
 			hiddencontainer = jQuery('<div></div>').css('visibility', 'hidden')
 				.appendTo('body').width(frame.width).height(frame.height).attr('id', 'hiddencontainer'),
@@ -2326,9 +2324,15 @@ MAPJS.PNGExporter = function (mapRepository) {
 		hiddenstage.draw();
 		hiddenstage.toDataURL({
 			callback: function (url) {
-				self.dispatchEvent('mapExported', url);
+				deferred.resolve(url);
 				hiddencontainer.remove();
 			}
+		});
+		return deferred.promise();
+	};
+	self.exportMap = function () {
+		self.imageFromMap().then(function (url) {
+			self.dispatchEvent('mapExported', url);
 		});
 	};
 };
