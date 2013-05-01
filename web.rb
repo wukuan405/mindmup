@@ -23,7 +23,6 @@ configure do
   set :current_map_data_version, ENV['CURRENT_MAP_DATA_VERSION'] || "a1"
   set :network_timeout_millis, ENV['NETWORK_TIMEOUT_MILLIS']||10000
   set :publishing_config_url, '/publishingConfig'
-  set :container_class, 'BrowserContainer'
   set :proxy_load_url, 's3proxy/'
   set :async_scripts, '//www.google-analytics.com/ga.js //platform.twitter.com/widgets.js //connect.facebook.net/en_US/all.js#xfbml=1'
   offline =  ENV['OFFLINE'] || "online"

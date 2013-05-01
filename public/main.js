@@ -27,7 +27,6 @@ MM.main = function (config) {
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
 	jQuery(function () {
 		var navigation = MM.navigation(config, isChromeApp(), config.baseUrl),
-			container = new MM[config.containerClass](),
 			activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
@@ -48,7 +47,7 @@ MM.main = function (config) {
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
-		container.classCachingWidget(jQuery('body'), 'cached-classes');
+		jQuery('body').classCachingWidget('cached-classes');
 		if (!jQuery('body').hasClass('image-render-checked')) {
 			if (isTouch() || jQuery('body').hasClass('gecko')) {
 				jQuery('body').addClass('image-render');
@@ -96,7 +95,7 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, container, config.baseUrl);
+		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, config.baseUrl);
 		mapRepository.loadMap(navigation.currentMapId());
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));

@@ -1,10 +1,10 @@
 /*global $,document*/
-$.fn.shareWidget = function (container) {
+$.fn.shareWidget = function (navigation) {
 	'use strict';
 	return this.each(function () {
 		var self = $(this),
 			target = self.attr('data-mm-target');
-		self.data('mm-url', container.sharingUrl());
+		self.data('mm-url', navigation.sharingUrl());
 		if (!target) {
 			return;
 		}

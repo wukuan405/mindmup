@@ -142,12 +142,12 @@ MM.MapRepository = function (adapters) {
 	};
 };
 
-MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, container, baseUrl) {
+MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, baseUrl) {
 	'use strict';
 	MM.MapRepository.mapLocationChange(mapRepository, navigation, baseUrl);
 	MM.MapRepository.activityTracking(mapRepository, activityLog);
 	MM.MapRepository.alerts(mapRepository, alert, navigation);
-	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation, container);
+	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation);
 };
 
 
@@ -284,7 +284,7 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 		}
 	});
 };
-MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation, container) {
+MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation) {
 	'use strict';
 	var changed, saving, mapLoaded,
 		setNotSharable = function (notSharable) {
@@ -309,7 +309,7 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 		navigation.confirmationRequired(false);
 		setNotSharable(notSharable);
 		if (!mapLoaded) {
-			container.bindUnloadEvent(function () {
+			jQuery(window).bind('beforeunload', function () {
 				if (changed && !saving) {
 					return 'There are unsaved changes.';
 				}
