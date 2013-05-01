@@ -32,7 +32,6 @@ MM.OfflineAdapter = function (storage) {
 			}
 		} catch (e) {
 			var reason = knownErrors[e.name];
-			console.log('local-storage-failed', e, 'reason', reason);
 			if (reason) {
 				result.reject(reason);
 			} else {
