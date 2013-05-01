@@ -3,14 +3,14 @@ describe('Auto save', function () {
 	'use strict';
 	var storage, mapRepository, autoSave, unsavedChangesAvailableListener, idea, alert;
 	beforeEach(function () {
-		storage = MM.jsonStorage(new MM.BrowserContainer().storage);
+		storage = MM.jsonStorage(localStorage);
 		mapRepository = observable({});
-    alert = {show: function() {} };
+		alert = {show: function () {} };
 		autoSave = new MM.AutoSave(mapRepository, storage, alert);
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
 		idea = observable({});
 		storage.remove('auto-save-mapId');
-    spyOn(alert,'show');
+		spyOn(alert, 'show');
 	});
 	it('should trigger unsavedChangesAvailable event when unsaved changes exist for loaded map', function () {
 		autoSave.addEventListener('unsavedChangesAvailable', unsavedChangesAvailableListener);
@@ -76,7 +76,7 @@ describe('Auto save', function () {
 			mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
 
 			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
-    });
+		});
 		it('should drop unsaved changes even when map ID changes and the map is saved (s3 case, or transfer to new storage)', function () {
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
 			idea.dispatchEvent('changed', 'cmd1', [1]);
@@ -85,50 +85,44 @@ describe('Auto save', function () {
 			mapRepository.dispatchEvent('mapSaved', 'newMapId', idea);
 
 			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
-    });
+		});
 		it('should warn when changes could not be saved', function () {
-      var result = jQuery.Deferred().reject('failed').promise();
-      spyOn(storage, 'setItem').andReturn(result);
+			spyOn(storage, 'setItem').andThrow('failed');
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-			
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      
-      expect(alert.show).toHaveBeenCalled();
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			expect(alert.show).toHaveBeenCalled();
 		});
 		it('should not warn for the same map twice', function () {
-      var result = jQuery.Deferred().reject('failed').promise();
-      spyOn(storage, 'setItem').andReturn(result);
+			spyOn(storage, 'setItem').andThrow('failed');
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      alert.show.reset();
- 
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      
-      expect(alert.show).not.toHaveBeenCalled();
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			alert.show.reset();
+
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+
+			expect(alert.show).not.toHaveBeenCalled();
 		});
 		it('should show warning after save', function () {
-      var result = jQuery.Deferred().reject('failed').promise();
-      spyOn(storage, 'setItem').andReturn(result);
+			spyOn(storage, 'setItem').andThrow('failed');
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
-      alert.show.reset();
- 
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      
-      expect(alert.show).toHaveBeenCalled();
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			mapRepository.dispatchEvent('mapSaved', 'mapId', idea);
+			alert.show.reset();
+
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+
+			expect(alert.show).toHaveBeenCalled();
 		});
 		it('should show warning after load', function () {
-      var result = jQuery.Deferred().reject('failed').promise();
-      spyOn(storage, 'setItem').andReturn(result);
+			spyOn(storage, 'setItem').andThrow('failed');
 			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
-      alert.show.reset();
- 
-      idea.dispatchEvent('changed', 'cmd1', [1]);
-      
-      expect(alert.show).toHaveBeenCalled();
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+			mapRepository.dispatchEvent('mapLoaded', idea, 'mapId');
+			alert.show.reset();
+
+			idea.dispatchEvent('changed', 'cmd1', [1]);
+
+			expect(alert.show).toHaveBeenCalled();
 		});
 	});
 	describe('applyUnsavedChanges', function () {

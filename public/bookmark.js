@@ -1,25 +1,16 @@
-/*global _, jQuery, MM, observable*/
+/*global _, observable, jQuery, MM*/
 MM.jsonStorage = function (storage) {
 	'use strict';
 	var self = {};
 	self.setItem = function (key, value) {
-    return storage.setItem(key, JSON.stringify(value));
+		return storage.setItem(key, JSON.stringify(value));
 	};
 	self.getItem = function (key) {
-		var deferred = jQuery.Deferred();
-		storage.getItem(key).then(
-			function (item) {
-				var json;
-				try {
-					json = JSON.parse(item);
-				} catch (e) {
-					json = undefined;
-				}
-				deferred.resolve(json);
-			},
-			function () {deferred.resolve(); }
-		);
-		return deferred.promise();
+		var item = storage.getItem(key);
+		try {
+			return JSON.parse(item);
+		} catch (e) {
+		}
 	};
 	self.remove = function (key) {
 		storage.removeItem(key);
@@ -37,7 +28,7 @@ MM.Bookmark = function (mapRepository, storage, storageKey) {
 			}
 		};
 	if (storage && storageKey) {
-		storage.getItem(storageKey).then(function (item) {list = item || []; });
+		list = storage.getItem(storageKey) || [];
 	}
 	mapRepository.addEventListener('mapSaved', function (key, idea) {
 		self.store({

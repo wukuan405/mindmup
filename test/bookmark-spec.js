@@ -2,24 +2,6 @@
 describe('Bookmarks', function () {
 	'use strict';
 
-	var bookmarkStorageWrapper = function (storage) {
-		return {
-			removeItem: function (key) {
-				storage.removeItem(key);
-			},
-			setItem: function (key, value) {
-				storage.setItem(key, value);
-			},
-			getItem: function (key) {
-				var deferred = jQuery.Deferred();
-				storage.getItem(key).then(
-					function (item) { deferred.resolve(item); }
-				);
-				return deferred.promise();
-			}
-		};
-	};
-
 	describe('Magic bookmark manager', function () {
 		describe('store', function () {
 			var mapRepository, bookmark, url;
@@ -70,10 +52,10 @@ describe('Bookmarks', function () {
 			});
 			it('should save bookmarks to storage on store if provided', function () {
 				var url = {mapId: 'abc', title: 'def'}, bookmark,
-					storage = {getItem: function () { return jQuery.Deferred().resolve([]).promise(); }, setItem:  function () {}};
+					storage = {getItem: function () { return []; }, setItem:  function () {}};
 
 				spyOn(storage, 'setItem');
-				bookmark = new MM.Bookmark(observable({}), bookmarkStorageWrapper(storage), 'book');
+				bookmark = new MM.Bookmark(observable({}), storage, 'book');
 				bookmark.store(url);
 				expect(storage.setItem).toHaveBeenCalledWith('book', [url]);
 			});
@@ -96,8 +78,8 @@ describe('Bookmarks', function () {
 			});
 			it('stores the list to external storage if defined', function () {
 				var url = {mapId: 'abc', title: 'def'}, bookmark,
-					storage = {getItem: function () { return jQuery.Deferred().resolve([]).promise(); }, setItem:  function () {}};
-				bookmark = new MM.Bookmark(observable({}), bookmarkStorageWrapper(storage), 'book');
+					storage = {getItem: function () { return []; }, setItem:  function () {}};
+				bookmark = new MM.Bookmark(observable({}), storage, 'book');
 				bookmark.store(url);
 				bookmark.store({mapId: 'xx', title: 'yy'});
 				spyOn(storage, 'setItem');
@@ -127,21 +109,17 @@ describe('Bookmarks', function () {
 			var url = {mapId: 'abc', title: 'def'},
 				storage = {
 					getItem: function (item) {
-						var deferred = jQuery.Deferred();
 						if (item === 'book') {
-							deferred.resolve([url]);
-						} else {
-							deferred.resolve();
+							return [url];
 						}
-						return deferred.promise();
 					}
 				},
-				bookmark = new MM.Bookmark(observable({}), bookmarkStorageWrapper(storage), 'book');
+				bookmark = new MM.Bookmark(observable({}), storage, 'book');
 			expect(bookmark.list()).toEqual([url]);
 		});
 		it('should ignore storage if it does not contain a bookmark store', function () {
-			var storage = {getItem: function () { return jQuery.Deferred().resolve().promise(); }},
-				bookmark = new MM.Bookmark(observable({}), bookmarkStorageWrapper(storage), 'book');
+			var storage = {getItem: function () {}},
+				bookmark = new MM.Bookmark(observable({}), storage, 'book');
 			expect(bookmark.list()).toEqual([]);
 		});
 
@@ -221,8 +199,8 @@ describe('Bookmarks', function () {
 	describe('JSONStorage', function () {
 		var json, storage;
 		beforeEach(function () {
-			storage = {getItem: function () { return jQuery.Deferred().resolve().promise(); }, setItem:  function () {}, removeItem: function () {}};
-			json = MM.jsonStorage(bookmarkStorageWrapper(storage));
+			storage = {getItem: function () {}, setItem:  function () {}, removeItem: function () {}};
+			json = MM.jsonStorage(storage);
 		});
 		it('stringifies items past into setItem before passing on', function () {
 			spyOn(storage, 'setItem');
@@ -231,21 +209,18 @@ describe('Bookmarks', function () {
 		});
 		it('destringifies items from getItem after delegation', function () {
 			storage.getItem = function () {
-				return jQuery.Deferred().resolve('{"a": "b"}').promise();
+				return '{"a": "b"}';
 			};
 			//spyOn(storage, 'getItem').andCallThrough();
-			json.getItem('bla').then(function (result) {
-				expect(result).toEqual({a: 'b'});
-				//expect(storage.getItem).toHaveBeenCalledWith('bla');
-			});
+			var result = json.getItem('bla');
+			expect(result).toEqual({a: 'b'});
 		});
 		it('returns undefined if the item is not JSON', function () {
 			storage.getItem = function () {
-				return jQuery.Deferred().resolve('{xxxxxx}').promise();
+				return '{xxxxxx}';
 			};
-			json.getItem('bla').then(function (item) {
-				expect(item).toBeUndefined();
-			});
+			var item = json.getItem('bla');
+			expect(item).toBeUndefined();
 		});
 		it('removes item when remove method is invoked', function () {
 			spyOn(storage, 'removeItem');
@@ -258,7 +233,7 @@ describe('Bookmarks', function () {
 		var ulTemplate = '<ul><li>Old</li><<li class="template" style="display: none"><a data-category="Top Bar" data-event-type="Bookmark click"><span data-mm-role="x"></span></a></li></ul>',
 			wrap = function (list, repo) {
 				repo = repo || observable({});
-				return new MM.Bookmark(repo, { getItem: function () { return jQuery.Deferred().resolve(list).promise(); }, setItem: function () { } }, 'key');
+				return new MM.Bookmark(repo, { getItem: function () { return list; }, setItem: function () { } }, 'key');
 			};
 		it('does not remove previous content if the bookmark list is empty', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([]));

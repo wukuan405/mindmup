@@ -20,7 +20,7 @@ describe('Map Repository', function () {
 			});
 		adapter1 = _.clone(adapterPrototype);
 		adapter2 = _.clone(adapterPrototype);
-		underTest = new MM.MapRepository([adapter1, adapter2], new MM.BrowserContainer().storage);
+		underTest = new MM.MapRepository([adapter1, adapter2], localStorage);
 	});
 	afterEach(function () {
 		clock.restore();

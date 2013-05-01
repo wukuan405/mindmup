@@ -33,11 +33,10 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 			fileRetrieval();
 		},
 		deleteMap = function (mapId, mapInfo) {
-			offlineMapStorage.load(mapId).then(function (map) {
-				offlineMapStorage.remove(mapId);
-				fileRetrieval();
-				showAlert('Map "' + map.title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
-			});
+			var map = offlineMapStorage.load(mapId);
+			offlineMapStorage.remove(mapId);
+			fileRetrieval();
+			showAlert('Map "' + map.title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
 		},
         loaded = function (fileMap) {
 			statusDiv.empty();
@@ -67,9 +66,7 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 			parent.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
 			try {
-				offlineMapStorage.list().then(function (fileMap) {
-					loaded(fileMap);
-				});
+				loaded(offlineMapStorage.list());
 			} catch (e) {
 				showAlert('Unable to retrieve files from browser storage', 'error');
 			}

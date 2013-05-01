@@ -31,7 +31,7 @@ MM.main = function (config) {
 			activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
-			objectStorage = MM.jsonStorage(container.storage),
+			objectStorage = MM.jsonStorage(localStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
