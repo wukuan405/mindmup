@@ -3,12 +3,15 @@
 MM.main = function (config) {
 	'use strict';
 
-	var setupTracking = function (activityLog, jotForm, mapModel) {
+	var mapModelAnalytics = false,
+		setupTracking = function (activityLog, jotForm, mapModel) {
 		activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
 		activityLog.addEventListener('error', function (message) {
 			jotForm.sendError(message, activityLog.getLog());
 		});
-		//mapModel.addEventListener('analytic', activityLog.log);
+		if (mapModelAnalytics) {
+			mapModel.addEventListener('analytic', activityLog.log);
+		}
 	},
 		loadScriptsAsynchronously = function (d, s, urls) {
 			urls.forEach(function (url) {
