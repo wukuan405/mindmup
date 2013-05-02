@@ -49,7 +49,12 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 					}
 					if (downloadLink && (!$('body').hasClass('force-remote'))) {
 						downloadLink.attr('download', title);
-						downloadLink.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+						if (window.Blob && window.webkitURL && window.webkitURL.createObjectURL) {
+							var blob = new Blob([contents], {type: 'text/html'});
+							downloadLink.attr('href', window.webkitURL.createObjectURL(blob));
+						} else {
+							downloadLink.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+						}
 						downloadLink[0].click();
 						return false;
 					} else {
