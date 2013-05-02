@@ -1074,7 +1074,7 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 				 titlesToRandomlyChooseFrom.indexOf(title) !== -1) {
 			shouldSelectAll = true;
 		}
-		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll, editingNew);
+		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll, !!editingNew);
 	};
 	this.scaleUp = function (source) {
 		self.scale(source, 1.25);
@@ -2123,6 +2123,9 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = nodeByIdeaId[ideaId];
+		if (!node) {
+			return;
+		}
 		node.setIsSelected(isSelected);
 		if (!isSelected) {
 			return;
