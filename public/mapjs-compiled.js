@@ -946,12 +946,12 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 			if (command === 'addSubIdea') {
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
-				self.editNode(false, true);
+				self.editNode(false, true, true);
 			}
 			if (command === 'insertIntermediate') {
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
-				self.editNode(false, true);
+				self.editNode(false, true, true);
 			}
 			if (command === 'paste') {
 				newIdeaId = args[2];
@@ -1049,11 +1049,12 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 			idea.addSubIdea(parent.id, getRandomTitle(titlesToRandomlyChooseFrom));
 		}
 	};
-	this.removeSubIdea = function (source) {
+	this.removeSubIdea = function (source, targetId) {
 		analytic('removeSubIdea', source);
 		if (isInputEnabled) {
-			var parent = idea.findParent(currentlySelectedIdeaId);
-			if (idea.removeSubIdea(currentlySelectedIdeaId)) {
+			var target = targetId || currentlySelectedIdeaId,
+				parent = idea.findParent(target);
+			if (idea.removeSubIdea(target)) {
 				self.selectNode(parent.id);
 			}
 		}
@@ -1061,7 +1062,7 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 	this.updateTitle = function (ideaId, title) {
 		idea.updateTitle(ideaId, title);
 	};
-	this.editNode = function (source, shouldSelectAll) {
+	this.editNode = function (source, shouldSelectAll, editingNew) {
 		if (source) {
 			analytic('editNode', source);
 		}
@@ -1073,7 +1074,7 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 				 titlesToRandomlyChooseFrom.indexOf(title) !== -1) {
 			shouldSelectAll = true;
 		}
-		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll);
+		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll, editingNew);
 	};
 	this.scaleUp = function (source) {
 		self.scale(source, 1.25);
@@ -1617,7 +1618,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 			var stage = self.getStage();
 			return stage && stage.isRectVisible(new MAPJS.Rectangle(self.attrs.x, self.attrs.y, self.getWidth(), self.getHeight()), offset);
 		};
-		this.editNode = function (shouldSelectAll) {
+		this.editNode = function (shouldSelectAll, deleteOnCancel) {
 			self.fire(':editing');
 			self.getLayer().draw();
 			var canvasPosition = jQuery(self.getLayer().getCanvas().getElement()).offset(),
@@ -1643,6 +1644,9 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				},
 				onCancelEdit = function () {
 					updateText(unformattedText);
+					if (deleteOnCancel) {
+						self.fire(':request',{type: 'removeSubIdea', source: 'internal'});
+					}
 				},
 				scale = self.getStage().getScale().x || 1;
 			ideaInput = jQuery('<textarea type="text" wrap="soft" class="ideaInput"></textarea>')
@@ -2053,10 +2057,10 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	layer.on('mouseout', function () {
 		document.body.style.cursor = 'move';
 	});
-	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll) {
+	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
 		if (node) {
-			node.editNode(shouldSelectAll);
+			node.editNode(shouldSelectAll, editingNew);
 		}
 	});
 	mapModel.addEventListener('nodeCreated', function (n) {
