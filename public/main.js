@@ -86,7 +86,7 @@ MM.main = function (config) {
 		jQuery('[data-mm-role=save]').saveWidget(mapRepository);
 		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
-		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapRepository, pngExporter);
+		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapRepository, pngExporter, alert);
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, navigation);
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, navigation);
 		jQuery('body')

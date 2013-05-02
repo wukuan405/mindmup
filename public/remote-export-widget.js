@@ -1,9 +1,9 @@
 /*global $, jQuery, MM, document*/
-jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter) {
+jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 	'use strict';
 	var self = this,
 		loadedIdea,
-		downloadAttrSupported = (document.createElement('a').hasOwnProperty('download'));
+		downloadLink = (document.createElement('a').hasOwnProperty('download')) ? $('<a>').addClass('hide').appendTo('body') : undefined;
 	mapRepository.addEventListener('mapLoaded', function (idea) {
 		console.log('mapLoaded', idea.title);
 		loadedIdea = idea;
@@ -26,8 +26,12 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter) {
 			},
 			format = $(this).data('mm-format'),
 		    title,
-		    elem;
+		    elem,
+		    alertId;
 		title = loadedIdea.title + '.' + format;
+		if (alert) {
+			alertId = alert.show('Exporting map to ' + title, 'This may take a few seconds for larger maps', 'info');
+		}
 		elem = $(this);
 		if (exportFunctions[format]) {
 			exportFunctions[format](loadedIdea).then(
@@ -36,9 +40,15 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter) {
 						return false;
 					}
 					console.log('loadedIdea.title', loadedIdea.title, 'elem', elem);
-					if (downloadAttrSupported && (!$('body').hasClass('force-remote'))) {
-						elem.attr('download', title);
-						elem.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+					if (alert && alertId) {
+						alert.hide(alertId);
+						alertId = undefined;
+					}
+					if (downloadLink && (!$('body').hasClass('force-remote'))) {
+						downloadLink.attr('download', title);
+						downloadLink.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+						downloadLink[0].click();
+						return false;
 					} else {
 						elem.attr('href', '#');
 						delete self.download;
