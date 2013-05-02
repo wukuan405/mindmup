@@ -8,7 +8,6 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
 		};
 	mapRepository.addEventListener('mapLoaded', function (idea) {
-		console.log('mapLoaded', idea.title);
 		loadedIdea = idea;
 	});
 	return this.click(function () {
@@ -42,7 +41,6 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 					if (!contents) {
 						return false;
 					}
-					console.log('loadedIdea.title', loadedIdea.title, 'elem', elem);
 					if (alert && alertId) {
 						alert.hide(alertId);
 						alertId = undefined;

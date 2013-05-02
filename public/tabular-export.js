@@ -52,7 +52,6 @@ MM.exportToHtmlDocument = function (pngExporter, idea) {
 	'use strict';
 	var deferred = jQuery.Deferred(),
 		createContent = function (imageUrl) {
-		console.log(imageUrl);
 		var result = $('<div>'), /*parent needed for html generation*/
 			appendLinkOrText = function (element, text) {
 				if (MAPJS.URLHelper.containsLink(text)) {
