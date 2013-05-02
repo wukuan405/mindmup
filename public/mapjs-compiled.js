@@ -1026,11 +1026,12 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 			idea.updateAttr(currentlySelectedIdeaId, 'style', merged);
 		}
 	};
-	this.addSubIdea = function (source) {
+	this.addSubIdea = function (source, parentId) {
+		var target = parentId || currentlySelectedIdeaId;
 		analytic('addSubIdea', source);
 		if (isInputEnabled) {
-			ensureNodeIsExpanded(source, currentlySelectedIdeaId);
-			idea.addSubIdea(currentlySelectedIdeaId, getRandomTitle(titlesToRandomlyChooseFrom));
+			ensureNodeIsExpanded(source, target);
+			idea.addSubIdea(target, getRandomTitle(titlesToRandomlyChooseFrom));
 		}
 	};
 	this.insertIntermediate = function (source) {
@@ -1590,7 +1591,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 		});
 		this.clip = createClip();
 		this.clip.on('click tap', function () {
-			self.fire(':openAttachmentRequested');
+			self.fire(':request', {type: 'openAttachment', source: 'mouse'});
 		});
 		this.add(this.rectbg1);
 		this.add(this.rectbg2);
@@ -1667,7 +1668,10 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					} else if (e.which === ESC_KEY_CODE) {
 						onCancelEdit();
 					} else if (e.which === 9) {
+						onCommit();
 						e.preventDefault();
+						self.fire(':request', {type: 'addSubIdea', source: 'keyboard'});
+						return;
 					} else if (e.which === 83 && (e.metaKey || e.ctrlKey)) {
 						e.preventDefault();
 						onCommit();
@@ -2067,6 +2071,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		if (imageRendering) {
 			node = Kinetic.IdeaProxy(node, stage, layer);
 		}
+
 		node.on('click tap', mapModel.selectNode.bind(mapModel, n.id));
 		node.on('dblclick dbltap', mapModel.editNode.bind(mapModel, 'mouse', false));
 		node.on('dragstart', function () {
@@ -2099,8 +2104,8 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		node.on(':editing', function () {
 			mapModel.setInputEnabled(false);
 		});
-		node.on(':openAttachmentRequested', function () {
-			mapModel.openAttachment('mouse', n.id);
+		node.on(':request', function (event) {
+			mapModel[event.type](event.source, n.id);
 		});
 		if (n.level > 1) {
 			node.on('mouseover touchstart', stage.setDraggable.bind(stage, false));
