@@ -3,7 +3,10 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 	'use strict';
 	var self = this,
 		loadedIdea,
-		downloadLink = (document.createElement('a').hasOwnProperty('download')) ? $('<a>').addClass('hide').appendTo('body') : undefined;
+		downloadLink = (document.createElement('a').hasOwnProperty('download')) ? $('<a>').addClass('hide').appendTo('body') : undefined,
+		joinLines = function (string) {
+			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
+		};
 	mapRepository.addEventListener('mapLoaded', function (idea) {
 		console.log('mapLoaded', idea.title);
 		loadedIdea = idea;
@@ -50,11 +53,11 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 						downloadLink[0].click();
 						return false;
 					} else {
-						elem.attr('href', '#');
 						delete self.download;
-						exportForm.find('[name=title]').val(title);
+						exportForm.find('[name=title]').val(joinLines(title));
 						exportForm.find('[name=map]').val(contents);
 						exportForm.submit();
+						return false;
 					}
 
 				}
