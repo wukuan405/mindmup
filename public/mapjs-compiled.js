@@ -1645,7 +1645,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				onCancelEdit = function () {
 					updateText(unformattedText);
 					if (deleteOnCancel) {
-						self.fire(':request',{type: 'removeSubIdea', source: 'internal'});
+						self.fire(':request', {type: 'removeSubIdea', source: 'internal'});
 					}
 				},
 				scale = self.getStage().getScale().x || 1;
@@ -1949,8 +1949,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 	return container;
 };
 
-/*global _, document, Kinetic*/
-var MAPJS = MAPJS || {};
+/*global _, document, Kinetic, MAPJS*/
 if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
 }

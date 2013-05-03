@@ -1,12 +1,12 @@
 /*global $, _ */
 $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
-    'use strict';
-    var modal = this,
-        template = this.find('[data-mm-role=template]'),
+	'use strict';
+	var modal = this,
+		template = this.find('[data-mm-role=template]'),
 		query,
-        parent = template.parent(),
-        statusDiv = this.find('[data-mm-role=status]'),
-        wireLink = function (link, file) {
+		parent = template.parent(),
+		statusDiv = this.find('[data-mm-role=status]'),
+		wireLink = function (link, file) {
 			if (navigation) {
 				return navigation.wireLinkForMapId('g1' + file.id, link);
 			}
@@ -20,24 +20,24 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
 					'<strong>' + message + '</strong>' + '</div>');
 		},
-        error = function (errorStatus) {
+		error = function (errorStatus) {
 			showAlert(errorStatus, 'error');
 		},
-        loaded = function (fileList) {
+		loaded = function (fileList) {
 			statusDiv.empty();
-            var sorted = _.sortBy(fileList, function (file) {
-                return file && file.modifiedDate;
-            }).reverse();
-            _.each(sorted, function (file) {
-                var added;
+			var sorted = _.sortBy(fileList, function (file) {
+				return file && file.modifiedDate;
+			}).reverse();
+			_.each(sorted, function (file) {
+				var added;
 				if (file) {
 					added = template.clone().appendTo(parent);
 					wireLink(added.find('a[data-mm-role=file-link]'), file).text(file.title.replace(/\.mup$/, ''));
 					added.find('[data-mm-role=modification-status]').text('By ' + file.lastModifyingUserName + ' on ' +
 						new Date(file.modifiedDate).toLocaleString());
 				}
-            });
-        },
+			});
+		},
 		fileRetrieval = function (showPopup) {
 			parent.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
@@ -65,16 +65,16 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 			modal.modal('hide');
 		});
 	}
-    template.detach();
+	template.detach();
 	modal.find('[data-mm-mimetype]').click(function () {
 		if ($(this).data('mm-mimetype')) {
-			query = "mimeType contains '" + $(this).data('mm-mimetype') + "' and not trashed";
+			query = 'mimeType contains \'' + $(this).data('mm-mimetype') + '\' and not trashed';
 		} else {
 			query = undefined;
 		}
 	});
-    modal.on('show', function () {
+	modal.on('show', function () {
 		fileRetrieval(false);
-    });
-    return modal;
+	});
+	return modal;
 };

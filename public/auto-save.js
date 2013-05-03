@@ -5,8 +5,8 @@ MM.AutoSave = function (mapRepository, storage, alertDispatcher) {
 		self = this,
 		currentMapId,
 		currentIdea,
-    events = [],
-    isWarningShown = false,
+		events = [],
+		isWarningShown = false,
 		checkForLocalChanges = function (mapId) {
 			var value = storage.getItem(prefix + mapId);
 			if (value) {

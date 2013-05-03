@@ -53,4 +53,4 @@ jQuery.fn.saveWidget = function (mapRepository) {
 		element.find('.dropdown-toggle').show();
 	});
 	return element;
-}
+};

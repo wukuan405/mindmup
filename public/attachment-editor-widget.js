@@ -44,8 +44,8 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 			editorArea.height(element.innerHeight() - editorArea.siblings().outerHeight(true) - margin);
 			$('[data-role=editor-toolbar] [data-role=magic-overlay]').each(function () {
 				var overlay = $(this), target = $(overlay.data('target'));
-				overlay.css('opacity', 0).css('position', 'absolute').
-					offset(target.offset()).width(target.outerWidth()).height(target.outerHeight());
+				overlay.css('opacity', 0).css('position', 'absolute')
+					.offset(target.offset()).width(target.outerWidth()).height(target.outerHeight());
 			});
 			shader.width('100%').height('100%');
 		},
@@ -93,17 +93,17 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 	element.find('[data-mm-role=clear]').click(clear);
 	element.find('[data-mm-role=edit]').click(switchToEditMode);
 	$(document).keydown('esc', function () {
-		if (element.is(":visible")) {
+		if (element.is(':visible')) {
 			close();
 		}
 	}).keydown('ctrl+s meta+s', function (e) {
-		if (element.is(":visible")) {
+		if (element.is(':visible')) {
 			e.preventDefault();
 			save();
 			close();
 		}
-	}).keydown('ctrl+return meta+return', function (e) {
-		if (element.is(":visible")) {
+	}).keydown('ctrl+return meta+return', function () {
+		if (element.is(':visible')) {
 			if (isEditing) {
 				save();
 			} else {
@@ -113,6 +113,5 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 	});
 	$(window).bind('orientationchange resize', sizeEditor);
 	mapModel.addEventListener('attachmentOpened', open);
-
 	return element;
 };

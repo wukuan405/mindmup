@@ -5,9 +5,6 @@ jQuery.fn.autoSaveWidget = function (autoSave) {
 	autoSave.addEventListener('unsavedChangesAvailable', function () {
 		self.modal('show');
 	});
-  autoSave.addEventListener('changesCouldNotBeSaved', function () {
-
-  });
 	self.find('[data-mm-role=apply]').click(function () {
 		autoSave.applyUnsavedChanges();
 		self.modal('hide');
