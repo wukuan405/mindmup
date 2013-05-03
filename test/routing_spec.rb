@@ -91,8 +91,7 @@ describe 'Map request routing' do
       get "/browserok/ABC",{}, {'rack.session'=>session}
       session["browserok"].should be_true
       last_response.should be_redirect
-      follow_redirect! 
-      last_request.url.should == "http://example.org/map/ABC"
+      last_response.header["Location"].should=='http://example.org/m#m:ABC'
     end
   end 
 end

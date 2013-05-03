@@ -11,6 +11,23 @@
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
     <script type="text/javascript">
       var _gaq = _gaq || [];
+      window.onload = function() {
+          var mapIdRegEx = /[Mm]:([^,;#]*)/,
+              getMapIdFromHash = function () {
+                var windowHash = window && window.location && window.location.hash,
+                  found = windowHash && mapIdRegEx.exec(windowHash);
+                return found && found[1];
+              },
+              setupContinue = function () {
+                var continueLink = document.getElementById('continueLink'),
+                    mapId = getMapIdFromHash();
+                    href = continueLink.href;
+                if (mapId) {
+                  continueLink.href = href + mapId;
+                }
+              };
+        setupContinue();
+      };
       _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
       _gaq.push(['_trackEvent','Error','Unsupported Browser Warning']);
       (function() {
@@ -31,7 +48,7 @@
          <a href="http://www.getfirefox.com" target="_blank">Firefox</a> and Safari, and strongly recommend using one of those browsers if possible.
          Of course, you're more than welcome to continue in your browser, if you'd like. We won't show this message again.</p>
          <p style="text-align:center">
-         <a class="btn btn-large btn-primary" href="/browserok/<%=@mapid%>">I understand, now let me in</a></p>
+         <a id="continueLink" class="btn btn-large btn-primary" href="/browserok/<%=@mapid%>">I understand, now let me in</a></p>
          <p>If you are using a recent version of Chrome, Firefox or Safari and you see this message, please let us know at contact@mindmup.com.
          If you feel very strongly about having your browser supported, think about contributing code or testing to <a href="http://github.com/mindmup">MindMup on github</a>. 
          </p>

@@ -117,7 +117,7 @@ end
 
 get '/browserok/:mapid' do
   session['browserok']=true
-  redirect "/map/#{params[:mapid]}"
+  redirect "/m#m:#{params[:mapid]}"
 end
 post '/import' do
   file = params['file']
