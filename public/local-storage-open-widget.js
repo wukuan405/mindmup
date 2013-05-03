@@ -42,7 +42,7 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 			statusDiv.empty();
 			var sorted = [];
 			_.each(fileMap, function (value, key) {
-				sorted.push({id: key, title: value.d, modifiedDate: value.t * 1000, info: value});
+				sorted.push({id: key, title: value.d || 'map', modifiedDate: value.t * 1000, info: value});
 			});
 			sorted = _.sortBy(sorted, function (file) {
 				return file && file.modifiedDate;
