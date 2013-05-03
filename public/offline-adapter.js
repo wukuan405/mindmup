@@ -16,7 +16,7 @@ MM.OfflineAdapter = function (storage) {
 		}
 		return result.promise();
 	};
-	this.saveMap = function (contentToSave, mapId) {
+	this.saveMap = function (contentToSave, mapId, title) {
 		var result = jQuery.Deferred(),
 			knownErrors = {
 				'QuotaExceededError': 'file-too-large',
@@ -24,10 +24,11 @@ MM.OfflineAdapter = function (storage) {
 				'QUOTA_EXCEEDED_ERR': 'file-too-large'
 			};
 		try {
+			title = title.replace(/\.mup$/, '');
 			if (!this.recognises(mapId)) {
-				result.resolve(storage.saveNew(contentToSave));
+				result.resolve(storage.saveNew(contentToSave, title));
 			} else {
-				storage.save(mapId, contentToSave);
+				storage.save(mapId, contentToSave, title);
 				result.resolve(mapId);
 			}
 		} catch (e) {
@@ -58,19 +59,20 @@ MM.OfflineMapStorage = function (storage, keyPrefix) {
 			files.maps = files.maps || {};
 			return files;
 		},
-		store = function (fileId, fileContent, files) {
-			files.maps[fileId] = newFileInformation(fileContent.title);
+		store = function (fileId, fileContent, files, title) {
+			title = title || fileContent.title || JSON.parse(fileContent).title;
+			files.maps[fileId] = newFileInformation(title);
 			storage.setItem(fileId, {map: fileContent});
 			storage.setItem(keyName, files);
 		};
-	this.save = function (fileId, fileContent) {
-		store(fileId, fileContent, storedFileInformation());
+	this.save = function (fileId, fileContent, title) {
+		store(fileId, fileContent, storedFileInformation(), title);
 	};
-	this.saveNew = function (fileContent) {
+	this.saveNew = function (fileContent, title) {
 		var files = storedFileInformation(),
 			fileId = newFileId(files.nextMapId);
 		files.nextMapId++;
-		store(fileId, fileContent, files);
+		store(fileId, fileContent, files, title);
 		return fileId;
 	};
 	this.remove = function (fileId) {

@@ -32,11 +32,11 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 			offlineMapStorage.restore(mapId, map, mapInfo);
 			fileRetrieval();
 		},
-		deleteMap = function (mapId, mapInfo) {
+		deleteMap = function (mapId, mapInfo, title) {
 			var map = offlineMapStorage.load(mapId);
 			offlineMapStorage.remove(mapId);
 			fileRetrieval();
-			showAlert('Map "' + map.title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
+			showAlert('Map "' + title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map, mapInfo));
 		},
 		loaded = function (fileMap) {
 			statusDiv.empty();
@@ -54,7 +54,7 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 						added = template.clone().appendTo(parent);
 						wireLink(added.find('a[data-mm-role=file-link]'), file).text(file.title);
 						added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedDate).toLocaleString());
-						added.find('[data-mm-role=map-delete]').click(deleteMap.bind(undefined, file.id, file.info));
+						added.find('[data-mm-role=map-delete]').click(deleteMap.bind(undefined, file.id, file.info, file.title));
 					}
 				});
 			} else {

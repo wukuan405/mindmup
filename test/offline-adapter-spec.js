@@ -1,4 +1,4 @@
-/*global jasmine, beforeEach, afterEach, sinon, describe, expect, it, MAPJS, MM, spyOn, localStorage*/
+/*global jasmine, beforeEach, afterEach, sinon, describe, expect, it, MM, spyOn, localStorage*/
 describe('Local storage ', function () {
 	'use strict';
 	describe('OfflineAdapter', function () {
@@ -42,23 +42,35 @@ describe('Local storage ', function () {
 			it('should save an existing map from another storage provider into local storage when saveMap method is invoked', function () {
 				underTest.saveMap(
 					'file content',
-					'g123'
+					'g123',
+					'file title.mup'
 				).then(function () {
 					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
 					expect(JSON.parse(localStorage.getItem('offline-maps')).nextMapId).toBe(2);
 				}, this.fail.bind(this, 'saveMap should succeed'));
 			});
+			it('should remove .mup extension from file name', function () {
+				underTest.saveMap(
+					'file content',
+					'offline-map-123',
+					'file title.mup'
+				);
+				var files = JSON.parse(localStorage.getItem('offline-maps'));
+				expect(files.maps['offline-map-123'].d).toEqual('file title');
+			});
 			it('should save an existing offline map into local storage when saveMap method is invoked', function () {
 				underTest.saveMap(
 					'file content',
-					'offline-map-123'
+					'offline-map-123',
+					'file title.mup'
 				);
 				expect(localStorage.getItem('offline-map-123')).toBe('{"map":"file content"}');
 			});
 			it('should save a new map into local storage when saveMap method is invoked', function () {
 				underTest.saveMap(
 					'file content',
-					'new'
+					'new',
+					'file title.mup'
 				).then(function () {
 					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
 				}, this.fail.bind(this, 'saveMap should succeed'));
@@ -67,7 +79,8 @@ describe('Local storage ', function () {
 				spyOn(jsonStorage, 'setItem').andThrow('Quota exceeded');
 				underTest.saveMap(
 					'file content',
-					'new'
+					'new',
+					'file title.mup'
 				).then(
 					this.fail.bind(this, 'saveMap should not succeed'),
 					function (reason) {
@@ -78,12 +91,13 @@ describe('Local storage ', function () {
 		});
 	});
 	describe('OfflineMapStorage', function () {
-		var jsonStorage, underTest, clock, map;
+		var jsonStorage, underTest, clock, map, mapObj;
 		beforeEach(function () {
 			clock = sinon.useFakeTimers();
 			localStorage.clear();
 			jsonStorage = MM.jsonStorage(localStorage);
-			map = MAPJS.content({ title: 'Hello World!' });
+			mapObj = { title: 'Hello World!' };
+			map = JSON.stringify(mapObj);
 			underTest = new MM.OfflineMapStorage(jsonStorage, 'offline');
 		});
 		afterEach(function () {
@@ -100,23 +114,24 @@ describe('Local storage ', function () {
 			});
 			it('should store file content', function () {
 				underTest.saveNew(map);
-				expect(localStorage.getItem('offline-map-1')).toBe('{"map":{"title":"Hello World!","formatVersion":2,"id":1}}');
+				expect(localStorage.getItem('offline-map-1')).toBe(JSON.stringify({'map': JSON.stringify({title: 'Hello World!'})}));
 			});
 		});
 		describe('overwriting file information', function () {
 			beforeEach(function () {
-				map.title = 'a new description';
+				mapObj.title = 'a new description!';
+				map = JSON.stringify(mapObj);
 			});
 			it('should overwrite file content', function () {
 				var mapId = underTest.saveNew(map);
 				underTest.save(mapId, map);
-				expect(localStorage.getItem('offline-map-1')).toBe('{"map":{"title":"a new description","formatVersion":2,"id":1}}');
+				expect(localStorage.getItem('offline-map-1')).toBe(JSON.stringify({'map': JSON.stringify({title: 'a new description!'})}));
 			});
 			it('should update title and timestamp', function () {
 				var mapId = underTest.saveNew(map);
 				clock.tick(2000);
 				underTest.save(mapId, map);
-				expect(JSON.parse(localStorage.getItem('offline-maps')).maps).toEqual({'offline-map-1': {'d': 'a new description', 't': 2}});
+				expect(JSON.parse(localStorage.getItem('offline-maps')).maps).toEqual({'offline-map-1': {'d': 'a new description!', 't': 2}});
 			});
 		});
 		describe('restoring file information', function () {
@@ -124,11 +139,12 @@ describe('Local storage ', function () {
 			beforeEach(function () {
 				fileInfo = {d: 'a restored description', t: 1};
 				mapId = underTest.saveNew(map);
-				map.title = fileInfo.d;
+				mapObj.title = fileInfo.d;
+				map = JSON.stringify(mapObj);
 			});
 			it('should restore map', function () {
 				underTest.restore(mapId, map, fileInfo);
-				expect(localStorage.getItem('offline-map-1')).toBe('{"map":{"title":"a restored description","formatVersion":2,"id":1}}');
+				expect(localStorage.getItem('offline-map-1')).toBe(JSON.stringify({'map': JSON.stringify({'title': 'a restored description'})}));
 			});
 			it('should restore title and timestamp', function () {
 				clock.tick(22000);
@@ -166,7 +182,8 @@ describe('Local storage ', function () {
 			var mapId1, mapId2;
 			beforeEach(function () {
 				mapId1 = underTest.saveNew(map);
-				map.title = 'new description';
+				mapObj.title = 'new description';
+				map = JSON.stringify(mapObj);
 				mapId2 = underTest.saveNew(map);
 			});
 			it('should return a list of files', function () {
@@ -182,7 +199,7 @@ describe('Local storage ', function () {
 				});
 			});
 			it('should return file content', function () {
-				expect(underTest.load(mapId1)).toEqual({ title: 'Hello World!', id: 1, formatVersion: 2 });
+				expect(underTest.load(mapId1)).toEqual(JSON.stringify({ title: 'Hello World!'}));
 			});
 		});
 	});
