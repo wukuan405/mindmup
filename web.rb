@@ -72,7 +72,7 @@ post "/lastMap/:mapid" do
   session['mapid']=params[:mapid]
 end
 get "/s3/:mapid" do
-  redirect "/map/#{params[:mapid]}"
+  redirect "/m#m:#{params[:mapid]}"
 end
 
 get "/s3proxy/:mapid" do
