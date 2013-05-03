@@ -1,4 +1,4 @@
-/*global jQuery, navigator, window, MM, observable*/
+/*global jQuery, navigator, window, MM*/
 MM.JotForm = function (formElement, alert) {
 	'use strict';
 	var nameElement = formElement.find('[name=q1_name]'),

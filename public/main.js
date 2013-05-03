@@ -75,7 +75,7 @@ MM.main = function (config) {
 		jQuery('#toolbarEdit .updateStyle').colorPicker();
 		jQuery('#toolbarEdit .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 		jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
-		jQuery('#floating-toolbar').floatingToolbarWidget(mapRepository, pngExporter);
+		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, navigation);
 		jQuery('#modalDownload').downloadWidget(pngExporter);
 		jQuery(document).titleUpdateWidget(mapRepository);

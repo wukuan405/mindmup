@@ -104,7 +104,7 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 		var element = jQuery(this),
 			alertId,
 			template = element.find('.template').clone(),
-		    originalContent = element.children().clone(),
+			originalContent = element.children().clone(),
 			keep = element.children().filter('[data-mm-role=bookmark-keep]').clone(),
 			pin = element.children().filter('[data-mm-role=bookmark-pin]').clone(),
 			wireLinks = function (element) {
@@ -135,7 +135,6 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 							return false;
 						});
 					});
-
 					wireLinks(keep.clone()).appendTo(element);
 					if (bookmarks.canPin()) {
 						pin.clone().appendTo(element).find('a').click(function () {

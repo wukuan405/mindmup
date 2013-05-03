@@ -1,10 +1,8 @@
-/*global $, _, jQuery, window*/
-jQuery.fn.floatingToolbarWidget = function (mapRepository, pngExporter) {
+/*global jQuery*/
+jQuery.fn.floatingToolbarWidget = function () {
 	'use strict';
 	return this.each(function () {
-		var element = jQuery(this), loadedIdea,
-			keyboardShortcuts = element.find('.keyboardShortcuts'),
-			toggleButton = element.find('.toggle');
+		var element = jQuery(this);
 		element.draggable({containment: 'window'});
 	});
 };

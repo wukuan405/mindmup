@@ -27,9 +27,9 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 				'txt': exportFunc(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), false)
 			},
 			format = $(this).data('mm-format'),
-		    title,
-		    elem,
-		    alertId;
+			title,
+			elem,
+			alertId;
 		title = loadedIdea.title + '.' + format;
 		if (alert) {
 			alertId = alert.show('Exporting map to ' + title, 'This may take a few seconds for larger maps', 'info');
@@ -62,7 +62,6 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 						exportForm.submit();
 						return false;
 					}
-
 				}
 			);
 		}

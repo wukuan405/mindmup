@@ -31,7 +31,6 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 	self.sharingUrl = function () {
 		return baseUrl + 'map/' + self.currentMapId();
 	};
-
 	self.hashMapId = hashMapId;
 	self.currentMapId = calcCurrentMapId;
 	self.wireLinkForMapId = function (newMapId, link) {

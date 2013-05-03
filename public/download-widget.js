@@ -1,4 +1,4 @@
-/*global jQuery, MM */
+/*global jQuery */
 jQuery.fn.downloadWidget = function (pngExporter) {
 	'use strict';
 	return this.each(function () {
