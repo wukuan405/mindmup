@@ -219,7 +219,7 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 	navigation.addEventListener('mapIdChangeConfirmationRequired', function (newMapId) {
 		showAlertWithCallBack(
 			'There are unsaved changes in the loaded map.',
-			'Click here to continue (unsaved changes will be lost)',
+			'Click here to continue',
 			'warning',
 			function () {
 				navigation.confirmationRequired(false);
