@@ -109,7 +109,7 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 			pin = element.children().filter('[data-mm-role=bookmark-pin]').clone(),
 			wireLinks = function (element) {
 				if (navigation) {
-					return element.navigationWidget(navigation);
+					navigation.wireLinksInContainer(element);
 				}
 				return element;
 			},

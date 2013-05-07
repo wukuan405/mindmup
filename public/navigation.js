@@ -37,9 +37,8 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 		if (useHash()) {
 			link.attr('href', '#' + hashMapId(newMapId));
 			link.data('link-fixed', 'true');
-			link.click(function () {self.changeMapId(newMapId); });
 		} else {
-			link.attr('href', '/map/' + newMapId);
+			link.attr('href', '/m#m:' + newMapId);
 		}
 		return link;
 	};
@@ -47,6 +46,16 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 		if (useHash() && !$(link).data('link-fixed')) {
 			$(link).attr('href', '#' +  hashMapId(calcCurrentMapId()));
 		}
+	};
+	self.wireLinksInContainer = function (element) {
+		_.each($(element).find('a'), function (link) {
+			var $link = $(link),
+				href = $link.attr('href'),
+				result = mapIdRegEx.exec(href);
+			if (result && result[1]) {
+				self.wireLinkForMapId(result[1], $link);
+			}
+		});
 	};
 	self.changeMapId = function (newMapId, force) {
 		if (newMapId && currentMapId && newMapId === currentMapId) {
@@ -67,13 +76,16 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 				return;
 			}
 			currentMapId = newMapId;
-			document.location = '/map/' + newMapId;
+			document.location = '/m#m:' + newMapId;
 		}
 	};
 	window.addEventListener('hashchange', function () {
 		var newMapId = getMapIdFromHash();
 		if (!newMapId) {
-			return;
+			if (currentMapId) {
+				window.location.hash = hashMapId(currentMapId);
+			}
+			return false;
 		}
 		if (!currentMapId || currentMapId !== newMapId) {
 			self.changeMapId(newMapId);
@@ -85,7 +97,6 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 $.fn.navigationWidget = function (navigation) {
 	'use strict';
 	var self = this,
-		mapIdRegEx = /\/[Mm]ap\/([^\/]*)/,
 		setSimpleLinks = function (newMapId, previousMapId) {
 			_.each(self.find('a[href="#"]'), function (link) {
 				navigation.setSimpleLink(link);
@@ -96,17 +107,11 @@ $.fn.navigationWidget = function (navigation) {
 				});
 			}
 		};
-	_.each(self.find('a'), function (link) {
-		var $link = $(link),
-			href = $link.attr('href'),
-			result = mapIdRegEx.exec(href);
-		if (result && result[1]) {
-			navigation.wireLinkForMapId(result[1], $link);
-		}
-	});
+	navigation.wireLinksInContainer(self);
 	setSimpleLinks(navigation.currentMapId());
 	navigation.addEventListener('mapIdChanged', function (newMapId, previousMapId) {
 		setSimpleLinks(newMapId, previousMapId);
 	});
+
 	return self;
 };

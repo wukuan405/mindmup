@@ -1,9 +1,13 @@
-/*global beforeEach, describe, expect, it, MM, $, spyOn, jasmine*/
+/*global beforeEach, afterEach, describe, expect, it, MM, $, spyOn, jasmine*/
 describe('MM.navigation', function () {
 	'use strict';
 	var underTest;
 	beforeEach(function () {
 		underTest = new MM.navigation({mapId: 'mapIdInConfig'});
+	});
+	afterEach(function () {
+		window.removeEventListener('mapIdChanged');
+		window.location.hash = '';
 	});
 	describe('currentMapId', function () {
 		it('should return mapId from window address hash', function () {
@@ -37,30 +41,21 @@ describe('MM.navigation', function () {
 			beforeEach(function () {
 				window.location.hash = 'm:mapIdInHash';
 			});
+			afterEach(function () {
+				window.location.hash = '';
+			});
 			it('should set # as href', function () {
 				underTest.wireLinkForMapId('newMapId', link);
 				expect(link.attr('href')).toBe('#m:newMapId');
-			});
-			it('should set click event', function () {
-				spyOn(link, 'click').andCallThrough();
-				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.click).toHaveBeenCalledWith(jasmine.any(Function));
-			});
-			it('should set the link to call changeMapId when it is clicked', function () {
-				underTest = new MM.navigation({mapId: 'mapIdInConfig'});
-				spyOn(underTest, 'changeMapId');
-				underTest.wireLinkForMapId('newMapId', link);
-				link.click();
-				expect(underTest.changeMapId).toHaveBeenCalledWith('newMapId');
 			});
 		});
 		describe('when there is no window address hash', function () {
 			beforeEach(function () {
 				window.location.hash = '';
 			});
-			it('should set /map/newMapId as href', function () {
+			it('should set /m#m:newMapId as href', function () {
 				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.attr('href')).toBe('/map/newMapId');
+				expect(link.attr('href')).toBe('/m#m:newMapId');
 			});
 			it('should not set click event', function () {
 				spyOn(link, 'click').andCallThrough();
