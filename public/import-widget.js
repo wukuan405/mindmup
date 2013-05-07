@@ -41,22 +41,15 @@ $.fn.importWidget = function (activityLog, mapRepository) {
 			);
 		},
 		success = function (fileContent, type) {
-			var idea, jsonContent, counter;
+			var idea, jsonContent;
 			spinner('Processing file');
 			if (type !== 'mup' && type !== 'mm') {
 				fail('unsupported format ' + type);
 			}
 			try {
 				jsonContent = parseFile(fileContent, type);
-
 				spinner('Initialising map');
-				counter = 0;
-				idea = MAPJS.content(jsonContent, function () {
-					if (counter % 1000 === 0) {
-						spinner('Initialised ' + counter + 'nodes');
-					}
-					counter++;
-				});
+				idea = MAPJS.content(jsonContent);
 			} catch (e) {
 				fail('invalid file content', e);
 				return;
