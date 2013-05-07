@@ -8,23 +8,18 @@ describe 'Map request routing' do
   before(:each) do
     header "User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.152 Safari/537.22"
   end
-  describe 'named map route' do
-    it "takes map ID from the url after /map sets mapid attrib to just the map id." do
-      get "/map/ABCDEFGH"
-      last_response.should be_ok
-      last_response.should_not be_redirect
-      last_response_config[:mapId].should=='ABCDEFGH'
-    end
+  describe 'last map route' do
     it "puts the id of the map into session mapid so that users can easily go back to it" do
       session={}
-      get "/map/ABCDEFGH",{},{'rack.session'=>session}
+      post "/lastMap/ABCDEFGH",{},{'rack.session'=>session}
       session["mapid"].should=='ABCDEFGH'
     end
-    it "ignores any previous session mapids" do
-      get "/map/ABCDEFGH",{}, {'rack.session'=>{'mapid'=>'PreviousMap'}}
-      last_response.should be_ok
-      last_response.should_not be_redirect
-      last_response_config[:mapId].should=='ABCDEFGH'
+  end
+  describe 'named map route' do
+    it "takes map ID from the url after /map sets and redirects to /m#m:<mapId>." do
+      get "/map/ABCDEFGH"
+      last_response.should be_redirect
+      last_response.header["Location"].should=='http://example.org/m#m:ABCDEFGH'
     end
   end
   describe 'homepage route' do

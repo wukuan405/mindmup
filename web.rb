@@ -99,9 +99,7 @@ post "/export" do
 end
 
 get "/map/:mapid" do
-  @mapid = params[:mapid]
-  session['mapid']=@mapid
-  show_map
+  redirect "/m#m:#{params[:mapid]}"
 end
 get "/m" do
   show_map
