@@ -340,7 +340,7 @@ MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
 		navigation.changeMapId(newMapId || 'nil', true);
 	});
-	mapRepository.addEventListener('mapSavinged', function (newMapId, idea, idHasChanged) {
+	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
 		if (idHasChanged) {
 			navigation.changeMapId(newMapId || 'nil', true);
 		}
