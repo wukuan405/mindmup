@@ -11,7 +11,7 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 				return navigation.wireLinkForMapId('g1' + file.id, link);
 			}
 			else {
-				return link.attr('href', '/map/g1' + file.id);
+				return link.attr('href', '#m:g1' + file.id);
 			}
 		},
 		showAlert = function (message, type) {

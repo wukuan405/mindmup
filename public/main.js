@@ -23,13 +23,10 @@ MM.main = function (config) {
 		},
 		isTouch = function () {
 			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
-		},
-		isChromeApp = function () {
-			return jQuery('body').hasClass('chrome_app');
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
 	jQuery(function () {
-		var navigation = MM.navigation(config, isChromeApp(), config.baseUrl),
+		var navigation = MM.navigation(localStorage, config.baseUrl),
 			activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
@@ -90,16 +87,14 @@ MM.main = function (config) {
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, navigation);
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, navigation);
 		jQuery('body')
-			.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
-			.navigationWidget(navigation);
+			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('[data-category]').trackingWidget(activityLog);
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation, config.baseUrl);
-		mapRepository.loadMap(navigation.currentMapId());
+		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation);
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };

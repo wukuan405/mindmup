@@ -1,5 +1,5 @@
-/*global MM, observable, $, _*/
-MM.navigation = function (config, chromeApp, baseUrl) {
+/*global MM, observable*/
+MM.navigation = function (storage, baseUrl) {
 	'use strict';
 	observable(this);
 	var self = this,
@@ -9,18 +9,11 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 				found = windowHash && mapIdRegEx.exec(windowHash);
 			return found && found[1];
 		},
-		calcCurrentMapId = function () {
-			return getMapIdFromHash() || config.mapId || 'default';
-		},
 		hashMapId = function (mapId) {
 			return 'm:' + mapId;
 		},
-		useHash = function () {
-			return !config.mapId || getMapIdFromHash() || chromeApp;
-		},
-		currentMapId = calcCurrentMapId(),
+		knownMapId = getMapIdFromHash(),
 		confirmationRequired = false;
-	self.useHash = useHash;
 	self.confirmationRequired = function (val) {
 		if (val === undefined) {
 			return confirmationRequired;
@@ -32,86 +25,38 @@ MM.navigation = function (config, chromeApp, baseUrl) {
 		return baseUrl + 'map/' + self.currentMapId();
 	};
 	self.hashMapId = hashMapId;
-	self.currentMapId = calcCurrentMapId;
+	self.currentMapId = function () {
+		return getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
+	};
 	self.wireLinkForMapId = function (newMapId, link) {
-		if (useHash()) {
-			link.attr('href', '#' + hashMapId(newMapId));
-			link.data('link-fixed', 'true');
-		} else {
-			link.attr('href', '/m#m:' + newMapId);
-		}
+		link.attr('href', '#' + hashMapId(newMapId));
 		return link;
 	};
-	self.setSimpleLink = function (link) {
-		if (useHash() && !$(link).data('link-fixed')) {
-			$(link).attr('href', '#' +  hashMapId(calcCurrentMapId()));
-		}
-	};
-	self.wireLinksInContainer = function (element) {
-		_.each($(element).find('a'), function (link) {
-			var $link = $(link),
-				href = $link.attr('href'),
-				result = mapIdRegEx.exec(href);
-			if (result && result[1]) {
-				self.wireLinkForMapId(result[1], $link);
-			}
-		});
-	};
 	self.changeMapId = function (newMapId, force) {
-		if (newMapId && currentMapId && newMapId === currentMapId) {
+		if (newMapId && knownMapId && newMapId === knownMapId) {
 			return false;
 		}
-		var previousMapId = currentMapId || calcCurrentMapId();
-		if (useHash()) {
-			if (confirmationRequired && !force) {
-				self.dispatchEvent('mapIdChangeConfirmationRequired', newMapId);
-			} else {
-				currentMapId = newMapId;
-				window.location.hash = hashMapId(newMapId);
-				self.dispatchEvent('mapIdChanged', newMapId, previousMapId);
-			}
-			return true;
+		if (confirmationRequired && !force) {
+			self.dispatchEvent('mapIdChangeConfirmationRequired', newMapId);
 		} else {
-			if (!newMapId || newMapId === 'nil') {
-				return;
-			}
-			currentMapId = newMapId;
-			document.location = '/m#m:' + newMapId;
+			knownMapId = newMapId;
+			window.location.hash = hashMapId(newMapId);
+			self.dispatchEvent('mapIdChanged', newMapId);
+			storage.setItem('mostRecentMapLoaded', newMapId);
 		}
+		return true;
 	};
 	window.addEventListener('hashchange', function () {
 		var newMapId = getMapIdFromHash();
 		if (!newMapId) {
-			if (currentMapId) {
-				window.location.hash = hashMapId(currentMapId);
+			if (knownMapId) {
+				window.location.hash = hashMapId(knownMapId);
 			}
 			return false;
 		}
-		if (!currentMapId || currentMapId !== newMapId) {
+		if (!knownMapId || knownMapId !== newMapId) {
 			self.changeMapId(newMapId);
 		}
 	});
-	return self;
-};
-
-$.fn.navigationWidget = function (navigation) {
-	'use strict';
-	var self = this,
-		setSimpleLinks = function (newMapId, previousMapId) {
-			_.each(self.find('a[href="#"]'), function (link) {
-				navigation.setSimpleLink(link);
-			});
-			if (previousMapId) {
-				_.each(self.find('a[href="#' + navigation.hashMapId(previousMapId) + '"]'), function (link) {
-					navigation.setSimpleLink(link);
-				});
-			}
-		};
-	navigation.wireLinksInContainer(self);
-	setSimpleLinks(navigation.currentMapId());
-	navigation.addEventListener('mapIdChanged', function (newMapId, previousMapId) {
-		setSimpleLinks(newMapId, previousMapId);
-	});
-
 	return self;
 };

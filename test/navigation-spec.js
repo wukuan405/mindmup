@@ -3,7 +3,9 @@ describe('MM.navigation', function () {
 	'use strict';
 	var underTest;
 	beforeEach(function () {
-		underTest = new MM.navigation({mapId: 'mapIdInConfig'});
+		localStorage.clear();
+		underTest = new MM.navigation(localStorage);
+		localStorage.setItem('mostRecentMapLoaded', 'most recent');
 	});
 	afterEach(function () {
 		window.removeEventListener('mapIdChanged');
@@ -14,17 +16,17 @@ describe('MM.navigation', function () {
 			window.location.hash = 'm:mapIdInHash';
 			expect(underTest.currentMapId()).toBe('mapIdInHash');
 		});
-		it('should return mapId from config if there is no window address hash', function () {
-			window.location.hash = '';
-			expect(underTest.currentMapId()).toBe('mapIdInConfig');
-		});
-		it('should ignore window address hash if it does not match format', function () {
+		it('should ignore window address hash and return most recent if it does not match format', function () {
 			window.location.hash = 'mapIdInHash';
-			expect(underTest.currentMapId()).toBe('mapIdInConfig');
+			expect(underTest.currentMapId()).toBe('most recent');
+		});
+		it('should return most recent mapid from storage if no map id in hash', function () {
+			window.location.hash = '';
+			expect(underTest.currentMapId()).toBe('most recent');
 		});
 		it('should return default as fallback', function () {
 			window.location.hash = '';
-			underTest = new MM.navigation({});
+			localStorage.clear();
 			expect(underTest.currentMapId()).toBe('default');
 		});
 
@@ -53,9 +55,9 @@ describe('MM.navigation', function () {
 			beforeEach(function () {
 				window.location.hash = '';
 			});
-			it('should set /m#m:newMapId as href', function () {
+			it('should set #m:newMapId as href', function () {
 				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.attr('href')).toBe('/m#m:newMapId');
+				expect(link.attr('href')).toBe('#m:newMapId');
 			});
 			it('should not set click event', function () {
 				spyOn(link, 'click').andCallThrough();
@@ -77,54 +79,48 @@ describe('MM.navigation', function () {
 
 	});
 	describe('changeMapId', function () {
-		describe('when mapId is from window address hash', function () {
-			var listener;
-			beforeEach(function () {
-				window.location.hash = 'm:mapIdInHash';
-				underTest = new MM.navigation({mapId: 'mapIdInConfig'});
-				listener = jasmine.createSpy();
-				underTest.addEventListener('mapIdChanged', listener);
-			});
-			it('should return true when mapId is not the same', function () {
-				expect(underTest.changeMapId('newMapId')).toBe(true);
-			});
-			it('should set window address hash to new mapId', function () {
-				underTest.changeMapId('newMapId');
-				expect(window.location.hash).toBe('#m:newMapId');
-			});
-			it('should notify listeners of newMapId', function () {
-				underTest.changeMapId('newMapId');
-				expect(listener).toHaveBeenCalledWith('newMapId', 'mapIdInHash');
-			});
-			it('should return false when mapId is the same', function () {
-				expect(underTest.changeMapId('mapIdInHash')).toBe(false);
-				expect(window.location.hash).toBe('#m:mapIdInHash');
-				expect(listener).not.toHaveBeenCalled();
-			});
-			it('should notify listeners when confirmation required', function () {
-				var confirmationListener = jasmine.createSpy();
-				underTest.confirmationRequired(true);
-				underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
-				underTest.changeMapId('newMapId');
-				expect(confirmationListener).toHaveBeenCalledWith('newMapId');
-			});
-			it('should not notify listeners when confirmation required but forced', function () {
-				var confirmationListener = jasmine.createSpy();
-				underTest.confirmationRequired(true);
-				underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
-				underTest.changeMapId('newMapId', true);
-				expect(confirmationListener).not.toHaveBeenCalledWith('newMapId');
-			});
+		var listener;
+		beforeEach(function () {
+			window.location.hash = 'm:mapIdInHash';
+			localStorage.clear();
+			underTest = new MM.navigation(localStorage);
+			listener = jasmine.createSpy();
+			underTest.addEventListener('mapIdChanged', listener);
 		});
-		describe('when there is no window address hash', function () {
-			beforeEach(function () {
-				window.location.hash = '';
-				underTest = new MM.navigation({mapId: 'mapIdInConfig'});
-			});
-			it('should return false when mapId is the same', function () {
-				expect(underTest.changeMapId('mapIdInConfig')).toBe(false);
-				expect(window.location.hash).toBe('');
-			});
+		it('should return true when mapId is not the same', function () {
+			expect(underTest.changeMapId('newMapId')).toBe(true);
+		});
+		it('should save the map id to storage', function () {
+			underTest.changeMapId('newMapId');
+			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newMapId');
+		});
+		it('should set window address hash to new mapId', function () {
+			window.location.hash = '';
+			underTest.changeMapId('default');
+			expect(window.location.hash).toBe('#m:default');
+		});
+		it('should notify listeners of newMapId', function () {
+			underTest.changeMapId('newMapId');
+			expect(listener).toHaveBeenCalledWith('newMapId');
+		});
+		it('should return false when mapId is the same', function () {
+			expect(underTest.changeMapId('mapIdInHash')).toBe(false);
+			expect(window.location.hash).toBe('#m:mapIdInHash');
+			expect(listener).not.toHaveBeenCalled();
+		});
+		it('should notify listeners when confirmation required', function () {
+			var confirmationListener = jasmine.createSpy();
+			underTest.confirmationRequired(true);
+			underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
+			underTest.changeMapId('newMapId');
+			expect(confirmationListener).toHaveBeenCalledWith('newMapId');
+		});
+		it('should not notify listeners when confirmation required but forced', function () {
+			var confirmationListener = jasmine.createSpy();
+			underTest.confirmationRequired(true);
+			underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
+			underTest.changeMapId('newMapId', true);
+			expect(confirmationListener).not.toHaveBeenCalledWith('newMapId');
 		});
 	});
 });

@@ -23,33 +23,10 @@ describe 'Map request routing' do
     end
   end
   describe 'homepage route' do
-    it "uses the default map on the homepage, if the user had no previous map stored" do
-      get "/"
-      last_response.should be_ok
-      last_response.should_not be_redirect
-      last_response_config[:mapId].should=='defaultmap'
-    end
     it "uses the last viewed map as the homepage, if the user had a previous map" do
       get "/",{}, {'rack.session'=>{'mapid'=>'PreviousMap'}}
       last_response.header["Location"].should=='http://example.org/m#m:PreviousMap'
       last_response.should be_redirect
-    end
-  end
-  describe "/default route" do
-    it "uses the default map, if the user had no previous map stored" do
-      get "/default"
-      last_response.should be_ok
-      last_response_config[:mapId].should=='defaultmap'
-    end
-    it "uses the default map, even if the user had a previous map" do
-      get "/default",{}, {'rack.session'=>{'mapid'=>'PreviousMap'}}
-      last_response.should be_ok
-      last_response_config[:mapId].should=='defaultmap'
-    end
-    it "does not touch the session mapid" do
-      session={"mapid"=>"PreviousMap"}
-      get "/default",{},{'rack.session'=>session}
-      session["mapid"].should=='PreviousMap'
     end
   end
   describe "/gd" do

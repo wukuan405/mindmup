@@ -25,7 +25,7 @@ $.fn.localStorageOpenWidget = function (offlineMapStorage, navigation) {
 				return navigation.wireLinkForMapId(file.id, link);
 			}
 			else {
-				return link.attr('href', '/map/' + file.id);
+				return link.attr('href', '#m:' + file.id);
 			}
 		},
 		restoreMap = function (mapId, map, mapInfo) {

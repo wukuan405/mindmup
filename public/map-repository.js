@@ -142,12 +142,13 @@ MM.MapRepository = function (adapters) {
 	};
 };
 
-MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation, baseUrl) {
+MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation) {
 	'use strict';
-	MM.MapRepository.mapLocationChange(mapRepository, navigation, baseUrl);
+	MM.MapRepository.mapLocationChange(mapRepository, navigation);
 	MM.MapRepository.activityTracking(mapRepository, activityLog);
 	MM.MapRepository.alerts(mapRepository, alert, navigation);
 	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation);
+	mapRepository.loadMap(navigation.currentMapId());
 };
 
 
@@ -334,28 +335,14 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 	});
 };
-MM.MapRepository.mapLocationChange = function (mapRepository, navigation, baseUrl) {
+MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 	'use strict';
-	var recordLastMap = function (mapId) {
-		if (!mapId || !navigation.useHash()) {
-			return;
-		}
-		jQuery.ajax({
-			url: baseUrl + 'lastMap/' + mapId,
-			type: 'POST'
-		});
-	};
 	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
-		var mapId = navigation.currentMapId();
-		recordLastMap(mapId);
-		if (mapId && mapId !== newMapId) {
-			navigation.changeMapId(newMapId || 'nil', true);
-		}
+		navigation.changeMapId(newMapId || 'nil', true);
 	});
-	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
-		recordLastMap(newMapId);
+	mapRepository.addEventListener('mapSavinged', function (newMapId, idea, idHasChanged) {
 		if (idHasChanged) {
-			navigation.changeMapId(newMapId);
+			navigation.changeMapId(newMapId || 'nil', true);
 		}
 	});
 	navigation.addEventListener('mapIdChanged', function (newMapId) {

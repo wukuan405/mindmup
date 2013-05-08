@@ -256,11 +256,11 @@ describe('Bookmarks', function () {
 			var links = [{mapId: 'u1', title: 't1'},
 				{mapId: 'u2', title: 't2'},
 				{mapId: 'u3', title: 't3'}],
-				list = jQuery(ulTemplate).bookmarkWidget(wrap(links), undefined, new MM.navigation({mapId: 'foo'}));
+				list = jQuery(ulTemplate).bookmarkWidget(wrap(links), undefined, new MM.navigation(localStorage));
 			expect(list.children('li').length).toBe(3);
-			expect(list.children('li').first().children('a').attr('href')).toBe('/m#m:u3');
+			expect(list.children('li').first().children('a').attr('href')).toBe('#m:u3');
 			expect(list.children('li').first().children('a').text()).toBe('t3');
-			expect(list.children('li').last().children('a').attr('href')).toBe('/m#m:u1');
+			expect(list.children('li').last().children('a').attr('href')).toBe('#m:u1');
 			expect(list.children('li').last().children('a').text()).toBe('t1');
 		});
 		it('self-updates if a bookmark is deleted', function () {
@@ -268,18 +268,18 @@ describe('Bookmarks', function () {
 				{mapId: 'u2', title: 't2'},
 				{mapId: 'u3', title: 't3'}],
 				bookmark = wrap(links),
-				list = jQuery(ulTemplate).bookmarkWidget(bookmark, undefined, new MM.navigation({mapId: 'foo'}));
+				list = jQuery(ulTemplate).bookmarkWidget(bookmark, undefined, new MM.navigation(localStorage));
 			bookmark.remove('u1');
 			expect(list.children('li').length).toBe(2);
-			expect(list.children('li').first().children('a').attr('href')).toBe('/m#m:u3');
-			expect(list.children('li').last().children('a').attr('href')).toBe('/m#m:u2');
+			expect(list.children('li').first().children('a').attr('href')).toBe('#m:u3');
+			expect(list.children('li').last().children('a').attr('href')).toBe('#m:u2');
 		});
 		it('self-updates if a bookmark is added', function () {
 			var	bookmark = wrap([]),
-				list = jQuery(ulTemplate).bookmarkWidget(bookmark, undefined, new MM.navigation({mapId: 'foo'}));
+				list = jQuery(ulTemplate).bookmarkWidget(bookmark, undefined, new MM.navigation(localStorage));
 			bookmark.store({mapId: 'u1', title: 't1'});
 			expect(list.children('li').length).toBe(1);
-			expect(list.children('li').last().children('a').attr('href')).toBe('/m#m:u1');
+			expect(list.children('li').last().children('a').attr('href')).toBe('#m:u1');
 		});
 		it('puts back original content when all bookmarks are removed', function () {
 			var links = [{mapId: 'u1', title: 't1'}],
@@ -294,10 +294,10 @@ describe('Bookmarks', function () {
 			for (idx = 0; idx < 12; idx++) {
 				links.push({mapId: 'u' + idx, title: 't' + idx});
 			}
-			list = jQuery(ulTemplate).bookmarkWidget(wrap(links), undefined, new MM.navigation({mapId: 'foo'}));
+			list = jQuery(ulTemplate).bookmarkWidget(wrap(links), undefined, new MM.navigation(localStorage));
 			expect(list.children('li').length).toBe(10);
-			expect(list.children('li').first().children('a').attr('href')).toBe('/m#m:u11');
-			expect(list.children('li').last().children('a').attr('href')).toBe('/m#m:u2');
+			expect(list.children('li').first().children('a').attr('href')).toBe('#m:u11');
+			expect(list.children('li').last().children('a').attr('href')).toBe('#m:u2');
 		});
 		it('preserves any children in the link', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));

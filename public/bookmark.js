@@ -107,12 +107,6 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 			originalContent = element.children().clone(),
 			keep = element.children().filter('[data-mm-role=bookmark-keep]').clone(),
 			pin = element.children().filter('[data-mm-role=bookmark-pin]').clone(),
-			wireLinks = function (element) {
-				if (navigation) {
-					navigation.wireLinksInContainer(element);
-				}
-				return element;
-			},
 			updateLinks = function () {
 				var list = bookmarks.links(),
 					link,
@@ -135,7 +129,7 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 							return false;
 						});
 					});
-					wireLinks(keep.clone()).appendTo(element);
+					keep.clone().appendTo(element);
 					if (bookmarks.canPin()) {
 						pin.clone().appendTo(element).find('a').click(function () {
 							bookmarks.pin();

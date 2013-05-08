@@ -8,9 +8,7 @@ describe('Map Repository', function () {
 		MM.MapRepository.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					return jQuery.Deferred().
-						resolve('{ "title": "hello" }', mapId, 'application/json').
-						promise();
+					return jQuery.Deferred().resolve('{ "title": "hello" }', mapId, 'application/json').promise();
 				},
 				saveMap: function (contentToSave, oldId) {
 					return jQuery.Deferred().resolve(oldId).promise();
