@@ -35,12 +35,7 @@ configure do
   set :static, true
 end
 get '/' do
-  if session['mapid'].nil?
-    @mapid=settings.default_map
-    show_map
-  else
-    redirect "/m#m:#{session['mapid']}"
-  end
+  show_map
 end
 
 get '/gd' do
@@ -65,11 +60,7 @@ get '/trouble' do
  erb :trouble
 end
 get '/default' do
-  @mapid=settings.default_map
-  erb :editor
-end
-post "/lastMap/:mapid" do
-  session['mapid']=params[:mapid]
+  redirect "/#m:default"
 end
 get "/s3/:mapid" do
   redirect "/m#m:#{params[:mapid]}"
@@ -157,17 +148,6 @@ helpers do
   def user_cohort
      session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
      session["cohort"]
-  end
-  def map_url mapid
-    if !mapid
-      ""
-    else 
-      if settings.online?
-        "http://%s/%s" %  [settings.s3_website, map_key(mapid)]
-      else
-        "/offline/default.json"
-      end
-    end
   end
   def join_scripts script_url_array
     return script_url_array if (development? || test?)
