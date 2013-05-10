@@ -9,16 +9,16 @@ describe 'Map request routing' do
     header "User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.152 Safari/537.22"
   end
   describe 'named map route' do
-    it "takes map ID from the url after /map sets and redirects to /m#m:<mapId>." do
+    it "takes map ID from the url after /map sets and redirects to /#m:<mapId>." do
       get "/map/ABCDEFGH"
       last_response.should be_redirect
-      last_response.header["Location"].should=='http://example.org/m#m:ABCDEFGH'
+      last_response.header["Location"].should=='http://example.org/#m:ABCDEFGH'
     end
   end
   describe "/gd" do
     it "parses JSON to retrieve google IDs and redirects to g1+ID" do
       get '/gd?state=%7B%22ids%22%3A%5B%220B79-DtmfqRMET0x2NHpoLWd5ZWM%22%5D%2C%22action%22%3A%22open%22%2C%22userId%22%3A%22110457656708424572832%22%7D'
-      last_response.header["Location"].should=='http://example.org/m#m:g10B79-DtmfqRMET0x2NHpoLWd5ZWM'
+      last_response.header["Location"].should=='http://example.org/#m:g10B79-DtmfqRMET0x2NHpoLWd5ZWM'
       last_response.should be_redirect
     end
   end
@@ -49,7 +49,7 @@ describe 'Map request routing' do
       get "/browserok/ABC",{}, {'rack.session'=>session}
       session["browserok"].should be_true
       last_response.should be_redirect
-      last_response.header["Location"].should=='http://example.org/m#m:ABC'
+      last_response.header["Location"].should=='http://example.org/#m:ABC'
     end
   end 
 end

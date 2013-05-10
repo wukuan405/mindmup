@@ -47,7 +47,7 @@ get '/gd' do
     else
       mapid = "g1" + state['ids'][0]
     end
-    redirect "/m#m:"+mapid
+    redirect "/#m:"+mapid
   rescue Exception=>e
     puts e
     halt 400, "Google drive state missing or invalid"
@@ -63,7 +63,7 @@ get '/default' do
   redirect "/#m:default"
 end
 get "/s3/:mapid" do
-  redirect "/m#m:#{params[:mapid]}"
+  redirect "/#m:#{params[:mapid]}"
 end
 
 get "/s3proxy/:mapid" do
@@ -90,7 +90,7 @@ post "/export" do
 end
 
 get "/map/:mapid" do
-  redirect "/m#m:#{params[:mapid]}"
+  redirect "/#m:#{params[:mapid]}"
 end
 get "/m" do
   show_map
@@ -106,7 +106,7 @@ end
 
 get '/browserok/:mapid' do
   session['browserok']=true
-  redirect "/m#m:#{params[:mapid]}"
+  redirect "/#m:#{params[:mapid]}"
 end
 post '/import' do
   file = params['file']
