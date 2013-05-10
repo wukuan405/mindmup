@@ -101,8 +101,9 @@ MM.MapRepository = function (adapters) {
 			contentToSave = JSON.stringify(mapInfo.idea),
 			fileName = mapInfo.idea.title + '.mup',
 			mapSaved = function (savedMapId) {
-				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, (mapInfo.mapId !== savedMapId));
+				var idHasChanged = (mapInfo.mapId !== savedMapId);
 				mapInfo.mapId = savedMapId;
+				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, idHasChanged);
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
