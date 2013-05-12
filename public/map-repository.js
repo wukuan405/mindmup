@@ -64,20 +64,15 @@ MM.MapRepository = function (adapters) {
 				}
 			},
 			loadFromAdapter = function () {
-				var embeddedMap = MM && MM.Maps && mapId && MM.Maps[mapId.toLowerCase()];
-				if (embeddedMap) {
-					mapLoaded(MAPJS.content(_.clone(embeddedMap)), mapId, true, false);
-				} else {
-					MM.retry(
-						adapter.loadMap.bind(adapter, mapId),
-						shouldRetry(5),
-						MM.linearBackoff()
-					).then(
-						mapLoaded,
-						mapLoadFailed,
-						progressEvent
-					);
-				}
+				MM.retry(
+					adapter.loadMap.bind(adapter, mapId),
+					shouldRetry(5),
+					MM.linearBackoff()
+				).then(
+					mapLoaded,
+					mapLoadFailed,
+					progressEvent
+				);
 			};
 		dispatchEvent('mapLoading', mapId);
 		loadFromAdapter();

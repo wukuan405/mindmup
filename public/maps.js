@@ -3,3 +3,11 @@ MM.Maps['default'] = {"title":"MindMup: Zero-friction online mind mapping","idea
 
 MM.Maps['new'] = {"title":"Press Space or double-click to edit","id":1};
 
+MM.EmbeddedMapAdapter = function () {
+	this.recognises = function (mapId) {
+		return MM.Maps[mapId];
+	};
+	this.loadMap = function (mapId) {
+		return jQuery.Deferred().resolve(MAPJS.content(_.clone(this.recognises(mapId))), mapId, true, false).promise();
+	};
+};
