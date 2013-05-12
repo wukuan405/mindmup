@@ -17,8 +17,8 @@ MM.FileSystemAdapter = function FileSystemAdapter(fileSystem) {
 	this.loadMap = function loadMap(mapId, showAuth) {
 		var deferred = jQuery.Deferred();
 		fileSystem.loadMap(mapId, showAuth).then(
-			function mapLoaded(stringContent, mapId, mimeType, allowUpdate) {
-				deferred.resolve(stringToContent(stringContent, mimeType), mapId, fileSystem.notSharable, allowUpdate);
+			function fileLoaded(stringContent, fileId, mimeType, allowUpdate) {
+				deferred.resolve(stringToContent(stringContent, mimeType), fileId, fileSystem.notSharable, allowUpdate);
 			},
 			deferred.reject,
 			deferred.notify
