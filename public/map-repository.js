@@ -62,20 +62,13 @@ MM.MapRepository = function (adapters) {
 				} else {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
-			},
-			loadFromAdapter = function () {
-				MM.retry(
-					adapter.loadMap.bind(adapter, mapId),
-					shouldRetry(5),
-					MM.linearBackoff()
-				).then(
-					mapLoaded,
-					mapLoadFailed,
-					progressEvent
-				);
 			};
 		dispatchEvent('mapLoading', mapId);
-		loadFromAdapter();
+		adapter.loadMap(mapId).then(
+			mapLoaded,
+			mapLoadFailed,
+			progressEvent
+		);
 	};
 
 	this.publishMap = function (adapterType) {
@@ -113,11 +106,7 @@ MM.MapRepository = function (adapters) {
 				}
 			};
 		dispatchEvent('mapSaving', adapter.description);
-		MM.retry(
-			adapter.saveMap.bind(adapter, contentToSave, mapInfo.mapId, fileName),
-			shouldRetry(5),
-			MM.linearBackoff()
-		).then(
+		adapter.saveMap(contentToSave, mapInfo.mapId, fileName).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent

@@ -36,7 +36,11 @@ MM.main = function (config) {
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
-			mapRepository = new MM.MapRepository([new MM.FileSystemAdapter(s3Adapter), new MM.FileSystemAdapter(googleDriveAdapter), new MM.FileSystemAdapter(offlineAdapter), new MM.EmbeddedMapAdapter()]),
+			mapRepository = new MM.MapRepository([
+				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
+				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
+				new MM.FileSystemMapSource(offlineAdapter),
+				new MM.EmbeddedMapAdapter()]),
 			pngExporter = new MAPJS.PNGExporter(mapRepository),
 			mapModel = new MAPJS.MapModel(mapRepository,
 				MAPJS.KineticMediator.layoutCalculator,

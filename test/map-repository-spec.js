@@ -1,5 +1,5 @@
 /*jslint nomen: true*/
-/*global _, jasmine, observable, beforeEach, afterEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, sinon*/
+/*global _, jasmine, observable, beforeEach, afterEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, sinon, localStorage*/
 describe('Map Repository', function () {
 	'use strict';
 	var adapter1, adapter2, underTest, clock;
@@ -94,36 +94,7 @@ describe('Map Repository', function () {
 			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
 			expect(listener.mostRecentCall.args[1]).toBe('foo');
 		});
-		it('should use retry', function () {
-			spyOn(MM, 'retry').andCallThrough();
 
-			underTest.loadMap('foo');
-
-			expect(MM.retry).toHaveBeenCalled();
-		});
-		it('should not retry if not network-error ', function () {
-			var callCount = 0;
-			adapter1.loadMap = function () {
-				callCount++;
-				return jQuery.Deferred().reject('errorMsg').promise();
-			};
-
-			underTest.loadMap('foo');
-
-			expect(callCount).toBe(1);
-		});
-		it('should call and then retry 5 times if it is a network-error ', function () {
-			var callCount = 0;
-			adapter1.loadMap = function () {
-				callCount++;
-				return jQuery.Deferred().reject('network-error').promise();
-			};
-
-			underTest.loadMap('foo');
-			clock.tick(120001);
-
-			expect(callCount).toBe(6);
-		});
 	});
 	describe('saveMap', function () {
 		var map;
@@ -210,36 +181,7 @@ describe('Map Repository', function () {
 
 			expect(listener).toHaveBeenCalledWith('newMapId', map, true);
 		});
-		it('should use retry', function () {
-			spyOn(MM, 'retry').andCallThrough();
 
-			underTest.publishMap();
-
-			expect(MM.retry).toHaveBeenCalled();
-		});
-		it('should not retry if not network-error ', function () {
-			var callCount = 0;
-			adapter1.saveMap = function () {
-				callCount++;
-				return jQuery.Deferred().reject('errorMsg').promise();
-			};
-
-			underTest.publishMap();
-
-			expect(callCount).toBe(1);
-		});
-		it('should call and then retry 5 times if it is a network-error ', function () {
-			var callCount = 0;
-			adapter1.saveMap = function () {
-				callCount++;
-				return jQuery.Deferred().reject('network-error').promise();
-			};
-
-			underTest.publishMap();
-			clock.tick(120001);
-
-			expect(callCount).toBe(6);
-		});
 	});
 	describe('MM.retry', function () {
 		var buildTaskToFailTimes = function (failTimes) {
