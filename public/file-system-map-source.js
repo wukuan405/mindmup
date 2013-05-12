@@ -25,7 +25,13 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 		);
 		return deferred.promise();
 	};
-	this.saveMap = fileSystem.saveMap;
+	this.saveMap = function (map, mapId, showAuth) {
+		var deferred = jQuery.Deferred(),
+			contentToSave = JSON.stringify(map),
+			fileName = map.title + '.mup';
+		fileSystem.saveMap(contentToSave, mapId, fileName, !!showAuth).then(deferred.resolve, deferred.reject, deferred.notify);
+		return deferred.promise();
+	};
 	this.description = fileSystem.description;
 	this.recognises = fileSystem.recognises;
 };

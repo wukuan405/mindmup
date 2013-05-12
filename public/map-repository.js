@@ -26,14 +26,7 @@ MM.MapRepository = function (adapters) {
 		},
 		mapLoaded = function (idea, mapId, notSharable, allowUpdate) {
 			setMap(idea, mapId, notSharable, !allowUpdate);
-		},
-		shouldRetry = function (retries) {
-			var times = MM.retryTimes(retries);
-			return function (status) {
-				return times() && status === 'network-error';
-			};
 		};
-
 
 	this.setMap = setMap;
 	this.currentMapId = function () {
@@ -73,8 +66,6 @@ MM.MapRepository = function (adapters) {
 
 	this.publishMap = function (adapterType) {
 		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
-			contentToSave = JSON.stringify(mapInfo.idea),
-			fileName = mapInfo.idea.title + '.mup',
 			mapSaved = function (savedMapId) {
 				var idHasChanged = (mapInfo.mapId !== savedMapId);
 				mapInfo.mapId = savedMapId;
@@ -89,13 +80,13 @@ MM.MapRepository = function (adapters) {
 			mapSaveFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapSaving', adapter.description);
-					adapter.saveMap(contentToSave, mapInfo.mapId, fileName, true).then(mapSaved, mapSaveFailed, progressEvent);
+					adapter.saveMap(mapInfo.idea, mapInfo.mapId, true).then(mapSaved, mapSaveFailed, progressEvent);
 				}, adapterName = adapter.description || '';
 				label = label ? label + adapterName : adapterName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapSavingUnAuthorized', function () {
 						dispatchEvent('mapSaving', adapter.description, 'Creating a new file');
-						adapter.saveMap(contentToSave, 'new', fileName, true).then(mapSaved, mapSaveFailed, progressEvent);
+						adapter.saveMap(mapInfo.idea, 'new', true).then(mapSaved, mapSaveFailed, progressEvent);
 					});
 				} else if (reason === 'failed-authentication') {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
@@ -106,7 +97,7 @@ MM.MapRepository = function (adapters) {
 				}
 			};
 		dispatchEvent('mapSaving', adapter.description);
-		adapter.saveMap(contentToSave, mapInfo.mapId, fileName).then(
+		adapter.saveMap(mapInfo.idea, mapInfo.mapId).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent

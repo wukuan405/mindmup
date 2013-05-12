@@ -6,6 +6,9 @@ describe("MM.FileSystemMapSource", function () {
 			loadMap: function (mapId) {
 				return jQuery.Deferred().resolve(content, mapId, contentType, allowUpdate).promise();
 			},
+			saveMap: function (content, mapId, fileName) {
+				return jQuery.Deferred().resolve(mapId);
+			},
 			notSharable: true,
 			description: 'fake FS',
 			recognises: function (mapid) {
@@ -75,6 +78,41 @@ describe("MM.FileSystemMapSource", function () {
 				errorCallback = jasmine.createSpy('error');
 			fs.loadMap = function () { return jQuery.Deferred().reject("ABC").promise(); };
 			underTest.loadMap('abc').fail(errorCallback);
+			expect(errorCallback).toHaveBeenCalledWith("ABC");
+		});
+	});
+	describe("saveMap", function () {
+		it("converts map to JSON string and extracts title before propagating", function () {
+			var fs = fakeFS(),
+				underTest = new MM.FileSystemMapSource(fs),
+				map = {title: 'abc'},
+				id = 'mapIdxxx';
+			spyOn(fs, 'saveMap').andCallThrough();
+			underTest.saveMap(map, id, true);
+			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map), id, 'abc.mup', true);
+		});
+		it("propagates success", function () {
+			var fs = fakeFS(),
+				underTest = new MM.FileSystemMapSource(fs),
+				successCallback = jasmine.createSpy('success');
+			fs.saveMap = function () { return jQuery.Deferred().resolve("ABC").promise(); };
+			underTest.saveMap('abc').done(successCallback);
+			expect(successCallback).toHaveBeenCalledWith("ABC");
+		});
+		it("propagates progress", function () {
+			var fs = fakeFS(),
+				underTest = new MM.FileSystemMapSource(fs),
+				progCallback = jasmine.createSpy('progress');
+			fs.saveMap = function () { return jQuery.Deferred().notify("ABC").promise(); };
+			underTest.saveMap('abc').progress(progCallback);
+			expect(progCallback).toHaveBeenCalledWith("ABC");
+		});
+		it("propagates errors", function () {
+			var fs = fakeFS(),
+				underTest = new MM.FileSystemMapSource(fs),
+				errorCallback = jasmine.createSpy('error');
+			fs.saveMap = function () { return jQuery.Deferred().reject("ABC").promise(); };
+			underTest.saveMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith("ABC");
 		});
 	});
