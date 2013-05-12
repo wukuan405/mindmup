@@ -3,8 +3,7 @@ MM.MapRepository = function (adapters) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
 	observable(this);
-	var jsonMimeType = 'application/json',
-		dispatchEvent = this.dispatchEvent,
+	var dispatchEvent = this.dispatchEvent,
 		mapInfo = {},
 		chooseAdapter = function (identifiers) {
 			// order of identifiers is important, the first identifier takes precedence
@@ -25,16 +24,7 @@ MM.MapRepository = function (adapters) {
 			};
 			dispatchEvent('mapLoaded', idea, mapId, notSharable);
 		},
-		mapLoaded = function (fileContent, mapId, mimeType, notSharable, allowUpdate) {
-			var json, idea;
-			if (mimeType === jsonMimeType) {
-				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
-			} else if (mimeType === 'application/octet-stream') {
-				json = JSON.parse(fileContent);
-			} else if (mimeType === 'application/x-freemind' || mimeType === 'application/vnd-freemind') {
-				json = MM.freemindImport(fileContent);
-			}
-			idea = MAPJS.content(json);
+		mapLoaded = function (idea, mapId, notSharable, allowUpdate) {
 			setMap(idea, mapId, notSharable, !allowUpdate);
 		},
 		shouldRetry = function (retries) {
@@ -57,13 +47,10 @@ MM.MapRepository = function (adapters) {
 					message = ((evt && evt.loaded) ? Math.round(100 * done / total) + '%' : evt);
 				dispatchEvent('mapLoading', mapId, message);
 			},
-			adapterLoadedMap = function (fileContent, mapId, mimeType, allowUpdate) {
-				mapLoaded(fileContent, mapId, mimeType, adapter.notSharable, allowUpdate);
-			},
 			mapLoadFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapLoading', mapId);
-					adapter.loadMap(mapId, true).then(adapterLoadedMap, mapLoadFailed, progressEvent);
+					adapter.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
 				}, adapterName = adapter.description ? ' [' + adapter.description + ']' : '';
 				label = label ? label + adapterName : adapterName;
 				if (reason === 'no-access-allowed') {
@@ -79,14 +66,14 @@ MM.MapRepository = function (adapters) {
 			loadFromAdapter = function () {
 				var embeddedMap = MM && MM.Maps && mapId && MM.Maps[mapId.toLowerCase()];
 				if (embeddedMap) {
-					mapLoaded(_.clone(embeddedMap), mapId, jsonMimeType, true);
+					mapLoaded(MAPJS.content(_.clone(embeddedMap)), mapId, true, false);
 				} else {
 					MM.retry(
 						adapter.loadMap.bind(adapter, mapId),
 						shouldRetry(5),
 						MM.linearBackoff()
 					).then(
-						adapterLoadedMap,
+						mapLoaded,
 						mapLoadFailed,
 						progressEvent
 					);
