@@ -2,9 +2,8 @@
 /*global _, jasmine, observable, beforeEach, afterEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, sinon, localStorage*/
 describe('Map Repository', function () {
 	'use strict';
-	var adapter1, adapter2, underTest, clock;
+	var adapter1, adapter2, underTest;
 	beforeEach(function () {
-		clock = sinon.useFakeTimers();
 		MM.MapRepository.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
@@ -19,9 +18,6 @@ describe('Map Repository', function () {
 		adapter1 = _.clone(adapterPrototype);
 		adapter2 = _.clone(adapterPrototype);
 		underTest = new MM.MapRepository([adapter1, adapter2], localStorage);
-	});
-	afterEach(function () {
-		clock.restore();
 	});
 	describe('loadMap', function () {
 		it('should check each adapter to see if it recognises the mapId', function () {
@@ -180,59 +176,6 @@ describe('Map Repository', function () {
 			underTest.publishMap();
 
 			expect(listener).toHaveBeenCalledWith('newMapId', map, true);
-		});
-
-	});
-	describe('MM.retry', function () {
-		var buildTaskToFailTimes = function (failTimes) {
-			var retryCount = 0;
-			return function () {
-				var deferred = jQuery.Deferred();
-				if (failTimes) {
-					failTimes--;
-					retryCount++;
-					deferred.reject(retryCount);
-				} else {
-					deferred.resolve(retryCount);
-				}
-				return deferred.promise();
-			};
-		};
-		it('should retry until task succeeds then resolve', function () {
-			var retryCount = 0;
-
-			MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) { retryCount = r; });
-
-			expect(retryCount).toBe(4);
-		});
-		it('should reject once the task retries exceeded', function () {
-			var retryCount = 0;
-
-			MM.retry(buildTaskToFailTimes(5), MM.retryTimes(4)).fail(function (r) {retryCount = r; });
-
-			expect(retryCount).toBe(5);
-		});
-		it('should setTimeout if backoff supplied', function () {
-			var retryCount = 0;
-
-			MM.retry(
-				buildTaskToFailTimes(1),
-				MM.retryTimes(1),
-				function () { return 1000; }
-			).then(function (r) { retryCount = r; });
-
-			clock.tick(999);
-			expect(retryCount).toBe(0);
-			clock.tick(2);
-			expect(retryCount).toBe(1);
-		});
-	});
-	describe('MM.linearBackoff', function () {
-		it('should return increasing number of seconds with each call', function () {
-			var underTest = MM.linearBackoff();
-
-			expect(underTest()).toBe(1000);
-			expect(underTest()).toBe(2000);
 		});
 	});
 });

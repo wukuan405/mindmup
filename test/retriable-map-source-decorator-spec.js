@@ -91,3 +91,57 @@ describe("MM.RetriableMapSourceDecorator", function () {
 		expect(underTest.description).toBe('fake adapter');
 	});
 });
+describe('MM.retry', function () {
+	'use strict';
+	var buildTaskToFailTimes = function (failTimes) {
+		var retryCount = 0;
+		return function () {
+			var deferred = jQuery.Deferred();
+			if (failTimes) {
+				failTimes--;
+				retryCount++;
+				deferred.reject(retryCount);
+			} else {
+				deferred.resolve(retryCount);
+			}
+			return deferred.promise();
+		};
+	};
+	it('should retry until task succeeds then resolve', function () {
+		var retryCount = 0;
+
+		MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) { retryCount = r; });
+
+		expect(retryCount).toBe(4);
+	});
+	it('should reject once the task retries exceeded', function () {
+		var retryCount = 0;
+
+		MM.retry(buildTaskToFailTimes(5), MM.retryTimes(4)).fail(function (r) {retryCount = r; });
+
+		expect(retryCount).toBe(5);
+	});
+	it('should setTimeout if backoff supplied', function () {
+		var retryCount = 0,
+			clock = sinon.useFakeTimers();
+		MM.retry(
+			buildTaskToFailTimes(1),
+			MM.retryTimes(1),
+			function () { return 1000; }
+		).then(function (r) { retryCount = r; });
+
+		clock.tick(999);
+		expect(retryCount).toBe(0);
+		clock.tick(2);
+		expect(retryCount).toBe(1);
+	});
+});
+describe('MM.linearBackoff', function () {
+	'use strict';
+	it('should return increasing number of seconds with each call', function () {
+		var underTest = MM.linearBackoff();
+
+		expect(underTest()).toBe(1000);
+		expect(underTest()).toBe(2000);
+	});
+});
