@@ -10,7 +10,7 @@ MM.OfflineAdapter = function (storage) {
 		var result = jQuery.Deferred(),
 			map = storage.load(mapId);
 		if (map) {
-			result.resolve(map, mapId, 'application/json', true);
+			result.resolve(map, mapId, 'application/json');
 		} else {
 			result.reject('not-found');
 		}

@@ -15,10 +15,15 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 			return MAPJS.content(json);
 		};
 	this.loadMap = function loadMap(mapId, showAuth) {
-		var deferred = jQuery.Deferred();
+		var deferred = jQuery.Deferred(),
+			readOnly = { 'application/json': false, 'application/octet-stream': false, 'application/x-freemind': true, 'application/vnd-freemind': true };
 		fileSystem.loadMap(mapId, showAuth).then(
-			function fileLoaded(stringContent, fileId, mimeType, allowUpdate) {
-				deferred.resolve(stringToContent(stringContent, mimeType), fileId, fileSystem.notSharable, allowUpdate);
+			function fileLoaded(stringContent, fileId, mimeType) {
+				if (readOnly[mimeType] === undefined) {
+					deferred.reject('format-error', 'Unsupported format ' + mimeType);
+				} else {
+					deferred.resolve(stringToContent(stringContent, mimeType), fileId, fileSystem.notSharable, readOnly[mimeType]);
+				}
 			},
 			deferred.reject,
 			deferred.notify

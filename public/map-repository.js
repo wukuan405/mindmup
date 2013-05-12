@@ -17,18 +17,15 @@ MM.MapRepository = function (adapters) {
 			}
 			return adapters[0];
 		},
-		setMap = function (idea, mapId, notSharable, notEditable) {
+		mapLoaded = function (idea, mapId, notSharable, readOnly) {
 			mapInfo = {
 				idea: idea,
-				mapId: notEditable ? '' : mapId
+				mapId: (readOnly) ? '' : mapId
 			};
 			dispatchEvent('mapLoaded', idea, mapId, notSharable);
-		},
-		mapLoaded = function (idea, mapId, notSharable, allowUpdate) {
-			setMap(idea, mapId, notSharable, !allowUpdate);
 		};
 
-	this.setMap = setMap;
+	this.setMap = mapLoaded;
 	this.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};

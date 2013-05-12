@@ -1,10 +1,10 @@
 /*global MM, MAPJS, describe, it, beforeEach, afterEach, jQuery, expect, jasmine, observable, _, spyOn, sinon */
 describe("MM.FileSystemMapSource", function () {
 	'use strict';
-	var fakeFS = function (content, contentType, allowUpdate) {
+	var fakeFS = function (content, contentType) {
 		return {
 			loadMap: function (mapId) {
-				return jQuery.Deferred().resolve(content, mapId, contentType, allowUpdate).promise();
+				return jQuery.Deferred().resolve(content, mapId, contentType).promise();
 			},
 			saveMap: function (content, mapId, fileName) {
 				return jQuery.Deferred().resolve(mapId);
@@ -17,50 +17,51 @@ describe("MM.FileSystemMapSource", function () {
 		};
 	};
 	describe("loadMap", function () {
-		it("delegates to fileSystem and converts content before resolving", function () {
+		it("converts JSON content as non readonly", function () {
 			var map = {id: 1, title: "X"},
-				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/json', true)),
+				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/json')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, notSharable, allowUpdate) {
+			underTest.loadMap('abc').done(function (content, mapId, notSharable, readOnly) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
 				expect(mapId).toBe("abc");
 				expect(notSharable).toBeTruthy();
-				expect(allowUpdate).toBeTruthy();
+				expect(readOnly).toBeFalsy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
-		it("delegates to fileSystem and converts content before resolving", function () {
+		it("defaults to JSON on octet-stream", function () {
 			var map = {id: 1, title: "X"},
-				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/json', true)),
+				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/octet-stream')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, notSharable, allowUpdate) {
+			underTest.loadMap('abc').done(function (content, mapId, notSharable, readOnly) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
-				expect(mapId).toBe("abc");
-				expect(notSharable).toBeTruthy();
-				expect(allowUpdate).toBeTruthy();
+				expect(readOnly).toBeFalsy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
 		it("survives already parsed JSON objects", function () {
 			var map = {id: 1, title: "X"},
-				underTest = new MM.FileSystemMapSource(fakeFS(map, 'application/json', true)),
+				underTest = new MM.FileSystemMapSource(fakeFS(map, 'application/json')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, notSharable, allowUpdate) {
+			underTest.loadMap('abc').done(function (content, mapId, notSharable, readOnly) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
+				expect(readOnly).toBeFalsy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
-		it("converts freemind format", function () {
+
+		it("converts freemind format as readonly", function () {
 			var map = {id: 1, title: "X"},
 				xml = '<map version="0.7.1"><node ID="1" TEXT="X"></node></map>',
-				underTest = new MM.FileSystemMapSource(fakeFS(xml, 'application/x-freemind', true)),
+				underTest = new MM.FileSystemMapSource(fakeFS(xml, 'application/x-freemind')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, notSharable, allowUpdate) {
+			underTest.loadMap('abc').done(function (content, mapId, notSharable, readOnly) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
+				expect(readOnly).toBeTruthy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
@@ -79,6 +80,14 @@ describe("MM.FileSystemMapSource", function () {
 			fs.loadMap = function () { return jQuery.Deferred().reject("ABC").promise(); };
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith("ABC");
+		});
+		it("fails if content type is not supported", function () {
+			var map = {id: 1, title: "X"},
+				underTest = new MM.FileSystemMapSource(fakeFS(map, 'application/x-unsupported')),
+				wasCalled = false,
+				errorCallback = jasmine.createSpy('error');
+			underTest.loadMap('abc').fail(errorCallback);
+			expect(errorCallback).toHaveBeenCalledWith('format-error', 'Unsupported format application/x-unsupported');
 		});
 	});
 	describe("saveMap", function () {

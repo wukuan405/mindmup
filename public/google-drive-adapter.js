@@ -115,8 +115,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			return deferred.promise();
 		},
 		loadFile = function (fileId) {
-			var allowUpdate = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false },
-				deferred = jQuery.Deferred(),
+			var deferred = jQuery.Deferred(),
 				request = gapi.client.drive.files.get({
 					'fileId': fileId
 				});
@@ -133,14 +132,11 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 				} else {
 					downloadFile(resp).then(
 						function (content) {
-							if (allowUpdate[mimeType] === undefined) {
-								deferred.reject('format-error', 'Unsupported format ' + mimeType);
-							} else {
-								deferred.resolve(content, mimeType, allowUpdate[resp.mimeType]);
-							}
+							deferred.resolve(content, mimeType);
 						},
-						deferred.reject
-					).progress(deferred.notify);
+						deferred.reject,
+						deferred.notify
+					);
 				}
 			});
 			return deferred.promise();
@@ -219,8 +215,8 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			googleId = googleMapId(mapId),
 			readySucceeded = function () {
 				loadFile(googleId).then(
-					function (content, mimeType, allowUpdate) {
-						deferred.resolve(content, mapId, mimeType, allowUpdate);
+					function (content, mimeType) {
+						deferred.resolve(content, mapId, mimeType);
 					},
 					deferred.reject
 				).progress(deferred.notify);
