@@ -8,6 +8,7 @@ MM.EmbeddedMapSource = function () {
 		return MM.Maps[mapId];
 	};
 	this.loadMap = function (mapId) {
-		return jQuery.Deferred().resolve(MAPJS.content(_.clone(this.recognises(mapId))), mapId, true, false).promise();
+		return jQuery.Deferred().resolve(MAPJS.content(_.clone(this.recognises(mapId))), mapId, false).promise();
 	};
+	this.notSharable = true;
 };

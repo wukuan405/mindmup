@@ -18,7 +18,7 @@ MM.navigation = function (storage, baseUrl, mapController) {
 			return true;
 		};
 	self.sharingUrl = function () {
-		return baseUrl + 'map/' + mapController.currentMapId();
+		return mapController.isAdapterPublic() &&  baseUrl + 'map/' + mapController.currentMapId();
 	};
 	self.loadInitial = function () {
 		var initialMapId = getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';

@@ -162,16 +162,14 @@ describe('Map Controller', function () {
 			underTest.publishMap('foo');
 
 			expect(adapter1.recognises).toHaveBeenCalledWith('foo');
-			expect(adapter1.recognises).toHaveBeenCalledWith('loadedMapId');
 			expect(adapter2.recognises).toHaveBeenCalledWith('foo');
-			expect(adapter2.recognises).toHaveBeenCalledWith('loadedMapId');
 		});
 		it('should use the adapter which recognises the mapId', function () {
 			adapter2.recognises = function (id) {return (id === 'loadedMapId'); };
 			spyOn(adapter1, 'saveMap').andCallThrough();
 			spyOn(adapter2, 'saveMap').andCallThrough();
 
-			underTest.publishMap('foo');
+			underTest.publishMap();
 
 			expect(adapter1.saveMap).not.toHaveBeenCalled();
 			expect(adapter2.saveMap).toHaveBeenCalled();

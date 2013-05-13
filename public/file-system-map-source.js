@@ -22,7 +22,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 				if (readOnly[mimeType] === undefined) {
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);
 				} else {
-					deferred.resolve(stringToContent(stringContent, mimeType), fileId, fileSystem.notSharable, readOnly[mimeType]);
+					deferred.resolve(stringToContent(stringContent, mimeType), fileId, readOnly[mimeType]);
 				}
 			},
 			deferred.reject,
@@ -39,4 +39,5 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 	};
 	this.description = fileSystem.description;
 	this.recognises = fileSystem.recognises;
+	this.notSharable = fileSystem.notSharable;
 };

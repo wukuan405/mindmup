@@ -40,6 +40,9 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 		};
 	if (mapController) {
 		mapController.addEventListener('mapLoaded', function () {
+			list.each(function () {
+				jQuery(this).data('mm-url', navigation.sharingUrl());
+			});
 			fireShortener();
 		});
 	}

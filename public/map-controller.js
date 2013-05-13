@@ -6,19 +6,17 @@ MM.MapController = function (adapters) {
 	var dispatchEvent = this.dispatchEvent,
 		mapLoadingConfirmationRequired,
 		mapInfo = {},
-		chooseAdapter = function (identifiers) {
+		chooseAdapter = function (identifier) {
 			// order of identifiers is important, the first identifier takes precedence
-			var idIndex, adapterIndex;
-			for (idIndex = 0; idIndex < identifiers.length; idIndex++) {
-				for (adapterIndex = 0; adapterIndex < adapters.length; adapterIndex++) {
-					if (adapters[adapterIndex].recognises(identifiers[idIndex])) {
-						return adapters[adapterIndex];
-					}
+			var adapterIndex;
+			for (adapterIndex = 0; adapterIndex < adapters.length; adapterIndex++) {
+				if (adapters[adapterIndex].recognises(identifier)) {
+					return adapters[adapterIndex];
 				}
 			}
 			return adapters[0];
 		},
-		mapLoaded = function (idea, mapId, notSharable, readOnly) {
+		mapLoaded = function (idea, mapId, readOnly) {
 			mapLoadingConfirmationRequired = false;
 			idea.addEventListener('changed', function () {
 				mapLoadingConfirmationRequired = true;
@@ -28,7 +26,7 @@ MM.MapController = function (adapters) {
 				idea: idea,
 				mapId: (readOnly) ? '' : mapId
 			};
-			dispatchEvent('mapLoaded', idea, mapId, notSharable);
+			dispatchEvent('mapLoaded', idea, mapId);
 		};
 
 	this.setMap = mapLoaded;
@@ -38,8 +36,12 @@ MM.MapController = function (adapters) {
 	this.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};
+	this.isAdapterPublic = function () {
+		var adapter = chooseAdapter(this.currentMapId());
+		return adapter && (!adapter.notSharable);
+	};
 	this.loadMap = function (mapId, force) {
-		var adapter = chooseAdapter([mapId]),
+		var adapter = chooseAdapter(mapId),
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
@@ -67,7 +69,7 @@ MM.MapController = function (adapters) {
 			return;
 		}
 		if (mapId === this.currentMapId()) {
-			dispatchEvent('mapLoaded', mapInfo.idea, mapInfo.mapId, adapter.notSharable);
+			dispatchEvent('mapLoaded', mapInfo.idea, mapInfo.mapId);
 		} else {
 			dispatchEvent('mapLoading', mapId);
 			adapter.loadMap(mapId).then(
@@ -80,7 +82,7 @@ MM.MapController = function (adapters) {
 	};
 
 	this.publishMap = function (adapterType) {
-		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
+		var adapter = chooseAdapter(adapterType || mapInfo.mapId),
 			mapSaved = function (savedMapId) {
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
@@ -263,24 +265,23 @@ MM.MapController.alerts = function (mapController, alert) {
 MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, activityLog) {
 	'use strict';
 	var changed, mapLoaded,
-		setNotSharable = function (notSharable) {
-			if (notSharable) {
-				jQuery('body').removeClass('map-sharable').addClass('map-not-sharable');
-			} else {
-				jQuery('body').removeClass('map-not-sharable').addClass('map-sharable');
-			}
-		},
 		toggleChange = function () {
 			if (!changed) {
 				jQuery('body').removeClass('map-unchanged').addClass('map-changed');
 				activityLog.log('Map', 'Edit');
 				changed = true;
 			}
+		},
+		updateSharable = function () {
+			if (!mapController.isAdapterPublic()) {
+				jQuery('body').removeClass('map-sharable').addClass('map-not-sharable');
+			} else {
+				jQuery('body').removeClass('map-not-sharable').addClass('map-sharable');
+			}
 		};
-	mapController.addEventListener('mapLoaded', function (idea, mapId, notSharable) {
+	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 		changed = false;
-		setNotSharable(notSharable);
 		if (!mapLoaded) {
 			mapLoaded = true;
 		}
@@ -291,10 +292,12 @@ MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, act
 			toggleChange();
 			activityLog.log(['Map', command].concat(args));
 		});
+		updateSharable();
 	});
 	mapController.addEventListener('mapSaved', function () {
 		changed = false;
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
+		updateSharable();
 	});
 };
 (function () {
