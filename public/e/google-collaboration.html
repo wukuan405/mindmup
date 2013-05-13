@@ -1,0 +1,32 @@
+<div> <!-- needs div for easier child locators -->
+	<li class="dropdown" data-mm-role="top-menu">
+		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+		 <i class="icon-group"></i>&nbsp;Collaboration&nbsp;<b class="caret"></b>
+	   </a>
+		<ul class="dropdown-menu" role="menu">
+			<li><a data-mm-role="start"><i class="icon-play" ></i>&nbsp;Start</a></li>
+		</ul>
+	</li>
+	<div class='modal hide fade' data-mm-role='modal-start'>
+	  <div class='modal-header'>
+		<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+		<h3>Start a collaborative session</h3>
+	  </div>
+	  <div class='modal-body' >
+		  <p>Give your session a short descriptive name (eg Monday Impact Planning). The name will help
+		  your collaborators understand what they are joining, and also help you
+		  recognise this session later if you want to join again or retrieve results. 
+		  You will be able to invite collaborators in the next step.</p>
+		  <form>
+			  <div class="control-group">
+				<input type="text" name="session-name" placeholder="Your session name" />
+			</div>
+		</form>
+	  </div>
+	  <div class='modal-footer'>
+		<a href='#' data-dismiss='modal' class='btn'>Close</a>
+		<a href='#' data-dismiss='modal' class='btn btn-primary' data-mm-role='start-session'><i class='icon-play'></i> Start</a>
+	  </div>
+	</div>
+	
+</div>
