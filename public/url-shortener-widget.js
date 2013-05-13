@@ -37,14 +37,14 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 					}
 				}
 			});
-		};
-	if (mapController) {
-		mapController.addEventListener('mapLoaded', function () {
+		},
+		changeUrls = function () {
 			list.each(function () {
 				jQuery(this).data('mm-url', navigation.sharingUrl());
 			});
 			fireShortener();
-		});
-	}
+		};
+	mapController.addEventListener('mapLoaded', changeUrls);
+	mapController.addEventListener('mapSaved', changeUrls);
 	return list;
 };

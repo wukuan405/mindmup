@@ -119,7 +119,7 @@ describe('Map Controller', function () {
 			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
 			expect(listener.mostRecentCall.args[1]).toBe('foo');
 		});
-		it('should dispatch mapLoaded even if the same map is loaded twice', function () {
+		it('should not dispatch mapLoaded if the same map is loaded twice', function () {
 
 			var listener = jasmine.createSpy();
 
@@ -128,8 +128,7 @@ describe('Map Controller', function () {
 
 			underTest.loadMap('foo');
 
-			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
-			expect(listener.mostRecentCall.args[1]).toBe('foo');
+			expect(listener).not.toHaveBeenCalled();
 		});
 		describe('mapLoadingConfirmationRequired event', function () {
 			var listener;

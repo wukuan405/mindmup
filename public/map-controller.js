@@ -67,20 +67,20 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
 			};
+
+		if (mapId === this.currentMapId()) {
+			return;
+		}
 		if (!force && mapLoadingConfirmationRequired) {
 			dispatchEvent('mapLoadingConfirmationRequired', mapId);
 			return;
 		}
-		if (mapId === this.currentMapId()) {
-			dispatchEvent('mapLoaded', mapInfo.idea, mapInfo.mapId);
-		} else {
-			dispatchEvent('mapLoading', mapId);
-			mapSource.loadMap(mapId).then(
-				mapLoaded,
-				mapLoadFailed,
-				progressEvent
-			);
-		}
+		dispatchEvent('mapLoading', mapId);
+		mapSource.loadMap(mapId).then(
+			mapLoaded,
+			mapLoadFailed,
+			progressEvent
+		);
 
 	};
 
@@ -129,7 +129,6 @@ MM.MapController.mediation = function (mapController, activityLog, alert) {
 	'use strict';
 	MM.MapController.activityTracking(mapController, activityLog);
 	MM.MapController.alerts(mapController, alert);
-	MM.MapController.toolbarAndUnsavedChangesDialogue(mapController, activityLog);	
 };
 
 
@@ -147,13 +146,25 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 		isMapRelevant = function (idea) {
 			return startedFromNew(idea) && idea.find(isNodeRelevant).length > 5 && idea.find(isNodeIrrelevant).length < 3;
 		},
-		wasRelevantOnLoad;
+		wasRelevantOnLoad,
+		changed = false,
+		oldIdea;
 	mapController.addEventListener('mapLoading', function (mapUrl, percentDone) {
 		activityLog.log('loading map [' + mapUrl + '] (' + percentDone + '%)');
 	});
 	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		activityLog.log('Map', 'View', mapId);
 		wasRelevantOnLoad = isMapRelevant(idea);
+		if (oldIdea !== idea) {
+			oldIdea = idea;
+			idea.addEventListener('changed', function (command, args) {
+				if (!changed) {
+					changed = true;
+					activityLog.log('Map', 'Edit');
+				}
+				activityLog.log(['Map', command].concat(args));
+			});
+		}
 	});
 	mapController.addEventListener('mapLoadingFailed', function (mapUrl, reason, label) {
 		var message = 'Error loading map document [' + mapUrl + '] ' + JSON.stringify(reason);
@@ -164,6 +175,7 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 	});
 	mapController.addEventListener('mapSaving', activityLog.log.bind(activityLog, 'Map', 'Save Attempted'));
 	mapController.addEventListener('mapSaved', function (id, idea) {
+		changed = false;
 		if (isMapRelevant(idea) && !wasRelevantOnLoad) {
 			activityLog.log('Map', 'Created Relevant', id);
 		} else if (wasRelevantOnLoad) {
@@ -264,44 +276,8 @@ MM.MapController.alerts = function (mapController, alert) {
 			showErrorAlert(message[0], message[1]);
 		}
 	});
-};
-MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, activityLog) {
-	'use strict';
-	var changed, mapLoaded,
-		toggleChange = function () {
-			if (!changed) {
-				jQuery('body').removeClass('map-unchanged').addClass('map-changed');
-				activityLog.log('Map', 'Edit');
-				changed = true;
-			}
-		},
-		updateSharable = function () {
-			if (!mapController.isMapSharable()) {
-				jQuery('body').removeClass('map-sharable').addClass('map-not-sharable');
-			} else {
-				jQuery('body').removeClass('map-not-sharable').addClass('map-sharable');
-			}
-		};
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
-		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
-		changed = false;
-		if (!mapLoaded) {
-			mapLoaded = true;
-		}
-		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
-			toggleChange();
-		}
-		idea.addEventListener('changed', function (command, args) {
-			toggleChange();
-			activityLog.log(['Map', command].concat(args));
-		});
-		updateSharable();
-	});
-	mapController.addEventListener('mapSaved', function () {
-		changed = false;
-		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
-		updateSharable();
-	});
+
+
 };
 (function () {
 	'use strict';
