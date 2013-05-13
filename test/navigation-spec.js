@@ -31,53 +31,6 @@ describe('MM.navigation', function () {
 		});
 
 	});
-	describe('wireLinkForMapId', function () {
-		var link;
-		beforeEach(function () {
-			link = $('<a>');
-		});
-		it('should return link', function () {
-			underTest.wireLinkForMapId('newMapId', link);
-		});
-		describe('when mapId is from window address hash', function () {
-			beforeEach(function () {
-				window.location.hash = 'm:mapIdInHash';
-			});
-			afterEach(function () {
-				window.location.hash = '';
-			});
-			it('should set # as href', function () {
-				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.attr('href')).toBe('#m:newMapId');
-			});
-		});
-		describe('when there is no window address hash', function () {
-			beforeEach(function () {
-				window.location.hash = '';
-			});
-			it('should set #m:newMapId as href', function () {
-				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.attr('href')).toBe('#m:newMapId');
-			});
-			it('should not set click event', function () {
-				spyOn(link, 'click').andCallThrough();
-				underTest.wireLinkForMapId('newMapId', link);
-				expect(link.click).not.toHaveBeenCalled();
-			});
-		});
-	});
-	describe('confirmationRequired', function () {
-		it('should return false', function () {
-			expect(underTest.confirmationRequired()).toBe(false);
-		});
-		it('should return true or false once set', function () {
-			expect(underTest.confirmationRequired(true)).toBe(true);
-			expect(underTest.confirmationRequired()).toBe(true);
-			expect(underTest.confirmationRequired(false)).toBe(false);
-			expect(underTest.confirmationRequired()).toBe(false);
-		});
-
-	});
 	describe('changeMapId', function () {
 		var listener;
 		beforeEach(function () {
@@ -107,20 +60,6 @@ describe('MM.navigation', function () {
 			expect(underTest.changeMapId('mapIdInHash')).toBe(false);
 			expect(window.location.hash).toBe('#m:mapIdInHash');
 			expect(listener).not.toHaveBeenCalled();
-		});
-		it('should notify listeners when confirmation required', function () {
-			var confirmationListener = jasmine.createSpy();
-			underTest.confirmationRequired(true);
-			underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
-			underTest.changeMapId('newMapId');
-			expect(confirmationListener).toHaveBeenCalledWith('newMapId');
-		});
-		it('should not notify listeners when confirmation required but forced', function () {
-			var confirmationListener = jasmine.createSpy();
-			underTest.confirmationRequired(true);
-			underTest.addEventListener('mapIdChangeConfirmationRequired', confirmationListener);
-			underTest.changeMapId('newMapId', true);
-			expect(confirmationListener).not.toHaveBeenCalledWith('newMapId');
 		});
 	});
 });

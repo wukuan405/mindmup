@@ -208,24 +208,13 @@ describe('Map Controller', function () {
 
 			expect(listener).toHaveBeenCalled();
 		});
-		it('should dispatch mapSaved event if saveMap succeeds and mapId not changed', function () {
+		it('should dispatch mapSaved event if saveMap succeeds', function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSaved', listener);
 
 			underTest.publishMap();
 
-			expect(listener).toHaveBeenCalledWith('loadedMapId', map, false);
-		});
-		it('should dispatch mapSaved and mapSavedAsNew event if saveMap succeeds and mapId has changed', function () {
-			var listener = jasmine.createSpy();
-			underTest.addEventListener('mapSaved', listener);
-			adapter1.saveMap = function () {
-				return jQuery.Deferred().resolve('newMapId').promise();
-			};
-
-			underTest.publishMap();
-
-			expect(listener).toHaveBeenCalledWith('newMapId', map, true);
+			expect(listener).toHaveBeenCalledWith('loadedMapId', map);
 		});
 	});
 });

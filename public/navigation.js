@@ -9,48 +9,31 @@ MM.navigation = function (storage, baseUrl) {
 				found = windowHash && mapIdRegEx.exec(windowHash);
 			return found && found[1];
 		},
-		hashMapId = function (mapId) {
-			return 'm:' + mapId;
-		},
-		knownMapId = getMapIdFromHash(),
-		confirmationRequired = false;
-	self.confirmationRequired = function (val) {
-		if (val === undefined) {
-			return confirmationRequired;
-		}
-		confirmationRequired = val ? true : false;
-		return confirmationRequired;
-	};
+		knownMapId = getMapIdFromHash();
 	self.sharingUrl = function () {
 		return baseUrl + 'map/' + self.currentMapId();
 	};
-	self.hashMapId = hashMapId;
+	self.hashMapId = function (mapId) {
+		return 'm:' + mapId;
+	};
 	self.currentMapId = function () {
 		return getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
 	};
-	self.wireLinkForMapId = function (newMapId, link) {
-		link.attr('href', '#' + hashMapId(newMapId));
-		return link;
-	};
-	self.changeMapId = function (newMapId, force) {
+	self.changeMapId = function (newMapId) {
 		if (newMapId && knownMapId && newMapId === knownMapId) {
 			return false;
 		}
-		if (confirmationRequired && !force) {
-			self.dispatchEvent('mapIdChangeConfirmationRequired', newMapId);
-		} else {
-			knownMapId = newMapId;
-			window.location.hash = hashMapId(newMapId);
-			self.dispatchEvent('mapIdChanged', newMapId);
-			storage.setItem('mostRecentMapLoaded', newMapId);
-		}
+		knownMapId = newMapId;
+		window.location.hash = self.hashMapId(newMapId);
+		self.dispatchEvent('mapIdChanged', newMapId);
+		storage.setItem('mostRecentMapLoaded', newMapId);
 		return true;
 	};
 	window.addEventListener('hashchange', function () {
 		var newMapId = getMapIdFromHash();
 		if (!newMapId) {
 			if (knownMapId) {
-				window.location.hash = hashMapId(knownMapId);
+				window.location.hash = self.hashMapId(knownMapId);
 			}
 			return false;
 		}

@@ -40,7 +40,8 @@ MM.main = function (config) {
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
-				new MM.EmbeddedMapSource()]),
+				new MM.EmbeddedMapSource()
+			]),
 			pngExporter = new MAPJS.PNGExporter(mapController),
 			mapModel = new MAPJS.MapModel(mapController,
 				MAPJS.KineticMediator.layoutCalculator,
@@ -78,7 +79,7 @@ MM.main = function (config) {
 		jQuery('#toolbarEdit .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 		jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 		jQuery('#floating-toolbar').floatingToolbarWidget();
-		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, navigation);
+		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 		jQuery('#modalDownload').downloadWidget(pngExporter);
 		jQuery(document).titleUpdateWidget(mapController);
 		jQuery('[data-mm-role=share]').shareWidget(navigation);
@@ -89,8 +90,8 @@ MM.main = function (config) {
 		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, pngExporter, alert);
-		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, navigation);
-		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, navigation);
+		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, mapController);
+		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 		jQuery('body')
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
@@ -103,6 +104,13 @@ MM.main = function (config) {
 		}
 		MM.MapController.mediation(mapController, activityLog, alert, navigation);
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
+
+		jQuery(window).bind('beforeunload', function () {
+			if (mapController.isMapLoadingConfirmationRequired()) {
+				return 'There are unsaved changes.';
+			}
+		});
+
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };

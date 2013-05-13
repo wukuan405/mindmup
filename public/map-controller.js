@@ -78,10 +78,9 @@ MM.MapController = function (adapters) {
 	this.publishMap = function (adapterType) {
 		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
 			mapSaved = function (savedMapId) {
-				var idHasChanged = (mapInfo.mapId !== savedMapId);
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
-				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, idHasChanged);
+				dispatchEvent('mapSaved', savedMapId, mapInfo.idea);
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
@@ -121,7 +120,7 @@ MM.MapController.mediation = function (mapController, activityLog, alert, naviga
 	'use strict';
 	MM.MapController.mapLocationChange(mapController, navigation);
 	MM.MapController.activityTracking(mapController, activityLog);
-	MM.MapController.alerts(mapController, alert, navigation);
+	MM.MapController.alerts(mapController, alert);
 	MM.MapController.toolbarAndUnsavedChangesDialogue(mapController, activityLog, navigation);
 	mapController.loadMap(navigation.currentMapId());
 };
@@ -173,7 +172,7 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 		activityLog.log('Map', 'networkError', JSON.stringify(reason));
 	});
 };
-MM.MapController.alerts = function (mapController, alert, navigation) {
+MM.MapController.alerts = function (mapController, alert) {
 	'use strict';
 	var alertId,
 		showAlertWithCallBack = function (message, prompt, type, callback) {
@@ -192,14 +191,13 @@ MM.MapController.alerts = function (mapController, alert, navigation) {
 			alert.hide(alertId);
 			alertId = alert.show(title, message, 'error');
 		};
-	navigation.addEventListener('mapIdChangeConfirmationRequired', function (newMapId) {
+	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
 		showAlertWithCallBack(
 			'There are unsaved changes in the loaded map.',
 			'Click here to continue',
 			'warning',
 			function () {
-				navigation.confirmationRequired(false);
-				navigation.changeMapId(newMapId);
+				mapController.loadMap(newMapId, true);
 			}
 		);
 	});
@@ -262,7 +260,7 @@ MM.MapController.alerts = function (mapController, alert, navigation) {
 };
 MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, activityLog, navigation) {
 	'use strict';
-	var changed, saving, mapLoaded,
+	var changed, mapLoaded,
 		setNotSharable = function (notSharable) {
 			if (notSharable) {
 				jQuery('body').removeClass('map-sharable').addClass('map-not-sharable');
@@ -271,25 +269,17 @@ MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, act
 			}
 		},
 		toggleChange = function () {
-			saving = false;
 			if (!changed) {
 				jQuery('body').removeClass('map-unchanged').addClass('map-changed');
 				activityLog.log('Map', 'Edit');
-				navigation.confirmationRequired(true);
 				changed = true;
 			}
 		};
 	mapController.addEventListener('mapLoaded', function (idea, mapId, notSharable) {
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 		changed = false;
-		navigation.confirmationRequired(false);
 		setNotSharable(notSharable);
 		if (!mapLoaded) {
-			jQuery(window).bind('beforeunload', function () {
-				if (changed && !saving) {
-					return 'There are unsaved changes.';
-				}
-			});
 			mapLoaded = true;
 		}
 		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
@@ -300,13 +290,8 @@ MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, act
 			activityLog.log(['Map', command].concat(args));
 		});
 	});
-	mapController.addEventListener('mapSaving', function () {
-		saving = true;
-	});
 	mapController.addEventListener('mapSaved', function () {
-		saving = false;
 		changed = false;
-		navigation.confirmationRequired(false);
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 	});
 };
@@ -315,10 +300,8 @@ MM.MapController.mapLocationChange = function (mapController, navigation) {
 	mapController.addEventListener('mapLoaded', function (idea, newMapId) {
 		navigation.changeMapId(newMapId || 'nil', true);
 	});
-	mapController.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
-		if (idHasChanged) {
-			navigation.changeMapId(newMapId || 'nil', true);
-		}
+	mapController.addEventListener('mapSaved', function (newMapId, idea) {
+		navigation.changeMapId(newMapId || 'nil', true);
 	});
 	navigation.addEventListener('mapIdChanged', function (newMapId) {
 		if (!newMapId || newMapId === 'nil') {

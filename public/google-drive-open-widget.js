@@ -1,19 +1,11 @@
 /*global $, _ */
-$.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
+$.fn.googleDriveOpenWidget = function (googleDriveRepository, mapController) {
 	'use strict';
 	var modal = this,
 		template = this.find('[data-mm-role=template]'),
 		query,
 		parent = template.parent(),
 		statusDiv = this.find('[data-mm-role=status]'),
-		wireLink = function (link, file) {
-			if (navigation) {
-				return navigation.wireLinkForMapId('g1' + file.id, link);
-			}
-			else {
-				return link.attr('href', '#m:g1' + file.id);
-			}
-		},
 		showAlert = function (message, type) {
 			type = type || 'block';
 			statusDiv.html('<div class="alert fade-in alert-' + type + '">' +
@@ -32,7 +24,12 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 				var added;
 				if (file) {
 					added = template.clone().appendTo(parent);
-					wireLink(added.find('a[data-mm-role=file-link]'), file).text(file.title.replace(/\.mup$/, ''));
+					added.find('a[data-mm-role=file-link]')
+						.text(file.title.replace(/\.mup$/, ''))
+						.click(function () {
+							modal.modal('hide');
+							mapController.loadMap('g1' + file.id);
+						});
 					added.find('[data-mm-role=modification-status]').text('By ' + file.lastModifyingUserName + ' on ' +
 						new Date(file.modifiedDate).toLocaleString());
 				}
@@ -57,14 +54,6 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, navigation) {
 				}
 			});
 		};
-	if (navigation) {
-		navigation.addEventListener('mapIdChanged', function () {
-			modal.modal('hide');
-		});
-		navigation.addEventListener('mapIdChangeConfirmationRequired', function () {
-			modal.modal('hide');
-		});
-	}
 	template.detach();
 	modal.find('[data-mm-mimetype]').click(function () {
 		if ($(this).data('mm-mimetype')) {

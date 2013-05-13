@@ -98,7 +98,7 @@ MM.Bookmark = function (mapController, storage, storageKey) {
 		}));
 	};
 };
-jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
+jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 	'use strict';
 	return this.each(function () {
 		var element = jQuery(this),
@@ -118,9 +118,9 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, navigation) {
 						addition = template.clone().show().appendTo(element);
 						link = addition.find('a');
 						children = link.children().detach();
-						if (navigation) {
-							navigation.wireLinkForMapId(bookmark.mapId, link);
-						}
+						link.click(function () {
+							mapController.loadMap(bookmark.mapId);
+						});
 						link.text(bookmark.shortTitle).addClass('repo-' + bookmark.mapId[0]);
 						children.appendTo(link);
 						addition.find('[data-mm-role=bookmark-delete]').click(function () {
