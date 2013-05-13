@@ -55,6 +55,17 @@ describe('Map Controller', function () {
 			expect(adapter1.loadMap).not.toHaveBeenCalledWith('foo');
 			expect(adapter2.loadMap).toHaveBeenCalledWith('foo');
 		});
+		it('should not use an external adapter if loading the currently loaded map', function () {
+			spyOn(adapter2, 'recognises').andReturn(true);
+			spyOn(adapter2, 'loadMap').andCallThrough();
+
+			underTest.loadMap('foo');
+
+			adapter2.loadMap.reset();
+			underTest.loadMap('foo');
+
+			expect(adapter2.loadMap).not.toHaveBeenCalled();
+		});
 		it('should use first adapter to load as a fallback option', function () {
 			spyOn(adapter1, 'loadMap').andCallThrough();
 
@@ -101,6 +112,18 @@ describe('Map Controller', function () {
 		});
 		it('should dispatch mapLoaded event if loadMap succeeds', function () {
 			var listener = jasmine.createSpy();
+			underTest.addEventListener('mapLoaded', listener);
+
+			underTest.loadMap('foo');
+
+			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
+			expect(listener.mostRecentCall.args[1]).toBe('foo');
+		});
+		it('should dispatch mapLoaded even if the same map is loaded twice', function () {
+
+			var listener = jasmine.createSpy();
+
+			underTest.loadMap('foo');
 			underTest.addEventListener('mapLoaded', listener);
 
 			underTest.loadMap('foo');
