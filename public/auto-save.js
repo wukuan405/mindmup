@@ -1,5 +1,5 @@
 /*global MM, observable*/
-MM.AutoSave = function (mapRepository, storage, alertDispatcher) {
+MM.AutoSave = function (mapController, storage, alertDispatcher) {
 	'use strict';
 	var prefix = 'auto-save-',
 		self = this,
@@ -40,13 +40,13 @@ MM.AutoSave = function (mapRepository, storage, alertDispatcher) {
 		events = [];
 		storage.remove(prefix + currentMapId);
 	};
-	mapRepository.addEventListener('mapSaved', function (mapId, idea) {
+	mapController.addEventListener('mapSaved', function (mapId, idea) {
 		isWarningShown = false;
 		if (mapId === currentMapId || idea === currentIdea) {
 			self.discardUnsavedChanges();
 		}
 	});
-	mapRepository.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		currentMapId = mapId;
 		currentIdea = idea;
 		isWarningShown = false;

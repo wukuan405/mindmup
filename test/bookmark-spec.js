@@ -6,13 +6,13 @@ describe('Bookmarks', function () {
 	});
 	describe('Magic bookmark manager', function () {
 		describe('store', function () {
-			var mapRepository, bookmark, url;
+			var mapController, bookmark, url;
 			beforeEach(function () {
-				mapRepository  =  observable({});
-				bookmark  =  new MM.Bookmark(mapRepository);
+				mapController  =  observable({});
+				bookmark  =  new MM.Bookmark(mapController);
 				url = {mapId: 'abcd', title: 'defh'};
 			});
-			it('should invoke store method when mapRepository dispatches Before Upload event', function () {
+			it('should invoke store method when mapController dispatches Before Upload event', function () {
 				bookmark.store(url);
 				expect(bookmark.list()).toEqual([url]);
 			});
@@ -136,26 +136,26 @@ describe('Bookmarks', function () {
 			}]);
 		});
 		it('automatically bookmarks all saved maps', function () {
-			var	mapRepository  =  observable({}),
-				bookmark  =  new MM.Bookmark(mapRepository);
-			mapRepository.dispatchEvent('mapSaved', 'key', {title: 'title'});
+			var	mapController  =  observable({}),
+				bookmark  =  new MM.Bookmark(mapController);
+			mapController.dispatchEvent('mapSaved', 'key', {title: 'title'});
 			expect(bookmark.list()).toEqual([{mapId: 'key', title: 'title'}]);
 		});
 		it('automatically bookmarks all saved maps', function () {
-			var	mapRepository  =  observable({}),
-				bookmark  =  new MM.Bookmark(mapRepository);
-			mapRepository.dispatchEvent('mapSaved', 'key', {title: 'title'});
+			var	mapController  =  observable({}),
+				bookmark  =  new MM.Bookmark(mapController);
+			mapController.dispatchEvent('mapSaved', 'key', {title: 'title'});
 			expect(bookmark.list()).toEqual([{mapId: 'key', title: 'title'}]);
 		});
 
 		describe('pin', function () {
-			var mapRepository, bookmark;
+			var mapController, bookmark;
 			beforeEach(function () {
-				mapRepository  =  observable({});
-				bookmark  =  new MM.Bookmark(mapRepository);
+				mapController  =  observable({});
+				bookmark  =  new MM.Bookmark(mapController);
 			});
 			it('stores the currently loaded map if not already stored', function () {
-				mapRepository.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
 				bookmark.pin();
 				expect(bookmark.list()).toEqual([{mapId: 'mapKey', title: 'title'}]);
 			});
@@ -165,18 +165,18 @@ describe('Bookmarks', function () {
 			});
 		});
 		describe('canPin', function () {
-			var mapRepository, bookmark;
+			var mapController, bookmark;
 			beforeEach(function () {
-				mapRepository  =  observable({});
-				bookmark  =  new MM.Bookmark(mapRepository);
+				mapController  =  observable({});
+				bookmark  =  new MM.Bookmark(mapController);
 			});
 			it('returns true if current map is not in bookmarks', function () {
-				mapRepository.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
 				expect(bookmark.canPin()).toBeTruthy();
 			});
 			it('returns false if current map is not in bookmarks', function () {
 				bookmark.store({mapId: 'mapKey', title: 'title'});
-				mapRepository.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
 				expect(bookmark.canPin()).toBeFalsy();
 			});
 			it('returns false if no map is loaded', function () {
@@ -185,14 +185,14 @@ describe('Bookmarks', function () {
 			it('fires pinChanged when a new map is loaded if it is pinnable', function () {
 				var spy = jasmine.createSpy('pinChanged');
 				bookmark.addEventListener('pinChanged', spy);
-				mapRepository.dispatchEvent('mapLoaded', {title: 'title'}, 'key');
+				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'key');
 				expect(spy).toHaveBeenCalled();
 			});
 			it('does not fire pinChanged when a new map is loaded if it is not pinnable', function () {
 				var spy = jasmine.createSpy('pinChanged');
 				bookmark.store({mapId: 'mapKey', title: 'title'});
 				bookmark.addEventListener('pinChanged', spy);
-				mapRepository.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
 				expect(spy).not.toHaveBeenCalled();
 			});
 		});

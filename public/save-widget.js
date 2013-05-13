@@ -1,5 +1,5 @@
 /*global document, window, $, _, jQuery*/
-jQuery.fn.saveWidget = function (mapRepository) {
+jQuery.fn.saveWidget = function (mapController) {
 	'use strict';
 	var mapChanged = false,
 		repository,
@@ -16,17 +16,17 @@ jQuery.fn.saveWidget = function (mapRepository) {
 		};
 	$(window).keydown(function (evt) {
 		if (mapChanged && evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
-			mapRepository.publishMap(repository);
+			mapController.publishMap(repository);
 			evt.preventDefault();
 		}
 	});
 	element.find('[data-mm-role=publish]').add('a', element).click(function () {
-		mapRepository.publishMap($(this).attr('data-mm-repository') || repository);
+		mapController.publishMap($(this).attr('data-mm-repository') || repository);
 	});
 	element.find('a[data-mm-repository]').addClass(function () {
 		return 'repo-' + $(this).data('mm-repository');
 	});
-	mapRepository.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		repository = (mapId && mapId[0]);
 		if (repository !== 'g' && repository !== 'o') { repository = 'a'; } /* stupid workaround, this takes care of null, new, default and a...*/
 		if (document.location.hash === '#google-drive') {
@@ -36,7 +36,7 @@ jQuery.fn.saveWidget = function (mapRepository) {
 		idea.addEventListener('changed', mapChangedListener);
 		mapChanged = false;
 	});
-	mapRepository.addEventListener('mapSaving', function () {
+	mapController.addEventListener('mapSaving', function () {
 		element.find('[data-mm-role=publish]')
 			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
 			.removeClass('btn-primary')
@@ -44,10 +44,10 @@ jQuery.fn.saveWidget = function (mapRepository) {
 		element.find('.dropdown-toggle').hide();
 	});
 	_.each(resetSaveButtonEvents, function (eventName) {
-		mapRepository.addEventListener(eventName, resetSaveButton);
+		mapController.addEventListener(eventName, resetSaveButton);
 	});
 
-	mapRepository.addEventListener('mapSaved', function () {
+	mapController.addEventListener('mapSaved', function () {
 		mapChanged = false;
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
 		element.find('.dropdown-toggle').show();

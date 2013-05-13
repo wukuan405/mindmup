@@ -1,13 +1,13 @@
 /*jslint nomen: true*/
-/*global _, jasmine, observable, beforeEach, afterEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, sinon, localStorage*/
-describe('Map Repository', function () {
+/*global _, jasmine, observable, beforeEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, localStorage*/
+describe('Map Controller', function () {
 	'use strict';
 	var adapter1, adapter2, underTest;
 	beforeEach(function () {
-		MM.MapRepository.mapLocationChange = function () {};
+		MM.MapController.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					return jQuery.Deferred().resolve(MAPJS.content({ "title": "hello" }), mapId).promise();
+					return jQuery.Deferred().resolve(MAPJS.content({ 'title': 'hello' }), mapId).promise();
 				},
 				saveMap: function (contentToSave, oldId) {
 					return jQuery.Deferred().resolve(oldId).promise();
@@ -17,7 +17,7 @@ describe('Map Repository', function () {
 			});
 		adapter1 = _.clone(adapterPrototype);
 		adapter2 = _.clone(adapterPrototype);
-		underTest = new MM.MapRepository([adapter1, adapter2], localStorage);
+		underTest = new MM.MapController([adapter1, adapter2], localStorage);
 	});
 	describe('loadMap', function () {
 		it('should check each adapter to see if it recognises the mapId', function () {

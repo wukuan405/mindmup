@@ -36,18 +36,18 @@ MM.main = function (config) {
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
-			mapRepository = new MM.MapRepository([
+			mapController = new MM.MapController([
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()]),
-			pngExporter = new MAPJS.PNGExporter(mapRepository),
-			mapModel = new MAPJS.MapModel(mapRepository,
+			pngExporter = new MAPJS.PNGExporter(mapController),
+			mapModel = new MAPJS.MapModel(mapController,
 				MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
-			mapBookmarks = new MM.Bookmark(mapRepository, objectStorage, 'created-maps'),
-			autoSave = new MM.AutoSave(mapRepository, objectStorage, alert),
+			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
+			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			extensions = new MM.Extensions(localStorage, 'active-extensions');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
@@ -80,15 +80,15 @@ MM.main = function (config) {
 		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, navigation);
 		jQuery('#modalDownload').downloadWidget(pngExporter);
-		jQuery(document).titleUpdateWidget(mapRepository);
+		jQuery(document).titleUpdateWidget(mapController);
 		jQuery('[data-mm-role=share]').shareWidget(navigation);
 		jQuery('#modalShareEmail').shareEmailWidget(navigation);
-		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog, mapRepository, navigation);
-		jQuery('#modalImport').importWidget(activityLog, mapRepository);
-		jQuery('[data-mm-role=save]').saveWidget(mapRepository);
+		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog, mapController, navigation);
+		jQuery('#modalImport').importWidget(activityLog, mapController);
+		jQuery('[data-mm-role=save]').saveWidget(mapController);
 		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
-		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapRepository, pngExporter, alert);
+		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, pngExporter, alert);
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, navigation);
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, navigation);
 		jQuery('body')
@@ -101,7 +101,7 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation);
+		MM.MapController.mediation(mapController, activityLog, alert, navigation);
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));

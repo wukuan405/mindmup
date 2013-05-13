@@ -1,5 +1,5 @@
 /*global jQuery,document, setTimeout*/
-jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapRepository, navigation) {
+jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapController, navigation) {
 	'use strict';
 	var list = this,
 		shortenerRetriesLeft = 5,
@@ -38,8 +38,8 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				}
 			});
 		};
-	if (mapRepository) {
-		mapRepository.addEventListener('mapLoaded', function () {
+	if (mapController) {
+		mapController.addEventListener('mapLoaded', function () {
 			fireShortener();
 		});
 	}

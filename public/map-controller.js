@@ -1,5 +1,5 @@
 /*global _, jQuery, MAPJS, MM, observable, XMLHttpRequest*/
-MM.MapRepository = function (adapters) {
+MM.MapController = function (adapters) {
 	// order of adapters is important, the first adapter is default
 	'use strict';
 	observable(this);
@@ -102,17 +102,17 @@ MM.MapRepository = function (adapters) {
 	};
 };
 
-MM.MapRepository.mediation = function (mapRepository, activityLog, alert, navigation) {
+MM.MapController.mediation = function (mapController, activityLog, alert, navigation) {
 	'use strict';
-	MM.MapRepository.mapLocationChange(mapRepository, navigation);
-	MM.MapRepository.activityTracking(mapRepository, activityLog);
-	MM.MapRepository.alerts(mapRepository, alert, navigation);
-	MM.MapRepository.toolbarAndUnsavedChangesDialogue(mapRepository, activityLog, navigation);
-	mapRepository.loadMap(navigation.currentMapId());
+	MM.MapController.mapLocationChange(mapController, navigation);
+	MM.MapController.activityTracking(mapController, activityLog);
+	MM.MapController.alerts(mapController, alert, navigation);
+	MM.MapController.toolbarAndUnsavedChangesDialogue(mapController, activityLog, navigation);
+	mapController.loadMap(navigation.currentMapId());
 };
 
 
-MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
+MM.MapController.activityTracking = function (mapController, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
 		return idea.id === 1;
@@ -127,22 +127,22 @@ MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 			return startedFromNew(idea) && idea.find(isNodeRelevant).length > 5 && idea.find(isNodeIrrelevant).length < 3;
 		},
 		wasRelevantOnLoad;
-	mapRepository.addEventListener('mapLoading', function (mapUrl, percentDone) {
+	mapController.addEventListener('mapLoading', function (mapUrl, percentDone) {
 		activityLog.log('loading map [' + mapUrl + '] (' + percentDone + '%)');
 	});
-	mapRepository.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		activityLog.log('Map', 'View', mapId);
 		wasRelevantOnLoad = isMapRelevant(idea);
 	});
-	mapRepository.addEventListener('mapLoadingFailed', function (mapUrl, reason, label) {
+	mapController.addEventListener('mapLoadingFailed', function (mapUrl, reason, label) {
 		var message = 'Error loading map document [' + mapUrl + '] ' + JSON.stringify(reason);
 		if (label) {
 			message = message + ' label [' + label + ']';
 		}
 		activityLog.error(message);
 	});
-	mapRepository.addEventListener('mapSaving', activityLog.log.bind(activityLog, 'Map', 'Save Attempted'));
-	mapRepository.addEventListener('mapSaved', function (id, idea) {
+	mapController.addEventListener('mapSaving', activityLog.log.bind(activityLog, 'Map', 'Save Attempted'));
+	mapController.addEventListener('mapSaved', function (id, idea) {
 		if (isMapRelevant(idea) && !wasRelevantOnLoad) {
 			activityLog.log('Map', 'Created Relevant', id);
 		} else if (wasRelevantOnLoad) {
@@ -151,14 +151,14 @@ MM.MapRepository.activityTracking = function (mapRepository, activityLog) {
 			activityLog.log('Map', 'Saved Irrelevant', id);
 		}
 	});
-	mapRepository.addEventListener('mapSavingFailed', function (reason, repositoryName) {
+	mapController.addEventListener('mapSavingFailed', function (reason, repositoryName) {
 		activityLog.error('Map save failed (' + repositoryName + ')' + JSON.stringify(reason));
 	});
-	mapRepository.addEventListener('networkError', function (reason) {
+	mapController.addEventListener('networkError', function (reason) {
 		activityLog.log('Map', 'networkError', JSON.stringify(reason));
 	});
 };
-MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
+MM.MapController.alerts = function (mapController, alert, navigation) {
 	'use strict';
 	var alertId,
 		showAlertWithCallBack = function (message, prompt, type, callback) {
@@ -188,15 +188,15 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 			}
 		);
 	});
-	mapRepository.addEventListener('mapLoading', function (mapUrl, progressMessage) {
+	mapController.addEventListener('mapLoading', function (mapUrl, progressMessage) {
 		alert.hide(alertId);
 		alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, loading the map...', (progressMessage || ''));
 	});
-	mapRepository.addEventListener('mapSaving', function (repositoryName, progressMessage) {
+	mapController.addEventListener('mapSaving', function (repositoryName, progressMessage) {
 		alert.hide(alertId);
 		alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, saving the map...', (progressMessage || ''));
 	});
-	mapRepository.addEventListener('authRequired', function (providerName, authCallback) {
+	mapController.addEventListener('authRequired', function (providerName, authCallback) {
 		showAlertWithCallBack(
 			'This operation requires authentication through ' + providerName + ' !',
 			'Click here to authenticate',
@@ -204,13 +204,13 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 			authCallback
 		);
 	});
-	mapRepository.addEventListener('mapSaved', function () {
+	mapController.addEventListener('mapSaved', function () {
 		alert.hide(alertId);
 	});
-	mapRepository.addEventListener('mapLoaded', function () {
+	mapController.addEventListener('mapLoaded', function () {
 		alert.hide(alertId);
 	});
-	mapRepository.addEventListener('authorisationFailed', function (providerName, authCallback) {
+	mapController.addEventListener('authorisationFailed', function (providerName, authCallback) {
 		showAlertWithCallBack(
 			'We were unable to authenticate with ' + providerName,
 			'Click here to try again',
@@ -218,10 +218,10 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 			authCallback
 		);
 	});
-	mapRepository.addEventListener('mapLoadingUnAuthorized', function () {
+	mapController.addEventListener('mapLoadingUnAuthorized', function () {
 		showErrorAlert('The map could not be loaded.', 'You do not have the right to view this map');
 	});
-	mapRepository.addEventListener('mapSavingUnAuthorized', function (callback) {
+	mapController.addEventListener('mapSavingUnAuthorized', function (callback) {
 		showAlertWithCallBack(
 			'You do not have the right to edit this map',
 			'Click here to save a copy',
@@ -229,10 +229,10 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 			callback
 		);
 	});
-	mapRepository.addEventListener('mapLoadingFailed', function () {
+	mapController.addEventListener('mapLoadingFailed', function () {
 		showErrorAlert('Unfortunately, there was a problem loading the map.', 'An automated error report was sent and we will look into this as soon as possible');
 	});
-	mapRepository.addEventListener('mapSavingFailed', function (reason, label, callback) {
+	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {
 			'file-too-large': ['Unfortunately, the file is too large for the selected storage provider.', 'Please select a different storage provider from the save dropdown menu'],
 			'network-error': ['There was a network problem communicating with the server.', 'Please try again later. Don\'t worry, you have an auto-saved version in this browser profile that will be loaded the next time you open the map']
@@ -245,7 +245,7 @@ MM.MapRepository.alerts = function (mapRepository, alert, navigation) {
 		}
 	});
 };
-MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, activityLog, navigation) {
+MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, activityLog, navigation) {
 	'use strict';
 	var changed, saving, mapLoaded,
 		setNotSharable = function (notSharable) {
@@ -264,7 +264,7 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 				changed = true;
 			}
 		};
-	mapRepository.addEventListener('mapLoaded', function (idea, mapId, notSharable) {
+	mapController.addEventListener('mapLoaded', function (idea, mapId, notSharable) {
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 		changed = false;
 		navigation.confirmationRequired(false);
@@ -285,22 +285,22 @@ MM.MapRepository.toolbarAndUnsavedChangesDialogue = function (mapRepository, act
 			activityLog.log(['Map', command].concat(args));
 		});
 	});
-	mapRepository.addEventListener('mapSaving', function () {
+	mapController.addEventListener('mapSaving', function () {
 		saving = true;
 	});
-	mapRepository.addEventListener('mapSaved', function () {
+	mapController.addEventListener('mapSaved', function () {
 		saving = false;
 		changed = false;
 		navigation.confirmationRequired(false);
 		jQuery('body').removeClass('map-changed').addClass('map-unchanged');
 	});
 };
-MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
+MM.MapController.mapLocationChange = function (mapController, navigation) {
 	'use strict';
-	mapRepository.addEventListener('mapLoaded', function (idea, newMapId) {
+	mapController.addEventListener('mapLoaded', function (idea, newMapId) {
 		navigation.changeMapId(newMapId || 'nil', true);
 	});
-	mapRepository.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
+	mapController.addEventListener('mapSaved', function (newMapId, idea, idHasChanged) {
 		if (idHasChanged) {
 			navigation.changeMapId(newMapId || 'nil', true);
 		}
@@ -309,9 +309,9 @@ MM.MapRepository.mapLocationChange = function (mapRepository, navigation) {
 		if (!newMapId || newMapId === 'nil') {
 			return;
 		}
-		var mapId = mapRepository.currentMapId();
+		var mapId = mapController.currentMapId();
 		if (!mapId || mapId !== newMapId) {
-			mapRepository.loadMap(newMapId);
+			mapController.loadMap(newMapId);
 		}
 	});
 };

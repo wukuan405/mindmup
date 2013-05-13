@@ -1,8 +1,8 @@
 /*global jQuery*/
-jQuery.fn.titleUpdateWidget = function (mapRepository) {
+jQuery.fn.titleUpdateWidget = function (mapController) {
 	'use strict';
 	var elements = this;
-	mapRepository.addEventListener('mapLoaded', function (contentAggregate) {
+	mapController.addEventListener('mapLoaded', function (contentAggregate) {
 		if (elements.prop('title')) {
 			elements.prop('title', contentAggregate.title);
 		}

@@ -1,5 +1,5 @@
 /*global $, jQuery, MM, document*/
-jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
+jQuery.fn.remoteExportWidget = function (mapController, pngExporter, alert) {
 	'use strict';
 	var self = this,
 		loadedIdea,
@@ -7,7 +7,7 @@ jQuery.fn.remoteExportWidget = function (mapRepository, pngExporter, alert) {
 		joinLines = function (string) {
 			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
 		};
-	mapRepository.addEventListener('mapLoaded', function (idea) {
+	mapController.addEventListener('mapLoaded', function (idea) {
 		loadedIdea = idea;
 	});
 	return this.click(function () {

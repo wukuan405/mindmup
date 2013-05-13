@@ -17,7 +17,7 @@ MM.jsonStorage = function (storage) {
 	};
 	return self;
 };
-MM.Bookmark = function (mapRepository, storage, storageKey) {
+MM.Bookmark = function (mapController, storage, storageKey) {
 	'use strict';
 	var self = observable(this),
 		currentMap = false,
@@ -30,13 +30,13 @@ MM.Bookmark = function (mapRepository, storage, storageKey) {
 	if (storage && storageKey) {
 		list = storage.getItem(storageKey) || [];
 	}
-	mapRepository.addEventListener('mapSaved', function (key, idea) {
+	mapController.addEventListener('mapSaved', function (key, idea) {
 		self.store({
 			mapId: key,
 			title: idea.title
 		});
 	});
-	mapRepository.addEventListener('mapLoaded', function (idea, key) {
+	mapController.addEventListener('mapLoaded', function (idea, key) {
 		var couldPin = self.canPin();
 		currentMap = {
 			mapId: key,
