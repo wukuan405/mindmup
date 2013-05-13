@@ -6,9 +6,9 @@ MM.Extensions = function (storage, storageKey) {
 		active = storage[storageKey].split(' ');
 	}
 	this.scriptsToLoad = function () {
-		return _.map(active, function (ext) {
+		return _.reject(_.map(active, function (ext) {
 			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		});
+		}), function (e) { return !e; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -23,11 +23,10 @@ MM.Extensions = function (storage, storageKey) {
 	};
 };
 MM.Extensions.config = {
-/*	'goggle-collaboration' : {
+	'goggle-collaboration' : {
 		name: 'Realtime collaboration',
 		script: '/e/google-collaboration.js'
 	}
-*/
 };
 jQuery.fn.extensionsWidget = function (extensions) {
 	'use strict';

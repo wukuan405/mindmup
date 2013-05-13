@@ -19,6 +19,12 @@ describe("MM.Extensions", function () {
 			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey');
 			expect(ext.scriptsToLoad()).toEqual(['/abc.js']);
 		});
+		it("excludes scripts from storage that are not in the config", function () {
+			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
+			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey');
+			expect(ext.scriptsToLoad()).toEqual(['/abc.js']);
+		});
+
 	});
 	describe("setActive", function () {
 		var storage, key = 'storekey';

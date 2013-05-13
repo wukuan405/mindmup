@@ -1,7 +1,8 @@
 /*global _, jQuery, MM, window, gapi */
-MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, contentType) {
+MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
-	var driveLoaded,
+	var self = this,
+		driveLoaded,
 		isAuthorised = function () {
 			return !!(gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
 		},
@@ -35,12 +36,13 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 			);
 			return deferred.promise();
 		},
-		saveFile = function (contentToSave, mapId, fileName) {
+		saveFile = function (contentToSave, mapId, fileName, paramContentType) {
 			var	googleId =  googleMapId(mapId),
 				deferred = jQuery.Deferred(),
 				boundary = '-------314159265358979323846',
 				delimiter = '\r\n--' + boundary + '\r\n',
 				closeDelim = '\r\n--' + boundary + '--',
+				contentType = paramContentType || defaultContentType,
 				metadata = {
 					'title': fileName,
 					'mimeType': contentType
@@ -173,6 +175,18 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 				});
 			}
 			return deferred.promise();
+		},
+		makeRealtimeReady = function () {
+			var deferred = jQuery.Deferred(),
+				loadRealtimeApis = function () {
+					if (gapi.drive && gapi.drive.realtime) {
+						deferred.resolve();
+					} else {
+						gapi.load("auth:client,drive-realtime,drive-share", deferred.resolve);
+					}
+				};
+			self.ready(true).then(loadRealtimeApis, deferred.reject, deferred.notify);
+			return deferred.promise();
 		};
 	this.description = 'Google';
 
@@ -186,6 +200,21 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 		return deferred.promise();
 	};
 
+	this.createRealtimeMap = function (name) {
+		var deferred = jQuery.Deferred();
+		makeRealtimeReady().then(
+			function () {
+				saveFile('MindMup collaborative session ' + name, undefined, name, 'application/vnd.mindmup.collab').then(
+					deferred.resolve,
+					deferred.reject,
+					deferred.notify
+				);
+			},
+			deferred.reject,
+			deferred.notify
+		);
+		return deferred.promise();
+	};
 	this.recognises = recognises;
 
 	this.retrieveAllFiles = function (searchCriteria) {
@@ -205,7 +234,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, conten
 					}
 				});
 			};
-		searchCriteria = searchCriteria || 'mimeType = \'' + contentType + '\' and not trashed';
+		searchCriteria = searchCriteria || 'mimeType = \'' + defaultContentType + '\' and not trashed';
 		retrievePageOfFiles(gapi.client.drive.files.list({ 'q': searchCriteria }), []);
 		return deferred.promise();
 	};

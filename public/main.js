@@ -104,6 +104,10 @@ MM.main = function (config) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
 		MM.MapController.mediation(mapController, activityLog, alert);
+		MM.Extensions.components = {
+			'googleDriveAdapter': googleDriveAdapter,
+			'alert': alert
+		};
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 
 		navigation.loadInitial();
