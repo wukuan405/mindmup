@@ -1,14 +1,96 @@
-/*global beforeEach, afterEach, describe, expect, it, MM, $, spyOn, jasmine*/
+/*global beforeEach, afterEach, describe, expect, it, MM, $, spyOn, jasmine, localStorage, observable, window*/
 describe('MM.navigation', function () {
 	'use strict';
-	var underTest;
+	var underTest, mapController;
 	beforeEach(function () {
 		localStorage.clear();
-		underTest = new MM.navigation(localStorage);
-		localStorage.setItem('mostRecentMapLoaded', 'most recent');
+		mapController = observable({
+			isMapSharable: function () {},
+			currentMapId: function () {},
+			loadMap: function () {}
+		});
+		underTest = new MM.navigation(localStorage, 'http://example.com/', mapController);
+
+	});
+	describe('sharingUrl', function () {
+		it('appends a map ID after /map to the base URL if map adapter is public', function () {
+			spyOn(mapController, 'isMapSharable').andReturn(true);
+			spyOn(mapController, 'currentMapId').andReturn('ABC');
+			expect(underTest.sharingUrl()).toEqual('http://example.com/map/ABC');
+		});
+		it('returns false if adapter is not public', function () {
+			spyOn(mapController, 'isMapSharable').andReturn(false);
+			spyOn(mapController, 'currentMapId').andReturn('ABC');
+			expect(underTest.sharingUrl()).toBeFalsy();
+		});
+	});
+	describe('loadInitial', function () {
+		beforeEach(function () {
+			spyOn(mapController, 'loadMap');
+		});
+		it('loads a map from hash URL if it is given', function () {
+			window.location.hash = 'm:abc';
+			underTest.loadInitial();
+			expect(mapController.loadMap).toHaveBeenCalledWith('abc');
+		});
+		it('loads the most recently loaded map if hash is not given', function () {
+			localStorage.setItem('mostRecentMapLoaded', 'most recent');
+			underTest.loadInitial();
+			expect(mapController.loadMap).toHaveBeenCalledWith('most recent');
+		});
+		it('loads the default map if no most recent', function () {
+			underTest.loadInitial();
+			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+		});
+		it('loads default map if the hash format is invalid', function () {
+			window.location.hash = 'abc';
+			underTest.loadInitial();
+			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+		});
+		it('loads default map if the hash format is valid but special marker NIL is used as map ID', function () {
+			window.location.hash = 'm:nil';
+			underTest.loadInitial();
+			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+		});
+	});
+	describe("mapController event listeners", function () {
+		it("update window hash and local storage on map loaded", function () {
+			window.location.hash = '';
+			mapController.dispatchEvent("mapLoaded", undefined, 'newLoaded');
+			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
+			expect(window.location.hash).toBe('#m:newLoaded');
+		});
+		it("update window hash and local storage on map saveed", function () {
+			window.location.hash = '';
+			mapController.dispatchEvent("mapSaved", 'newSaved');
+			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newSaved');
+			expect(window.location.hash).toBe('#m:newSaved');
+		});
+	});
+	describe("hash change listener", function () {
+		beforeEach(function () {
+			spyOn(mapController, 'loadMap');
+			spyOn(mapController, 'currentMapId').andReturn('abc');
+		});
+		it('resets the hash to the current map ID if hash was changed to an invalid map ID', function () {
+			window.location.hash = 'def';
+			underTest.hashChange();
+			expect(window.location.hash).toBe('#m:abc');
+		});
+		it('loads the map if the ID is valid', function () {
+			window.location.hash = 'm:def';
+			underTest.hashChange();
+			expect(mapController.loadMap).toHaveBeenCalledWith('def');
+			expect(window.location.hash).toBe('#m:def');
+		});
+		it('skips loading if ID was set to nil', function () {
+			window.location.hash = 'm:nil';
+			underTest.hashChange();
+			expect(mapController.loadMap).not.toHaveBeenCalled();
+			expect(window.location.hash).toBe('#m:nil');
+		});
 	});
 	afterEach(function () {
-		window.removeEventListener('mapIdChanged');
 		window.location.hash = '';
 	});
 });

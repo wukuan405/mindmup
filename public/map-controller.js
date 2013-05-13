@@ -1,20 +1,21 @@
 /*global _, jQuery, MAPJS, MM, observable, XMLHttpRequest*/
-MM.MapController = function (adapters) {
-	// order of adapters is important, the first adapter is default
+MM.MapController = function (initialMapSources) {
+	// order of mapSources is important, the first mapSource is default
 	'use strict';
 	observable(this);
 	var dispatchEvent = this.dispatchEvent,
 		mapLoadingConfirmationRequired,
 		mapInfo = {},
-		chooseAdapter = function (identifier) {
+		mapSources = [].concat(initialMapSources),
+		chooseMapSource = function (identifier) {
 			// order of identifiers is important, the first identifier takes precedence
-			var adapterIndex;
-			for (adapterIndex = 0; adapterIndex < adapters.length; adapterIndex++) {
-				if (adapters[adapterIndex].recognises(identifier)) {
-					return adapters[adapterIndex];
+			var mapSourceIndex;
+			for (mapSourceIndex = 0; mapSourceIndex < mapSources.length; mapSourceIndex++) {
+				if (mapSources[mapSourceIndex].recognises(identifier)) {
+					return mapSources[mapSourceIndex];
 				}
 			}
-			return adapters[0];
+			return mapSources[0];
 		},
 		mapLoaded = function (idea, mapId, readOnly) {
 			mapLoadingConfirmationRequired = false;
@@ -28,7 +29,9 @@ MM.MapController = function (adapters) {
 			};
 			dispatchEvent('mapLoaded', idea, mapId);
 		};
-
+	this.addMapSource = function (mapSource) {
+		mapSources.push(mapSource);
+	};
 	this.setMap = mapLoaded;
 	this.isMapLoadingConfirmationRequired = function () {
 		return mapLoadingConfirmationRequired;
@@ -36,12 +39,12 @@ MM.MapController = function (adapters) {
 	this.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};
-	this.isAdapterPublic = function () {
-		var adapter = chooseAdapter(this.currentMapId());
-		return adapter && (!adapter.notSharable);
+	this.isMapSharable = function () {
+		var mapSource = chooseMapSource(this.currentMapId());
+		return mapSource && (!mapSource.notSharable);
 	};
 	this.loadMap = function (mapId, force) {
-		var adapter = chooseAdapter(mapId),
+		var mapSource = chooseMapSource(mapId),
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
@@ -51,15 +54,15 @@ MM.MapController = function (adapters) {
 			mapLoadFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapLoading', mapId);
-					adapter.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
-				}, adapterName = adapter.description ? ' [' + adapter.description + ']' : '';
-				label = label ? label + adapterName : adapterName;
+					mapSource.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
+				}, mapSourceName = mapSource.description ? ' [' + mapSource.description + ']' : '';
+				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapLoadingUnAuthorized', mapId, reason);
 				} else if (reason === 'failed-authentication') {
-					dispatchEvent('authorisationFailed', adapter.description, retryWithDialog);
+					dispatchEvent('authorisationFailed', mapSource.description, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
-					dispatchEvent('authRequired', adapter.description, retryWithDialog);
+					dispatchEvent('authRequired', mapSource.description, retryWithDialog);
 				} else {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
@@ -72,7 +75,7 @@ MM.MapController = function (adapters) {
 			dispatchEvent('mapLoaded', mapInfo.idea, mapInfo.mapId);
 		} else {
 			dispatchEvent('mapLoading', mapId);
-			adapter.loadMap(mapId).then(
+			mapSource.loadMap(mapId).then(
 				mapLoaded,
 				mapLoadFailed,
 				progressEvent
@@ -81,8 +84,8 @@ MM.MapController = function (adapters) {
 
 	};
 
-	this.publishMap = function (adapterType) {
-		var adapter = chooseAdapter(adapterType || mapInfo.mapId),
+	this.publishMap = function (mapSourceType) {
+		var mapSource = chooseMapSource(mapSourceType || mapInfo.mapId),
 			mapSaved = function (savedMapId) {
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
@@ -92,18 +95,18 @@ MM.MapController = function (adapters) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
 					message = ((evt && evt.loaded) ? Math.round(100 * done / total) + '%' : evt);
-				dispatchEvent('mapSaving', adapter.description, message);
+				dispatchEvent('mapSaving', mapSource.description, message);
 			},
 			mapSaveFailed = function (reason, label) {
 				var retryWithDialog = function () {
-					dispatchEvent('mapSaving', adapter.description);
-					adapter.saveMap(mapInfo.idea, mapInfo.mapId, true).then(mapSaved, mapSaveFailed, progressEvent);
-				}, adapterName = adapter.description || '';
-				label = label ? label + adapterName : adapterName;
+					dispatchEvent('mapSaving', mapSource.description);
+					mapSource.saveMap(mapInfo.idea, mapInfo.mapId, true).then(mapSaved, mapSaveFailed, progressEvent);
+				}, mapSourceName = mapSource.description || '';
+				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapSavingUnAuthorized', function () {
-						dispatchEvent('mapSaving', adapter.description, 'Creating a new file');
-						adapter.saveMap(mapInfo.idea, 'new', true).then(mapSaved, mapSaveFailed, progressEvent);
+						dispatchEvent('mapSaving', mapSource.description, 'Creating a new file');
+						mapSource.saveMap(mapInfo.idea, 'new', true).then(mapSaved, mapSaveFailed, progressEvent);
 					});
 				} else if (reason === 'failed-authentication') {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
@@ -113,8 +116,8 @@ MM.MapController = function (adapters) {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
 			};
-		dispatchEvent('mapSaving', adapter.description);
-		adapter.saveMap(mapInfo.idea, mapInfo.mapId).then(
+		dispatchEvent('mapSaving', mapSource.description);
+		mapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent

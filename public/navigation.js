@@ -1,14 +1,14 @@
-/*global MM*/
+/*global MM, window*/
 MM.navigation = function (storage, baseUrl, mapController) {
 	'use strict';
 	var self = this,
 		unknownMapId = 'nil',
+		mapIdRegEx = /[Mm]:([^,;#]*)/,
 		getMapIdFromHash = function () {
 			var windowHash = window && window.location && window.location.hash,
 				found = windowHash && mapIdRegEx.exec(windowHash);
-			return found && found[1] !== unknownMapId && found[1];
+			return found && found[1];
 		},
-		mapIdRegEx = /[Mm]:([^,;#]*)/,
 		changeMapId = function (newMapId) {
 			if (newMapId) {
 				storage.setItem('mostRecentMapLoaded', newMapId);
@@ -18,10 +18,13 @@ MM.navigation = function (storage, baseUrl, mapController) {
 			return true;
 		};
 	self.sharingUrl = function () {
-		return mapController.isAdapterPublic() &&  baseUrl + 'map/' + mapController.currentMapId();
+		return mapController.isMapSharable() &&  baseUrl + 'map/' + mapController.currentMapId();
 	};
 	self.loadInitial = function () {
-		var initialMapId = getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
+		var initialMapId = getMapIdFromHash();
+		if (!initialMapId || initialMapId === unknownMapId) {
+			initialMapId = (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
+		}
 		mapController.loadMap(initialMapId);
 	};
 	mapController.addEventListener('mapLoaded', function (idea, newMapId) {
@@ -30,8 +33,7 @@ MM.navigation = function (storage, baseUrl, mapController) {
 	mapController.addEventListener('mapSaved', function (newMapId) {
 		changeMapId(newMapId, true);
 	});
-
-	window.addEventListener('hashchange', function () {
+	self.hashChange = function () {
 		var newMapId = getMapIdFromHash();
 		if (newMapId === unknownMapId) {
 			return;
@@ -43,7 +45,7 @@ MM.navigation = function (storage, baseUrl, mapController) {
 			mapController.loadMap(newMapId);
 			return true;
 		}
-	});
-
+	};
+	window.addEventListener('hashchange', self.hashChange);
 	return self;
 };
