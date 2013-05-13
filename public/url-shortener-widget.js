@@ -38,7 +38,12 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				}
 			});
 		},
+		previousUrl,
 		changeUrls = function () {
+			if (previousUrl === navigation.sharingUrl()) {
+				return;
+			}
+			previousUrl = navigation.sharingUrl();
 			list.each(function () {
 				jQuery(this).data('mm-url', navigation.sharingUrl());
 			});
