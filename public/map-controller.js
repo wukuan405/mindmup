@@ -276,7 +276,7 @@ MM.MapController.toolbarAndUnsavedChangesDialogue = function (mapController, act
 			}
 		},
 		updateSharable = function () {
-			if (!mapController.isAdapterPublic()) {
+			if (!mapController.isMapSharable()) {
 				jQuery('body').removeClass('map-sharable').addClass('map-not-sharable');
 			} else {
 				jQuery('body').removeClass('map-not-sharable').addClass('map-sharable');
