@@ -4,6 +4,7 @@ MM.MapController = function (adapters) {
 	'use strict';
 	observable(this);
 	var dispatchEvent = this.dispatchEvent,
+		mapLoadingConfirmationRequired,
 		mapInfo = {},
 		chooseAdapter = function (identifiers) {
 			// order of identifiers is important, the first identifier takes precedence
@@ -18,6 +19,11 @@ MM.MapController = function (adapters) {
 			return adapters[0];
 		},
 		mapLoaded = function (idea, mapId, notSharable, readOnly) {
+			mapLoadingConfirmationRequired = false;
+			idea.addEventListener('changed', function () {
+				mapLoadingConfirmationRequired = true;
+			});
+
 			mapInfo = {
 				idea: idea,
 				mapId: (readOnly) ? '' : mapId
@@ -26,10 +32,13 @@ MM.MapController = function (adapters) {
 		};
 
 	this.setMap = mapLoaded;
+	this.isMapLoadingConfirmationRequired = function () {
+		return mapLoadingConfirmationRequired;
+	};
 	this.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};
-	this.loadMap = function (mapId) {
+	this.loadMap = function (mapId, force) {
 		var adapter = chooseAdapter([mapId]),
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
@@ -53,6 +62,11 @@ MM.MapController = function (adapters) {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
 			};
+		if (!force && mapLoadingConfirmationRequired) {
+			dispatchEvent('mapLoadingConfirmationRequired', mapId);
+			return;
+		}
+
 		dispatchEvent('mapLoading', mapId);
 		adapter.loadMap(mapId).then(
 			mapLoaded,
@@ -65,6 +79,7 @@ MM.MapController = function (adapters) {
 		var adapter = chooseAdapter([adapterType, mapInfo.mapId]),
 			mapSaved = function (savedMapId) {
 				var idHasChanged = (mapInfo.mapId !== savedMapId);
+				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
 				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, idHasChanged);
 			},

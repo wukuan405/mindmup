@@ -2,12 +2,12 @@
 /*global _, jasmine, observable, beforeEach, describe, expect, it, jasmine, jQuery, spyOn, MAPJS, MM, localStorage*/
 describe('Map Controller', function () {
 	'use strict';
-	var adapter1, adapter2, underTest;
+	var adapter1, adapter2, underTest, map;
 	beforeEach(function () {
 		MM.MapController.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					return jQuery.Deferred().resolve(MAPJS.content({ 'title': 'hello' }), mapId).promise();
+					return jQuery.Deferred().resolve(map, mapId).promise();
 				},
 				saveMap: function (contentToSave, oldId) {
 					return jQuery.Deferred().resolve(oldId).promise();
@@ -15,9 +15,27 @@ describe('Map Controller', function () {
 				recognises: function () {
 				}
 			});
+		map = MAPJS.content({ 'title': 'hello' });
 		adapter1 = _.clone(adapterPrototype);
 		adapter2 = _.clone(adapterPrototype);
 		underTest = new MM.MapController([adapter1, adapter2], localStorage);
+	});
+	describe('isMapLoadingConfirmationRequired', function () {
+		it('should be true if the loaded map has been changed', function () {
+			underTest.setMap(map, 'foo');
+			map.updateTitle(1, 'abc');
+			expect(underTest.isMapLoadingConfirmationRequired()).toBeTruthy();
+		});
+		it('should be false if the loaded map has not been changed', function () {
+			underTest.setMap(map, 'foo');
+			expect(underTest.isMapLoadingConfirmationRequired()).toBeFalsy();
+		});
+		it('should be false if the loaded map has been saved', function () {
+			underTest.setMap(map, 'foo');
+			map.updateTitle(1, 'abc');
+			underTest.publishMap();
+			expect(underTest.isMapLoadingConfirmationRequired()).toBeFalsy();
+		});
 	});
 	describe('loadMap', function () {
 		it('should check each adapter to see if it recognises the mapId', function () {
@@ -90,7 +108,39 @@ describe('Map Controller', function () {
 			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
 			expect(listener.mostRecentCall.args[1]).toBe('foo');
 		});
+		describe('mapLoadingConfirmationRequired event', function () {
+			var listener;
+			beforeEach(function () {
+				listener = jasmine.createSpy('mapLoadingConfirmationRequired listener');
+				underTest.addEventListener('mapLoadingConfirmationRequired', listener);
+				underTest.setMap(map, 'foo');
+			});
+			it('should be dispatched when loading a map and the current map has unsaved changes', function () {
+				map.updateTitle(1, 'abc');
 
+				underTest.loadMap('xyz');
+
+				expect(listener).toHaveBeenCalled();
+				expect(listener.mostRecentCall.args[0]).toBe('xyz');
+			});
+			it('should not be dispatched when loading a map and the current map has unsaved changes if loading is forced', function () {
+				map.updateTitle(1, 'abc');
+
+				underTest.loadMap('xyz', true);
+				expect(listener).not.toHaveBeenCalled();
+			});
+			it('should not be dispatched when loading a map and the current map has not been changed since loading', function () {
+				underTest.loadMap('xyz');
+				expect(listener).not.toHaveBeenCalled();
+			});
+			it('should not be dispatched when loading a map and the current map has not been changed since saving', function () {
+				map.updateTitle(1, 'abc');
+				underTest.publishMap();
+				underTest.loadMap('xyz');
+
+				expect(listener).not.toHaveBeenCalled();
+			});
+		});
 	});
 	describe('saveMap', function () {
 		var map;
