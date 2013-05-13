@@ -339,3 +339,6 @@ body.offline-enabled .offline-disabled-hidden {
 .non-group .btn {
 	margin-left: 5px;
 }
+.modal {
+	cursor: default;
+}
