@@ -1,45 +1,49 @@
-/*global MM, observable*/
-MM.navigation = function (storage, baseUrl) {
+/*global MM*/
+MM.navigation = function (storage, baseUrl, mapController) {
 	'use strict';
-	observable(this);
 	var self = this,
-		mapIdRegEx = /[Mm]:([^,;#]*)/,
+		unknownMapId = 'nil',
 		getMapIdFromHash = function () {
 			var windowHash = window && window.location && window.location.hash,
 				found = windowHash && mapIdRegEx.exec(windowHash);
-			return found && found[1];
+			return found && found[1] !== unknownMapId && found[1];
 		},
-		knownMapId = getMapIdFromHash();
+		mapIdRegEx = /[Mm]:([^,;#]*)/,
+		changeMapId = function (newMapId) {
+			if (newMapId) {
+				storage.setItem('mostRecentMapLoaded', newMapId);
+			}
+			newMapId = newMapId || unknownMapId;
+			window.location.hash = 'm:' + newMapId;
+			return true;
+		};
 	self.sharingUrl = function () {
-		return baseUrl + 'map/' + self.currentMapId();
+		return baseUrl + 'map/' + mapController.currentMapId();
 	};
-	self.hashMapId = function (mapId) {
-		return 'm:' + mapId;
+	self.loadInitial = function () {
+		var initialMapId = getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
+		mapController.loadMap(initialMapId);
 	};
-	self.currentMapId = function () {
-		return getMapIdFromHash() || (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
-	};
-	self.changeMapId = function (newMapId) {
-		if (newMapId && knownMapId && newMapId === knownMapId) {
-			return false;
-		}
-		knownMapId = newMapId;
-		window.location.hash = self.hashMapId(newMapId);
-		self.dispatchEvent('mapIdChanged', newMapId);
-		storage.setItem('mostRecentMapLoaded', newMapId);
-		return true;
-	};
+	mapController.addEventListener('mapLoaded', function (idea, newMapId) {
+		changeMapId(newMapId, true);
+	});
+	mapController.addEventListener('mapSaved', function (newMapId) {
+		changeMapId(newMapId, true);
+	});
+
 	window.addEventListener('hashchange', function () {
 		var newMapId = getMapIdFromHash();
-		if (!newMapId) {
-			if (knownMapId) {
-				window.location.hash = self.hashMapId(knownMapId);
-			}
-			return false;
+		if (newMapId === unknownMapId) {
+			return;
 		}
-		if (!knownMapId || knownMapId !== newMapId) {
-			self.changeMapId(newMapId);
+		if (!newMapId) {
+			changeMapId(mapController.currentMapId());
+			return false;
+		} else {
+			mapController.loadMap(newMapId);
+			return true;
 		}
 	});
+
 	return self;
 };

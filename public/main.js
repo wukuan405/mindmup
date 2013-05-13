@@ -26,8 +26,7 @@ MM.main = function (config) {
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
 	jQuery(function () {
-		var navigation = MM.navigation(localStorage, config.baseUrl),
-			activityLog = new MM.ActivityLog(10000),
+		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
 			objectStorage = MM.jsonStorage(localStorage),
@@ -42,6 +41,7 @@ MM.main = function (config) {
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
+			navigation = MM.navigation(localStorage, config.baseUrl, mapController),
 			pngExporter = new MAPJS.PNGExporter(mapController),
 			mapModel = new MAPJS.MapModel(mapController,
 				MAPJS.KineticMediator.layoutCalculator,
@@ -102,9 +102,10 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapController.mediation(mapController, activityLog, alert, navigation);
+		MM.MapController.mediation(mapController, activityLog, alert);
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 
+		navigation.loadInitial();
 		jQuery(window).bind('beforeunload', function () {
 			if (mapController.isMapLoadingConfirmationRequired()) {
 				return 'There are unsaved changes.';
