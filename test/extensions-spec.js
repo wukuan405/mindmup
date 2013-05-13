@@ -60,6 +60,13 @@ describe("MM.Extensions", function () {
 			ext.setActive('ttt', false);
 			expect(storage[key]).toBe('abc');
 		});
-
+	});
+	describe("isActive", function () {
+		it("returns true for active extensions, false for inactive", function () {
+			var key = 'sk', storage = {'sk': 'ttt abc'}, ext = new MM.Extensions(storage, key);
+			expect(ext.isActive('abc')).toBeTruthy();
+			expect(ext.isActive('ttt')).toBeTruthy();
+			expect(ext.isActive('def')).toBeFalsy();
+		});
 	});
 });

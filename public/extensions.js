@@ -1,4 +1,4 @@
-/*global MM, _*/
+/*global jQuery, MM, _, location */
 MM.Extensions = function (storage, storageKey) {
 	'use strict';
 	var active = [];
@@ -9,6 +9,9 @@ MM.Extensions = function (storage, storageKey) {
 		return _.map(active, function (ext) {
 			return MM.Extensions.config[ext].script;
 		});
+	};
+	this.isActive = function (ext) {
+		return _.contains(active, ext);
 	};
 	this.setActive = function (ext, shouldActivate) {
 		if (shouldActivate) {
@@ -24,6 +27,27 @@ MM.Extensions.config = {
 		name: 'Realtime collaboration',
 		script: '/e/google-collaboration.js'
 	}
+};
+jQuery.fn.extensionsWidget = function (extensions) {
+	'use strict';
+	var element = this,
+		listElement = element.find('[data-mm-role=ext-list]'),
+		template = listElement.find('[data-mm-role=template]').hide().clone(),
+		changed = false;
+	_.each(MM.Extensions.config, function (ext, extkey) {
+		var item = template.clone().appendTo(listElement).show();
+		item.find('[data-mm-role=title]').text(ext.name);
+		item.find('input[type=checkbox]').attr('checked', extensions.isActive(extkey)).change(function () {
+			extensions.setActive(extkey, this.checked);
+			changed = true;
+		});
+	});
+	element.on('hidden', function () {
+		if (changed) {
+			location.reload();
+		}
+	});
+	return element;
 };
 
 

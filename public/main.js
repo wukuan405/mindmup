@@ -47,7 +47,8 @@ MM.main = function (config) {
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapRepository, objectStorage, 'created-maps'),
-			autoSave = new MM.AutoSave(mapRepository, objectStorage, alert);
+			autoSave = new MM.AutoSave(mapRepository, objectStorage, alert),
+			extensions = new MM.Extensions(localStorage, 'active-extensions');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -95,6 +96,8 @@ MM.main = function (config) {
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('[data-category]').trackingWidget(activityLog);
+
+		jQuery('#modalExtensions').extensionsWidget(extensions);
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
