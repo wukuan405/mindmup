@@ -40,7 +40,7 @@ MM.main = function (config) {
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
-				new MM.EmbeddedMapAdapter()]),
+				new MM.EmbeddedMapSource()]),
 			pngExporter = new MAPJS.PNGExporter(mapRepository),
 			mapModel = new MAPJS.MapModel(mapRepository,
 				MAPJS.KineticMediator.layoutCalculator,
