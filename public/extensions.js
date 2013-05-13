@@ -23,10 +23,11 @@ MM.Extensions = function (storage, storageKey) {
 	};
 };
 MM.Extensions.config = {
-	'goggle-collaboration' : {
+/*	'goggle-collaboration' : {
 		name: 'Realtime collaboration',
 		script: '/e/google-collaboration.js'
 	}
+*/
 };
 jQuery.fn.extensionsWidget = function (extensions) {
 	'use strict';
