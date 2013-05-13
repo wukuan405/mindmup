@@ -102,6 +102,7 @@ MM.main = function (config) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
 		MM.MapRepository.mediation(mapRepository, activityLog, alert, navigation);
+		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };

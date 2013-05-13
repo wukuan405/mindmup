@@ -7,7 +7,7 @@ MM.Extensions = function (storage, storageKey) {
 	}
 	this.scriptsToLoad = function () {
 		return _.map(active, function (ext) {
-			return MM.Extensions.config[ext].script;
+			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
 		});
 	};
 	this.isActive = function (ext) {
