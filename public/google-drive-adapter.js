@@ -1,5 +1,5 @@
 /*global _, jQuery, MM, window, gapi, MAPJS */
-MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaultContentType) {
+MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var self = this,
 		driveLoaded,
@@ -278,6 +278,11 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 		).progress(deferred.notify);
 		return deferred.promise();
 	};
+	this.showSharingSettings = function (mindMupId) {
+		var shareClient = new gapi.drive.share.ShareClient(appId);
+		shareClient.setItemIds(googleMapId(mindMupId));
+		shareClient.showSettingsDialog();
+	};
 };
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
@@ -295,40 +300,35 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							contentText = modelRoot.get("initialContent"),
 							events = modelRoot.get("events"),
 							contentAggregate,
-							currentEvent,
+							currentRemoteEvent,
+							localSessionId,
 							applyEvents = function (mindmupEvents) {
 								mindmupEvents.forEach(function (event) {
-									currentEvent = event;
+									currentRemoteEvent = event;
 									try {
 										contentAggregate[event.cmd].apply(contentAggregate, event.args);
-										console.log("processing external event");
 									} catch (e) {
-										console.log("error processing external event", e);
 									}
-									currentEvent = undefined;
+									currentRemoteEvent = undefined;
 								});
 							},
 							onEventAdded = function (event) {
 								if (!event.isLocal) {
-									console.log("remote events", event.values);
 									applyEvents(event.values);
-								} else {
-									console.log("local events", event.values);
 								}
 							};
 						if (!contentText) {
 							deferred.reject("realtime-error", "Error loading " + mindMupId + " content");
 							return;
 						}
-						contentAggregate = MAPJS.content(JSON.parse(contentText));
+						localSessionId = _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
+						contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
+						console.log('local session', localSessionId);
 						applyEvents(events.asArray());
 						contentAggregate.addEventListener('changed', function (command, params) {
 							var toPublish = {cmd: command, args: params};
-							if (!_.isEqual(currentEvent, toPublish)) {
+							if (!_.isEqual(currentRemoteEvent, toPublish)) {
 								events.push(toPublish);
-								console.log('local event, publishing');
-							} else {
-								console.log('external event, skipping');
 							}
 						});
 						events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);

@@ -33,7 +33,7 @@ MM.main = function (config) {
 			objectStorage = MM.jsonStorage(localStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
-			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleClientId, config.googleShortenerApiKey, config.networkTimeoutMillis, 'application/json'),
+			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
 			mapController = new MM.MapController([
@@ -86,7 +86,7 @@ MM.main = function (config) {
 		jQuery(document).titleUpdateWidget(mapController);
 		jQuery('[data-mm-role=share]').shareWidget(navigation);
 		jQuery('#modalShareEmail').shareEmailWidget(navigation);
-		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleShortenerApiKey, activityLog, mapController, navigation);
+		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, navigation);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
 		jQuery('[data-mm-role=save]').saveWidget(mapController);
 		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);

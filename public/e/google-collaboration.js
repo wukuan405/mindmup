@@ -23,6 +23,12 @@ MM.Extensions.googleCollaboration = function () {
 				sessionNameField.parent().removeClass('error');
 				modal.modal('show');
 			});
+			menu.find('[data-mm-role=invite]').click(function () {
+				var mapId = mapController.currentMapId();
+				if (realtimeMapSource.recognises(mapId)) {
+					googleDriveAdapter.showSharingSettings(mapId.substr(1));
+				}
+			});
 			modal.find('[data-mm-role=start-session]').click(function () {
 				var sessionName = sessionNameField.val();
 				if (!sessionName) {
