@@ -9,12 +9,21 @@ MM.navigation = function (storage, baseUrl, mapController) {
 				found = windowHash && mapIdRegEx.exec(windowHash);
 			return found && found[1];
 		},
+		setMapIdInHash = function (mapId) {
+			if (mapIdRegEx.test(window.location.hash)) {
+				window.location.hash = window.location.hash.replace(mapIdRegEx, 'm:' + mapId);
+			} else if (window.location.hash && window.location.hash !== '#') {
+				window.location.hash = window.location.hash + ',m:' + mapId;
+			} else {
+				window.location.hash = 'm:' + mapId;
+			}
+		},
 		changeMapId = function (newMapId) {
 			if (newMapId) {
 				storage.setItem('mostRecentMapLoaded', newMapId);
 			}
 			newMapId = newMapId || unknownMapId;
-			window.location.hash = 'm:' + newMapId;
+			setMapIdInHash(newMapId);
 			return true;
 		};
 	self.sharingUrl = function () {

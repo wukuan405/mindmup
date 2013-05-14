@@ -7,4 +7,9 @@ jQuery.fn.titleUpdateWidget = function (mapController) {
 			elements.prop('title', contentAggregate.title);
 		}
 	});
+	mapController.addEventListener('mapSaved', function (id, contentAggregate) {
+		if (elements.prop('title')) {
+			elements.prop('title', contentAggregate.title);
+		}
+	});
 };

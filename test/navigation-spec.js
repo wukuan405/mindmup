@@ -1,4 +1,4 @@
-/*global beforeEach, afterEach, describe, expect, it, MM, $, spyOn, jasmine, localStorage, observable, window*/
+/*global beforeEach, afterEach, describe, expect, it, MM, spyOn, localStorage, observable, window*/
 describe('MM.navigation', function () {
 	'use strict';
 	var underTest, mapController;
@@ -53,29 +53,41 @@ describe('MM.navigation', function () {
 			expect(mapController.loadMap).toHaveBeenCalledWith('default');
 		});
 	});
-	describe("mapController event listeners", function () {
-		it("update window hash and local storage on map loaded", function () {
+	describe('mapController event listeners', function () {
+		it('update window hash and local storage on map loaded', function () {
 			window.location.hash = '';
-			mapController.dispatchEvent("mapLoaded", undefined, 'newLoaded');
+			mapController.dispatchEvent('mapLoaded', undefined, 'newLoaded');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
 			expect(window.location.hash).toBe('#m:newLoaded');
 		});
-		it("update window hash and local storage on map saveed", function () {
+		it('update window hash and local storage on map saveed', function () {
 			window.location.hash = '';
-			mapController.dispatchEvent("mapSaved", 'newSaved');
+			mapController.dispatchEvent('mapSaved', 'newSaved');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newSaved');
 			expect(window.location.hash).toBe('#m:newSaved');
 		});
+		it('replaces map ID in a hash that contains map ID and some other stuff', function () {
+			window.location.hash = 'prefix,m:xyz,def';
+			mapController.dispatchEvent('mapLoaded', undefined, 'newLoaded');
+			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
+			expect(window.location.hash).toBe('#prefix,m:newLoaded,def');
+		});
 	});
-	describe("hash change listener", function () {
+	describe('hash change listener', function () {
 		beforeEach(function () {
 			spyOn(mapController, 'loadMap');
 			spyOn(mapController, 'currentMapId').andReturn('abc');
 		});
-		it('resets the hash to the current map ID if hash was changed to an invalid map ID', function () {
+		it('adds map ID to hash after a comma if the hash was not a valid map ID', function () {
 			window.location.hash = 'def';
 			underTest.hashChange();
-			expect(window.location.hash).toBe('#m:abc');
+			expect(window.location.hash).toBe('#def,m:abc');
+		});
+		it('loads map from a hash that contains map ID and some other stuff', function () {
+			window.location.hash = 'prefix,m:xyz,def';
+			underTest.hashChange();
+			expect(mapController.loadMap).toHaveBeenCalledWith('xyz');
+			expect(window.location.hash).toBe('#prefix,m:xyz,def');
 		});
 		it('loads the map if the ID is valid', function () {
 			window.location.hash = 'm:def';
