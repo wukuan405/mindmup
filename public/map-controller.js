@@ -6,6 +6,7 @@ MM.MapController = function (initialMapSources) {
 	var dispatchEvent = this.dispatchEvent,
 		mapLoadingConfirmationRequired,
 		mapInfo = {},
+		activeMapSource,
 		mapSources = [].concat(initialMapSources),
 		chooseMapSource = function (identifier) {
 			// order of identifiers is important, the first identifier takes precedence
@@ -15,14 +16,14 @@ MM.MapController = function (initialMapSources) {
 					return mapSources[mapSourceIndex];
 				}
 			}
-			return mapSources[0];
 		},
 		mapLoaded = function (idea, mapId, readOnly) {
 			mapLoadingConfirmationRequired = false;
-			idea.addEventListener('changed', function () {
-				mapLoadingConfirmationRequired = true;
-			});
-
+			if (!activeMapSource.autoSave) {
+				idea.addEventListener('changed', function () {
+					mapLoadingConfirmationRequired = true;
+				});
+			}
 			mapInfo = {
 				idea: idea,
 				mapId: (readOnly) ? '' : mapId
@@ -40,12 +41,13 @@ MM.MapController = function (initialMapSources) {
 		return mapInfo && mapInfo.mapId;
 	};
 	this.isMapSharable = function () {
-		var mapSource = chooseMapSource(this.currentMapId());
-		return this.currentMapId() && mapSource && (!mapSource.notSharable);
+		return this.currentMapId() && activeMapSource && (!activeMapSource.notSharable);
+	};
+	this.isMapAutoSaved = function () {
+		return activeMapSource && activeMapSource.autoSave;
 	};
 	this.loadMap = function (mapId, force) {
-		var mapSource = chooseMapSource(mapId),
-			progressEvent = function (evt) {
+		var progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
 					message = ((evt && evt.loaded) ? Math.round(100 * done / total) + '%' : evt);
@@ -54,15 +56,15 @@ MM.MapController = function (initialMapSources) {
 			mapLoadFailed = function (reason, label) {
 				var retryWithDialog = function () {
 					dispatchEvent('mapLoading', mapId);
-					mapSource.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
-				}, mapSourceName = mapSource.description ? ' [' + mapSource.description + ']' : '';
+					activeMapSource.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
+				}, mapSourceName = activeMapSource.description ? ' [' + activeMapSource.description + ']' : '';
 				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapLoadingUnAuthorized', mapId, reason);
 				} else if (reason === 'failed-authentication') {
-					dispatchEvent('authorisationFailed', mapSource.description, retryWithDialog);
+					dispatchEvent('authorisationFailed', activeMapSource.description, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
-					dispatchEvent('authRequired', mapSource.description, retryWithDialog);
+					dispatchEvent('authRequired', activeMapSource.description, retryWithDialog);
 				} else {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
@@ -75,36 +77,42 @@ MM.MapController = function (initialMapSources) {
 			dispatchEvent('mapLoadingConfirmationRequired', mapId);
 			return;
 		}
+		activeMapSource = chooseMapSource(mapId);
+		if (!activeMapSource) {
+			dispatchEvent('mapSourceExtensionRequired', mapId);
+			return;
+		}
 		dispatchEvent('mapLoading', mapId);
-		mapSource.loadMap(mapId).then(
+		activeMapSource.loadMap(mapId).then(
 			mapLoaded,
 			mapLoadFailed,
 			progressEvent
 		);
 	};
 	this.publishMap = function (mapSourceType) {
-		var mapSource = chooseMapSource(mapSourceType || mapInfo.mapId),
+		var deferred = jQuery.Deferred(),
 			mapSaved = function (savedMapId) {
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
+				deferred.resolve(savedMapId, mapInfo.idea);
 				dispatchEvent('mapSaved', savedMapId, mapInfo.idea);
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
 					message = ((evt && evt.loaded) ? Math.round(100 * done / total) + '%' : evt);
-				dispatchEvent('mapSaving', mapSource.description, message);
+				dispatchEvent('mapSaving', activeMapSource.description, message);
 			},
 			mapSaveFailed = function (reason, label) {
 				var retryWithDialog = function () {
-					dispatchEvent('mapSaving', mapSource.description);
-					mapSource.saveMap(mapInfo.idea, mapInfo.mapId, true).then(mapSaved, mapSaveFailed, progressEvent);
-				}, mapSourceName = mapSource.description || '';
+					dispatchEvent('mapSaving', activeMapSource.description);
+					activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId, true).then(mapSaved, mapSaveFailed, progressEvent);
+				}, mapSourceName = activeMapSource.description || '';
 				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapSavingUnAuthorized', function () {
-						dispatchEvent('mapSaving', mapSource.description, 'Creating a new file');
-						mapSource.saveMap(mapInfo.idea, 'new', true).then(mapSaved, mapSaveFailed, progressEvent);
+						dispatchEvent('mapSaving', activeMapSource.description, 'Creating a new file');
+						activeMapSource.saveMap(mapInfo.idea, 'new', true).then(mapSaved, mapSaveFailed, progressEvent);
 					});
 				} else if (reason === 'failed-authentication') {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
@@ -114,12 +122,14 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
 			};
-		dispatchEvent('mapSaving', mapSource.description);
-		mapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
+		dispatchEvent('mapSaving', activeMapSource.description);
+		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
+		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent
 		);
+		return deferred.promise();
 	};
 };
 MM.MapController.activityTracking = function (mapController, activityLog) {
@@ -200,6 +210,7 @@ MM.MapController.alerts = function (mapController, alert) {
 			alert.hide(alertId);
 			alertId = alert.show(title, message, 'error');
 		};
+
 	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
 		showAlertWithCallBack(
 			'There are unsaved changes in the loaded map.',

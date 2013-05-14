@@ -1,4 +1,4 @@
-/*global _, jQuery, MM, window, gapi */
+/*global _, jQuery, MM, window, gapi, MAPJS */
 MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var self = this,
@@ -176,7 +176,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 			}
 			return deferred.promise();
 		},
-		makeRealtimeReady = function () {
+		makeRealtimeReady = function (showAuth) {
 			var deferred = jQuery.Deferred(),
 				loadRealtimeApis = function () {
 					if (gapi.drive && gapi.drive.realtime) {
@@ -185,9 +185,10 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 						gapi.load("auth:client,drive-realtime,drive-share", deferred.resolve);
 					}
 				};
-			self.ready(true).then(loadRealtimeApis, deferred.reject, deferred.notify);
+			self.ready(showAuth).then(loadRealtimeApis, deferred.reject, deferred.notify);
 			return deferred.promise();
 		};
+	this.makeRealtimeReady = makeRealtimeReady;
 	this.description = 'Google';
 
 	this.ready = function (showAuthenticationDialogs) {
@@ -200,7 +201,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 		return deferred.promise();
 	};
 
-	this.createRealtimeMap = function (name, initialContent) {
+	this.createRealtimeMap = function (name, initialContent, showAuth) {
 		var deferred = jQuery.Deferred(),
 			fileCreated = function (mindMupId) {
 				gapi.drive.realtime.load(googleMapId(mindMupId),
@@ -215,7 +216,7 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 					}
 					);
 			};
-		makeRealtimeReady().then(
+		makeRealtimeReady(showAuth).then(
 			function () {
 				saveFile('MindMup collaborative session ' + name, undefined, name, 'application/vnd.mindmup.collab').then(
 					fileCreated,
@@ -279,20 +280,81 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 	};
 };
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
-	
-	this.loadMap = function loadMap(mapId, showAuth) {
-	
-	}
+	'use strict';
+	var nextSessionName;
+	this.setNextSessionName = function (name) {
+		nextSessionName = name;
+	};
+	this.loadMap = function loadMap(mindMupId, showAuth) {
+		var deferred = jQuery.Deferred(),
+			initMap = function initMap() {
+				gapi.drive.realtime.load(
+					mindMupId.substr(3),
+					function onFileLoaded(doc) {
+						var modelRoot = doc.getModel().getRoot(),
+							contentText = modelRoot.get("initialContent"),
+							events = modelRoot.get("events"),
+							contentAggregate,
+							currentEvent,
+							applyEvents = function (mindmupEvents) {
+								mindmupEvents.forEach(function (event) {
+									currentEvent = event;
+									try {
+										contentAggregate[event.cmd].apply(contentAggregate, event.args);
+										console.log("processing external event");
+									} catch (e) {
+										console.log("error processing external event", e);
+									}
+									currentEvent = undefined;
+								});
+							},
+							onEventAdded = function (event) {
+								if (!event.isLocal) {
+									console.log("remote events", event.values);
+									applyEvents(event.values);
+								} else {
+									console.log("local events", event.values);
+								}
+							};
+						if (!contentText) {
+							deferred.reject("realtime-error", "Error loading " + mindMupId + " content");
+							return;
+						}
+						contentAggregate = MAPJS.content(JSON.parse(contentText));
+						applyEvents(events.asArray());
+						contentAggregate.addEventListener('changed', function (command, params) {
+							var toPublish = {cmd: command, args: params};
+							if (!_.isEqual(currentEvent, toPublish)) {
+								events.push(toPublish);
+								console.log('local event, publishing');
+							} else {
+								console.log('external event, skipping');
+							}
+						});
+						events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
+						deferred.resolve(contentAggregate, mindMupId);
+					},
+					function initializeModel(model) {
+						deferred.reject("realtime-error", "Session " + mindMupId + " has not been initialised");
+					}
+				);
+			};
+		googleDriveAdapter.makeRealtimeReady(showAuth).then(
+			initMap,
+			deferred.reject,
+			deferred.notify
+		);
+		return deferred.promise();
+	};
 	this.saveMap = function (map, mapId, showAuth) {
-		var deferred = jQuery.Deferred();
-		if (recognises(mapId)) {
-			deferred.resolve(); 
-			return; /* no saving needed, realtime updates */
+		if (this.recognises(mapId) && mapId.length > 2) {
+			return jQuery.Deferred().resolve(mapId, map).promise(); /* no saving needed, realtime updates */
 		}
-		googleDriveAdapter.createRealtimeMap(
-	}
+		return googleDriveAdapter.createRealtimeMap(nextSessionName, map, showAuth);
+	};
 	this.description = 'Google Drive Realtime';
 	this.recognises = function (mapId) {
-		return /^cg/.test(mapId);
-	}
+		return (/^cg/).test(mapId);
+	};
+	this.autoSave = true;
 };

@@ -1,4 +1,4 @@
-/*global jQuery*/
+/*global jQuery, window*/
 jQuery.fn.mapStatusWidget = function (mapController) {
 	'use strict';
 	var element = this,
@@ -18,18 +18,25 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 		}
 		if (oldIdea !== idea) {
 			oldIdea = idea;
-			idea.addEventListener('changed', function () {
-				if (element.hasClass('map-unchanged')) {
-					element.removeClass('map-unchanged').addClass('map-changed');
-					element.removeClass('map-sharable').addClass('map-not-sharable');
-				}
+			if (!mapController.isMapAutoSaved()) {
+				idea.addEventListener('changed', function () {
+					if (element.hasClass('map-unchanged')) {
+						element.removeClass('map-unchanged').addClass('map-changed');
+						element.removeClass('map-sharable').addClass('map-not-sharable');
+					}
 
-			});
+				});
+			}
 		}
 		updateSharable();
 	});
 	mapController.addEventListener('mapSaved', function () {
 		element.removeClass('map-changed').addClass('map-unchanged');
 		updateSharable();
+	});
+	jQuery(window).bind('beforeunload', function () {
+		if (mapController.isMapLoadingConfirmationRequired()) {
+			return 'There are unsaved changes.';
+		}
 	});
 };

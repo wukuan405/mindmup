@@ -28,7 +28,7 @@ MM.Extensions.config = {
 		script: '/e/google-collaboration.js'
 	}
 };
-jQuery.fn.extensionsWidget = function (extensions) {
+jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	'use strict';
 	var element = this,
 		listElement = element.find('[data-mm-role=ext-list]'),
@@ -46,6 +46,28 @@ jQuery.fn.extensionsWidget = function (extensions) {
 		if (changed) {
 			location.reload();
 		}
+	});
+
+	mapController.addEventListener('mapSourceExtensionRequired', function (newMapId) {
+		var showAlertWithCallBack = function (message, prompt, type, callback) {
+			var alertId = alert.show(
+				message,
+				'<a href="#" data-mm-role="alert-callback">' + prompt + '</a>',
+				type
+			);
+			jQuery('[data-mm-role=alert-callback]').click(function () {
+				alert.hide(alertId);
+				callback();
+			});
+		};
+		showAlertWithCallBack(
+			'This map requires an extension to load',
+			'Click here to configure extensions',
+			'warning',
+			function () {
+				element.modal('show');
+			}
+		);
 	});
 	return element;
 };

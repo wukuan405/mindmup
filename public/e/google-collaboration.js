@@ -1,17 +1,15 @@
 /*global $, MM*/
-console.log('google collaboration loaded');
 MM.Extensions.googleCollaboration = function () {
 	'use strict';
-
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
+		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
+		mapController = MM.Extensions.components.mapController,
 		alert =  MM.Extensions.components.alert,
 		startSession = function (name) {
-			googleDriveAdapter.createRealtimeMap(name).then(
-				function (fileId) {
-					alert.show('Yeehaa!' + fileId);
-				},
-				function () {
-					alert.show('Problema!');
+			realtimeMapSource.setNextSessionName(name);
+			mapController.publishMap('cg').done(
+				function loadMap(mapId) {
+					mapController.loadMap(mapId);
 				}
 			);
 		},
@@ -35,6 +33,7 @@ MM.Extensions.googleCollaboration = function () {
 				}
 			});
 		};
+	mapController.addMapSource(realtimeMapSource);
 	$.get('/e/google-collaboration.html', function (data) {
 		load_ui(data);
 	});

@@ -47,10 +47,12 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		}
 	});
 	mapController.addEventListener('mapLoaded', function (idea, mapId) {
-		currentMapId = mapId;
-		currentIdea = idea;
-		isWarningShown = false;
-		checkForLocalChanges(mapId);
-		trackChanges(idea, mapId);
+		if (!mapController.isMapAutoSaved()) {
+			currentMapId = mapId;
+			currentIdea = idea;
+			isWarningShown = false;
+			checkForLocalChanges(mapId);
+			trackChanges(idea, mapId);
+		}
 	});
 };

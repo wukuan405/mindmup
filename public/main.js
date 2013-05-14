@@ -13,11 +13,12 @@ MM.main = function (config) {
 			mapModel.addEventListener('analytic', activityLog.log);
 		}
 	},
-		loadScriptsAsynchronously = function (d, s, urls) {
+		loadScriptsAsynchronously = function (d, s, urls, callback) {
 			urls.forEach(function (url) {
 				var js, fjs = d.getElementsByTagName(s)[0];
 				js = d.createElement(s);
 				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
+				js.onload = callback;
 				fjs.parentNode.insertBefore(js, fjs);
 			});
 		},
@@ -99,7 +100,7 @@ MM.main = function (config) {
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('[data-category]').trackingWidget(activityLog);
 
-		jQuery('#modalExtensions').extensionsWidget(extensions);
+		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
@@ -107,17 +108,28 @@ MM.main = function (config) {
 		MM.MapController.alerts(mapController, alert);
 		MM.Extensions.components = {
 			'googleDriveAdapter': googleDriveAdapter,
-			'alert': alert
+			'alert': alert,
+			'mapController': mapController
 		};
-		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 
-		navigation.loadInitial();
-		jQuery(window).bind('beforeunload', function () {
-			if (mapController.isMapLoadingConfirmationRequired()) {
-				return 'There are unsaved changes.';
-			}
+		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());	
+		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
+			delete MM.Extensions.pendingScripts[$(this).attr('src')];
 		});
-
+		if (!_.isEmpty(MM.Extensions.pendingScripts)) { 
+			var alertId = alert.show ('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
+			var intervalId = window.setInterval( function () {
+				if (_.isEmpty(MM.Extensions.pendingScripts)) {
+					alert.hide(alertId);
+					window.clearInterval(intervalId);
+					navigation.loadInitial();
+				} else {
+					$('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
+				}
+			}, 1000);
+		} else {
+			navigation.loadInitial();
+		}
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };
