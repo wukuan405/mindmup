@@ -1,4 +1,4 @@
-/*global _, jQuery, MM, window, gapi, MAPJS */
+/*global _, jQuery, MM, window, gapi, MAPJS, google */
 MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var self = this,
@@ -182,7 +182,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					if (gapi.drive && gapi.drive.realtime) {
 						deferred.resolve();
 					} else {
-						gapi.load("auth:client,drive-realtime,drive-share", deferred.resolve);
+						gapi.load("auth:client,picker,drive-realtime,drive-share", deferred.resolve);
 					}
 				};
 			self.ready(showAuth).then(loadRealtimeApis, deferred.reject, deferred.notify);
@@ -283,6 +283,30 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		shareClient.setItemIds(googleMapId(mindMupId));
 		shareClient.showSettingsDialog();
 	};
+	this.showPicker = function (contentTypes, title) {
+		var picker, deferred, view;
+		deferred = jQuery.Deferred();
+		view = new google.picker.View(google.picker.ViewId.DOCS);
+		view.setMimeTypes(contentTypes);
+		picker = new google.picker.PickerBuilder()
+			.enableFeature(google.picker.Feature.NAV_HIDDEN)
+			.setAppId(appId)
+			.addView(view)
+			.setCallback(function (choice) {
+				if (choice.action === 'picked') {
+					deferred.resolve(mindMupId(choice.docs[0].id));
+					return;
+				}
+				if (choice.action === 'cancel') {
+					deferred.reject();
+				}
+			})
+			.setTitle(title)
+			.setSelectableMimeTypes(contentTypes)
+			.build();
+		picker.setVisible(true);
+		return deferred.promise();
+	};
 };
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
@@ -321,7 +345,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							deferred.reject("realtime-error", "Error loading " + mindMupId + " content");
 							return;
 						}
-						localSessionId = _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
+						localSessionId = 'gd' + _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
 						contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
 						console.log('local session', localSessionId);
 						applyEvents(events.asArray());

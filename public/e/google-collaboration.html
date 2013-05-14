@@ -4,8 +4,10 @@
 		 <i class="icon-group"></i>&nbsp;Collaboration&nbsp;<b class="caret"></b>
 	   </a>
 		<ul class="dropdown-menu" role="menu">
-			<li><a data-mm-role="start"><i class="icon-play" ></i>&nbsp;Start</a></li>
-			<li><a data-mm-role="invite"><i class="icon-group" ></i>&nbsp;Invite collaborators</a></li>
+			<li><a data-mm-role="start" data-mm-collab-visible="offline"><i class="icon-play" ></i>&nbsp;Start</a></li>
+			<li><a data-mm-role="invite" data-mm-collab-visible="online"><i class="icon-group" ></i>&nbsp;Invite collaborators</a></li>
+			<li><a data-mm-role="join" data-mm-collab-visible="offline"><i class="icon-eye-open" ></i>&nbsp;Join an existing session</a></li>
+			<li><a data-mm-role="leave" data-mm-collab-visible="online"><i class="icon-eject" ></i>&nbsp;Leave current session</a></li>
 		</ul>
 	</li>
 	<div class='modal hide fade' data-mm-role='modal-start'>
