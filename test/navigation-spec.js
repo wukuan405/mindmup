@@ -1,4 +1,4 @@
-/*global beforeEach, afterEach, describe, expect, it, MM, $, spyOn, jasmine, localStorage, observable, window*/
+/*global beforeEach, afterEach, describe, expect, it, MM, spyOn, localStorage, observable, window*/
 describe('MM.navigation', function () {
 	'use strict';
 	var underTest, mapController;
@@ -53,21 +53,21 @@ describe('MM.navigation', function () {
 			expect(mapController.loadMap).toHaveBeenCalledWith('default');
 		});
 	});
-	describe("mapController event listeners", function () {
-		it("update window hash and local storage on map loaded", function () {
+	describe('mapController event listeners', function () {
+		it('update window hash and local storage on map loaded', function () {
 			window.location.hash = '';
-			mapController.dispatchEvent("mapLoaded", undefined, 'newLoaded');
+			mapController.dispatchEvent('mapLoaded', undefined, 'newLoaded');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
 			expect(window.location.hash).toBe('#m:newLoaded');
 		});
-		it("update window hash and local storage on map saveed", function () {
+		it('update window hash and local storage on map saveed', function () {
 			window.location.hash = '';
-			mapController.dispatchEvent("mapSaved", 'newSaved');
+			mapController.dispatchEvent('mapSaved', 'newSaved');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newSaved');
 			expect(window.location.hash).toBe('#m:newSaved');
 		});
 	});
-	describe("hash change listener", function () {
+	describe('hash change listener', function () {
 		beforeEach(function () {
 			spyOn(mapController, 'loadMap');
 			spyOn(mapController, 'currentMapId').andReturn('abc');
