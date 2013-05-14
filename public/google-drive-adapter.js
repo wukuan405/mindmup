@@ -279,32 +279,50 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		return deferred.promise();
 	};
 	this.showSharingSettings = function (mindMupId) {
-		var shareClient = new gapi.drive.share.ShareClient(appId);
-		shareClient.setItemIds(googleMapId(mindMupId));
-		shareClient.showSettingsDialog();
+		var showDialog = function () {
+			var shareClient = new gapi.drive.share.ShareClient(appId);
+			shareClient.setItemIds(googleMapId(mindMupId));
+			shareClient.showSettingsDialog();
+		};
+		if (gapi && gapi.drive && gapi.drive.share) {
+			showDialog();
+		} else {
+			this.ready(false).done(function () {
+				gapi.load("drive-share", showDialog);
+			});
+		}
 	};
 	this.showPicker = function (contentTypes, title) {
-		var picker, deferred, view;
-		deferred = jQuery.Deferred();
-		view = new google.picker.View(google.picker.ViewId.DOCS);
-		view.setMimeTypes(contentTypes);
-		picker = new google.picker.PickerBuilder()
-			.enableFeature(google.picker.Feature.NAV_HIDDEN)
-			.setAppId(appId)
-			.addView(view)
-			.setCallback(function (choice) {
-				if (choice.action === 'picked') {
-					deferred.resolve(mindMupId(choice.docs[0].id));
-					return;
-				}
-				if (choice.action === 'cancel') {
-					deferred.reject();
-				}
-			})
-			.setTitle(title)
-			.setSelectableMimeTypes(contentTypes)
-			.build();
-		picker.setVisible(true);
+		var deferred = jQuery.Deferred(),
+			showPicker = function () {
+				var picker, view;
+				view = new google.picker.View(google.picker.ViewId.DOCS);
+				view.setMimeTypes(contentTypes);
+				picker = new google.picker.PickerBuilder()
+					.enableFeature(google.picker.Feature.NAV_HIDDEN)
+					.setAppId(appId)
+					.addView(view)
+					.setCallback(function (choice) {
+						if (choice.action === 'picked') {
+							deferred.resolve(mindMupId(choice.docs[0].id));
+							return;
+						}
+						if (choice.action === 'cancel') {
+							deferred.reject();
+						}
+					})
+					.setTitle(title)
+					.setSelectableMimeTypes(contentTypes)
+					.build();
+				picker.setVisible(true);
+			};
+		if (window.google && window.google.picker) {
+			showPicker();
+		} else {
+			this.ready(false).then(function () {
+				gapi.load("picker", showPicker);
+			});
+		}
 		return deferred.promise();
 	};
 };
