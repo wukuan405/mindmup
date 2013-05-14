@@ -13,6 +13,19 @@ jQuery.fn.saveWidget = function (mapController) {
 				element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
 				element.find('.dropdown-toggle').show();
 			}
+		},
+		setDefaultRepo = function (mapId) {
+			var validrepos = 'aog';
+			repository = (mapId && mapId[0]);
+			if (!_.contains(validrepos, repository)) {
+				repository = validrepos[0];
+			}
+			if (mapId === 'new-g') {
+				repository = 'g';
+			}
+			element.find('[data-mm-role=currentrepo]').removeClass(
+				_.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('')
+			).addClass('repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
 		if (mapChanged && evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
@@ -27,12 +40,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		return 'repo-' + $(this).data('mm-repository');
 	});
 	mapController.addEventListener('mapLoaded', function (idea, mapId) {
-		repository = (mapId && mapId[0]);
-		if (repository !== 'g' && repository !== 'o') { repository = 'a'; } /* stupid workaround, this takes care of null, new, default and a...*/
-		if (document.location.hash === '#google-drive') {
-			repository = 'g';
-		}
-		element.find('[data-mm-role=currentrepo]').removeClass('repo-a repo-g repo-o').addClass('repo-' + repository);
+		setDefaultRepo(mapId);
 		idea.addEventListener('changed', mapChangedListener);
 		mapChanged = false;
 	});
@@ -47,7 +55,8 @@ jQuery.fn.saveWidget = function (mapController) {
 		mapController.addEventListener(eventName, resetSaveButton);
 	});
 
-	mapController.addEventListener('mapSaved', function () {
+	mapController.addEventListener('mapSaved', function (mapId) {
+		setDefaultRepo(mapId);
 		mapChanged = false;
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
 		element.find('.dropdown-toggle').show();
