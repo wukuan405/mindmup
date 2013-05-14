@@ -28,7 +28,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			).addClass('repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
-		if (mapChanged && evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
+		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
 			mapController.publishMap(repository);
 			evt.preventDefault();
 		}
