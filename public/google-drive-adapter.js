@@ -200,12 +200,25 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 		return deferred.promise();
 	};
 
-	this.createRealtimeMap = function (name) {
-		var deferred = jQuery.Deferred();
+	this.createRealtimeMap = function (name, initialContent) {
+		var deferred = jQuery.Deferred(),
+			fileCreated = function (mindMupId) {
+				gapi.drive.realtime.load(googleMapId(mindMupId),
+					function onFileLoaded() {
+						deferred.resolve("c" + mindMupId);
+					},
+					function initializeModel(model) {
+						var list = model.createList(),
+							initialMap = model.createString();
+						model.getRoot().set("events", list);
+						model.getRoot().set("initialContent", JSON.stringify(initialContent));
+					}
+					);
+			};
 		makeRealtimeReady().then(
 			function () {
 				saveFile('MindMup collaborative session ' + name, undefined, name, 'application/vnd.mindmup.collab').then(
-					deferred.resolve,
+					fileCreated,
 					deferred.reject,
 					deferred.notify
 				);
@@ -264,4 +277,22 @@ MM.GoogleDriveAdapter = function (clientId, apiKey, networkTimeoutMillis, defaul
 		).progress(deferred.notify);
 		return deferred.promise();
 	};
+};
+MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
+	
+	this.loadMap = function loadMap(mapId, showAuth) {
+	
+	}
+	this.saveMap = function (map, mapId, showAuth) {
+		var deferred = jQuery.Deferred();
+		if (recognises(mapId)) {
+			deferred.resolve(); 
+			return; /* no saving needed, realtime updates */
+		}
+		googleDriveAdapter.createRealtimeMap(
+	}
+	this.description = 'Google Drive Realtime';
+	this.recognises = function (mapId) {
+		return /^cg/.test(mapId);
+	}
 };
