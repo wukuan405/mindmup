@@ -103,7 +103,8 @@ MM.main = function (config) {
 		if (!isTouch()) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
-		MM.MapController.mediation(mapController, activityLog, alert);
+		MM.MapController.activityTracking(mapController, activityLog);
+		MM.MapController.alerts(mapController, alert);
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad());
 
 		navigation.loadInitial();

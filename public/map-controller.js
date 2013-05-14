@@ -81,9 +81,7 @@ MM.MapController = function (initialMapSources) {
 			mapLoadFailed,
 			progressEvent
 		);
-
 	};
-
 	this.publishMap = function (mapSourceType) {
 		var mapSource = chooseMapSource(mapSourceType || mapInfo.mapId),
 			mapSaved = function (savedMapId) {
@@ -124,14 +122,6 @@ MM.MapController = function (initialMapSources) {
 		);
 	};
 };
-
-MM.MapController.mediation = function (mapController, activityLog, alert) {
-	'use strict';
-	MM.MapController.activityTracking(mapController, activityLog);
-	MM.MapController.alerts(mapController, alert);
-};
-
-
 MM.MapController.activityTracking = function (mapController, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
