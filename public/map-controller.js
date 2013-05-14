@@ -41,7 +41,7 @@ MM.MapController = function (initialMapSources) {
 	};
 	this.isMapSharable = function () {
 		var mapSource = chooseMapSource(this.currentMapId());
-		return mapSource && (!mapSource.notSharable);
+		return this.currentMapId() && mapSource && (!mapSource.notSharable);
 	};
 	this.loadMap = function (mapId, force) {
 		var mapSource = chooseMapSource(mapId),
