@@ -61,5 +61,6 @@ MM.Extensions.googleCollaboration = function () {
 	$.get('/e/google-collaboration.html', function (data) {
 		load_ui(data);
 	});
+	$('<link rel="stylesheet" href="/e/google-collaboration.css?cacheprev=' + MM.Extensions.mmConfig.cachePreventionKey + '" />').appendTo($('body'));
 };
 MM.Extensions.googleCollaboration();

@@ -111,7 +111,7 @@ MM.main = function (config) {
 			'alert': alert,
 			'mapController': mapController
 		};
-
+		MM.Extensions.mmConfig = config;
 		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());	
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
 			delete MM.Extensions.pendingScripts[$(this).attr('src')];
