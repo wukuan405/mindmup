@@ -50,7 +50,7 @@ MM.main = function (config) {
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions');
+			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey);
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);

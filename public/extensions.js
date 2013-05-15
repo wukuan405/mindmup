@@ -1,14 +1,14 @@
 /*global jQuery, MM, _, location */
-MM.Extensions = function (storage, storageKey) {
+MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 	'use strict';
 	var active = [];
 	if (storage[storageKey]) {
 		active = storage[storageKey].split(' ');
 	}
 	this.scriptsToLoad = function () {
-		return _.reject(_.map(active, function (ext) {
+		return _.map(_.reject(_.map(active, function (ext) {
 			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		}), function (e) { return !e; });
+		}), function (e) { return !e; }), function (script) { return script + "?v=" + cachePreventionKey; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
