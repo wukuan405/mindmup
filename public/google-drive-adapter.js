@@ -342,16 +342,10 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							contentText = modelRoot.get("initialContent"),
 							events = modelRoot.get("events"),
 							contentAggregate,
-							currentRemoteEvent,
 							localSessionId,
 							applyEvents = function (mindmupEvents) {
 								mindmupEvents.forEach(function (event) {
-									currentRemoteEvent = event;
-									try {
-										contentAggregate[event.cmd].apply(contentAggregate, event.args);
-									} catch (e) {
-									}
-									currentRemoteEvent = undefined;
+									contentAggregate[event.cmd].apply(contentAggregate, event.args);
 								});
 							},
 							onEventAdded = function (event) {
@@ -367,10 +361,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 						contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
 						console.log('local session', localSessionId);
 						applyEvents(events.asArray());
-						contentAggregate.addEventListener('changed', function (command, params) {
-							var toPublish = {cmd: command, args: params};
-							if (!_.isEqual(currentRemoteEvent, toPublish)) {
-								events.push(toPublish);
+						contentAggregate.addEventListener('changed', function (command, params, session) {
+							if (session === localSessionId) {
+								events.push({cmd: command, args: params});
 							}
 						});
 						events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
