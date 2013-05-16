@@ -343,14 +343,15 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							events = modelRoot.get("events"),
 							contentAggregate,
 							localSessionId,
-							applyEvents = function (mindmupEvents) {
+							applyEvents = function (mindmupEvents, sessionId) {
 								mindmupEvents.forEach(function (event) {
-									contentAggregate[event.cmd].apply(contentAggregate, event.args);
+									//contentAggregate[event.cmd].apply(contentAggregate, event.args);
+									contentAggregate.execCommand(event.cmd, event.args, sessionId);
 								});
 							},
 							onEventAdded = function (event) {
 								if (!event.isLocal) {
-									applyEvents(event.values);
+									applyEvents(event.values, "gd" + event.sessionId);
 								}
 							};
 						if (!contentText) {
@@ -360,7 +361,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 						localSessionId = 'gd' + _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
 						contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
 						console.log('local session', localSessionId);
-						applyEvents(events.asArray());
+						applyEvents(events.asArray(), localSessionId);
 						contentAggregate.addEventListener('changed', function (command, params, session) {
 							if (session === localSessionId) {
 								events.push({cmd: command, args: params});
