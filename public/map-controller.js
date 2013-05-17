@@ -3,7 +3,8 @@ MM.MapController = function (initialMapSources) {
 	// order of mapSources is important, the first mapSource is default
 	'use strict';
 	observable(this);
-	var dispatchEvent = this.dispatchEvent,
+	var self = this,
+		dispatchEvent = this.dispatchEvent,
 		mapLoadingConfirmationRequired,
 		mapInfo = {},
 		activeMapSource,
@@ -19,7 +20,7 @@ MM.MapController = function (initialMapSources) {
 		},
 		mapLoaded = function (idea, mapId, readOnly) {
 			mapLoadingConfirmationRequired = false;
-			if (!activeMapSource.autoSave) {
+			if (!self.isMapAutoSaved()) {
 				idea.addEventListener('changed', function () {
 					mapLoadingConfirmationRequired = true;
 				});
@@ -121,9 +122,10 @@ MM.MapController = function (initialMapSources) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			};
-		dispatchEvent('mapSaving', activeMapSource.description);
+			},
+			result;
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
+		dispatchEvent('mapSaving', activeMapSource.description);
 		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
 			mapSaved,
 			mapSaveFailed,

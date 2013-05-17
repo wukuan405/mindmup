@@ -9,20 +9,20 @@ describe("MM.Extensions", function () {
 		MM.Extensions.config = oldConfig;
 	});
 	describe("scriptsToLoad", function () {
-		it("includes scripts from config that are set in the storage key", function () {
+		it("includes scripts from config that are set in the storage key and appends the cache prevention key as version", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey');
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js', '/def.js']);
+			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', 'cacheKey');
+			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
 		});
 		it("excludes scripts from config that are not set in the storage key", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey');
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js']);
+			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', 'cacheKey');
+			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
 		});
 		it("excludes scripts from storage that are not in the config", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey');
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js']);
+			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey', 'cacheKey');
+			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
 		});
 
 	});

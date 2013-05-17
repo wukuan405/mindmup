@@ -13,6 +13,7 @@ describe('Map Controller', function () {
 					return jQuery.Deferred().resolve(oldId).promise();
 				},
 				recognises: function () {
+					return true;
 				}
 			});
 		map = MAPJS.content({ 'title': 'hello' });
@@ -47,6 +48,7 @@ describe('Map Controller', function () {
 		});
 		it('should use the adapter which recognises the mapId', function () {
 			spyOn(adapter2, 'recognises').andReturn(true);
+			spyOn(adapter1, 'recognises').andReturn(false);
 			spyOn(adapter1, 'loadMap').andCallThrough();
 			spyOn(adapter2, 'loadMap').andCallThrough();
 
@@ -178,8 +180,8 @@ describe('Map Controller', function () {
 			expect(adapter1.saveMap).toHaveBeenCalled();
 		});
 		it('should check each adapter to see if it recognises the mapId', function () {
-			spyOn(adapter1, 'recognises');
-			spyOn(adapter2, 'recognises');
+			spyOn(adapter1, 'recognises').andReturn(false);
+			spyOn(adapter2, 'recognises').andReturn(true);
 
 			underTest.publishMap('foo');
 
@@ -187,6 +189,7 @@ describe('Map Controller', function () {
 			expect(adapter2.recognises).toHaveBeenCalledWith('foo');
 		});
 		it('should use the adapter which recognises the mapId', function () {
+			spyOn(adapter1, 'recognises').andReturn(false);
 			adapter2.recognises = function (id) {return (id === 'loadedMapId'); };
 			spyOn(adapter1, 'saveMap').andCallThrough();
 			spyOn(adapter2, 'saveMap').andCallThrough();
@@ -197,9 +200,8 @@ describe('Map Controller', function () {
 			expect(adapter2.saveMap).toHaveBeenCalled();
 		});
 		it('should use the adapter which recognises the adapterType', function () {
-			adapter2.recognises = function (id) {
-				return id === 'foo';
-			};
+			spyOn(adapter1, 'recognises').andReturn(false);
+			adapter2.recognises = function (id) { return id === 'foo'; };
 			spyOn(adapter1, 'saveMap').andCallThrough();
 			spyOn(adapter2, 'saveMap').andCallThrough();
 

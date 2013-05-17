@@ -1,10 +1,10 @@
-/*global spyOn, MAPJS, jasmine, describe, it, MM, observable, expect, beforeEach*/
+/*global spyOn, MAPJS, jasmine, describe, it, MM, observable, expect, beforeEach, localStorage*/
 describe('Auto save', function () {
 	'use strict';
 	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert;
 	beforeEach(function () {
 		storage = MM.jsonStorage(localStorage);
-		mapController = observable({});
+		mapController = observable({ isMapAutoSaved: function () { return false; }});
 		alert = {show: function () {} };
 		autoSave = new MM.AutoSave(mapController, storage, alert);
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
@@ -29,6 +29,16 @@ describe('Auto save', function () {
 	});
 	describe('event caching', function () {
 		it('should cache all change events to storage until map is saved', function () {
+			var changeCmd = 'updateTitle',
+				changeArgs = [1, 'new'];
+			mapController.dispatchEvent('mapLoaded', idea, 'mapId');
+			spyOn(storage, 'setItem').andCallThrough();
+
+			idea.dispatchEvent('changed', changeCmd, changeArgs);
+
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new']} ]);
+		});
+		it('should not cache change events if map controller says the map is autosaved', function () {
 			var changeCmd = 'updateTitle',
 				changeArgs = [1, 'new'];
 			mapController.dispatchEvent('mapLoaded', idea, 'mapId');
