@@ -32,11 +32,20 @@ describe('Auto save', function () {
 			var changeCmd = 'updateTitle',
 				changeArgs = [1, 'new'];
 			mapController.dispatchEvent('mapLoaded', idea, 'mapId');
-			spyOn(storage, 'setItem').andCallThrough();
+			spyOn(storage, 'setItem');
 
 			idea.dispatchEvent('changed', changeCmd, changeArgs);
 
 			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new']} ]);
+		});
+		it('should not cache any change events if map is autoSaved', function () {
+			var changeCmd = 'updateTitle',
+				changeArgs = [1, 'new'];
+			spyOn(mapController, 'isMapAutoSaved').andReturn(true);
+			mapController.dispatchEvent('mapLoaded', idea, 'mapId');
+			spyOn(storage, 'setItem');
+			idea.dispatchEvent('changed', changeCmd, changeArgs);
+			expect(storage.setItem).not.toHaveBeenCalled();
 		});
 		it('should not cache change events if map controller says the map is autosaved', function () {
 			var changeCmd = 'updateTitle',
