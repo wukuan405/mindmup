@@ -71,7 +71,7 @@ MM.MapController = function (initialMapSources) {
 				}
 			};
 
-		if (mapId === this.currentMapId()) {
+		if (mapId === this.currentMapId() && !force) {
 			return;
 		}
 		if (!force && mapLoadingConfirmationRequired) {

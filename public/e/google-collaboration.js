@@ -78,7 +78,7 @@ MM.Extensions.googleCollaboration = function () {
 			realtimeMapSource.setNextSessionName(name);
 			mapController.publishMap('cg').done(
 				function loadMap(mapId) {
-					mapController.loadMap(mapId);
+					mapController.loadMap(mapId, true);
 				}
 			);
 		},

@@ -9,6 +9,20 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 			} else {
 				element.removeClass('map-not-sharable').addClass('map-sharable');
 			}
+		},
+		rebindIfChanged = function (idea) {
+			if (oldIdea !== idea) {
+				oldIdea = idea;
+				if (!mapController.isMapAutoSaved()) {
+					idea.addEventListener('changed', function () {
+						if (element.hasClass('map-unchanged')) {
+							element.removeClass('map-unchanged').addClass('map-changed');
+							element.removeClass('map-sharable').addClass('map-not-sharable');
+						}
+
+					});
+				}
+			}
 		};
 	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
@@ -16,22 +30,12 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 		} else {
 			element.removeClass('map-changed').addClass('map-unchanged');
 		}
-		if (oldIdea !== idea) {
-			oldIdea = idea;
-			if (!mapController.isMapAutoSaved()) {
-				idea.addEventListener('changed', function () {
-					if (element.hasClass('map-unchanged')) {
-						element.removeClass('map-unchanged').addClass('map-changed');
-						element.removeClass('map-sharable').addClass('map-not-sharable');
-					}
-
-				});
-			}
-		}
+		rebindIfChanged(idea);
 		updateSharable();
 	});
-	mapController.addEventListener('mapSaved', function () {
+	mapController.addEventListener('mapSaved', function (mapId, idea) {
 		element.removeClass('map-changed').addClass('map-unchanged');
+		rebindIfChanged(idea);
 		updateSharable();
 	});
 	jQuery(window).bind('beforeunload', function () {
