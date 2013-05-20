@@ -1,13 +1,13 @@
 <div> <!-- needs div for easier child locators -->
 	<li class="dropdown" data-mm-role="top-menu">
-		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+		<a data-category="Top Bar" data-event-type="Open Collaboration Menu" class="dropdown-toggle" data-toggle="dropdown" href="#">
 		 <i class="icon-group"></i>&nbsp;Collaboration&nbsp;<b class="caret"></b>
 	   </a>
 		<ul class="dropdown-menu" role="menu">
-			<li><a data-mm-role="start" data-mm-collab-visible="offline"><i class="icon-play" ></i>&nbsp;Start</a></li>
-			<li><a data-mm-role="invite" data-mm-collab-visible="online"><i class="icon-group" ></i>&nbsp;Invite collaborators</a></li>
-			<li><a data-mm-role="join" data-mm-collab-visible="offline"><i class="icon-eye-open" ></i>&nbsp;Join an existing session</a></li>
-			<li><a data-mm-role="leave" data-mm-collab-visible="online"><i class="icon-eject" ></i>&nbsp;Leave current session</a></li>
+			<li><a data-category="Top Bar" data-event-type="Collaboration - Start" data-mm-role="start" data-mm-collab-visible="offline"><i class="icon-play" ></i>&nbsp;Start</a></li>
+			<li><a data-category="Top Bar" data-event-type="Collaboration - Invite" data-mm-role="invite" data-mm-collab-visible="online"><i class="icon-group" ></i>&nbsp;Invite collaborators</a></li>
+			<li><a data-category="Top Bar" data-event-type="Collaboration - Join Existing" data-mm-role="join" data-mm-collab-visible="offline"><i class="icon-eye-open" ></i>&nbsp;Join an existing session</a></li>
+			<li><a data-category="Top Bar" data-event-type="Collaboration - Leave" data-mm-role="leave" data-mm-collab-visible="online"><i class="icon-eject" ></i>&nbsp;Leave current session</a></li>
 		</ul>
 	</li>
 	<div class='modal hide fade' data-mm-role='modal-start'>

@@ -50,7 +50,14 @@ MM.main = function (config) {
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey);
+			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey),
+			postInit = function () {
+				jQuery('[data-category]').trackingWidget(activityLog);
+				if (!isTouch()) {
+					jQuery('[rel=tooltip]').tooltip();
+				}
+				navigation.loadInitial();
+			};
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -98,12 +105,10 @@ MM.main = function (config) {
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
-		jQuery('[data-category]').trackingWidget(activityLog);
+
 
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
-		if (!isTouch()) {
-			jQuery('[rel=tooltip]').tooltip();
-		}
+
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
 		MM.Extensions.components = {
@@ -122,14 +127,16 @@ MM.main = function (config) {
 				if (_.isEmpty(MM.Extensions.pendingScripts)) {
 					alert.hide(alertId);
 					window.clearInterval(intervalId);
-					navigation.loadInitial();
+					postInit();
+
 				} else {
 					$('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
 				}
 			}, 1000);
 		} else {
-			navigation.loadInitial();
+			postInit();
 		}
+
 	});
 	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
 };
