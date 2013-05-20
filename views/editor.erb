@@ -88,6 +88,9 @@
     <%= erb :auto_save %>
     <%= erb :extensions %>
     <div id="container"></div>
+    <div id="linkEditWidget">
+      <button type="button" class="btn btn-inverse delete"><i class="icon-remove"></i></button>
+    </div>
 	<form method="post" id="formExport" action="/echo" class="hide">
 		<input type="hidden" name="map" />
 		<input type="hidden" name="title" />

@@ -90,7 +90,7 @@ div.topbar-color-picker {
   display: none;
 }
 .map-not-sharable .hidden-map-not-sharable {
-  display: none;	
+  display: none;
 }
 .map-unchanged .visible-map-changed {
   display: none;
@@ -254,11 +254,11 @@ body.offline-enabled .offline-disabled-hidden {
 #attachEditArea {
 	overflow: scroll;
   outline: none;
-  border: 1px solid rgb(204, 204, 204); 
-	padding: 4px; 
+  border: 1px solid rgb(204, 204, 204);
+	padding: 4px;
 	margin: 10px;
-	box-sizing: content-box; 
-	-webkit-box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset; 
+	box-sizing: content-box;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset;
 	box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset;
 	border-top-right-radius: 3px; border-bottom-right-radius: 3px;
 	border-bottom-left-radius: 3px; border-top-left-radius: 3px;
@@ -293,7 +293,7 @@ body.offline-enabled .offline-disabled-hidden {
 	width: 100%;
 }
 
-#modalAttachmentEditor { 
+#modalAttachmentEditor {
 	position: absolute;
 	height: 80%;
 	width: 80%;
@@ -307,7 +307,7 @@ body.offline-enabled .offline-disabled-hidden {
 	margin: 0;
 }
 @media (max-width: 1200px) {
-	#modalAttachmentEditor { 
+	#modalAttachmentEditor {
 		width: 90%;
 		left: 5%;
 		top: 5%;
@@ -328,11 +328,11 @@ body.offline-enabled .offline-disabled-hidden {
 }
 .ios #modalAttachmentEditor, .android #modalAttachmentEditor {
 	top: 0;
-	height: 60%;	
+	height: 60%;
 }
 @media (max-height: 768px) {
 	.ios #modalAttachmentEditor, .android #modalAttachmentEditor {
-		height: 37%;	
+		height: 37%;
 	}
 }
 .non-group .btn {
@@ -340,4 +340,14 @@ body.offline-enabled .offline-disabled-hidden {
 }
 .modal {
 	cursor: default;
+}
+
+#linkEditWidget {
+	display: none;
+	z-index: 999;
+	position: absolute;
+}
+
+#linkEditWidget .btn {
+	border-radius: 25px;
 }

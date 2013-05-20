@@ -99,6 +99,7 @@ MM.main = function (config) {
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('[data-category]').trackingWidget(activityLog);
+		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		if (!isTouch()) {
@@ -112,11 +113,11 @@ MM.main = function (config) {
 			'mapController': mapController
 		};
 		MM.Extensions.mmConfig = config;
-		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());	
+		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
 			delete MM.Extensions.pendingScripts[$(this).attr('src')];
 		});
-		if (!_.isEmpty(MM.Extensions.pendingScripts)) { 
+		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
 			var alertId = alert.show ('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
 			var intervalId = window.setInterval( function () {
 				if (_.isEmpty(MM.Extensions.pendingScripts)) {

@@ -583,7 +583,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return true;
 		};
 		contentAggregate.addLink = function (ideaIdFrom, ideaIdTo) {
-			var alreadyExists;
+			var alreadyExists, link;
 			if (!isLinkValid(ideaIdFrom, ideaIdTo)) {
 				return false;
 			}
@@ -597,11 +597,14 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				return false;
 			}
 			contentAggregate.links = contentAggregate.links || [];
-			contentAggregate.links.push({
+			link = {
 				ideaIdFrom: ideaIdFrom,
 				ideaIdTo: ideaIdTo
+			};
+			contentAggregate.links.push(link);
+			notifyChange('addLink', [ideaIdFrom, ideaIdTo], function () {
+				contentAggregate.links.pop();
 			});
-			contentAggregate.dispatchEvent('changed', 'addLink', ideaIdFrom, ideaIdTo);
 			return true;
 		};
 		contentAggregate.removeLink = function (ideaIdOne, ideaIdTwo) {
@@ -610,10 +613,15 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				link = contentAggregate.links[i];
 				if (link.ideaIdFrom === ideaIdOne && link.ideaIdTo === ideaIdTwo) {
 					contentAggregate.links.splice(i, 1);
-					contentAggregate.dispatchEvent('changed', 'removeLink', link.ideaIdFrom, link.ideaIdTo);
+					notifyChange('removeLink', [ideaIdOne, ideaIdTwo], function () {
+						contentAggregate.links.push({
+							ideaIdFrom: ideaIdOne,
+							ideaIdTo: ideaIdTwo
+						});
+					});
 					return true;
 				}
-				i++;
+				i += 1;
 			}
 			return false;
 		};
@@ -751,7 +759,8 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		margin = margin || 10;
 		var result = {
 			nodes: {},
-			connectors: {}
+			connectors: {},
+			links: _.clone(idea.links) || []
 		},
 			root = MAPJS.calculatePositions(idea, dimensionProvider, margin, 0, 0),
 			calculateLayoutInner = function (positions, level) {
@@ -779,6 +788,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			};
 		MAPJS.LayoutCompressor.compress(root);
 		calculateLayoutInner(root, 1);
+		result.links = _.filter(
+			result.links,
+			function (link) {
+				return result.nodes[link.ideaIdFrom] && result.nodes[link.ideaIdTo];
+			}
+		);
 		return result;
 	};
 	MAPJS.calculateFrame = function (nodes, margin) {
@@ -1011,6 +1026,27 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 					self.dispatchEvent('connectorCreated', newConnector);
 				}
 			}
+			if (newLayout.links) {
+				var join = function (link) {
+					return link.ideaIdFrom + '_' + link.ideaIdTo;
+				},
+					split = function (link) {
+						var split = link.split('_');
+						return {
+							ideaIdFrom: parseInt(split[0], 10),
+							ideaIdTo: parseInt(split[1], 10)
+						};
+					},
+					dispatchFunc = function (type) {
+						return function (link) {
+							self.dispatchEvent(type, link);
+						};
+					},
+					newLinks = _.map(newLayout.links || [], join),
+					oldLinks = _.map(currentLayout.links || [], join);
+				_.map(_.difference(newLinks, oldLinks), split).forEach(dispatchFunc('linkCreated'));
+				_.map(_.difference(oldLinks, newLinks), split).forEach(dispatchFunc('linkRemoved'));
+			}
 			currentLayout = newLayout;
 		},
 		onIdeaChanged = function (command, args, originSession) {
@@ -1191,6 +1227,15 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 		analytic('setAttachment', source);
 		var hasAttachment = !!(attachment && attachment.content);
 		idea.updateAttr(nodeId, 'attachment', hasAttachment && attachment);
+	};
+	this.addLink = function (nodeIdTo) {
+		idea.addLink(currentlySelectedIdeaId, nodeIdTo);
+	};
+	this.selectLink = function (link, selectionPoint) {
+		self.dispatchEvent('linkSelected', link, selectionPoint);
+	};
+	this.removeLink = function (nodeIdFrom, nodeIdTo) {
+		idea.removeLink(nodeIdFrom, nodeIdTo);
 	};
 	(function () {
 		var isRootOrRightHalf = function (id) {
@@ -1528,6 +1573,53 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 		}
 	};
 	Kinetic.Global.extend(Kinetic.Connector, Kinetic.Shape);
+}());
+/*global _, Kinetic*/
+/*jslint nomen: true*/
+(function () {
+	'use strict';
+	Kinetic.Link = function (config) {
+		this.shapeFrom = config.shapeFrom;
+		this.shapeTo = config.shapeTo;
+		this.shapeType = 'Link';
+		Kinetic.Shape.call(this, config);
+		this._setDrawFuncs();
+	};
+	var calculateConnectorInner = _.memoize(
+		function (parentX, parentY, parentWidth, parentHeight, childX, childY, childWidth, childHeight) {
+			return {
+				from: {
+					x: parentX + 0.5 * parentWidth,
+					y: parentY + 0.5 * parentHeight
+				},
+				to: {
+					x: childX + 0.5 * childWidth,
+					y: childY + 0.5 * childHeight
+				}
+			};
+		},
+		function () {
+			return Array.prototype.join.call(arguments, ',');
+		}
+	),
+		calculateConnector = function (parent, child) {
+			return calculateConnectorInner(parent.attrs.x, parent.attrs.y, parent.getWidth(), parent.getHeight(),
+				child.attrs.x, child.attrs.y, child.getWidth(), child.getHeight());
+		};
+	Kinetic.Link.prototype = {
+		drawFunc: function (canvas) {
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
+				shapeTo = this.shapeTo,
+				conn;
+			conn = calculateConnector(shapeFrom, shapeTo);
+			context.beginPath();
+			context.moveTo(conn.from.x, conn.from.y);
+			context.lineTo(conn.to.x, conn.to.y);
+			canvas.stroke(this);
+		}
+	};
+	Kinetic.Global.extend(Kinetic.Link, Kinetic.Shape);
 }());
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
@@ -2151,7 +2243,11 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		if (imageRendering) {
 			node = Kinetic.IdeaProxy(node, stage, layer);
 		}
-
+		node.on('click', function (event) {
+			if (event.altKey) {
+				mapModel.addLink(n.id);
+			}
+		});
 		node.on('click tap', mapModel.selectNode.bind(mapModel, n.id));
 		node.on('dblclick dbltap', mapModel.editNode.bind(mapModel, 'mouse', false));
 		node.on('dragstart', function () {
@@ -2267,6 +2363,27 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			duration: 0.1,
 			callback: connector.destroy.bind(connector)
 		});
+	});
+	mapModel.addEventListener('linkCreated', function (l) {
+		var link = new Kinetic.Link({
+			shapeFrom: nodeByIdeaId[l.ideaIdFrom],
+			shapeTo: nodeByIdeaId[l.ideaIdTo],
+			dashArray: [8, 8],
+			stroke: '#800',
+			strokeWidth: 3,
+			opacity: 1,
+			id: 'link_' + l.ideaIdFrom + '_' + l.ideaIdTo
+		});
+		link.on('click mouseover', function (event) {
+			mapModel.selectLink(l, { x: event.layerX, y: event.layerY });
+		});
+		layer.add(link);
+		link.moveToBottom();
+	});
+	mapModel.addEventListener('linkRemoved', function (l) {
+		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
+		link.destroy();
+		layer.draw();
 	});
 	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
 		var currentScale = stage.getScale().x || 1,
@@ -2521,5 +2638,32 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				jQuery('.ideaInput:visible').blur();
 			});
 		}
+	});
+};
+/*global jQuery*/
+jQuery.fn.linkEditWidget = function (mapModel) {
+	'use strict';
+	return this.each(function () {
+		var element = jQuery(this), currentLink, width, height;
+		mapModel.addEventListener('linkSelected', function (link, selectionPoint) {
+			currentLink = link;
+			element.show();
+			width = width || element.width();
+			height = height || element.height();
+			element.css({
+				top: (selectionPoint.y - 0.5 * height) + 'px',
+				left: (selectionPoint.x - 0.5 * width) + 'px'
+			});
+		});
+		mapModel.addEventListener('mapMoveRequested', function () {
+			element.hide();
+		});
+		element.find('.delete').click(function () {
+			mapModel.removeLink(currentLink.ideaIdFrom, currentLink.ideaIdTo);
+			element.hide();
+		});
+		element.mouseleave(function () {
+			element.hide();
+		});
 	});
 };
