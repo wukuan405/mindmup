@@ -25,7 +25,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			}
 			element.find('[data-mm-role=currentrepo]').removeClass(
 				_.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('')
-			).addClass('repo-' + repository);
+			).addClass('repo repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
 		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
@@ -37,7 +37,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		mapController.publishMap($(this).attr('data-mm-repository') || repository);
 	});
 	element.find('a[data-mm-repository]').addClass(function () {
-		return 'repo-' + $(this).data('mm-repository');
+		return 'repo repo-' + $(this).data('mm-repository');
 	});
 	mapController.addEventListener('mapLoaded', function (idea, mapId) {
 		setDefaultRepo(mapId);
