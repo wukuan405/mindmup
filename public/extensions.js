@@ -51,7 +51,7 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 			if (!causedByMapId) {
 				location.reload();
 			} else {
-				location.replace("/#m:" + causedByMapId);
+				window.location = "/map/" + causedByMapId;
 			}
 		}
 		causedByMapId = undefined;
