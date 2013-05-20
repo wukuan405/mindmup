@@ -104,6 +104,7 @@ MM.Extensions.googleCollaboration = function () {
 					startSession(sessionName);
 					return false;
 				};
+			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			menu.find('[data-mm-role=start]').click(function () {
 				sessionNameField.val('');
 				sessionNameField.parent().removeClass('error');

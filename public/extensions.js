@@ -33,7 +33,8 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	var element = this,
 		listElement = element.find('[data-mm-role=ext-list]'),
 		template = listElement.find('[data-mm-role=template]').hide().clone(),
-		changed = false;
+		changed = false,
+		causedByMapId;
 	_.each(MM.Extensions.config, function (ext, extkey) {
 		var item = template.clone().appendTo(listElement).show();
 		item.find('[data-mm-role=title]').text(ext.name);
@@ -44,8 +45,13 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	});
 	element.on('hidden', function () {
 		if (changed) {
-			location.reload();
+			if (!causedByMapId) {
+				location.reload();
+			} else {
+				location.replace("?#m:" + causedByMapId);
+			}
 		}
+		causedByMapId = undefined;
 	});
 
 	mapController.addEventListener('mapSourceExtensionRequired', function (newMapId) {
@@ -65,6 +71,7 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 			'Click here to configure extensions',
 			'warning',
 			function () {
+				causedByMapId = newMapId;
 				element.modal('show');
 			}
 		);
