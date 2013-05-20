@@ -9,9 +9,11 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		var deferred = jQuery.Deferred(),
 			initMap = function initMap() {
 				try {
+					console.log('before gapi load');
 					gapi.drive.realtime.load(
 						mindMupId.substr(3),
 						function onFileLoaded(doc) {
+							console.log('in gapi load');
 							var modelRoot = doc.getModel().getRoot(),
 								contentText = modelRoot.get("initialContent"),
 								events = modelRoot.get("events"),
@@ -44,9 +46,6 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							});
 							events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
 							deferred.resolve(contentAggregate, mindMupId);
-						},
-						function initializeModel(model) {
-							deferred.reject("realtime-error", "Session " + mindMupId + " has not been initialised");
 						}
 					);
 				} catch (e) {
