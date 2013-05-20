@@ -198,7 +198,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		notifyChange = function (method, args, undofunc, originSession) {
 			eventStack.push({eventMethod: method, eventArgs: args, undoFunction: undofunc});
 			if (isRedoInProgress) {
-				contentAggregate.dispatchEvent('changed', 'redo');
+				contentAggregate.dispatchEvent('changed', 'redo', undefined, originSession);
 			} else {
 				if (originSession) {
 					contentAggregate.dispatchEvent('changed', method, args, originSession);
@@ -628,23 +628,30 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		});
 	}());
 	/* undo/redo */
+
 	contentAggregate.undo = function () {
+		return contentAggregate.execCommand('undo', arguments);
+	};
+	commandProcessors.undo = function (originSession) {
 		var topEvent;
 		topEvent = eventStack.pop();
 		if (topEvent && topEvent.undoFunction) {
 			topEvent.undoFunction();
 			redoStack.push(topEvent);
-			contentAggregate.dispatchEvent('changed', 'undo', []);
+			contentAggregate.dispatchEvent('changed', 'undo', [], originSession);
 			return true;
 		}
 		return false;
 	};
 	contentAggregate.redo = function () {
+		return contentAggregate.execCommand('redo', arguments);
+	};
+	commandProcessors.redo = function (originSession) {
 		var topEvent;
 		topEvent = redoStack.pop();
 		if (topEvent) {
 			isRedoInProgress = true;
-			contentAggregate[topEvent.eventMethod].apply(contentAggregate, topEvent.eventArgs);
+			contentAggregate.execCommand(topEvent.eventMethod, topEvent.eventArgs, originSession);
 			isRedoInProgress = false;
 			return true;
 		}
@@ -973,6 +980,7 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 				oldNode = currentLayout.nodes[nodeId];
 				newNode = newLayout.nodes[nodeId];
 				if (!newNode) {
+					/*jslint eqeq: true*/
 					if (nodeId == currentlySelectedIdeaId) {
 						self.selectNode(idea.id);
 					}
@@ -1006,10 +1014,11 @@ MAPJS.MapModel = function (mapRepository, layoutCalculator, titlesToRandomlyChoo
 			currentLayout = newLayout;
 		},
 		onIdeaChanged = function (command, args, originSession) {
-			var newIdeaId, contextNodeId;
+			var newIdeaId, contextNodeId, localCommand;
+			localCommand = (!originSession) || originSession === idea.getSessionKey();
 			contextNodeId = command === 'updateAttr' ? args[0] : undefined;
-			updateCurrentLayout(layoutCalculator(idea), contextNodeId);
-			if (originSession && originSession !== idea.getSessionKey()) {
+			updateCurrentLayout(layoutCalculator(idea), localCommand && contextNodeId);
+			if (!localCommand) {
 				return;
 			}
 			if (command === 'addSubIdea') {
