@@ -21,6 +21,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 			function fileLoaded(stringContent, fileId, mimeType) {
 				if (mimeType === "application/vnd.mindmup.collab"  && mapId[0] === 'g') {
 					location.replace('?#m:c' + mapId);
+					return deferred.promise();
 				}
 				if (readOnly[mimeType] === undefined) {
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);
