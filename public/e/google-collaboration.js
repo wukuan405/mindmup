@@ -84,7 +84,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 MM.Extensions.googleCollaboration = function () {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
-		realtimeMapSource = new MM.RetriableMapSourceDecorator(new MM.RealtimeGoogleMapSource(googleDriveAdapter)),
+		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
 		mapController = MM.Extensions.components.mapController,
 		alert =  MM.Extensions.components.alert,
 
@@ -152,7 +152,7 @@ MM.Extensions.googleCollaboration = function () {
 				setOnline(realtimeMapSource.recognises(mapId));
 			});
 		};
-	mapController.addMapSource(realtimeMapSource);
+	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
 
 	$.get('/e/google-collaboration.html?v=' + MM.Extensions.mmConfig.cachePreventionKey, function (data) {
 		load_ui(data);

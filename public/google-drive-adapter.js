@@ -4,7 +4,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 	var self = this,
 		driveLoaded,
 		isAuthorised = function () {
-			return !!(gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
+			return !!(window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
 		},
 		recognises = function (mapId) {
 			return mapId && mapId[0] === 'g';
@@ -319,7 +319,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		if (window.google && window.google.picker) {
 			showPicker();
 		} else {
-			this.ready(false).then(function () {
+			this.ready(!isAuthorised()).then(function () {
 				gapi.load("picker", showPicker);
 			});
 		}
