@@ -264,8 +264,8 @@ MM.MapController.alerts = function (mapController, alert) {
 			callback
 		);
 	});
-	mapController.addEventListener('mapLoadingFailed', function () {
-		showErrorAlert('Unfortunately, there was a problem loading the map.', 'An automated error report was sent and we will look into this as soon as possible');
+	mapController.addEventListener('mapLoadingFailed', function (mapId, reason, label) {
+		showErrorAlert('Unfortunately, there was a problem loading the map.', label || 'An automated error report was sent and we will look into this as soon as possible');
 	});
 	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {
