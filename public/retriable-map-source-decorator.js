@@ -62,4 +62,5 @@ MM.RetriableMapSourceDecorator = function (adapter) {
 	};
 	this.description = adapter.description;
 	this.recognises = adapter.recognises;
+	this.autoSave = adapter.autoSave;
 };

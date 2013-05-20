@@ -1,4 +1,4 @@
-/*global $, MM, jQuery, JSON, _, gapi, MAPJS*/
+/*global $, MM, jQuery, JSON, _, gapi, MAPJS, window*/
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
 	var nextSessionName;
@@ -7,13 +7,16 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	};
 	this.loadMap = function loadMap(mindMupId, showAuth) {
 		var deferred = jQuery.Deferred(),
+			realtimeError = function (e) {
+				deferred.reject('network-error');
+				$(window).off('error', realtimeError);
+			},
 			initMap = function initMap() {
 				try {
-					console.log('before gapi load');
+					$(window).on('error', realtimeError);
 					gapi.drive.realtime.load(
 						mindMupId.substr(3),
 						function onFileLoaded(doc) {
-							console.log('in gapi load');
 							var modelRoot = doc.getModel().getRoot(),
 								contentText = modelRoot.get("initialContent"),
 								events = modelRoot.get("events"),
@@ -30,14 +33,13 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 										applyEvents(event.values, "gd" + event.sessionId);
 									}
 								};
-							console.log('loading realtime google doc');
 							if (!contentText) {
+								$(window).off('error', realtimeError);
 								deferred.reject("realtime-error", "Error loading " + mindMupId + " content");
 								return;
 							}
 							localSessionId = 'gd' + _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
 							contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
-							console.log('local session', localSessionId);
 							applyEvents(events.asArray(), localSessionId);
 							contentAggregate.addEventListener('changed', function (command, params, session) {
 								if (session === localSessionId) {
@@ -46,10 +48,17 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							});
 							events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
 							deferred.resolve(contentAggregate, mindMupId);
+							$(window).off('error', realtimeError);
+
+						},
+						function initializeModel(model) {
+							deferred.reject("realtime-error", "Session " + mindMupId + " has not been initialised");
+						},
+						function errorHandler(error) {
+							deferred.reject("realtime-error", error);
 						}
 					);
 				} catch (e) {
-					console.log("error loading google doc", e);
 					deferred.reject(e);
 				}
 			};
@@ -64,7 +73,6 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		if (this.recognises(mapId) && mapId.length > 2) {
 			return jQuery.Deferred().resolve(mapId, map).promise(); /* no saving needed, realtime updates */
 		}
-		console.log('initializing realtime');
 		return googleDriveAdapter.createRealtimeMap(nextSessionName, map, showAuth);
 	};
 	this.description = 'Google Drive Realtime';
@@ -76,7 +84,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 MM.Extensions.googleCollaboration = function () {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
-		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
+		realtimeMapSource = new MM.RetriableMapSourceDecorator(new MM.RealtimeGoogleMapSource(googleDriveAdapter)),
 		mapController = MM.Extensions.components.mapController,
 		alert =  MM.Extensions.components.alert,
 
