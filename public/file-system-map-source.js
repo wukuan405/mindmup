@@ -20,7 +20,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 		fileSystem.loadMap(mapId, showAuth).then(
 			function fileLoaded(stringContent, fileId, mimeType) {
 				if (mimeType === "application/vnd.mindmup.collab"  && mapId[0] === 'g') {
-					location.replace('?#m:c' + mapId);
+					location.replace('/#m:c' + mapId);
 					return deferred.promise();
 				}
 				if (readOnly[mimeType] === undefined) {
