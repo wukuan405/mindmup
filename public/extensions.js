@@ -1,4 +1,4 @@
-/*global jQuery, MM, _, location */
+/*global jQuery, MM, _, location, window */
 MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 	'use strict';
 	var active = [];
@@ -20,6 +20,9 @@ MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 			active = _.without(active, ext);
 		}
 		storage[storageKey] = active.join(' ');
+		if (window._gaq) {
+			window._gaq.push(['_setCustomVar', 2, 'Active Extensions', active.join(' '), 1], ['_trackEvent', 'Extensions', ext, shouldActivate]);
+		}
 	};
 };
 MM.Extensions.config = {
