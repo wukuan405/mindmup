@@ -593,7 +593,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			alreadyExists = _.find(
 				contentAggregate.links,
 				function (link) {
-					return link.ideaIdFrom === ideaIdFrom && link.ideaIdTo === ideaIdTo;
+					return link.ideaIdFrom === ideaIdFrom && link.ideaIdTo === ideaIdTo || link.ideaIdFrom === ideaIdTo && link.ideaIdTo === ideaIdFrom;
 				}
 			);
 			if (alreadyExists) {
@@ -2385,6 +2385,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		});
 		layer.add(link);
 		link.moveToBottom();
+		layer.draw();
 	});
 	mapModel.addEventListener('linkRemoved', function (l) {
 		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
