@@ -116,7 +116,7 @@ MM.main = function (config) {
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
 			delete MM.Extensions.pendingScripts[$(this).attr('src')];
 		});
-		mapController.addEventListener('mapLoaded', function (idea) {
+		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
 		if (!_.isEmpty(MM.Extensions.pendingScripts)) {

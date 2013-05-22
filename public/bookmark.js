@@ -36,7 +36,7 @@ MM.Bookmark = function (mapController, storage, storageKey) {
 			title: idea.title
 		});
 	});
-	mapController.addEventListener('mapLoaded', function (idea, key) {
+	mapController.addEventListener('mapLoaded', function (key, idea) {
 		var couldPin = self.canPin();
 		currentMap = {
 			mapId: key,

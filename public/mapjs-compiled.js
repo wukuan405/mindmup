@@ -2,9 +2,13 @@ var MAPJS = {};
 var observable = function (base) {
 	'use strict';
 	var eventListenersByType = {};
-	base.addEventListener = function (type, listener) {
-		eventListenersByType[type] = eventListenersByType[type] || [];
-		eventListenersByType[type].push(listener);
+	base.addEventListener = function (types, listener) {
+		types.split(' ').forEach(function (type) {
+			if (type) {
+				eventListenersByType[type] = eventListenersByType[type] || [];
+				eventListenersByType[type].push(listener);
+			}
+		});
 	};
 	base.listeners = function (type) {
 		var listenersByType = eventListenersByType[type] || [], result = [], i;

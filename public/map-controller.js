@@ -29,7 +29,7 @@ MM.MapController = function (initialMapSources) {
 				idea: idea,
 				mapId: (readOnly) ? '' : mapId
 			};
-			dispatchEvent('mapLoaded', idea, mapId);
+			dispatchEvent('mapLoaded', mapId, idea);
 		};
 	this.addMapSource = function (mapSource) {
 		mapSources.push(mapSource);
@@ -154,7 +154,7 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 	mapController.addEventListener('mapLoading', function (mapUrl, percentDone) {
 		activityLog.log('loading map [' + mapUrl + '] (' + percentDone + '%)');
 	});
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		activityLog.log('Map', 'View', mapId);
 		wasRelevantOnLoad = isMapRelevant(idea);
 		if (oldIdea !== idea) {
@@ -239,10 +239,7 @@ MM.MapController.alerts = function (mapController, alert) {
 			authCallback
 		);
 	});
-	mapController.addEventListener('mapSaved', function () {
-		alert.hide(alertId);
-	});
-	mapController.addEventListener('mapLoaded', function () {
+	mapController.addEventListener('mapSaved mapLoaded', function () {
 		alert.hide(alertId);
 	});
 	mapController.addEventListener('authorisationFailed', function (providerName, authCallback) {

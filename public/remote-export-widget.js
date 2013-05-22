@@ -25,7 +25,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 			}
 			return browserUrl.createObjectURL(new window.Blob([contents], {type: mimeType}));
 		};
-	mapController.addEventListener('mapLoaded', function (idea) {
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		loadedIdea = idea;
 	});
 	return this.click(function () {

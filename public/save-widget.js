@@ -39,10 +39,8 @@ jQuery.fn.saveWidget = function (mapController) {
 	element.find('a[data-mm-repository]').addClass(function () {
 		return 'repo repo-' + $(this).data('mm-repository');
 	});
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
-		setDefaultRepo(mapId);
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.addEventListener('changed', mapChangedListener);
-		mapChanged = false;
 	});
 	mapController.addEventListener('mapSaving', function () {
 		element.find('[data-mm-role=publish]')
@@ -55,7 +53,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		mapController.addEventListener(eventName, resetSaveButton);
 	});
 
-	mapController.addEventListener('mapSaved', function (mapId) {
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);

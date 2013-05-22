@@ -38,18 +38,14 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				}
 			});
 		},
-		previousUrl,
-		changeUrls = function () {
-			if (previousUrl === navigation.sharingUrl()) {
-				return;
-			}
-			previousUrl = navigation.sharingUrl();
-			list.each(function () {
-				jQuery(this).data('mm-url', navigation.sharingUrl());
-			});
-			fireShortener();
-		};
-	mapController.addEventListener('mapLoaded', changeUrls);
-	mapController.addEventListener('mapSaved', changeUrls);
+		previousUrl;
+	mapController.addEventListener('mapLoaded mapSaved', function () {
+		if (previousUrl === navigation.sharingUrl()) {
+			return;
+		}
+		previousUrl = navigation.sharingUrl();
+		list.data('mm-url', navigation.sharingUrl());
+		fireShortener();
+	});
 	return list;
 };

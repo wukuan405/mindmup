@@ -46,7 +46,7 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 			self.discardUnsavedChanges();
 		}
 	});
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		if (!mapController.isMapAutoSaved()) {
 			currentMapId = mapId;
 			currentIdea = idea;

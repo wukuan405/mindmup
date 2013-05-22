@@ -24,17 +24,12 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 				}
 			}
 		};
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapSaved mapLoaded', function (mapId, idea) {
 		if (!mapId || mapId.length < 3) { /* imported, no repository ID */
 			jQuery('body').removeClass('map-unchanged').addClass('map-changed');
 		} else {
 			element.removeClass('map-changed').addClass('map-unchanged');
 		}
-		rebindIfChanged(idea);
-		updateSharable();
-	});
-	mapController.addEventListener('mapSaved', function (mapId, idea) {
-		element.removeClass('map-changed').addClass('map-unchanged');
 		rebindIfChanged(idea);
 		updateSharable();
 	});
