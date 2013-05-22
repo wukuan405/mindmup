@@ -1,7 +1,16 @@
-/*global jQuery, MM, _, location, window */
+/*global jQuery, MM, _, location, window, document */
 MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 	'use strict';
-	var active = [];
+	var active = [],
+		loadScriptsAsynchronously = function (d, s, urls, callback) {
+			urls.forEach(function (url) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				js = d.createElement(s);
+				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
+				js.onload = callback;
+				fjs.parentNode.insertBefore(js, fjs);
+			});
+		};
 	if (storage[storageKey]) {
 		active = storage[storageKey].split(' ');
 	}
@@ -23,6 +32,35 @@ MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 		if (window._gaq) {
 			window._gaq.push(['_setCustomVar', 2, 'Active Extensions', active.join(' '), 1], ['_trackEvent', 'Extensions', ext, shouldActivate]);
 		}
+	};
+	this.load = function (components, config) {
+		var deferred = jQuery.Deferred(),
+			scripts = this.scriptsToLoad(),
+			alertId,
+			intervalId;
+		MM.Extensions.components = components;
+		MM.Extensions.mmConfig = config;
+		loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
+		MM.Extensions.pendingScripts = _.invert(scripts);
+		loadScriptsAsynchronously(document, 'script', scripts, function () {
+			delete MM.Extensions.pendingScripts[jQuery(this).attr('src')];
+		});
+
+		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
+			alertId = components.alert.show('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
+			intervalId = window.setInterval(function () {
+				if (_.isEmpty(MM.Extensions.pendingScripts)) {
+					components.alert.hide(alertId);
+					window.clearInterval(intervalId);
+					deferred.resolve();
+				} else {
+					jQuery('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
+				}
+			}, 1000);
+		} else {
+			deferred.resolve();
+		}
+		return deferred.promise();
 	};
 };
 MM.Extensions.config = {

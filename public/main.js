@@ -1,26 +1,17 @@
 /*jslint nomen: true*/
-/*global _gaq, document, jQuery, MM, MAPJS, window*/
+/*global _gaq, document, jQuery, MM, MAPJS, window, localStorage*/
 MM.main = function (config) {
 	'use strict';
 
 	var mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
-		activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-		activityLog.addEventListener('error', function (message) {
-			jotForm.sendError(message, activityLog.getLog());
-		});
-		if (mapModelAnalytics) {
-			mapModel.addEventListener('analytic', activityLog.log);
-		}
-	},
-		loadScriptsAsynchronously = function (d, s, urls, callback) {
-			urls.forEach(function (url) {
-				var js, fjs = d.getElementsByTagName(s)[0];
-				js = d.createElement(s);
-				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
-				js.onload = callback;
-				fjs.parentNode.insertBefore(js, fjs);
+			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
+			activityLog.addEventListener('error', function (message) {
+				jotForm.sendError(message, activityLog.getLog());
 			});
+			if (mapModelAnalytics) {
+				mapModel.addEventListener('analytic', activityLog.log);
+			}
 		},
 		isTouch = function () {
 			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
@@ -48,14 +39,7 @@ MM.main = function (config) {
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey),
-			postInit = function () {
-				jQuery('[data-category]').trackingWidget(activityLog);
-				if (!isTouch()) {
-					jQuery('[rel=tooltip]').tooltip();
-				}
-				navigation.loadInitial();
-			};
+			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey);
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -105,36 +89,19 @@ MM.main = function (config) {
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
-		
-		MM.Extensions.components = {
-			'googleDriveAdapter': googleDriveAdapter,
-			'alert': alert,
-			'mapController': mapController
-		};
-		MM.Extensions.mmConfig = config;
-		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());
-		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
-			delete MM.Extensions.pendingScripts[$(this).attr('src')];
-		});
+		if (!isTouch()) {
+			jQuery('[rel=tooltip]').tooltip();
+		}
+		jQuery('[data-category]').trackingWidget(activityLog);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
-		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
-			var alertId = alert.show ('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
-			var intervalId = window.setInterval( function () {
-				if (_.isEmpty(MM.Extensions.pendingScripts)) {
-					alert.hide(alertId);
-					window.clearInterval(intervalId);
-					postInit();
-
-				} else {
-					$('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
-				}
-			}, 1000);
-		} else {
-			postInit();
-		}
-
+		extensions.load({
+			'googleDriveAdapter': googleDriveAdapter,
+			'alert': alert,
+			'mapController': mapController,
+			'activityLog': activityLog
+		}, config).then(navigation.loadInitial.bind(navigation));
 	});
-	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
+
 };
