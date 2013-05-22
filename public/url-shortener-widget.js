@@ -1,9 +1,9 @@
 /*global jQuery,document, setTimeout*/
-jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapController, navigation) {
+jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapController, baseUrl) {
 	'use strict';
 	var list = this,
 		shortenerRetriesLeft = 5,
-		fireShortener = function () {
+		fireShortener = function (navUrl) {
 			if (document.location.protocol === 'file:') {
 				return;
 			}
@@ -12,12 +12,10 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				url: 'https://www.googleapis.com/urlshortener/v1/url?key=' + googleShortenerApiKey,
 				dataType: 'json',
 				contentType: 'application/json',
-				data: '{"longUrl": "' + navigation.sharingUrl() + '"}',
+				data: '{"longUrl": "' + navUrl + '"}',
 				success: function (result) {
-					list.each(function () {
-						jQuery(this).data('mm-url', result.id);
-					});
-					list.filter('[data-mm-role=short-url]').show().val(result.id)
+					list.data('mm-url', result.id)
+						.filter('[data-mm-role=short-url]').show().val(result.id)
 						.on('input', function () {
 							jQuery(this).val(result.id);
 						}).click(function () {
@@ -38,14 +36,19 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				}
 			});
 		},
-		previousUrl;
-	mapController.addEventListener('mapLoaded mapSaved', function () {
-		if (previousUrl === navigation.sharingUrl()) {
+		previousUrl,
+		sharingUrl = function (mapId) {
+			return baseUrl + 'map/' + mapId;
+		};
+
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId, map, properties) {
+		var navUrl = properties.sharable && sharingUrl(mapId);
+		if (previousUrl === navUrl) {
 			return;
 		}
-		previousUrl = navigation.sharingUrl();
-		list.data('mm-url', navigation.sharingUrl());
-		fireShortener();
+		previousUrl = navUrl;
+		list.data('mm-url', navUrl);
+		fireShortener(navUrl);
 	});
 	return list;
 };

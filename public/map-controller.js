@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable, XMLHttpRequest*/
+/*global jQuery, MM, observable, XMLHttpRequest*/
 MM.MapController = function (initialMapSources) {
 	// order of mapSources is important, the first mapSource is default
 	'use strict';
@@ -18,36 +18,33 @@ MM.MapController = function (initialMapSources) {
 				}
 			}
 		},
-		mapLoaded = function (idea, mapId, readOnly) {
+		mapLoaded = function (idea, mapId, properties) {
 			mapLoadingConfirmationRequired = false;
-			if (!self.isMapAutoSaved()) {
+			properties = properties || {};
+			if (!properties.autoSave) {
 				idea.addEventListener('changed', function () {
 					mapLoadingConfirmationRequired = true;
 				});
 			}
 			mapInfo = {
 				idea: idea,
-				mapId: (readOnly) ? '' : mapId
+				mapId: properties.editable && mapId
 			};
-			dispatchEvent('mapLoaded', mapId, idea);
+			dispatchEvent('mapLoaded', mapId, idea, properties);
 		};
-	this.addMapSource = function (mapSource) {
+	self.addMapSource = function (mapSource) {
 		mapSources.push(mapSource);
 	};
-	this.setMap = mapLoaded;
-	this.isMapLoadingConfirmationRequired = function () {
+	self.setMap = mapLoaded;
+	self.isMapLoadingConfirmationRequired = function () {
 		return mapLoadingConfirmationRequired;
 	};
-	this.currentMapId = function () {
+
+	self.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};
-	this.isMapSharable = function () {
-		return this.currentMapId() && activeMapSource && (!activeMapSource.notSharable);
-	};
-	this.isMapAutoSaved = function () {
-		return activeMapSource && activeMapSource.autoSave;
-	};
-	this.loadMap = function (mapId, force) {
+
+	self.loadMap = function (mapId, force) {
 		var progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
@@ -92,11 +89,12 @@ MM.MapController = function (initialMapSources) {
 	};
 	this.publishMap = function (mapSourceType) {
 		var deferred = jQuery.Deferred(),
-			mapSaved = function (savedMapId) {
+			mapSaved = function (savedMapId, properties) {
+				properties = properties || {};
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
 				deferred.resolve(savedMapId, mapInfo.idea);
-				dispatchEvent('mapSaved', savedMapId, mapInfo.idea);
+				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, properties);
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
@@ -122,8 +120,7 @@ MM.MapController = function (initialMapSources) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			},
-			result;
+			};
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
 		dispatchEvent('mapSaving', activeMapSource.description);
 		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(

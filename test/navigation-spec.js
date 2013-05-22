@@ -9,20 +9,8 @@ describe('MM.navigation', function () {
 			currentMapId: function () {},
 			loadMap: function () {}
 		});
-		underTest = new MM.navigation(localStorage, 'http://example.com/', mapController);
+		underTest = new MM.navigation(localStorage, mapController);
 
-	});
-	describe('sharingUrl', function () {
-		it('appends a map ID after /map to the base URL if map adapter is public', function () {
-			spyOn(mapController, 'isMapSharable').andReturn(true);
-			spyOn(mapController, 'currentMapId').andReturn('ABC');
-			expect(underTest.sharingUrl()).toEqual('http://example.com/map/ABC');
-		});
-		it('returns false if adapter is not public', function () {
-			spyOn(mapController, 'isMapSharable').andReturn(false);
-			spyOn(mapController, 'currentMapId').andReturn('ABC');
-			expect(underTest.sharingUrl()).toBeFalsy();
-		});
 	});
 	describe('loadInitial', function () {
 		beforeEach(function () {

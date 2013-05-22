@@ -1,7 +1,8 @@
-/*global _, jQuery, MM, window, gapi, MAPJS, google */
+/*global _, jQuery, MM, window, gapi, google */
 MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var self = this,
+		properties = {editable: true, sharable: true},
 		driveLoaded,
 		isAuthorised = function () {
 			return !!(window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
@@ -90,7 +91,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 							deferred.reject(resp.error);
 						}
 					} else {
-						deferred.resolve(mindMupId(resp.id));
+						deferred.resolve(mindMupId(resp.id), properties);
 					}
 				});
 			} catch (e) {
@@ -182,7 +183,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					if (gapi.drive && gapi.drive.realtime) {
 						deferred.resolve();
 					} else {
-						gapi.load("auth:client,picker,drive-realtime,drive-share", deferred.resolve);
+						gapi.load('auth:client,picker,drive-realtime,drive-share', deferred.resolve);
 					}
 				};
 			self.ready(showAuth).then(loadRealtimeApis, deferred.reject, deferred.notify);
@@ -206,13 +207,12 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			fileCreated = function (mindMupId) {
 				gapi.drive.realtime.load(googleMapId(mindMupId),
 					function onFileLoaded() {
-						deferred.resolve("c" + mindMupId);
+						deferred.resolve('c' + mindMupId);
 					},
 					function initializeModel(model) {
-						var list = model.createList(),
-							initialMap = model.createString();
-						model.getRoot().set("events", list);
-						model.getRoot().set("initialContent", JSON.stringify(initialContent));
+						var list = model.createList();
+						model.getRoot().set('events', list);
+						model.getRoot().set('initialContent', JSON.stringify(initialContent));
 					}
 					);
 			};
@@ -259,7 +259,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			readySucceeded = function () {
 				loadFile(googleId).then(
 					function (content, mimeType) {
-						deferred.resolve(content, mapId, mimeType);
+						deferred.resolve(content, mapId, mimeType, properties);
 					},
 					deferred.reject
 				).progress(deferred.notify);
@@ -288,7 +288,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			showDialog();
 		} else {
 			this.ready(false).done(function () {
-				gapi.load("drive-share", showDialog);
+				gapi.load('drive-share', showDialog);
 			});
 		}
 	};
@@ -320,7 +320,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			showPicker();
 		} else {
 			this.ready(!isAuthorised()).then(function () {
-				gapi.load("picker", showPicker);
+				gapi.load('picker', showPicker);
 			});
 		}
 		return deferred.promise();

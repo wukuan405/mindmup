@@ -21,11 +21,11 @@ describe("MM.FileSystemMapSource", function () {
 			var map = {id: 1, title: "X"},
 				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/json')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, readOnly) {
+			underTest.loadMap('abc').done(function (content, mapId, properties) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
 				expect(mapId).toBe("abc");
-				expect(readOnly).toBeFalsy();
+				expect(properties.editable).toBeTruthy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
@@ -33,10 +33,10 @@ describe("MM.FileSystemMapSource", function () {
 			var map = {id: 1, title: "X"},
 				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/octet-stream')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, readOnly) {
+			underTest.loadMap('abc').done(function (content, mapId, properties) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
-				expect(readOnly).toBeFalsy();
+				expect(properties.editable).toBeTruthy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
@@ -44,10 +44,10 @@ describe("MM.FileSystemMapSource", function () {
 			var map = {id: 1, title: "X"},
 				underTest = new MM.FileSystemMapSource(fakeFS(map, 'application/json')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, readOnly) {
+			underTest.loadMap('abc').done(function (content, mapId, properties) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
-				expect(readOnly).toBeFalsy();
+				expect(properties.editable).toBeTruthy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
@@ -57,10 +57,10 @@ describe("MM.FileSystemMapSource", function () {
 				xml = '<map version="0.7.1"><node ID="1" TEXT="X"></node></map>',
 				underTest = new MM.FileSystemMapSource(fakeFS(xml, 'application/x-freemind')),
 				wasCalled = false;
-			underTest.loadMap('abc').done(function (content, mapId, readOnly) {
+			underTest.loadMap('abc').done(function (content, mapId, properties) {
 				wasCalled = true;
 				expect(content).toPartiallyMatch(map);
-				expect(readOnly).toBeTruthy();
+				expect(properties.editable).toBeFalsy();
 			});
 			expect(wasCalled).toBeTruthy();
 		});
@@ -134,10 +134,5 @@ describe("MM.FileSystemMapSource", function () {
 		var fs = fakeFS(),
 			underTest = new MM.FileSystemMapSource(fs);
 		expect(underTest.description).toBe('fake FS');
-	});
-	it("delegates calls to notSharable", function () {
-		var fs = fakeFS(),
-			underTest = new MM.FileSystemMapSource(fs);
-		expect(underTest.notSharable).toBe(true);
 	});
 });

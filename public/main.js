@@ -37,7 +37,7 @@ MM.main = function (config) {
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
-			navigation = MM.navigation(localStorage, config.baseUrl, mapController),
+			navigation = MM.navigation(localStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
@@ -81,9 +81,9 @@ MM.main = function (config) {
 		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 		jQuery(document).titleUpdateWidget(mapController);
-		jQuery('[data-mm-role=share]').shareWidget(navigation);
-		jQuery('#modalShareEmail').shareEmailWidget(navigation);
-		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, navigation);
+		jQuery('[data-mm-role=share]').shareWidget();
+		jQuery('#modalShareEmail').shareEmailWidget();
+		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, config.baseUrl);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
 		jQuery('[data-mm-role=save]').saveWidget(mapController);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();

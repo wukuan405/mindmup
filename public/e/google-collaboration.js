@@ -1,7 +1,8 @@
 /*global $, MM, jQuery, JSON, _, gapi, MAPJS, window*/
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
-	var nextSessionName;
+	var nextSessionName,
+		properties = {autoSave: true, sharable: true, editable: true};
 	this.setNextSessionName = function (name) {
 		nextSessionName = name;
 	};
@@ -47,7 +48,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								}
 							});
 							events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
-							deferred.resolve(contentAggregate, mindMupId);
+							deferred.resolve(contentAggregate, mindMupId, properties);
 							$(window).off('error', realtimeError);
 
 						},
@@ -71,7 +72,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	};
 	this.saveMap = function (map, mapId, showAuth) {
 		if (this.recognises(mapId) && mapId.length > 2) {
-			return jQuery.Deferred().resolve(mapId, map).promise(); /* no saving needed, realtime updates */
+			return jQuery.Deferred().resolve(mapId, map, properties).promise(); /* no saving needed, realtime updates */
 		}
 		return googleDriveAdapter.createRealtimeMap(nextSessionName, map, showAuth);
 	};
@@ -79,7 +80,6 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	this.recognises = function (mapId) {
 		return (/^cg/).test(mapId);
 	};
-	this.autoSave = true;
 };
 MM.Extensions.googleCollaboration = function () {
 	'use strict';

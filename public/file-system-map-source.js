@@ -14,19 +14,20 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 			}
 			return MAPJS.content(json);
 		};
-	this.loadMap = function loadMap(mapId, showAuth) {
+	self.loadMap = function loadMap(mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
-			readOnly = { 'application/json': false, 'application/octet-stream': false, 'application/x-freemind': true, 'application/vnd-freemind': true };
+			editable = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false };
 		fileSystem.loadMap(mapId, showAuth).then(
-			function fileLoaded(stringContent, fileId, mimeType) {
-				if (mimeType === "application/vnd.mindmup.collab"  && mapId[0] === 'g') {
+			function fileLoaded(stringContent, fileId, mimeType, properties) {
+				properties = jQuery.extend({editable: editable[mimeType]}, properties);
+				if (mimeType === 'application/vnd.mindmup.collab'  && mapId[0] === 'g') {
 					location.replace('/#m:c' + mapId);
 					return deferred.promise();
 				}
-				if (readOnly[mimeType] === undefined) {
+				if (editable[mimeType] === undefined) {
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);
 				} else {
-					deferred.resolve(stringToContent(stringContent, mimeType), fileId, readOnly[mimeType]);
+					deferred.resolve(stringToContent(stringContent, mimeType), fileId, properties);
 				}
 			},
 			deferred.reject,
@@ -34,14 +35,13 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 		);
 		return deferred.promise();
 	};
-	this.saveMap = function (map, mapId, showAuth) {
+	self.saveMap = function (map, mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
 			contentToSave = JSON.stringify(map),
 			fileName = map.title + '.mup';
 		fileSystem.saveMap(contentToSave, mapId, fileName, !!showAuth).then(deferred.resolve, deferred.reject, deferred.notify);
 		return deferred.promise();
 	};
-	this.description = fileSystem.description;
-	this.recognises = fileSystem.recognises;
-	this.notSharable = fileSystem.notSharable;
+	self.description = fileSystem.description;
+	self.recognises = fileSystem.recognises;
 };

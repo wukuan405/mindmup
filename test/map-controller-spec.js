@@ -7,10 +7,10 @@ describe('Map Controller', function () {
 		MM.MapController.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					return jQuery.Deferred().resolve(map, mapId).promise();
+					return jQuery.Deferred().resolve(map, mapId, {editable: true}).promise();
 				},
 				saveMap: function (contentToSave, oldId) {
-					return jQuery.Deferred().resolve(oldId).promise();
+					return jQuery.Deferred().resolve(oldId, {editable: true}).promise();
 				},
 				recognises: function () {
 					return true;
@@ -170,7 +170,7 @@ describe('Map Controller', function () {
 		var map;
 		beforeEach(function () {
 			map = MAPJS.content({});
-			underTest.setMap(map, 'loadedMapId');
+			underTest.setMap(map, 'loadedMapId', {editable: true});
 		});
 		it('should use first adapter to load as a fallback option', function () {
 			spyOn(adapter1, 'saveMap').andCallThrough();
@@ -236,7 +236,7 @@ describe('Map Controller', function () {
 
 			underTest.publishMap();
 
-			expect(listener).toHaveBeenCalledWith('loadedMapId', map);
+			expect(listener).toHaveBeenCalledWith('loadedMapId', map, {editable: true});
 		});
 	});
 });
