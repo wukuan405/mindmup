@@ -43,9 +43,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(localStorage, config.baseUrl, mapController),
-			pngExporter = new MAPJS.PNGExporter(mapController),
-			mapModel = new MAPJS.MapModel(mapController,
-				MAPJS.KineticMediator.layoutCalculator,
+			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
@@ -89,16 +87,14 @@ MM.main = function (config) {
 		jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
-		jQuery('#modalDownload').downloadWidget(pngExporter);
 		jQuery(document).titleUpdateWidget(mapController);
 		jQuery('[data-mm-role=share]').shareWidget(navigation);
 		jQuery('#modalShareEmail').shareEmailWidget(navigation);
 		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, navigation);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
 		jQuery('[data-mm-role=save]').saveWidget(mapController);
-		jQuery('[data-mm-role="png-export"]').click(pngExporter.exportMap);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
-		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, pngExporter, alert);
+		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, mapController);
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 		jQuery('body')
@@ -119,6 +115,9 @@ MM.main = function (config) {
 		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());
 		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
 			delete MM.Extensions.pendingScripts[$(this).attr('src')];
+		});
+		mapController.addEventListener('mapLoaded', function (idea) {
+			mapModel.setIdea(idea);
 		});
 		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
 			var alertId = alert.show ('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
