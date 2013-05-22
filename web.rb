@@ -2,9 +2,9 @@ require 'pp'
 require 'sinatra'
 require 'uuid'
 require 'aws-sdk'
+require 'base64'
 
 require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
-require File.dirname(__FILE__)+'/lib/freemind_format.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
 
 configure do
@@ -33,6 +33,8 @@ configure do
   set :root, File.dirname(__FILE__)
   set :cache_prevention_key, settings.key_id_generator.generate(:compact)
   set :static, true
+  Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
+  Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
 end
 get '/' do
   show_map
@@ -72,19 +74,18 @@ get "/s3proxy/:mapid" do
 end
 
 post "/echo" do
-  content_type 'application/octet-stream'
   attachment params[:title]
-  params[:map]
-end
-
-post "/export" do
-  content_type 'application/octet-stream'
-  contents=params[:map]
-  json=JSON.parse(contents)
-  attachment (Rack::Utils.escape(json['title'])+'.'+params[:format])
-  if (params[:format] == "mm")
-    FreemindFormat.new(json).to_freemind
+  contents = params[:map]
+  if (contents.start_with?('data:')) then
+    data = contents.split(',')
+    meta = data[0].split(':')[1].split(';')
+    content_type meta[0]
+    if (meta[1] != 'base64') then
+      halt 503, "Unsupported encoding " + meta [1]
+    end
+    Base64.decode64 data[1]
   else
+    content_type 'application/octet-stream'
     contents
   end
 end

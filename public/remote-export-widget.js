@@ -3,7 +3,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 	'use strict';
 	var self = this,
 		loadedIdea,
-		downloadLink = $('<a>').addClass('hide').appendTo('body'),
+		downloadLink = ("download" in document.createElement("a")) ? $('<a>').addClass('hide').appendTo('body') : undefined,
 		joinLines = function (string) {
 			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
 		},
@@ -18,7 +18,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 			}
 			return new window.Blob([ab], {type: mimeString});
 		},
-		toBlob = function (contents, mimeType) {
+		toObjectURL = function (contents, mimeType) {
 			var browserUrl = window.URL || window.webkitURL;
 			if (/^data:[a-z]*\/[a-z]*/.test(contents)) {
 				return browserUrl.createObjectURL(dataUriToBlob(contents));
@@ -47,10 +47,6 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 			elem,
 			alertId;
 		title = loadedIdea.title + '.' + format;
-		if (!downloadLink) {
-			alert.show('Unsupported browser', 'Your browser does not support HTML5 download links. Please try to export using a different browser or upgrade to the latest version', 'error');
-			return;
-		}
 		if (alert) {
 			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Exporting map to ' + title, 'This may take a few seconds for larger maps', 'info');
 		}
@@ -65,9 +61,14 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 						alert.hide(alertId);
 						alertId = undefined;
 					}
-					downloadLink.attr('download', title).attr('href', toBlob(contents, mimeType));
-					downloadLink[0].click();
-					return false;
+					if (downloadLink && (!$('body').hasClass('force-remote'))) {
+						downloadLink.attr('download', title).attr('href', toObjectURL(contents, mimeType));
+						downloadLink[0].click();
+					} else {
+						exportForm.find('[name=title]').val(joinLines(title));
+						exportForm.find('[name=map]').val(contents);
+						exportForm.submit();
+					}
 				}
 			);
 		}
