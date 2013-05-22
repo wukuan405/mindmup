@@ -5,7 +5,11 @@ MM.main = function (config) {
 
 	var mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
+			var names = ['User Cohort', 'Active Extensions'];
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
+			activityLog.addEventListener('config', function (varName, varValue) {
+				_gaq.push(['_setCustomVar', 1 + names.indexOf(varName), varName, varValue, 1]);
+			});
 			activityLog.addEventListener('error', function (message) {
 				jotForm.sendError(message, activityLog.getLog());
 			});
@@ -39,7 +43,12 @@ MM.main = function (config) {
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey);
+			extensions = new MM.Extensions(localStorage, 'active-extensions', config, {
+				'googleDriveAdapter': googleDriveAdapter,
+				'alert': alert,
+				'mapController': mapController,
+				'activityLog': activityLog
+			});
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
@@ -96,12 +105,7 @@ MM.main = function (config) {
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
-		extensions.load({
-			'googleDriveAdapter': googleDriveAdapter,
-			'alert': alert,
-			'mapController': mapController,
-			'activityLog': activityLog
-		}, config).then(navigation.loadInitial.bind(navigation));
+		extensions.load().then(navigation.loadInitial.bind(navigation));
 	});
 
 };

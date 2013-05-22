@@ -1,4 +1,4 @@
-/*global describe, expect, it, MM, beforeEach, afterEach*/
+/*global describe, expect, it, MM, beforeEach, afterEach, jasmine*/
 describe("MM.Extensions", function () {
 	'use strict';
 	var oldConfig;
@@ -11,17 +11,17 @@ describe("MM.Extensions", function () {
 	describe("scriptsToLoad", function () {
 		it("includes scripts from config that are set in the storage key and appends the cache prevention key as version", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', 'cacheKey');
+			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
 		});
 		it("excludes scripts from config that are not set in the storage key", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', 'cacheKey');
+			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
 		});
 		it("excludes scripts from storage that are not in the config", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
-			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey', 'cacheKey');
+			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
 		});
 
@@ -65,6 +65,23 @@ describe("MM.Extensions", function () {
 			var ext = new MM.Extensions(storage, key);
 			ext.setActive('ttt', false);
 			expect(storage[key]).toBe('abc');
+		});
+		it("sends a notification to activityLog that an extension has been turned on", function () {
+			var al = {},
+				ext = new MM.Extensions(storage, key, {}, {activityLog: al});
+			al.log = jasmine.createSpy();
+			al.setUserVariable = jasmine.createSpy();
+			ext.setActive('extension name', true);
+			expect(al.log).toHaveBeenCalledWith('Extensions', 'extension name', true);
+		});
+		it("sends a config update to activityLog with all active extensions", function () {
+			storage[key] = 'abc ttt';
+			var al = {},
+				ext = new MM.Extensions(storage, key, {}, {activityLog: al});
+			al.setUserVariable = jasmine.createSpy();
+			al.log = jasmine.createSpy();
+			ext.setActive('extension', true);
+			expect(al.setUserVariable).toHaveBeenCalledWith('Active Extensions', 'abc ttt extension');
 		});
 	});
 	describe("isActive", function () {

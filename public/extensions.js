@@ -1,5 +1,5 @@
 /*global jQuery, MM, _, location, window, document */
-MM.Extensions = function (storage, storageKey, cachePreventionKey) {
+MM.Extensions = function (storage, storageKey, config, components) {
 	'use strict';
 	var active = [],
 		loadScriptsAsynchronously = function (d, s, urls, callback) {
@@ -17,7 +17,7 @@ MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 	this.scriptsToLoad = function () {
 		return _.map(_.reject(_.map(active, function (ext) {
 			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		}), function (e) { return !e; }), function (script) { return script + "?v=" + cachePreventionKey; });
+		}), function (e) { return !e; }), function (script) { return script + "?v=" + config.cachePreventionKey; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -29,11 +29,12 @@ MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 			active = _.without(active, ext);
 		}
 		storage[storageKey] = active.join(' ');
-		if (window._gaq) {
-			window._gaq.push(['_setCustomVar', 2, 'Active Extensions', active.join(' '), 1], ['_trackEvent', 'Extensions', ext, shouldActivate]);
+		if (components && components.activityLog) {
+			components.activityLog.setUserVariable('Active Extensions', active.join(' '));
+			components.activityLog.log('Extensions', ext, shouldActivate);
 		}
 	};
-	this.load = function (components, config) {
+	this.load = function () {
 		var deferred = jQuery.Deferred(),
 			scripts = this.scriptsToLoad(),
 			alertId,
