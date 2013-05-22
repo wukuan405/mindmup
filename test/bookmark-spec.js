@@ -155,7 +155,7 @@ describe('Bookmarks', function () {
 				bookmark  =  new MM.Bookmark(mapController);
 			});
 			it('stores the currently loaded map if not already stored', function () {
-				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', 'mapKey', {title: 'title'});
 				bookmark.pin();
 				expect(bookmark.list()).toEqual([{mapId: 'mapKey', title: 'title'}]);
 			});
@@ -171,12 +171,12 @@ describe('Bookmarks', function () {
 				bookmark  =  new MM.Bookmark(mapController);
 			});
 			it('returns true if current map is not in bookmarks', function () {
-				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', 'mapKey', {title: 'title'});
 				expect(bookmark.canPin()).toBeTruthy();
 			});
 			it('returns false if current map is not in bookmarks', function () {
 				bookmark.store({mapId: 'mapKey', title: 'title'});
-				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', 'mapKey', {title: 'title'});
 				expect(bookmark.canPin()).toBeFalsy();
 			});
 			it('returns false if no map is loaded', function () {
@@ -192,7 +192,7 @@ describe('Bookmarks', function () {
 				var spy = jasmine.createSpy('pinChanged');
 				bookmark.store({mapId: 'mapKey', title: 'title'});
 				bookmark.addEventListener('pinChanged', spy);
-				mapController.dispatchEvent('mapLoaded', {title: 'title'}, 'mapKey');
+				mapController.dispatchEvent('mapLoaded', 'mapKey', {title: 'title'});
 				expect(spy).not.toHaveBeenCalled();
 			});
 		});

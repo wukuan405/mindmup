@@ -56,7 +56,7 @@ describe('MM.navigation', function () {
 	describe('mapController event listeners', function () {
 		it('update window hash and local storage on map loaded', function () {
 			window.location.hash = '';
-			mapController.dispatchEvent('mapLoaded', undefined, 'newLoaded');
+			mapController.dispatchEvent('mapLoaded', 'newLoaded');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
 			expect(window.location.hash).toBe('#m:newLoaded');
 		});
@@ -68,7 +68,7 @@ describe('MM.navigation', function () {
 		});
 		it('replaces map ID in a hash that contains map ID and some other stuff', function () {
 			window.location.hash = 'prefix,m:xyz,def';
-			mapController.dispatchEvent('mapLoaded', undefined, 'newLoaded');
+			mapController.dispatchEvent('mapLoaded', 'newLoaded');
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
 			expect(window.location.hash).toBe('#prefix,m:newLoaded,def');
 		});

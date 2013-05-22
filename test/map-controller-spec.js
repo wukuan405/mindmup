@@ -118,8 +118,8 @@ describe('Map Controller', function () {
 
 			underTest.loadMap('foo');
 
-			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
-			expect(listener.mostRecentCall.args[1]).toBe('foo');
+			expect(JSON.stringify(listener.mostRecentCall.args[1])).toBe('{"title":"hello","formatVersion":2,"id":1}');
+			expect(listener.mostRecentCall.args[0]).toBe('foo');
 		});
 		it('should not dispatch mapLoaded if the same map is loaded twice', function () {
 
