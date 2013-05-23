@@ -106,14 +106,23 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 			template = element.find('.template').clone(),
 			originalContent = element.children().clone(),
 			keep = element.children().filter('[data-mm-role=bookmark-keep]').clone(),
-			pin = element.children().filter('[data-mm-role=bookmark-pin]').clone(),
 			updateLinks = function () {
 				var list = bookmarks.links(),
 					link,
 					children,
-					addition;
+					addition, 
+					kept;
 				element.empty();
 				if (list.length) {
+					kept = keep.clone().appendTo(element);
+					if (bookmarks.canPin()) {
+						kept.find('[data-mm-role=bookmark-pin]').click(function () {
+							bookmarks.pin();
+						});
+					}
+					else {
+						kept.find('[data-mm-role=bookmark-pin]').parent().hide();
+					}
 					list.slice(0, 10).forEach(function (bookmark) {
 						addition = template.clone().show().appendTo(element);
 						link = addition.find('a');
@@ -129,12 +138,6 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 							return false;
 						});
 					});
-					keep.clone().appendTo(element);
-					if (bookmarks.canPin()) {
-						pin.clone().appendTo(element).find('a').click(function () {
-							bookmarks.pin();
-						});
-					}
 				} else {
 					originalContent.clone().appendTo(element).filter('[data-mm-role=bookmark-pin]').find('a').click(function () {
 						bookmarks.pin();
