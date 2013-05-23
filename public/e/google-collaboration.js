@@ -2,13 +2,52 @@
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
 	var nextSessionName,
-		properties = {autoSave: true, sharable: true, editable: true};
+		properties = {autoSave: true, sharable: true, editable: true},
+		makeRealtimeReady = function (showAuth) {
+			var deferred = jQuery.Deferred(),
+				loadRealtimeApis = function () {
+					if (gapi.drive && gapi.drive.realtime) {
+						deferred.resolve();
+					} else {
+						gapi.load('auth:client,picker,drive-realtime,drive-share', deferred.resolve);
+					}
+				};
+			googleDriveAdapter.ready(showAuth).then(loadRealtimeApis, deferred.reject, deferred.notify);
+			return deferred.promise();
+		},
+		createRealtimeMap = function (name, initialContent, showAuth) {
+			var deferred = jQuery.Deferred(),
+				fileCreated = function (mindMupId) {
+					gapi.drive.realtime.load(googleDriveAdapter.toGoogleFileId(mindMupId),
+						function onFileLoaded() {
+							deferred.resolve('c' + mindMupId, {autoSave: true, sharable: true, editable: true, reloadOnSave: true});
+						},
+						function initializeModel(model) {
+							var list = model.createList();
+							model.getRoot().set('events', list);
+							model.getRoot().set('initialContent', JSON.stringify(initialContent));
+						}
+						);
+				};
+			makeRealtimeReady(showAuth).then(
+				function () {
+					googleDriveAdapter.saveFile('MindMup collaborative session ' + name, undefined, name, 'application/vnd.mindmup.collab').then(
+						fileCreated,
+						deferred.reject,
+						deferred.notify
+					);
+				},
+				deferred.reject,
+				deferred.notify
+			);
+			return deferred.promise();
+		};
 	this.setNextSessionName = function (name) {
 		nextSessionName = name;
 	};
 	this.loadMap = function loadMap(mindMupId, showAuth) {
 		var deferred = jQuery.Deferred(),
-			realtimeError = function (e) {
+			realtimeError = function () {
 				deferred.reject('network-error');
 				$(window).off('error', realtimeError);
 			},
@@ -19,8 +58,8 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 						mindMupId.substr(3),
 						function onFileLoaded(doc) {
 							var modelRoot = doc.getModel().getRoot(),
-								contentText = modelRoot.get("initialContent"),
-								events = modelRoot.get("events"),
+								contentText = modelRoot.get('initialContent'),
+								events = modelRoot.get('events'),
 								contentAggregate,
 								localSessionId,
 								applyEvents = function (mindmupEvents, sessionId) {
@@ -31,12 +70,12 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								},
 								onEventAdded = function (event) {
 									if (!event.isLocal) {
-										applyEvents(event.values, "gd" + event.sessionId);
+										applyEvents(event.values, 'gd' + event.sessionId);
 									}
 								};
 							if (!contentText) {
 								$(window).off('error', realtimeError);
-								deferred.reject("realtime-error", "Error loading " + mindMupId + " content");
+								deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
 								return;
 							}
 							localSessionId = 'gd' + _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId;
@@ -52,18 +91,18 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							$(window).off('error', realtimeError);
 
 						},
-						function initializeModel(model) {
-							deferred.reject("realtime-error", "Session " + mindMupId + " has not been initialised");
+						function initializeModel() {
+							deferred.reject('realtime-error', 'Session ' + mindMupId + ' has not been initialised');
 						},
 						function errorHandler(error) {
-							deferred.reject("realtime-error", error);
+							deferred.reject('realtime-error', error);
 						}
 					);
 				} catch (e) {
 					deferred.reject(e);
 				}
 			};
-		googleDriveAdapter.makeRealtimeReady(showAuth).then(
+		makeRealtimeReady(showAuth).then(
 			initMap,
 			deferred.reject,
 			deferred.notify
@@ -74,7 +113,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		if (this.recognises(mapId) && mapId.length > 2) {
 			return jQuery.Deferred().resolve(mapId, map, properties).promise(); /* no saving needed, realtime updates */
 		}
-		return googleDriveAdapter.createRealtimeMap(nextSessionName, map, showAuth);
+		return createRealtimeMap(nextSessionName, map, showAuth);
 	};
 	this.description = 'Google Drive Realtime';
 	this.recognises = function (mapId) {
@@ -86,20 +125,19 @@ MM.Extensions.googleCollaboration = function () {
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
 		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
 		mapController = MM.Extensions.components.mapController,
-		alert =  MM.Extensions.components.alert,
 
 		startSession = function (name) {
 			realtimeMapSource.setNextSessionName(name);
 			mapController.publishMap('cg');
 		},
 
-		load_ui = function (html) {
+		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
 				modal = parsed.find('[data-mm-role=modal-start]').clone().appendTo($('body')),
 				sessionNameField = modal.find('input[name=session-name]'),
 				setOnline = function (online) {
-					var flag = online ? "online" : "offline",
+					var flag = online ? 'online' : 'offline',
 						items = menu.find('[data-mm-collab-visible]');
 					items.hide();
 					items.filter('[data-mm-collab-visible=' + flag + ']').show();
@@ -131,8 +169,8 @@ MM.Extensions.googleCollaboration = function () {
 				}
 			});
 			menu.find('[data-mm-role=join]').click(function () {
-				googleDriveAdapter.showPicker('application/vnd.mindmup.collab', "Choose a realtime session").done(function (id) {
-					mapController.loadMap("c" + id);
+				googleDriveAdapter.showPicker('application/vnd.mindmup.collab', 'Choose a realtime session').done(function (id) {
+					mapController.loadMap('c' + id);
 				});
 			});
 			menu.find('[data-mm-role=leave]').click(function () {
@@ -141,17 +179,17 @@ MM.Extensions.googleCollaboration = function () {
 			modal.find('[data-mm-role=start-session]').click(initializeSessionFromUi);
 			modal.find('form').submit(initializeSessionFromUi);
 
-			mapController.addEventListener("mapLoaded", function (map, mapId) {
+			mapController.addEventListener('mapLoaded', function (map, mapId) {
 				setOnline(realtimeMapSource.recognises(mapId));
 			});
-			mapController.addEventListener("mapSaved", function (mapId) {
+			mapController.addEventListener('mapSaved', function (mapId) {
 				setOnline(realtimeMapSource.recognises(mapId));
 			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
 
 	$.get('/e/google-collaboration.html?v=' + MM.Extensions.mmConfig.cachePreventionKey, function (data) {
-		load_ui(data);
+		loadUI(data);
 	});
 	$('<link rel="stylesheet" href="/e/google-collaboration.css?v=' + MM.Extensions.mmConfig.cachePreventionKey + '" />').appendTo($('body'));
 };

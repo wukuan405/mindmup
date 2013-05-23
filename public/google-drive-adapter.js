@@ -10,7 +10,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		recognises = function (mapId) {
 			return mapId && mapId[0] === 'g';
 		},
-		googleMapId = function (mapId) {
+		toGoogleFileId = function (mapId) {
 			if (recognises(mapId)) {
 				return mapId.substr(2);
 			}
@@ -38,7 +38,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			return deferred.promise();
 		},
 		saveFile = function (contentToSave, mapId, fileName, paramContentType) {
-			var	googleId =  googleMapId(mapId),
+			var	googleId =  toGoogleFileId(mapId),
 				deferred = jQuery.Deferred(),
 				boundary = '-------314159265358979323846',
 				delimiter = '\r\n--' + boundary + '\r\n',
@@ -176,22 +176,10 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 				});
 			}
 			return deferred.promise();
-		},
-		makeRealtimeReady = function (showAuth) {
-			var deferred = jQuery.Deferred(),
-				loadRealtimeApis = function () {
-					if (gapi.drive && gapi.drive.realtime) {
-						deferred.resolve();
-					} else {
-						gapi.load('auth:client,picker,drive-realtime,drive-share', deferred.resolve);
-					}
-				};
-			self.ready(showAuth).then(loadRealtimeApis, deferred.reject, deferred.notify);
-			return deferred.promise();
 		};
-	this.makeRealtimeReady = makeRealtimeReady;
 	this.description = 'Google';
-
+	this.saveFile = saveFile;
+	this.toGoogleFileId = toGoogleFileId;
 	this.ready = function (showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred();
 		if (driveLoaded && isAuthorised()) {
@@ -202,33 +190,6 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		return deferred.promise();
 	};
 
-	this.createRealtimeMap = function (name, initialContent, showAuth) {
-		var deferred = jQuery.Deferred(),
-			fileCreated = function (mindMupId) {
-				gapi.drive.realtime.load(googleMapId(mindMupId),
-					function onFileLoaded() {
-						deferred.resolve('c' + mindMupId, {autoSave: true, sharable: true, editable: true, reloadOnSave: true});
-					},
-					function initializeModel(model) {
-						var list = model.createList();
-						model.getRoot().set('events', list);
-						model.getRoot().set('initialContent', JSON.stringify(initialContent));
-					}
-					);
-			};
-		makeRealtimeReady(showAuth).then(
-			function () {
-				saveFile('MindMup collaborative session ' + name, undefined, name, 'application/vnd.mindmup.collab').then(
-					fileCreated,
-					deferred.reject,
-					deferred.notify
-				);
-			},
-			deferred.reject,
-			deferred.notify
-		);
-		return deferred.promise();
-	};
 	this.recognises = recognises;
 
 	this.retrieveAllFiles = function (searchCriteria) {
@@ -255,7 +216,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 
 	this.loadMap = function (mapId, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred(),
-			googleId = googleMapId(mapId),
+			googleId = toGoogleFileId(mapId),
 			readySucceeded = function () {
 				loadFile(googleId).then(
 					function (content, mimeType) {
@@ -281,7 +242,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 	this.showSharingSettings = function (mindMupId) {
 		var showDialog = function () {
 			var shareClient = new gapi.drive.share.ShareClient(appId);
-			shareClient.setItemIds(googleMapId(mindMupId));
+			shareClient.setItemIds(toGoogleFileId(mindMupId));
 			shareClient.showSettingsDialog();
 		};
 		if (gapi && gapi.drive && gapi.drive.share) {
