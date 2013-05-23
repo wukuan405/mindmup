@@ -56,7 +56,6 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('mapLoading', mapId);
 					activeMapSource.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
 				}, mapSourceName = activeMapSource.description ? ' [' + activeMapSource.description + ']' : '';
-				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapLoadingUnAuthorized', mapId, reason);
 				} else if (reason === 'failed-authentication') {
@@ -66,6 +65,7 @@ MM.MapController = function (initialMapSources) {
 				} else if (reason === 'map-load-redirect') {
 					self.loadMap(label, force);
 				} else {
+					label = label ? label + mapSourceName : mapSourceName;
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
 			};
