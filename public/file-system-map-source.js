@@ -1,4 +1,4 @@
-/*global MM, MAPJS, jQuery, location*/
+/*global MM, MAPJS, jQuery*/
 MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 	'use strict';
 	var self = this,
@@ -20,9 +20,8 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 		fileSystem.loadMap(mapId, showAuth).then(
 			function fileLoaded(stringContent, fileId, mimeType, properties) {
 				properties = jQuery.extend({editable: editable[mimeType]}, properties);
-				if (mimeType === 'application/vnd.mindmup.collab'  && mapId[0] === 'g') {
-					location.replace('/#m:c' + mapId);
-					return deferred.promise();
+				if (mimeType === 'application/vnd.mindmup.collab') {
+					return deferred.reject('map-load-redirect', 'c' + fileId).promise();
 				}
 				if (editable[mimeType] === undefined) {
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);

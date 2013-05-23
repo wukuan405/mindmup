@@ -146,6 +146,19 @@ describe('Map Controller', function () {
 
 			expect(listener).toHaveBeenCalled();
 		});
+		it('should reload map with redirected id', function () {
+			var listener = jasmine.createSpy();
+			adapter1.recognises = function (mapId) {return mapId === 'foo'; };
+			spyOn(adapter1, 'loadMap').andReturn(jQuery.Deferred().reject('map-load-redirect', 'bar').promise());
+			spyOn(adapter2, 'loadMap').andCallThrough();
+			underTest.addEventListener('mapLoaded', listener);
+
+			underTest.loadMap('foo', false);
+
+			expect(adapter2.loadMap).toHaveBeenCalledWith('bar');
+			expect(listener.callCount).toBe(1);
+			expect(listener.mostRecentCall.args[0]).toBe('bar');
+		});
 		describe('mapLoadingConfirmationRequired event', function () {
 			var listener;
 			beforeEach(function () {

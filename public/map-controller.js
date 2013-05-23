@@ -63,6 +63,8 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('authorisationFailed', activeMapSource.description, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
 					dispatchEvent('authRequired', activeMapSource.description, retryWithDialog);
+				} else if (reason === 'map-load-redirect') {
+					self.loadMap(label, force);
 				} else {
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
