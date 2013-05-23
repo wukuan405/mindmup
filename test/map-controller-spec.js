@@ -68,12 +68,15 @@ describe('Map Controller', function () {
 
 			expect(adapter2.loadMap).not.toHaveBeenCalled();
 		});
-		it('should use first adapter to load as a fallback option', function () {
-			spyOn(adapter1, 'loadMap').andCallThrough();
+		it('should dispatch mapIdNotRecognised event if no adapters recognise the mapId', function () {
+			var listener = jasmine.createSpy();
+			underTest.addEventListener('mapIdNotRecognised', listener);
+			spyOn(adapter1, 'recognises').andReturn(false);
+			spyOn(adapter2, 'recognises').andReturn(false);
 
 			underTest.loadMap('foo');
 
-			expect(adapter1.loadMap).toHaveBeenCalledWith('foo');
+			expect(listener).toHaveBeenCalledWith('foo');
 		});
 		it('should dispatch mapLoading Event beforeLoadingStarts', function () {
 			var listener = jasmine.createSpy();
@@ -131,6 +134,17 @@ describe('Map Controller', function () {
 			underTest.loadMap('foo');
 
 			expect(listener).not.toHaveBeenCalled();
+		});
+		it('should dispatch mapLoaded if the same map is loaded twice if forced', function () {
+
+			var listener = jasmine.createSpy();
+
+			underTest.loadMap('foo');
+			underTest.addEventListener('mapLoaded', listener);
+
+			underTest.loadMap('foo', true);
+
+			expect(listener).toHaveBeenCalled();
 		});
 		describe('mapLoadingConfirmationRequired event', function () {
 			var listener;

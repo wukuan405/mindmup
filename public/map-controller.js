@@ -77,7 +77,7 @@ MM.MapController = function (initialMapSources) {
 		}
 		activeMapSource = chooseMapSource(mapId);
 		if (!activeMapSource) {
-			dispatchEvent('mapSourceExtensionRequired', mapId);
+			dispatchEvent('mapIdNotRecognised', mapId);
 			return;
 		}
 		dispatchEvent('mapLoading', mapId);

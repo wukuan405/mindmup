@@ -96,7 +96,7 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 		causedByMapId = undefined;
 	});
 
-	mapController.addEventListener('mapSourceExtensionRequired', function (newMapId) {
+	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
 		var showAlertWithCallBack = function (message, prompt, type, callback) {
 			var alertId = alert.show(
 				message,
