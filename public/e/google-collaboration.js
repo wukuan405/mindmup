@@ -90,11 +90,7 @@ MM.Extensions.googleCollaboration = function () {
 
 		startSession = function (name) {
 			realtimeMapSource.setNextSessionName(name);
-			mapController.publishMap('cg').done(
-				function loadMap(mapId) {
-					mapController.loadMap(mapId, true);
-				}
-			);
+			mapController.publishMap('cg');
 		},
 
 		load_ui = function (html) {

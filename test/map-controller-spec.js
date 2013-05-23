@@ -238,5 +238,11 @@ describe('Map Controller', function () {
 
 			expect(listener).toHaveBeenCalledWith('loadedMapId', map, {editable: true});
 		});
+		it('should reload the map if saved map properties has reloadOnSave set to true', function () {
+			spyOn(adapter1, 'saveMap').andReturn(jQuery.Deferred().resolve('foo', {reloadOnSave: true}).promise());
+			spyOn(underTest, 'loadMap').andCallThrough();
+			underTest.publishMap();
+			expect(underTest.loadMap).toHaveBeenCalledWith('foo', true);
+		});
 	});
 });

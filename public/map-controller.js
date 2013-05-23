@@ -95,6 +95,10 @@ MM.MapController = function (initialMapSources) {
 				mapInfo.mapId = savedMapId;
 				deferred.resolve(savedMapId, mapInfo.idea);
 				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, properties);
+
+				if (properties.reloadOnSave) {
+					self.loadMap(savedMapId, true);
+				}
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,

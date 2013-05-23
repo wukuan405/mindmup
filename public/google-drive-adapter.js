@@ -207,7 +207,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			fileCreated = function (mindMupId) {
 				gapi.drive.realtime.load(googleMapId(mindMupId),
 					function onFileLoaded() {
-						deferred.resolve('c' + mindMupId);
+						deferred.resolve('c' + mindMupId, {autoSave: true, sharable: true, editable: true, reloadOnSave: true});
 					},
 					function initializeModel(model) {
 						var list = model.createList();
