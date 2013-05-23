@@ -88,12 +88,10 @@ MM.MapController = function (initialMapSources) {
 		);
 	};
 	this.publishMap = function (mapSourceType) {
-		var deferred = jQuery.Deferred(),
-			mapSaved = function (savedMapId, properties) {
+		var mapSaved = function (savedMapId, properties) {
 				properties = properties || {};
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
-				deferred.resolve(savedMapId, mapInfo.idea);
 				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, properties);
 
 				if (properties.reloadOnSave) {
@@ -132,7 +130,6 @@ MM.MapController = function (initialMapSources) {
 			mapSaveFailed,
 			progressEvent
 		);
-		return deferred.promise();
 	};
 };
 MM.MapController.activityTracking = function (mapController, activityLog) {
