@@ -299,41 +299,36 @@ describe('Bookmarks', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));
 			expect(list.children('li').first().children().first().children()).toBe('span');
 		});
-		// it('preserves any elements with data-mm-role=bookmark-keep and appends after active links', function () {
-		// 	var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li>');
-		// 	list.bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));
-		// 	expect(list.children('li').last().text()).toBe('Keep me');
-		// });
-		// it('preserves any elements with data-mm-role=bookmark-pin and appends after keep links if the bookmark is pinnable', function () {
-		// 	var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-pin">Pin me</li>'),
-		// 		bookmark = wrap([{mapId: 'x', title: 'y'}]);
-		// 	spyOn(bookmark, 'canPin').andReturn(true);
-		// 	list.bookmarkWidget(bookmark);
-		// 	expect(list.children('li').last().text()).toBe('Pin me');
-		// });
-		// it('does not append elements with data-mm-role=bookmark-pin if map is not pinnable', function () {
-		// 	var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-pin">Pin me</li>'),
-		// 		bookmark = wrap([{mapId: 'x', title: 'y'}]);
-		// 	spyOn(bookmark, 'canPin').andReturn(false);
-		// 	list.bookmarkWidget(bookmark);
-		// 	expect(list.children('li').last().text()).toBe('Keep me');
-		// });
-		// it('self-updates when the pinnable status changes', function () {
-		// 	var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-pin">Pin me</li>'),
-		// 		repo = observable({}),
-		// 		bookmark = wrap([{mapId: 'x', title: 'y'}], repo);
-		// 	list.bookmarkWidget(bookmark);
-		// 	repo.dispatchEvent('mapLoaded', {title: 'z'}, 'y');
-		// 	expect(list.children('li').last().text()).toBe('Pin me');
-		// });
-		// it('attaches a click event on any links inside data-mm-role=bookmark-pin that call bookmark.pin', function () {
-		// 	var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-pin"><a href="#">Pin Me</a></li>'),
-		// 		bookmark = wrap([{mapId: 'x', title: 'y'}]);
-		// 	spyOn(bookmark, 'canPin').andReturn(true);
-		// 	list.bookmarkWidget(bookmark);
-		// 	spyOn(bookmark, 'pin');
-		// 	list.children('li').last().find('a').click();
-		// 	expect(bookmark.pin).toHaveBeenCalled();
-		// });
+		it('preserves any elements with data-mm-role=bookmark-keep and appends before active links', function () {
+			var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li>');
+			list.bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));
+			expect(list.children('li').first().text()).toBe('Keep me');
+		});
+		it('hides parent of elements with data-mm-role=bookmark-pin if map is not pinnable', function () {
+			var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-keep" id="bkm"><a data-mm-role="bookmark-pin">Pin me</a></li>'),
+				bookmark = wrap([{mapId: 'x', title: 'y'}]);
+			spyOn(bookmark, 'canPin').andReturn(false);
+			list.bookmarkWidget(bookmark);
+			expect(list.children("li[id=bkm]").css('display')).toBe('none');
+		});
+		it('self-updates when the pinnable status changes', function () {
+			var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep">Keep me</li><li data-mm-role="bookmark-keep" id="bkm"><a data-mm-role="bookmark-pin">Pin me</a></li>'),
+				repo = observable({}),
+				bookmark = wrap([{mapId: 'x', title: 'y'}], repo);
+			spyOn(bookmark, 'canPin').andReturn(false);
+			list.bookmarkWidget(bookmark);
+			repo.dispatchEvent('mapLoaded', 'another', {title: 'z'});
+			expect(list.children("li[id=bkm]").css('display')).toBe('none');
+
+		});
+		it('attaches a click event on any links inside data-mm-role=bookmark-pin that call bookmark.pin', function () {
+			var list = jQuery(ulTemplate).prepend('<li data-mm-role="bookmark-keep"><a data-mm-role="bookmark-pin" href="#">Pin Me</a></li>'),
+				bookmark = wrap([{mapId: 'x', title: 'y'}]);
+			spyOn(bookmark, 'canPin').andReturn(true);
+			list.bookmarkWidget(bookmark);
+			spyOn(bookmark, 'pin');
+			list.children('li').first().find('a').click();
+			expect(bookmark.pin).toHaveBeenCalled();
+		});
 	});
 });
