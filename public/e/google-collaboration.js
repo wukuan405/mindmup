@@ -179,10 +179,7 @@ MM.Extensions.googleCollaboration = function () {
 			modal.find('[data-mm-role=start-session]').click(initializeSessionFromUi);
 			modal.find('form').submit(initializeSessionFromUi);
 
-			mapController.addEventListener('mapLoaded', function (map, mapId) {
-				setOnline(realtimeMapSource.recognises(mapId));
-			});
-			mapController.addEventListener('mapSaved', function (mapId) {
+			mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
 				setOnline(realtimeMapSource.recognises(mapId));
 			});
 		};
