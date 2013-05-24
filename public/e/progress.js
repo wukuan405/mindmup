@@ -63,6 +63,13 @@ MM.Extensions.progress = function () {
 };
 
 MM.Extensions.progress.testingConfig = {
+	'': {
+		description: 'Not Started',
+		priority: 1,
+		style: {
+			background: false
+		}
+	},
 	'passing': {
 		description: 'Passed',
 		style: {
@@ -71,14 +78,14 @@ MM.Extensions.progress.testingConfig = {
 	},
 	'in-progress': {
 		description: 'In Progress',
-		priority: 1,
+		priority: 2,
 		style: {
 			background: '#FFCC00'
 		}
 	},
 	'blocked': {
 		description: 'Blocked',
-		priority: 1,
+		priority: 3,
 		style: {
 			background: '#990033'
 		}

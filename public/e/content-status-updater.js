@@ -7,37 +7,39 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		},
 		ideaStatus = function (idea) {
 			return findStatus(idea.getAttr(statusAttributeName));
+		},
+		statusPriority = function (statusName) {
+			var s = findStatus(statusName);
+			return s && s.priority;
 		};
-
 	self.updateStatus = function (ideaId, newStatusName) {
-		var status = findStatus(newStatusName),
-			changeStatus = function (id) {
-				var merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
-				return content.updateAttr(id, 'style', merged) && content.updateAttr(id, statusAttributeName, newStatusName);
+		var changeStatus = function (id, statusName) {
+				var status = findStatus(statusName),
+					merged;
+				if (!status) {
+					return false;
+				}
+				merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
+				return content.updateAttr(id, 'style', merged) && content.updateAttr(id, statusAttributeName, statusName);
 			},
 			shouldPropagate = function (parent) {
-				return _.all(parent.ideas, function (child) {
-					var childStatus = ideaStatus(child);
-
-					if (childStatus === status) {
-						return true;
-					}
-					if (!status.priority) {
-						return false;
-					}
-					if (!childStatus || !childStatus.priority) {
-						return true;
-					}
-					return childStatus.priority < status.priority;
-				});
+				var childStatusNames = _.uniq(_.map(parent.ideas, function (child) {
+					return child.getAttr(statusAttributeName);
+				}));
+				if (childStatusNames.length === 1) {
+					return childStatusNames[0];
+				}
+				if (!_.some(childStatusNames, statusPriority)) {
+					return false;
+				}
+				return _.max(childStatusNames, statusPriority);
 			};
-		if (!status) {
-			return false;
-		}
-		if (changeStatus(ideaId, status, newStatusName)) {
+
+		if (changeStatus(ideaId, newStatusName)) {
 			_.each(content.calculatePath(ideaId), function (parent) {
-				if (shouldPropagate(parent)) {
-					changeStatus(parent.id, status);
+				var parentStatusName = shouldPropagate(parent);
+				if (parentStatusName) {
+					changeStatus(parent.id, parentStatusName);
 				}
 			});
 			return true;

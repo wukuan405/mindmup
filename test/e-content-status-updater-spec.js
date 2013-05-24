@@ -94,7 +94,7 @@ describe('MM.ContentStatusUpdater', function () {
 				['passing',		'in-progress',	'in-progress',		'priority wins over no priority'],
 				['in-progress',	'in-progress',	'in-progress',		'same priority propagates'],
 				['in-progress',	'failure',		'failure',			'higher priority wins'],
-				['failure',		'in-progress',	'same as before',	'lower priority does not propagate']
+				['failure',		'in-progress',	'failure',			'higher priority wins even if on sibling'],
 			],
 			checkPropatation = function (sibling, child, expectedParent) {
 				content.updateAttr(11, 'test-status', 'same as before');
@@ -120,7 +120,7 @@ describe('MM.ContentStatusUpdater', function () {
 			underTest.updateStatus(1111, 'in-progress');
 
 			expect(content.getAttrById(111, 'test-status')).toEqual('in-progress');
-			expect(content.getAttrById(11, 'test-status')).toEqual('same as before');
+			expect(content.getAttrById(11, 'test-status')).toEqual('failure');
 		});
 		it('propagates does not propagate down', function () {
 			underTest.updateStatus(121, 'failure');
