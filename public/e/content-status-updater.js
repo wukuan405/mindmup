@@ -46,6 +46,14 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		}
 		return false;
 	};
+	self.clear = function (idea) {
+		idea = idea || content;
+		if (idea.getAttr(statusAttributeName)) {
+			content.updateAttr(idea.id, 'style', false);
+			content.updateAttr(idea.id, statusAttributeName, false);
+		}
+		_.each(idea.ideas, self.clear);
+	};
 	self.config = function () {
 		return content.getAttr(statusConfigurationAttributeName);
 	};

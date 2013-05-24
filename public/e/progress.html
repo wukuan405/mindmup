@@ -1,10 +1,11 @@
 <div> <!-- needs div for easier child locators -->
 	<li class="dropdown" data-mm-role="top-menu">
 		<a data-category="Top Bar" data-event-type="Open Progress Menu" class="dropdown-toggle" data-toggle="dropdown" href="#">
-		 <i class="icon-group"></i>&nbsp;Progress&nbsp;<b class="caret"></b>
+		 <i class="icon-dashboard"></i>&nbsp;Progress&nbsp;<b class="caret"></b>
 	   </a>
 		<ul class="dropdown-menu" role="menu">
-			<li><a data-category="Top Bar" data-event-type="Progress - Start" data-mm-role="start" data-mm-progress-visible="inactive"><i class="icon-play" ></i>&nbsp;Activate for this map</a></li>
+			<li><a data-category="Top Bar" data-event-type="Progress - Start - Tasks" data-mm-role="start" data-mm-progress-visible="inactive" data-mm-progress-type="tasks"><i class="icon-tasks"></i>&nbsp;Generic Tasks</a></li>
+			<li><a data-category="Top Bar" data-event-type="Progress - Start - Testing" data-mm-role="start" data-mm-progress-visible="inactive" data-mm-progress-type="testing"><i class="icon-check"></i>&nbsp;Testing</a></li>
 			<li data-mm-role="status-template">
 				<a data-mm-role="set-status">
 					<div data-mm-role="status-color" class="progress-color">&nbsp;</div>&nbsp;
@@ -12,6 +13,7 @@
 				</a>
 			</li>
 			<li class="divider"  data-mm-progress-visible="active"></li>
+			<li><a data-category="Top Bar" data-event-type="Progress - Clear" data-mm-role="clear" data-mm-progress-visible="active"><i class="icon-eraser" ></i>&nbsp;Reset progress on this map</a></li>
 			<li><a data-category="Top Bar" data-event-type="Progress - Deactivate" data-mm-role="deactivate" data-mm-progress-visible="active"><i class="icon-eject" ></i>&nbsp;Deactivate for this map</a></li>
 
 		</ul>

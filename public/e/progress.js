@@ -6,8 +6,8 @@ MM.Extensions.progress = function () {
 		mapController = MM.Extensions.components.mapController,
 		mapModel = MM.Extensions.components.mapModel,
 		currentlySelectedId,
-		activateProgressOnContent = function (content) {
-			content.updateAttr(content.id, statusConfigurationAttributeName, MM.Extensions.progress.testingConfig);
+		activateProgressOnContent = function (content, type) {
+			content.updateAttr(content.id, statusConfigurationAttributeName, MM.Extensions.progress.statusConfig[type]);
 		},
 		deactivateProgressOnContent = function (content) {
 			content.updateAttr(content.id, statusConfigurationAttributeName, false);
@@ -17,6 +17,7 @@ MM.Extensions.progress = function () {
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
 				template = menu.find('[data-mm-role=status-template]').detach(),
 				currentContent,
+				updater,
 				updateMenus = function (updater) {
 					var flag = updater.config() ? 'active' : 'inactive',
 						items = menu.find('[data-mm-progress-visible]');
@@ -36,15 +37,20 @@ MM.Extensions.progress = function () {
 				};
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			menu.find('[data-mm-role=start]').click(function () {
-				activateProgressOnContent(currentContent);
+				activateProgressOnContent(currentContent, $(this).data('mm-progress-type'));
 				return false;
 			});
 			menu.find('[data-mm-role=deactivate]').click(function () {
 				deactivateProgressOnContent(currentContent);
 			});
+			menu.find('[data-mm-role=clear]').click(function () {
+				if (updater) {
+					updater.clear();
+				}
+			});
 			menu.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
 			mapController.addEventListener('mapLoaded', function (mapId, content) {
-				var updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, content);
+				updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, content);
 				currentContent = content;
 				updateMenus(updater);
 				content.addEventListener('changed', function (method, attrs) {
@@ -62,7 +68,8 @@ MM.Extensions.progress = function () {
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
 };
 
-MM.Extensions.progress.testingConfig = {
+MM.Extensions.progress.statusConfig = {};
+MM.Extensions.progress.statusConfig.testing = {
 	'': {
 		description: 'Not Started',
 		priority: 1,
@@ -83,16 +90,51 @@ MM.Extensions.progress.testingConfig = {
 			background: '#FFCC00'
 		}
 	},
+	'failure': {
+		description: 'Failed',
+		priority: 999,
+		style: {
+			background: '#FF3300'
+		}
+	}
+};
+MM.Extensions.progress.statusConfig.tasks = {
+	'': {
+		description: 'Not Started',
+		priority: 1,
+		style: {
+			background: false
+		}
+	},
+	'passing': {
+		description: 'Done',
+		style: {
+			background: '#00CC00'
+		}
+	},
+	'under-review' : {
+		description: 'Under review',
+		style: {
+			background: '#00CCFF'
+		}
+	},
+	'in-progress': {
+		description: 'In Progress',
+		priority: 3,
+		style: {
+			background: '#FFCC00'
+		}
+	},
 	'blocked': {
 		description: 'Blocked',
-		priority: 3,
+		priority: 4,
 		style: {
 			background: '#990033'
 		}
 	},
-	'failure': {
-		description: 'Failed',
-		priority: 999,
+	'parked': {
+		description: 'Parked',
+		priority: 2,
 		style: {
 			background: '#FF3300'
 		}

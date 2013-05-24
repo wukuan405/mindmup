@@ -128,4 +128,37 @@ describe('MM.ContentStatusUpdater', function () {
 		});
 
 	});
+	describe('clear', function () {
+		var content, underTest;
+		beforeEach(function () {
+			content = MAPJS.content({
+				id: 1,
+				attr: { status: 'yes', style: { background: 'green' } },
+				ideas: {
+					1: {
+						id: 11,
+						attr: { status: 'no', style: { background: 'yellow' } },
+						ideas: {
+							1: {
+								id: 111,
+								attr: { style: { background: 'yellow' } },
+							}
+						}
+					}
+				}
+			});
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', content);
+		});
+		it('deletes all status attributes and drops styling for any elements with status', function () {
+			underTest.clear();
+			expect(content.getAttr('status')).toBeFalsy();
+			expect(content.getAttr('style')).toBeFalsy();
+			expect(content.findSubIdeaById(11).getAttr('status')).toBeFalsy();
+			expect(content.findSubIdeaById(11).getAttr('style')).toBeFalsy();
+		});
+		it('does not drop styling of non-status elements', function () {
+			underTest.clear();
+			expect(content.findSubIdeaById(111).getAttr('style')).toEqual({background: 'yellow'});
+		});
+	});
 });
