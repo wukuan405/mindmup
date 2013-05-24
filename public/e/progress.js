@@ -37,6 +37,7 @@ MM.Extensions.progress = function () {
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			menu.find('[data-mm-role=start]').click(function () {
 				activateProgressOnContent(currentContent);
+				return false;
 			});
 			menu.find('[data-mm-role=deactivate]').click(function () {
 				deactivateProgressOnContent(currentContent);
