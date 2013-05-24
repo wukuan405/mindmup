@@ -17,7 +17,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 	this.scriptsToLoad = function () {
 		return _.map(_.reject(_.map(active, function (ext) {
 			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		}), function (e) { return !e; }), function (script) { return script + "?v=" + config.cachePreventionKey; });
+		}), function (e) { return !e; }), function (script) { return script + '?v=' + config.cachePreventionKey; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -55,7 +55,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 					window.clearInterval(intervalId);
 					deferred.resolve();
 				} else {
-					jQuery('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
+					jQuery('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + ' remaining');
 				}
 			}, 1000);
 		} else {
@@ -68,6 +68,10 @@ MM.Extensions.config = {
 	'goggle-collaboration' : {
 		name: 'Realtime collaboration',
 		script: '/e/google-collaboration.js'
+	},
+	'progress' : {
+		name: 'Progress',
+		script: '/e/progress.js'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
@@ -90,7 +94,7 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 			if (!causedByMapId) {
 				location.reload();
 			} else {
-				window.location = "/map/" + causedByMapId;
+				window.location = '/map/' + causedByMapId;
 			}
 		}
 		causedByMapId = undefined;
