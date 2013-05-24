@@ -185,9 +185,7 @@ MM.Extensions.googleCollaboration = function () {
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
 
-	$.get('/e/google-collaboration.html?v=' + MM.Extensions.mmConfig.cachePreventionKey, function (data) {
-		loadUI(data);
-	});
-	$('<link rel="stylesheet" href="/e/google-collaboration.css?v=' + MM.Extensions.mmConfig.cachePreventionKey + '" />').appendTo($('body'));
+	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.html', loadUI);
+	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.css" />').appendTo($('body'));
 };
 MM.Extensions.googleCollaboration();

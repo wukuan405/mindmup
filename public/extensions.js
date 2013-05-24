@@ -19,7 +19,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
 		}), function (e) { return !e; });
 
-		return _.map(_.flatten(activeExtensions), function (script) { return script + '?v=' + config.cachePreventionKey; });
+		return _.map(_.flatten(activeExtensions), function (script) { return '/' + config.cachePreventionKey + script; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);

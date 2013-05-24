@@ -12,22 +12,22 @@ describe("MM.Extensions", function () {
 		it("includes scripts from config that are set in the storage key and appends the cache prevention key as version", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
 			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
+			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js', '/cacheKey/def.js']);
 		});
 		it("supports multiple scripts for an extension", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js /def.js' }};
 			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
+			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js', '/cacheKey/def.js']);
 		});
 		it("excludes scripts from config that are not set in the storage key", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
 			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
+			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js']);
 		});
 		it("excludes scripts from storage that are not in the config", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
 			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey', {cachePreventionKey: 'cacheKey'});
-			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey']);
+			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js']);
 		});
 
 	});

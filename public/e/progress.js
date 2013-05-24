@@ -53,14 +53,12 @@ MM.Extensions.progress = function () {
 					}
 				});
 			});
-			mapModel.addEventListener('nodeSelectionChanged', function(id) {
+			mapModel.addEventListener('nodeSelectionChanged', function (id) {
 				currentlySelectedId = id;
 			});
 		};
-	$.get('/e/progress.html?v=' + MM.Extensions.mmConfig.cachePreventionKey, function (html) {
-		loadUI(html);
-	});
-	$('<link rel="stylesheet" href="/e/progress.css?v=' + MM.Extensions.mmConfig.cachePreventionKey + '" />').appendTo($('body'));
+	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
+	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
 };
 
 MM.Extensions.progress.testingConfig = {
@@ -83,7 +81,7 @@ MM.Extensions.progress.testingConfig = {
 		style: {
 			background: '#990033'
 		}
-	},	
+	},
 	'failure': {
 		description: 'Failed',
 		priority: 999,

@@ -125,6 +125,11 @@ end
 get "/un" do
   erb :unsupported
 end
+
+get '/'+settings.cache_prevention_key+'/e/:fname' do
+  send_file File.join(settings.public_folder, 'e/'+params[:fname])
+end
+
 include Sinatra::UserAgentHelpers
 helpers do
   def show_map
