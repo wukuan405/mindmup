@@ -14,6 +14,11 @@ describe("MM.Extensions", function () {
 			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
 		});
+		it("supports multiple scripts for an extension", function () {
+			MM.Extensions.config = { 'abc': { script: '/abc.js /def.js' }};
+			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});
+			expect(ext.scriptsToLoad()).toEqual(['/abc.js?v=cacheKey', '/def.js?v=cacheKey']);
+		});
 		it("excludes scripts from config that are not set in the storage key", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
 			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});

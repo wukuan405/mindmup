@@ -1,47 +1,95 @@
-/*global MM, _*/
-MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, content) {
+/*global MM, _, $*/
+MM.Extensions.progress = function () {
 	'use strict';
-	var self = this,
-		findStatus = function (statusName) {
-			return content.getAttr(statusConfigurationAttributeName)[statusName];
+	var statusConfigurationAttributeName = 'progress-statuses',
+		statusAttributeName = 'progress',
+		mapController = MM.Extensions.components.mapController,
+		mapModel = MM.Extensions.components.mapModel,
+		currentlySelectedId,
+		activateProgressOnContent = function (content) {
+			content.updateAttr(content.id, statusConfigurationAttributeName, MM.Extensions.progress.testingConfig);
 		},
-		ideaStatus = function (idea) {
-			return findStatus(idea.getAttr(statusAttributeName));
-		};
-
-	self.updateStatus = function (ideaId, newStatusName) {
-		var status = findStatus(newStatusName),
-			changeStatus = function (id) {
-				var merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
-				return content.updateAttr(id, 'style', merged) && content.updateAttr(id, statusAttributeName, newStatusName);
-			},
-			shouldPropagate = function (parent) {
-				return _.all(parent.ideas, function (child) {
-					var childStatus = ideaStatus(child);
-
-					if (childStatus === status) {
-						return true;
-					}
-					if (!status.priority) {
-						return false;
-					}
-					if (!childStatus || !childStatus.priority) {
-						return true;
-					}
-					return childStatus.priority < status.priority;
-				});
-			};
-		if (!status) {
-			return false;
-		}
-		if (changeStatus(ideaId, status, newStatusName)) {
-			_.each(content.calculatePath(ideaId), function (parent) {
-				if (shouldPropagate(parent)) {
-					changeStatus(parent.id, status);
-				}
+		deactivateProgressOnContent = function (content) {
+			content.updateAttr(content.id, statusConfigurationAttributeName, false);
+		},
+		loadUI = function (html) {
+			var parsed = $(html),
+				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
+				template = menu.find('[data-mm-role=status-template]').detach(),
+				currentContent,
+				updateMenus = function (updater) {
+					var flag = updater.config() ? 'active' : 'inactive',
+						items = menu.find('[data-mm-progress-visible]');
+					items.hide();
+					items.filter('[data-mm-progress-visible=' + flag + ']').show();
+					menu.find('[data-mm-role=progress]').remove();
+					_.each(updater.config(), function (status, statusName) {
+						var newItem = template.clone().prependTo(menu.children('ul'));
+						newItem.attr('data-mm-role', 'progress');
+						newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background);
+						newItem.find('[data-mm-role=status-name]').text(status.description);
+						newItem.click(function () {
+							// analytics!
+							updater.updateStatus(currentlySelectedId, statusName);
+						});
+					});
+				};
+			$('#mainMenu').find('[data-mm-role=optional]').hide();
+			menu.find('[data-mm-role=start]').click(function () {
+				activateProgressOnContent(currentContent);
 			});
-			return true;
-		}
-		return false;
-	};
+			menu.find('[data-mm-role=deactivate]').click(function () {
+				deactivateProgressOnContent(currentContent);
+			});
+			menu.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
+			mapController.addEventListener('mapLoaded', function (mapId, content) {
+				var updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, content);
+				currentContent = content;
+				updateMenus(updater);
+				content.addEventListener('changed', function (method, attrs) {
+					/*jslint eqeq: true*/
+					if (method === 'updateAttr' && attrs[0] == content.id && attrs[1] === statusConfigurationAttributeName) {
+						updateMenus(updater);
+					}
+				});
+			});
+			mapModel.addEventListener('nodeSelectionChanged', function(id) {
+				currentlySelectedId = id;
+			});
+		};
+	$.get('/e/progress.html?v=' + MM.Extensions.mmConfig.cachePreventionKey, function (html) {
+		loadUI(html);
+	});
+	$('<link rel="stylesheet" href="/e/progress.css?v=' + MM.Extensions.mmConfig.cachePreventionKey + '" />').appendTo($('body'));
 };
+
+MM.Extensions.progress.testingConfig = {
+	'passing': {
+		description: 'Passed',
+		style: {
+			background: '#00CC00'
+		}
+	},
+	'in-progress': {
+		description: 'In Progress',
+		priority: 1,
+		style: {
+			background: '#FFCC00'
+		}
+	},
+	'blocked': {
+		description: 'Blocked',
+		priority: 1,
+		style: {
+			background: '#990033'
+		}
+	},	
+	'failure': {
+		description: 'Failed',
+		priority: 999,
+		style: {
+			background: '#FF3300'
+		}
+	}
+};
+MM.Extensions.progress();

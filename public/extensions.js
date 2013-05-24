@@ -15,9 +15,11 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		active = storage[storageKey].split(' ');
 	}
 	this.scriptsToLoad = function () {
-		return _.map(_.reject(_.map(active, function (ext) {
-			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		}), function (e) { return !e; }), function (script) { return script + '?v=' + config.cachePreventionKey; });
+		var activeExtensions = _.reject(_.map(active, function (ext) {
+			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
+		}), function (e) { return !e; });
+
+		return _.map(_.flatten(activeExtensions), function (script) { return script + '?v=' + config.cachePreventionKey; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -71,7 +73,7 @@ MM.Extensions.config = {
 	},
 	'progress' : {
 		name: 'Progress',
-		script: '/e/progress.js'
+		script: '/e/content-status-updater.js /e/progress.js'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {

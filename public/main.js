@@ -47,7 +47,8 @@ MM.main = function (config) {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
 				'mapController': mapController,
-				'activityLog': activityLog
+				'activityLog': activityLog,
+				'mapModel': mapModel
 			});
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
