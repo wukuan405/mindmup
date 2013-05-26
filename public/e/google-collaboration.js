@@ -1,5 +1,5 @@
-/*global $, MM, jQuery, JSON, _, gapi, MAPJS, window*/
-MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
+/*global $, MM, jQuery, JSON, _, gapi, MAPJS, window, Image, Kinetic */
+MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, alert) {
 	'use strict';
 	var nextSessionName,
 		properties = {autoSave: true, sharable: true, editable: true},
@@ -64,7 +64,6 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								localSessionId,
 								applyEvents = function (mindmupEvents, sessionId) {
 									mindmupEvents.forEach(function (event) {
-										//contentAggregate[event.cmd].apply(contentAggregate, event.args);
 										contentAggregate.execCommand(event.cmd, event.args, sessionId);
 									});
 								},
@@ -72,6 +71,61 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 									if (!event.isLocal) {
 										applyEvents(event.values, 'gd' + event.sessionId);
 									}
+								},
+								sessionImages = {},
+								makeImage = function (sessionKey) {
+									var deferred = jQuery.Deferred(), domImg, kineticImg, collaborator;
+									if (sessionImages[sessionKey]) {
+										return deferred.resolve(sessionImages[sessionKey]).promise();
+									}
+									domImg = new Image();
+									domImg.onload = function loadImage() {
+										sessionImages[sessionKey] = new Kinetic.Image({
+											x: 0,
+											y: 0,
+											image: domImg,
+											width: 50,
+											height: 50,
+											opacity: 0.5
+										});
+										deferred.resolve(sessionImages[sessionKey]);
+									};
+									collaborator = _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); });
+									if (collaborator) {
+										domImg.src = collaborator.photoUrl;
+									}
+									return deferred.promise();
+								},
+								focusNodes = modelRoot.get('focusNodes'),
+								onFocusChanged = function (event) {
+									if (!event.isLocal) {
+										//console.log('focus changed', event.property, event.newValue, 'gd' + event.sessionId);
+										makeImage(event.sessionId).done(function (kineticImg) {
+											var node = stage.get('#node_' + event.newValue);
+											if (node && node[0]) {
+												kineticImg.remove();
+												kineticImg.attrs.x = (node[0].getWidth() - kineticImg.getWidth()) / 2;
+												kineticImg.attrs.y = (node[0].getHeight() - kineticImg.getHeight()) / 2;
+												node[0].add(kineticImg);
+												node[0].getLayer().draw();
+											}
+										});
+									}
+								},
+								onCollaboratorLeft = function (event) {
+									var profileImg = sessionImages[event.collaborator.sessionId],
+										layer,
+										alertId = alert.show("Collaborator left!", event.collaborator.displayName + " left this session");
+									setTimeout(function () { alert.hide(alertId); }, 3000);
+									if (profileImg) {
+										layer = profileImg.getLayer();
+										profileImg.remove();
+										layer.draw();
+									}
+								},
+								onCollaboratorJoined = function (event) {
+									var alertId = alert.show("Collaborator joined!", event.collaborator.displayName + " joined this session");
+									setTimeout(function () { alert.hide(alertId); }, 3000);
 								};
 							if (!contentText) {
 								$(window).off('error', realtimeError);
@@ -90,6 +144,18 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							deferred.resolve(contentAggregate, mindMupId, properties);
 							$(window).off('error', realtimeError);
 
+							if (!focusNodes) {
+								focusNodes = doc.getModel().createMap();
+								modelRoot.set('focusNodes', focusNodes);
+							}
+							mapModel.addEventListener('nodeSelectionChanged', function (id, isSelected) {
+								if (isSelected) {
+									focusNodes.set(localSessionId, id);
+								}
+							});
+							focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
+							doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
+							doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 						},
 						function initializeModel() {
 							deferred.reject('realtime-error', 'Session ' + mindMupId + ' has not been initialised');
@@ -123,14 +189,15 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 MM.Extensions.googleCollaboration = function () {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
-		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
+		mapModel = MM.Extensions.components.mapModel,
+		stage = MM.Extensions.components.container.data('mm-stage'),
+		alert = MM.Extensions.components.alert,
+		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter, mapModel, stage, alert),
 		mapController = MM.Extensions.components.mapController,
-
 		startSession = function (name) {
 			realtimeMapSource.setNextSessionName(name);
 			mapController.publishMap('cg');
 		},
-
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),

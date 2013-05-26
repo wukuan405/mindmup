@@ -48,7 +48,8 @@ MM.main = function (config) {
 				'alert': alert,
 				'mapController': mapController,
 				'activityLog': activityLog,
-				'mapModel': mapModel
+				'mapModel': mapModel,
+				'container': jQuery('#container')
 			});
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
