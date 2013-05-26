@@ -86,7 +86,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 											image: domImg,
 											width: 50,
 											height: 50,
-											opacity: 0.5
+											opacity: 0.7
 										});
 										deferred.resolve(sessionImages[sessionKey]);
 									};
@@ -104,8 +104,8 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 											var node = stage.get('#node_' + event.newValue);
 											if (node && node[0]) {
 												kineticImg.remove();
-												kineticImg.attrs.x = (node[0].getWidth() - kineticImg.getWidth()) / 2;
-												kineticImg.attrs.y = (node[0].getHeight() - kineticImg.getHeight()) / 2;
+												kineticImg.attrs.x = node[0].getWidth() - kineticImg.getWidth() / 2;
+												kineticImg.attrs.y = node[0].getHeight() - kineticImg.getHeight() / 2;
 												node[0].add(kineticImg);
 												node[0].getLayer().draw();
 											}
