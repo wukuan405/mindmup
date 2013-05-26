@@ -72,6 +72,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								onEventAdded = function (event) {
 									if (!event.isLocal) {
 										applyEvents(event.values, 'gd' + event.sessionId);
+										self.dispatchEvent('realtimeDocumentUpdated', event.sessionId);
 									}
 								};
 							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, contentAggregate);
@@ -322,14 +323,11 @@ MM.Extensions.googleCollaboration = function () {
 			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
-	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId, contentAggregate) {
+	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
 		kineticSessions = new KineticSessionManager(doc, googleSessionId);
-		contentAggregate.addEventListener('changed', function (command, params, session) {
-			var remoteSession = session.substr(2);
-			if (remoteSession !== googleSessionId) {
-				kineticSessions.showFocus(remoteSession);
-			}
-		});
+	});
+	realtimeMapSource.addEventListener("realtimeDocumentUpdated", function (googleSessionId) {
+		kineticSessions.showFocus(googleSessionId);
 	});
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.html', loadUI);
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.css" />').appendTo($('body'));
