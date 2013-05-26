@@ -84,9 +84,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 											x: 0,
 											y: 0,
 											image: domImg,
-											width: 50,
-											height: 50,
-											opacity: 0.7
+											width: 32,
+											height: 32,
+											opacity: 0.6
 										});
 										deferred.resolve(sessionImages[sessionKey]);
 									};
