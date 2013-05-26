@@ -68,11 +68,17 @@ MM.Extensions = function (storage, storageKey, config, components) {
 MM.Extensions.config = {
 	'goggle-collaboration' : {
 		name: 'Realtime collaboration',
-		script: '/e/google-collaboration.js'
+		script: '/e/google-collaboration.js',
+		icon: 'icon-group',
+		doc: 'http://blog.mindmup.com/p/realtime-collaboration.html',
+		desc: 'Realtime collaboration on a map, where several people can concurrently change it and updates are shown to everyone almost instantly. Collaboration is persisted using Google Drive.'
 	},
 	'progress' : {
 		name: 'Progress',
-		script: '/e/content-status-updater.js /e/progress.js'
+		script: '/e/content-status-updater.js /e/progress.js',
+		icon: 'icon-dashboard',
+		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
+		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
@@ -84,7 +90,9 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 		causedByMapId;
 	_.each(MM.Extensions.config, function (ext, extkey) {
 		var item = template.clone().appendTo(listElement).show();
-		item.find('[data-mm-role=title]').text(ext.name);
+		item.find('[data-mm-role=title]').html("&nbsp;" + ext.name).addClass(ext.icon);
+		item.find('[data-mm-role=doc]').attr('href', ext.doc);
+		item.find('[data-mm-role=desc]').prepend(ext.desc);
 		item.find('input[type=checkbox]').attr('checked', extensions.isActive(extkey)).change(function () {
 			extensions.setActive(extkey, this.checked);
 			changed = true;
