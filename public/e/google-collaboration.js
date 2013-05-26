@@ -74,7 +74,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 										applyEvents(event.values, 'gd' + event.sessionId);
 									}
 								};
-							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId);
+							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, contentAggregate);
 							if (!contentText) {
 								$(window).off('error', realtimeError);
 								deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
@@ -322,11 +322,12 @@ MM.Extensions.googleCollaboration = function () {
 			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
-	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
+	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId, contentAggregate) {
 		kineticSessions = new KineticSessionManager(doc, googleSessionId);
-		doc.getModel().getRoot().get("events").addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function (event) {
-			if (!event.isLocal) {
-				kineticSessions.showFocus(event.sessionId);
+		contentAggregate.addEventListener('changed', function (command, params, session) {
+			var remoteSession = session.substr(2);
+			if (remoteSession !== googleSessionId) {
+				kineticSessions.showFocus(remoteSession);
 			}
 		});
 	});
