@@ -1,11 +1,14 @@
-/*global jQuery, MM, observable*/
+/*global jQuery, MM, observable, window */
 MM.Alert = function () {
 	'use strict';
 	var self = this, lastId = 0;
 	observable(this);
 	this.show = function (message, detail, type) {
 		lastId += 1;
-		self.dispatchEvent('shown', lastId, message, detail, type);
+		self.dispatchEvent('shown', lastId, message, detail, type === "flash" ? "info" : type);
+		if (type === "flash") {
+			window.setTimeout(function () { self.hide(lastId); }, 3000);
+		}
 		return lastId;
 	};
 	this.hide = this.dispatchEvent.bind(this, 'hidden');

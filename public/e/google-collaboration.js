@@ -60,6 +60,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 							var modelRoot = doc.getModel().getRoot(),
 								contentText = modelRoot.get('initialContent'),
 								events = modelRoot.get('events'),
+								getCollaboratorBySession = function (sessionKey) {
+									return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
+								},
 								contentAggregate,
 								localSessionId,
 								applyEvents = function (mindmupEvents, sessionId) {
@@ -69,6 +72,21 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 								},
 								sessionImages = {},
 								sessionFocus = {},
+								followingSessionId,
+								toggleFollow = function (sessionId) {
+									if (sessionImages[followingSessionId]) {
+										sessionImages[followingSessionId].attrs.opacity = 0.5;
+									}
+									if (followingSessionId !== sessionId) {
+										followingSessionId = sessionId;
+										sessionImages[followingSessionId].attrs.opacity = 1;
+										alert.show("Following "  + getCollaboratorBySession(sessionId).displayName, "", "flash");
+									} else {
+										followingSessionId = undefined;
+										alert.show("No longer following " + getCollaboratorBySession(sessionId).displayName, "", "flash");
+									}
+									sessionImages[sessionId].getLayer().draw();
+								},
 								makeImage = function (sessionKey) {
 									var deferred = jQuery.Deferred(), domImg, kineticImg, collaborator;
 									if (sessionImages[sessionKey]) {
@@ -84,10 +102,13 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 											height: 32,
 											opacity: 0.6
 										});
+										sessionImages[sessionKey].on("click tap", function () {
+											toggleFollow(sessionKey);
+										});
 										deferred.resolve(sessionImages[sessionKey]);
 									};
-									collaborator = _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); });
-									if (collaborator) {
+									collaborator = getCollaboratorBySession(sessionKey);
+									if (collaborator.photoUrl) {
 										domImg.src = collaborator.photoUrl;
 									}
 									return deferred.promise();
@@ -109,6 +130,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 										kineticImg.attrs.x = xpos;
 										kineticImg.attrs.y = ypos;
 										node[0].getLayer().draw();
+										if (sessionId === followingSessionId) {
+											mapModel.selectNode(sessionFocus[sessionId]);
+										}
 									});
 								},
 								onEventAdded = function (event) {
@@ -119,17 +143,14 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 								},
 								onFocusChanged = function (event) {
 									if (!event.isLocal) {
-										//console.log('focus changed', event.property, event.newValue, 'gd' + event.sessionId);
 										sessionFocus[event.sessionId] = event.newValue;
 										showFocus(event.sessionId);
-
 									}
 								},
 								onCollaboratorLeft = function (event) {
 									var profileImg = sessionImages[event.collaborator.sessionId],
-										layer,
-										alertId = alert.show("Collaborator left!", event.collaborator.displayName + " left this session");
-									setTimeout(function () { alert.hide(alertId); }, 3000);
+										layer;
+									alert.show("Collaborator left!", event.collaborator.displayName + " left this session", "flash");
 									if (profileImg) {
 										layer = profileImg.getLayer();
 										profileImg.remove();
@@ -137,8 +158,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 									}
 								},
 								onCollaboratorJoined = function (event) {
-									var alertId = alert.show("Collaborator joined!", event.collaborator.displayName + " joined this session");
-									setTimeout(function () { alert.hide(alertId); }, 3000);
+									alert.show("Collaborator joined!", event.collaborator.displayName + " joined this session", "flash");
 								};
 							if (!contentText) {
 								$(window).off('error', realtimeError);
