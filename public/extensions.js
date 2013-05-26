@@ -32,7 +32,6 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		}
 		storage[storageKey] = active.join(' ');
 		if (components && components.activityLog) {
-			components.activityLog.setUserVariable('Active Extensions', active.join(' '));
 			components.activityLog.log('Extensions', ext, shouldActivate);
 		}
 	};

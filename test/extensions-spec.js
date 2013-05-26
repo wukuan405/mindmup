@@ -75,18 +75,8 @@ describe("MM.Extensions", function () {
 			var al = {},
 				ext = new MM.Extensions(storage, key, {}, {activityLog: al});
 			al.log = jasmine.createSpy();
-			al.setUserVariable = jasmine.createSpy();
 			ext.setActive('extension name', true);
 			expect(al.log).toHaveBeenCalledWith('Extensions', 'extension name', true);
-		});
-		it("sends a config update to activityLog with all active extensions", function () {
-			storage[key] = 'abc ttt';
-			var al = {},
-				ext = new MM.Extensions(storage, key, {}, {activityLog: al});
-			al.setUserVariable = jasmine.createSpy();
-			al.log = jasmine.createSpy();
-			ext.setActive('extension', true);
-			expect(al.setUserVariable).toHaveBeenCalledWith('Active Extensions', 'abc ttt extension');
 		});
 	});
 	describe("isActive", function () {

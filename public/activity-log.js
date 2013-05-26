@@ -3,9 +3,6 @@ MM.ActivityLog = function (maxNumberOfElements) {
 	'use strict';
 	var activityLog = [], nextId = 1, self = this;
 	observable(this);
-	this.setUserVariable = function (name, value) {
-		self.dispatchEvent('config', name, value);
-	};
 	this.log = function () {
 		var analyticArgs = ['log'];
 		if (activityLog.length === maxNumberOfElements) {

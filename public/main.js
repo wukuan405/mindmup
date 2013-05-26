@@ -5,11 +5,7 @@ MM.main = function (config) {
 
 	var mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
-			var names = ['User Cohort', 'Active Extensions'];
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-			activityLog.addEventListener('config', function (varName, varValue) {
-				_gaq.push(['_setCustomVar', 1 + names.indexOf(varName), varName, varValue, 1]);
-			});
 			activityLog.addEventListener('error', function (message) {
 				jotForm.sendError(message, activityLog.getLog());
 			});
@@ -20,7 +16,11 @@ MM.main = function (config) {
 		isTouch = function () {
 			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		};
-	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
+	window._gaq = [	['_setAccount', config.googleAnalyticsAccount],
+					['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
+					['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
+					['_trackPageview']
+				];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
