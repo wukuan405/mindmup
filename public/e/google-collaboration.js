@@ -67,12 +67,8 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 										contentAggregate.execCommand(event.cmd, event.args, sessionId);
 									});
 								},
-								onEventAdded = function (event) {
-									if (!event.isLocal) {
-										applyEvents(event.values, 'gd' + event.sessionId);
-									}
-								},
 								sessionImages = {},
+								sessionFocus = {},
 								makeImage = function (sessionKey) {
 									var deferred = jQuery.Deferred(), domImg, kineticImg, collaborator;
 									if (sessionImages[sessionKey]) {
@@ -97,19 +93,30 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 									return deferred.promise();
 								},
 								focusNodes = modelRoot.get('focusNodes'),
+								showFocus = function (sessionId) {
+									makeImage(sessionId).done(function (kineticImg) {
+										var node = stage.get('#node_' + sessionFocus[sessionId]);
+										if (node && node[0] && kineticImg.getParent() !== node[0]) {
+											kineticImg.remove();
+											kineticImg.attrs.x = node[0].getWidth() - kineticImg.getWidth() / 2;
+											kineticImg.attrs.y = node[0].getHeight() - kineticImg.getHeight() / 2;
+											node[0].add(kineticImg);
+											node[0].getLayer().draw();
+										}
+									});
+								},
+								onEventAdded = function (event) {
+									if (!event.isLocal) {
+										applyEvents(event.values, 'gd' + event.sessionId);
+										showFocus(event.sessionId);
+									}
+								},
 								onFocusChanged = function (event) {
 									if (!event.isLocal) {
 										//console.log('focus changed', event.property, event.newValue, 'gd' + event.sessionId);
-										makeImage(event.sessionId).done(function (kineticImg) {
-											var node = stage.get('#node_' + event.newValue);
-											if (node && node[0]) {
-												kineticImg.remove();
-												kineticImg.attrs.x = node[0].getWidth() - kineticImg.getWidth() / 2;
-												kineticImg.attrs.y = node[0].getHeight() - kineticImg.getHeight() / 2;
-												node[0].add(kineticImg);
-												node[0].getLayer().draw();
-											}
-										});
+										sessionFocus[event.sessionId] = event.newValue;
+										showFocus(event.sessionId);
+
 									}
 								},
 								onCollaboratorLeft = function (event) {
