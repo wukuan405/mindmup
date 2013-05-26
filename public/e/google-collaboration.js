@@ -95,14 +95,20 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter, mapModel, stage, aler
 								focusNodes = modelRoot.get('focusNodes'),
 								showFocus = function (sessionId) {
 									makeImage(sessionId).done(function (kineticImg) {
-										var node = stage.get('#node_' + sessionFocus[sessionId]);
-										if (node && node[0] && kineticImg.getParent() !== node[0]) {
-											kineticImg.remove();
-											kineticImg.attrs.x = node[0].getWidth() - kineticImg.getWidth() / 2;
-											kineticImg.attrs.y = node[0].getHeight() - kineticImg.getHeight() / 2;
-											node[0].add(kineticImg);
-											node[0].getLayer().draw();
+										var node = stage.get('#node_' + sessionFocus[sessionId]), xpos, ypos;
+										if (!node || node.length === 0) {
+											return;
 										}
+										xpos = node[0].getWidth() - kineticImg.getWidth() / 2;
+										ypos = node[0].getHeight() - kineticImg.getHeight() / 2;
+										if (kineticImg.getParent() === node[0] && xpos === kineticImg.attrs.x && ypos === kineticImg.attrs.y) {
+											return;
+										}
+										kineticImg.remove();
+										node[0].add(kineticImg);
+										kineticImg.attrs.x = xpos;
+										kineticImg.attrs.y = ypos;
+										node[0].getLayer().draw();
 									});
 								},
 								onEventAdded = function (event) {
