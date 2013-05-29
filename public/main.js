@@ -12,9 +12,6 @@ MM.main = function (config) {
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
-		},
-		isTouch = function () {
-			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		};
 	window._gaq = [	['_setAccount', config.googleAnalyticsAccount],
 					['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
@@ -51,18 +48,19 @@ MM.main = function (config) {
 				'mapModel': mapModel,
 				'container': jQuery('#container')
 			});
+		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
 		jQuery('body').classCachingWidget('cached-classes');
 		jQuery('body').mapStatusWidget(mapController);
 		if (!jQuery('body').hasClass('image-render-checked')) {
-			if (isTouch() || jQuery('body').hasClass('gecko')) {
+			if (config.isTouch || jQuery('body').hasClass('gecko')) {
 				jQuery('body').addClass('image-render');
 			}
 			jQuery('body').addClass('image-render-checked');
 		}
-		jQuery('#container').mapWidget(activityLog, mapModel, isTouch(), jQuery('body').hasClass('image-render'));
+		jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, jQuery('body').hasClass('image-render'));
 		jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 		jQuery('#topbar').alertWidget(alert).mapToolbarWidget(mapModel);
 		jQuery('#topbar .updateStyle').colorPicker();
@@ -94,13 +92,13 @@ MM.main = function (config) {
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 		jQuery('body')
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
-		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
+		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
-		if (!isTouch()) {
+		if (!config.isTouch) {
 			jQuery('[rel=tooltip]').tooltip();
 		}
 		jQuery('[data-category]').trackingWidget(activityLog);
