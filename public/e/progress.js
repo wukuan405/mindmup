@@ -15,7 +15,7 @@ MM.Extensions.progress = function () {
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
-				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable(),
+				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable().css('position', 'absolute'),
 				menuTemplate = menu.find('[data-mm-role=status-template]').detach(),
 				toolbarTemplate = toolbar.find('[data-mm-role=status-template]').detach(),
 				currentContent,
