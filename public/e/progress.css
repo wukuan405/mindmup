@@ -12,6 +12,7 @@
   position: absolute;
   top:100px;
   left:100px;
+  padding: 10px;
 }
 .progress-toolbar-active .progress-toolbar {
   display: inherit !important;
@@ -21,4 +22,7 @@
 }
 .progress-toolbar a {
   cursor: pointer;
+}
+.progress-toolbar-header {
+  margin-bottom:10px;
 }
