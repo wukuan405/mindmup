@@ -176,8 +176,18 @@ helpers do
     end
     return ["/#{settings.cache_prevention_key}.js"] 
   end
+  def load_prefix
+    if (!settings.online) then
+      "offline"
+    else
+      ""
+    end
+  end
   def load_scripts script_url_array
     script_tags=script_url_array.map do |url|
+      if (!settings.online) then
+        url.sub!("//","/offline/")
+      end
       %Q{<script>ScriptHelper.currentScript='#{url}'; ScriptHelper.expectedScripts.push('#{url}');</script>
         <script src='#{url}' onload='ScriptHelper.loadedScripts.push("#{url}")' onerror='ScriptHelper.errorScripts.push("#{url}")'></script>}
     end
