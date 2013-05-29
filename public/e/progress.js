@@ -15,17 +15,14 @@ MM.Extensions.progress = function () {
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
-				template = menu.find('[data-mm-role=status-template]').detach(),
+				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable(),
+				menuTemplate = menu.find('[data-mm-role=status-template]').detach(),
+				toolbarTemplate = toolbar.find('[data-mm-role=status-template]').detach(),
 				currentContent,
 				updater,
-				updateMenus = function (updater) {
-					var flag = updater.config() ? 'active' : 'inactive',
-						items = menu.find('[data-mm-progress-visible]');
-					items.hide();
-					items.filter('[data-mm-progress-visible=' + flag + ']').show();
-					menu.find('[data-mm-role=progress]').remove();
+				generateStatuses = function (updater, domParent, template) {
 					_.each(updater.config(), function (status, statusName) {
-						var newItem = template.clone().prependTo(menu.children('ul'));
+						var newItem = template.clone().prependTo(domParent);
 						newItem.attr('data-mm-role', 'progress');
 						newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background);
 						newItem.find('[data-mm-role=status-name]').text(status.description);
@@ -34,21 +31,46 @@ MM.Extensions.progress = function () {
 							updater.updateStatus(currentlySelectedId, statusName);
 						});
 					});
+				},
+				updateUI = function (updater, element, elementTemplate) {
+					var flag = (updater && updater.config()) ? 'active' : 'inactive',
+						items = element.find('[data-mm-progress-visible]');
+					items.hide();
+					items.filter('[data-mm-progress-visible=' + flag + ']').show();
+					element.find('[data-mm-role=progress]').remove();
+					if (!updater) {
+						return;
+					}
+					generateStatuses(updater, element.find('[data-mm-role=status-list]'), elementTemplate);
+				},
+				updateMenus = function (updater) {
+					updateUI(updater, menu, menuTemplate);
+					updateUI(updater, toolbar, toolbarTemplate);
+				},
+				bindGenericFunctions = function (domElement) {
+					domElement.find('[data-mm-role=start]').click(function () {
+						activateProgressOnContent(currentContent, $(this).data('mm-progress-type'));
+						return false;
+					});
+					domElement.find('[data-mm-role=deactivate]').click(function () {
+						deactivateProgressOnContent(currentContent);
+					});
+					domElement.find('[data-mm-role=clear]').click(function () {
+						if (updater) {
+							updater.clear();
+						}
+					});
+					domElement.find('[data-mm-role=toggle-toolbar]').click(function () {
+						$('body').toggleClass('progress-toolbar-active');
+					});
+					domElement.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
+					if (!MM.Extensions.mmConfig.isTouch) {
+						domElement.find('[rel=tooltip]').tooltip();
+					}
 				};
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
-			menu.find('[data-mm-role=start]').click(function () {
-				activateProgressOnContent(currentContent, $(this).data('mm-progress-type'));
-				return false;
-			});
-			menu.find('[data-mm-role=deactivate]').click(function () {
-				deactivateProgressOnContent(currentContent);
-			});
-			menu.find('[data-mm-role=clear]').click(function () {
-				if (updater) {
-					updater.clear();
-				}
-			});
-			menu.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
+			bindGenericFunctions(menu);
+			bindGenericFunctions(toolbar);
 			mapController.addEventListener('mapLoaded', function (mapId, content) {
 				updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, content);
 				currentContent = content;
@@ -63,6 +85,7 @@ MM.Extensions.progress = function () {
 			mapModel.addEventListener('nodeSelectionChanged', function (id) {
 				currentlySelectedId = id;
 			});
+			updateMenus();
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

@@ -4,3 +4,21 @@
 	display: inline-block;
 	border: 1px solid black;
 }
+.progress-toolbar {
+  display: none;
+	z-index: 999;
+	border: 1px solid #0088cc;
+	border-radius: 9px;
+  position: absolute;
+  top:100px;
+  left:100px;
+}
+.progress-toolbar-active .progress-toolbar {
+  display: inherit !important;
+}
+.progress-toolbar-active .progress-top-menu {
+  display: none !important;
+}
+.progress-toolbar a {
+  cursor: pointer;
+}
