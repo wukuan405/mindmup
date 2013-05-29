@@ -8,11 +8,14 @@
     <meta name="keywords" content="mind mapping, mind map, mindmap, mindmapping, free online mindmapping, free online mind mapping, mindmup" />
     <meta name="description" content="Zero-friction, free online mind mapping. Opensource mindmapping software. The most productive online mind map canvas on the Web. Supports Freemind mindmap import/export." />
     <link rel="shortcut icon" href="//<%=settings.s3_website%>/lib/img/favicon.ico" >
-	<link href="//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min.css" rel="stylesheet" />
-	<link href="//mindmup.s3.amazonaws.com/lib/bootstrap-responsive-2.3.1.min.css" rel="stylesheet" />
-	<link href="//mindmup.s3.amazonaws.com/lib/font-awesome-3.1.1/css/font-awesome.min.css" rel="stylesheet" />
-    <link href="//mindmup.s3.amazonaws.com/lib/colorPicker.css" rel="stylesheet" />
+
+	<link href="/<%=load_prefix%>/mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min.css" rel="stylesheet" />
+	<link href="/<%=load_prefix%>/mindmup.s3.amazonaws.com/lib/bootstrap-responsive-2.3.1.min.css" rel="stylesheet" />
+	<link href="/<%=load_prefix%>/mindmup.s3.amazonaws.com/lib/font-awesome-3.1.1/css/font-awesome.min.css" rel="stylesheet" />
+	<link href="/<%=load_prefix%>/mindmup.s3.amazonaws.com/lib/colorPicker.css" rel="stylesheet" />
+
 	<link href="/mindmap.css?version=<%=settings.cache_prevention_key%>" rel="stylesheet" />
+
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
   </head>
   <body class="map-unchanged <%=browser.body_class %>">
