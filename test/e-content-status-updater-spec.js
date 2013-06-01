@@ -1,7 +1,14 @@
-/*global beforeEach, describe, expect, it, MAPJS, MM*/
+/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery */
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
-	var underTest, content;
+	var underTest, content,
+		mapControllerStub = function (content) {
+			var mc  = {};
+			mc.addEventListener = function (eventType, listener) {
+				listener('', content);
+			};
+			return mc;
+		};
 	beforeEach(function () {
 		content = MAPJS.content({
 			attr: {
@@ -50,7 +57,7 @@ describe('MM.ContentStatusUpdater', function () {
 				}
 			}
 		});
-		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', content);
+		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', mapControllerStub(content));
 	});
 	describe('updates the node style:', function () {
 		it('should change the node to be the color associated with the status', function () {
@@ -147,7 +154,7 @@ describe('MM.ContentStatusUpdater', function () {
 					}
 				}
 			});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', content);
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
 		});
 		it('deletes all status attributes and drops styling for any elements with status', function () {
 			underTest.clear();
@@ -161,4 +168,48 @@ describe('MM.ContentStatusUpdater', function () {
 			expect(content.findSubIdeaById(111).getAttr('style')).toEqual({background: 'yellow'});
 		});
 	});
+	describe("setStatusConfig", function () {
+		var content, underTest;
+		beforeEach(function () {
+			content = MAPJS.content({
+				id: 1,
+				attr: { 'test-statuses': 'old' }
+			});
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
+		});
+		it("changes status configuration on current content", function () {
+			underTest.setStatusConfig('new');
+			expect(content.getAttr('test-statuses')).toBe('new');
+		});
+		it("dispatches config changed event when configuration changes", function () {
+			var listener = jasmine.createSpy();
+			underTest.addEventListener("configChanged", listener);
+			underTest.setStatusConfig('new');
+			expect(listener).toHaveBeenCalledWith('new');
+		});
+	});
+	describe("mapController bindings", function () {
+		var mapController, underTest, configOne, configTwo, firstContent, secondContent;
+		beforeEach(function () {
+			mapController = observable({});
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapController);
+			configOne = { 'passing': { style: { background: '#ffffff' } } };
+			configTwo = { 'failing': { style: { background: '#ffffff' } } };
+			firstContent = MAPJS.content({
+				id: 1,
+				attr: { 'test-statuses': configOne }
+			});
+			secondContent = MAPJS.content({
+				id: 1,
+				attr: { 'test-statuses': configTwo }
+			});
+		});
+		it("fires configChanged when the content changes", function () {
+			var listener = jasmine.createSpy();
+			underTest.addEventListener("configChanged", listener);
+			mapController.dispatchEvent('mapLoaded', '', firstContent);
+			expect(listener).toHaveBeenCalledWith(configOne);
+		});
+	});
 });
+

@@ -1,7 +1,8 @@
-/*global MM, _*/
-MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, content) {
+/*global MM, _, observable, jQuery*/
+MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {
 	'use strict';
-	var self = this,
+	var self = observable(this),
+		content,
 		findStatus = function (statusName) {
 			return content.getAttr(statusConfigurationAttributeName)[statusName];
 		},
@@ -11,7 +12,19 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		statusPriority = function (statusName) {
 			var s = findStatus(statusName);
 			return s && s.priority;
+		},
+		bindTo = function (mapContent) {
+			content = mapContent;
+			content.addEventListener('changed', function (method, attrs) {
+				/*jslint eqeq: true*/
+				if (method === 'updateAttr' && attrs[0] == content.id && attrs[1] === statusConfigurationAttributeName) {
+					self.dispatchEvent('configChanged', attrs[2]);
+				}
+			});
 		};
+	self.setStatusConfig = function (statusConfig) {
+		content.updateAttr(content.id, statusConfigurationAttributeName, statusConfig);
+	};
 	self.updateStatus = function (ideaId, newStatusName) {
 		var changeStatus = function (id, statusName) {
 				var status = findStatus(statusName),
@@ -54,7 +67,63 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		}
 		_.each(idea.ideas, self.clear);
 	};
-	self.config = function () {
-		return content.getAttr(statusConfigurationAttributeName);
-	};
+	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
+		bindTo(mapContent);
+		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
+	});
+};
+jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel) {
+	'use strict';
+	var	element = this,
+		template = element.find('[data-mm-role=status-template]').detach(),
+		currentlySelectedId,
+		generateStatuses = function (config) {
+			var domParent = element.find('[data-mm-role=status-list]');
+			_.each(config, function (status, statusName) {
+				var newItem = template.clone().prependTo(domParent);
+				newItem.attr('data-mm-role', 'progress');
+				newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background);
+				newItem.find('[data-mm-role=status-name]').text(status.description);
+				newItem.click(function () {
+					updater.updateStatus(currentlySelectedId, statusName);
+				});
+			});
+		},
+		updateUI = function (config) {
+			var flag = (config) ? 'active' : 'inactive',
+				items = element.find('[data-mm-progress-visible]');
+			items.hide();
+			items.filter('[data-mm-progress-visible=' + flag + ']').show();
+			element.find('[data-mm-role=progress]').remove();
+			if (!updater) {
+				return;
+			}
+			generateStatuses(config);
+		},
+		bindGenericFunctions = function () {
+			element.find('[data-mm-role=start]').click(function () {
+				var type = jQuery(this).data('mm-progress-type');
+				updater.setStatusConfig(MM.Extensions.progress.statusConfig[type]);
+				return false;
+			});
+			element.find('[data-mm-role=deactivate]').click(function () {
+				updater.setStatusConfig(false);
+			});
+			element.find('[data-mm-role=clear]').click(function () {
+				if (updater) {
+					updater.clear();
+				}
+			});
+			element.find('[data-mm-role=toggle-toolbar]').click(function () {
+				jQuery('body').toggleClass('progress-toolbar-active');
+			});
+		};
+	mapModel.addEventListener('nodeSelectionChanged', function (id) {
+		currentlySelectedId = id;
+	});
+	bindGenericFunctions();
+	updater.addEventListener('configChanged', function (config) {
+		updateUI(config);
+	});
+	updateUI();
 };
