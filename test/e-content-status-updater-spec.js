@@ -1,4 +1,4 @@
-/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery */
+/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach */
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
 	var underTest, content,
@@ -212,4 +212,66 @@ describe('MM.ContentStatusUpdater', function () {
 		});
 	});
 });
+describe("progressStatusUpdateWidget", function () {
+	'use strict';
+	var elementHTML = '<div>  ' +
+		'	<ul data-mm-role="status-list">' +
+		'			<li data-mm-progress-visible="inactive"><a data-mm-role="start" data-mm-progress-type="tasks"></a></li>' +
+		'			<li data-mm-role="status-template">' +
+		'				<a data-mm-role="set-status">' +
+		'					<div data-mm-role="status-color" class="progress-color">&nbsp;</div>&nbsp;' +
+		'					<span data-mm-role="status-name"></span>' +
+		'				</a>' +
+		'			</li>' +
+		'			<li class="divider" data-mm-progress-visible="active"></li>' +
+		'			<li data-mm-progress-visible="active"><a data-mm-role="toggle-toolbar" ></a></li>' +
+		'			<li data-mm-progress-visible="active"><a data-mm-role="clear" ></a></li>' +
+		'			<li data-mm-progress-visible="active"><a data-mm-role="deactivate" ></a></li>' +
+		'		</ul>' +
+		'	</div>',
+		mapModel,
+		updater,
+		domElement,
+		expectVisibilitySettings = function (activeDisplay, inactiveDisplay) {
+			var active = domElement.find('[data-mm-progress-visible=active]'),
+				inactive = domElement.find('[data-mm-progress-visible=inactive]');
+			active.each(function () {
+				expect(jQuery(this).css('display')).toBe(activeDisplay);
+			});
+			inactive.each(function () {
+				expect(jQuery(this).css('display')).toBe(inactiveDisplay);
+			});
+		},
+		singleConfig = { passed: {style: {background: '#FF0000' }}};
+	beforeEach(function () {
+		mapModel = observable({});
+		updater = observable({});
+		domElement = jQuery(elementHTML).appendTo('body').progressStatusUpdateWidget(updater, mapModel);
+	});
+	afterEach(function () {
+		domElement.detach();
+	});
+	describe("menu visibility", function () {
+		it("removes items with visible=active when by default", function () {
+			expectVisibilitySettings('none', 'list-item');
+		});
+		it("shows active and removes inactive when there is an active configuration", function () {
+			updater.dispatchEvent('configChanged', singleConfig);
+			expectVisibilitySettings('list-item', 'none');
+		});
+		it("hides active and shows inactive when there is no active configuration", function () {
+			updater.dispatchEvent('configChanged', singleConfig);
+			updater.dispatchEvent('configChanged', false);
+			expectVisibilitySettings('none', 'list-item');
+		});
+	});
+	it("tracks currently selected node ID and updates that when needed", function () {
+		updater.dispatchEvent('configChanged', singleConfig);
+		updater.updateStatus = jasmine.createSpy();
 
+		mapModel.dispatchEvent('nodeSelectionChanged', 17, true);
+		domElement.find('[data-mm-role=progress]').click();
+
+		expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
+	});
+});

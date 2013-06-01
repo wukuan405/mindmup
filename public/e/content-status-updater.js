@@ -126,4 +126,5 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel) {
 		updateUI(config);
 	});
 	updateUI();
+	return this;
 };
