@@ -72,7 +72,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
 	});
 };
-jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel) {
+jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configurations) {
 	'use strict';
 	var	element = this,
 		template = element.find('[data-mm-role=status-template]').detach(),
@@ -103,7 +103,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel) {
 		bindGenericFunctions = function () {
 			element.find('[data-mm-role=start]').click(function () {
 				var type = jQuery(this).data('mm-progress-type');
-				updater.setStatusConfig(MM.Extensions.progress.statusConfig[type]);
+				updater.setStatusConfig(configurations[type]);
 				return false;
 			});
 			element.find('[data-mm-role=deactivate]').click(function () {

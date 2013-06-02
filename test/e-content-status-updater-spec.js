@@ -216,7 +216,8 @@ describe("progressStatusUpdateWidget", function () {
 	'use strict';
 	var elementHTML = '<div>  ' +
 		'	<ul data-mm-role="status-list">' +
-		'			<li data-mm-progress-visible="inactive"><a data-mm-role="start" data-mm-progress-type="tasks"></a></li>' +
+		'			<li data-mm-progress-visible="inactive"><a data-mm-role="start" data-mm-progress-type="double"></a></li>' +
+		'			<li data-mm-progress-visible="inactive"><a data-mm-role="start" data-mm-progress-type="single"></a></li>' +
 		'			<li data-mm-role="status-template">' +
 		'				<a data-mm-role="set-status">' +
 		'					<div data-mm-role="status-color" class="progress-color">&nbsp;</div>&nbsp;' +
@@ -242,11 +243,16 @@ describe("progressStatusUpdateWidget", function () {
 				expect(jQuery(this).css('display')).toBe(inactiveDisplay);
 			});
 		},
-		singleConfig = { passed: {style: {background: '#FF0000' }}};
+		singleConfig = { passed: {style: {background: '#FF0000' }}},
+		doubleConfig = { passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
+						failed: {description: 'Failed desc', style: {background: 'rgb(255, 0, 0)'}}};
 	beforeEach(function () {
 		mapModel = observable({});
 		updater = observable({});
-		domElement = jQuery(elementHTML).appendTo('body').progressStatusUpdateWidget(updater, mapModel);
+		domElement = jQuery(elementHTML).appendTo('body').progressStatusUpdateWidget(updater, mapModel, {
+			single: singleConfig,
+			double: doubleConfig
+		});
 	});
 	afterEach(function () {
 		domElement.detach();
@@ -264,14 +270,50 @@ describe("progressStatusUpdateWidget", function () {
 			updater.dispatchEvent('configChanged', false);
 			expectVisibilitySettings('none', 'list-item');
 		});
+		it("clones the template for each status in the config when config changes, setting the description and background color from the config", function () {
+			updater.dispatchEvent('configChanged', doubleConfig);
+			var statuses = domElement.find('[data-mm-role=progress]');
+			expect(statuses.size()).toBe(2);
+			expect(statuses.first().find('[data-mm-role=status-name]').text()).toBe('Failed desc');
+			expect(statuses.first().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(255, 0, 0)');
+			expect(statuses.last().find('[data-mm-role=status-name]').text()).toBe('Passed desc');
+			expect(statuses.last().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(0, 0, 255)');
+		});
 	});
-	it("tracks currently selected node ID and updates that when needed", function () {
-		updater.dispatchEvent('configChanged', singleConfig);
-		updater.updateStatus = jasmine.createSpy();
-
-		mapModel.dispatchEvent('nodeSelectionChanged', 17, true);
-		domElement.find('[data-mm-role=progress]').click();
-
-		expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
+	describe("action binding", function () {
+		beforeEach(function () {
+			updater.dispatchEvent('configChanged', singleConfig);
+		});
+		it("drops config when clicked on deactivate", function () {
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-role=deactivate]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith(false);
+		});
+		it("sets configuration to the one specified with data-mm-progress-type when clicked on start", function () {
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-progress-type=double]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith(doubleConfig);
+		});
+		it("clears statuses clicked on clear", function () {
+			updater.clear = jasmine.createSpy();
+			domElement.find('[data-mm-role=clear]').click();
+			expect(updater.clear).toHaveBeenCalled();
+		});
+		it("puts body class progress-toolbar-active when clicked on toggle-toolbar if class does not exist", function () {
+			jQuery('body').removeClass('progress-toolbar-active');
+			domElement.find('[data-mm-role=toggle-toolbar]').click();
+			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeTruthy();
+		});
+		it("removes body class progress-toolbar-active when clicked on toggle-toolbar if class exists", function () {
+			jQuery('body').addClass('progress-toolbar-active');
+			domElement.find('[data-mm-role=toggle-toolbar]').click();
+			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeFalsy();
+		});
+		it("updates currently selected node ID when clicked on a progress status link", function () {
+			updater.updateStatus = jasmine.createSpy();
+			mapModel.dispatchEvent('nodeSelectionChanged', 17, true);
+			domElement.find('[data-mm-role=progress]').click();
+			expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
+		});
 	});
 });

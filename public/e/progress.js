@@ -18,8 +18,8 @@ MM.Extensions.progress = function () {
 				updater;
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
-			menu.progressStatusUpdateWidget(updater, mapModel);
-			toolbar.progressStatusUpdateWidget(updater, mapModel);
+			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
+			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			activateAnalytics(menu);
 			activateAnalytics(toolbar);
 		};
