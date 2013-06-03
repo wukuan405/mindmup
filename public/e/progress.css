@@ -14,6 +14,9 @@
   left:100px;
   padding: 10px;
 }
+.progress-toolbar .btn-group {
+	margin-bottom: 10px;
+}
 .progress-toolbar-active .progress-toolbar {
   display: inherit !important;
 }
