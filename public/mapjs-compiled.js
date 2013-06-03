@@ -635,7 +635,13 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			contentAggregate.links = contentAggregate.links || [];
 			link = {
 				ideaIdFrom: ideaIdFrom,
-				ideaIdTo: ideaIdTo
+				ideaIdTo: ideaIdTo,
+				attr: {
+					style: {
+						color: '#FF0000',
+						lineStyle: 'dashed'
+					}
+				}
 			};
 			contentAggregate.links.push(link);
 			notifyChange('addLink', [ideaIdFrom, ideaIdTo], function () {
@@ -653,10 +659,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				if (String(link.ideaIdFrom) === String(ideaIdOne) && String(link.ideaIdTo) === String(ideaIdTwo)) {
 					contentAggregate.links.splice(i, 1);
 					notifyChange('removeLink', [ideaIdOne, ideaIdTwo], function () {
-						contentAggregate.links.push({
-							ideaIdFrom: ideaIdOne,
-							ideaIdTo: ideaIdTwo
-						});
+						contentAggregate.links.push(_.clone(link));
 					}, originSession);
 					return true;
 				}
@@ -2752,8 +2755,8 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 				top: (selectionPoint.y - 0.5 * height - 15) + 'px',
 				left: (selectionPoint.x - 0.5 * width - 15) + 'px'
 			});
-			colorElement.val(linkStyle.color || '#FF0000').change();
-			lineStyleElement.val(linkStyle.lineStyle || 'dashed');
+			colorElement.val(linkStyle.color).change();
+			lineStyleElement.val(linkStyle.lineStyle);
 		});
 		mapModel.addEventListener('mapMoveRequested', function () {
 			element.hide();
