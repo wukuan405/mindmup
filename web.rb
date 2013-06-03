@@ -11,7 +11,7 @@ require 'net/http'
 
 def cache_last_news
   if ! test? then
-    news = Net::HTTP.get(URI(ENV['NEWS_URL']))
+    news = Net::HTTP.get(URI(ENV['NEWS_URL'] || 'http://blog.mindmup.com/feeds/posts/default?max-results=1' ))
     news =~ /<entry><id>([^<]*)<.*<title[^>]*>([^<]*)</
     set :last_news_id, $1
     set :last_news_title, $2
