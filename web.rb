@@ -7,6 +7,16 @@ require 'base64'
 require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
 
+require 'net/http'
+
+def cache_last_news
+  if ! test? then
+    news = Net::HTTP.get(URI(ENV['NEWS_URL']))
+    news =~ /<entry><id>([^<]*)<.*<title[^>]*>([^<]*)</
+    set :last_news_id, $1
+    set :last_news_title, $2
+  end
+end
 configure do
   set :google_analytics_account, ENV["GOOGLE_ANALYTICS_ACCOUNT"]
   set :s3_website,ENV['S3_WEBSITE']
@@ -35,6 +45,7 @@ configure do
   set :static, true
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
+  cache_last_news
 end
 get '/' do
   show_map
@@ -128,6 +139,11 @@ end
 
 get '/'+settings.cache_prevention_key+'/e/:fname' do
   send_file File.join(settings.public_folder, 'e/'+params[:fname])
+end
+
+get '/cache_news' do
+  cache_last_news
+  "OK "+settings.last_news_id
 end
 
 include Sinatra::UserAgentHelpers
@@ -232,5 +248,6 @@ helpers do
     </script>
      ^
   end
+
 end
 
