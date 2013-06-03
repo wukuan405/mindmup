@@ -343,7 +343,3 @@ body.offline-enabled .offline-disabled-hidden {
 	z-index: 999;
 	position: absolute;
 }
-
-#linkEditWidget .btn {
-	border-radius: 25px;
-}
