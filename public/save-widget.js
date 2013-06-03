@@ -1,8 +1,9 @@
-/*global document, window, $, _, jQuery*/
+/*global window, $, _, jQuery*/
 jQuery.fn.saveWidget = function (mapController) {
 	'use strict';
 	var mapChanged = false,
 		repository,
+		autoSave,
 		mapChangedListener = function () {
 			mapChanged = true;
 		},
@@ -29,7 +30,9 @@ jQuery.fn.saveWidget = function (mapController) {
 		};
 	$(window).keydown(function (evt) {
 		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
-			mapController.publishMap(repository);
+			if (!autoSave) {
+				mapController.publishMap(repository);
+			}
 			evt.preventDefault();
 		}
 	});
@@ -39,10 +42,9 @@ jQuery.fn.saveWidget = function (mapController) {
 	element.find('a[data-mm-repository]').addClass(function () {
 		return 'repo repo-' + $(this).data('mm-repository');
 	});
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
-		setDefaultRepo(mapId);
+	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
+		autoSave = properties.autoSave;
 		idea.addEventListener('changed', mapChangedListener);
-		mapChanged = false;
 	});
 	mapController.addEventListener('mapSaving', function () {
 		element.find('[data-mm-role=publish]')
@@ -55,7 +57,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		mapController.addEventListener(eventName, resetSaveButton);
 	});
 
-	mapController.addEventListener('mapSaved', function (mapId) {
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);

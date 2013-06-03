@@ -1,5 +1,5 @@
 /*global MM, window*/
-MM.navigation = function (storage, baseUrl, mapController) {
+MM.navigation = function (storage, mapController) {
 	'use strict';
 	var self = this,
 		unknownMapId = 'nil',
@@ -26,9 +26,6 @@ MM.navigation = function (storage, baseUrl, mapController) {
 			setMapIdInHash(newMapId);
 			return true;
 		};
-	self.sharingUrl = function () {
-		return mapController.isMapSharable() &&  baseUrl + 'map/' + mapController.currentMapId();
-	};
 	self.loadInitial = function () {
 		var initialMapId = getMapIdFromHash();
 		if (!initialMapId || initialMapId === unknownMapId) {
@@ -36,11 +33,8 @@ MM.navigation = function (storage, baseUrl, mapController) {
 		}
 		mapController.loadMap(initialMapId);
 	};
-	mapController.addEventListener('mapLoaded', function (idea, newMapId) {
-		changeMapId(newMapId, true);
-	});
-	mapController.addEventListener('mapSaved', function (newMapId) {
-		changeMapId(newMapId, true);
+	mapController.addEventListener('mapSaved mapLoaded', function (newMapId) {
+		changeMapId(newMapId);
 	});
 	self.hashChange = function () {
 		var newMapId = getMapIdFromHash();

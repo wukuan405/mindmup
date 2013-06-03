@@ -1,31 +1,23 @@
 /*jslint nomen: true*/
-/*global _gaq, document, jQuery, MM, MAPJS, window*/
+/*global _gaq, document, jQuery, MM, MAPJS, window, localStorage*/
 MM.main = function (config) {
 	'use strict';
 
 	var mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
-		activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-		activityLog.addEventListener('error', function (message) {
-			jotForm.sendError(message, activityLog.getLog());
-		});
-		if (mapModelAnalytics) {
-			mapModel.addEventListener('analytic', activityLog.log);
-		}
-	},
-		loadScriptsAsynchronously = function (d, s, urls, callback) {
-			urls.forEach(function (url) {
-				var js, fjs = d.getElementsByTagName(s)[0];
-				js = d.createElement(s);
-				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
-				js.onload = callback;
-				fjs.parentNode.insertBefore(js, fjs);
+			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
+			activityLog.addEventListener('error', function (message) {
+				jotForm.sendError(message, activityLog.getLog());
 			});
-		},
-		isTouch = function () {
-			return jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
+			if (mapModelAnalytics) {
+				mapModel.addEventListener('analytic', activityLog.log);
+			}
 		};
-	window._gaq = [['_setAccount', config.googleAnalyticsAccount], ['_setCustomVar', 1, 'User Cohort', config.userCohort, 1], ['_trackPageview']];
+	window._gaq = [	['_setAccount', config.googleAnalyticsAccount],
+					['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
+					['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
+					['_trackPageview']
+				];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
@@ -42,32 +34,33 @@ MM.main = function (config) {
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
-			navigation = MM.navigation(localStorage, config.baseUrl, mapController),
+			navigation = MM.navigation(localStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator,
 				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
 				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions', config.cachePreventionKey),
-			postInit = function () {
-				jQuery('[data-category]').trackingWidget(activityLog);
-				if (!isTouch()) {
-					jQuery('[rel=tooltip]').tooltip();
-				}
-				navigation.loadInitial();
-			};
+			extensions = new MM.Extensions(localStorage, 'active-extensions', config, {
+				'googleDriveAdapter': googleDriveAdapter,
+				'alert': alert,
+				'mapController': mapController,
+				'activityLog': activityLog,
+				'mapModel': mapModel,
+				'container': jQuery('#container')
+			});
+		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
 		jQuery('body').classCachingWidget('cached-classes');
 		jQuery('body').mapStatusWidget(mapController);
 		if (!jQuery('body').hasClass('image-render-checked')) {
-			if (isTouch() || jQuery('body').hasClass('gecko')) {
+			if (config.isTouch || jQuery('body').hasClass('gecko')) {
 				jQuery('body').addClass('image-render');
 			}
 			jQuery('body').addClass('image-render-checked');
 		}
-		jQuery('#container').mapWidget(activityLog, mapModel, isTouch(), jQuery('body').hasClass('image-render'));
+		jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, jQuery('body').hasClass('image-render'));
 		jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 		jQuery('#topbar').alertWidget(alert).mapToolbarWidget(mapModel);
 		jQuery('#topbar .updateStyle').colorPicker();
@@ -88,9 +81,9 @@ MM.main = function (config) {
 		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 		jQuery(document).titleUpdateWidget(mapController);
-		jQuery('[data-mm-role=share]').shareWidget(navigation);
-		jQuery('#modalShareEmail').shareEmailWidget(navigation);
-		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, navigation);
+		jQuery('[data-mm-role=share]').shareWidget();
+		jQuery('#modalShareEmail').shareEmailWidget();
+		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, config.baseUrl);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
 		jQuery('[data-mm-role=save]').saveWidget(mapController);
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
@@ -99,42 +92,20 @@ MM.main = function (config) {
 		jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 		jQuery('body')
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
-		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch());
+		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
-		
-		MM.Extensions.components = {
-			'googleDriveAdapter': googleDriveAdapter,
-			'alert': alert,
-			'mapController': mapController
-		};
-		MM.Extensions.mmConfig = config;
-		MM.Extensions.pendingScripts = _.invert(extensions.scriptsToLoad());
-		loadScriptsAsynchronously(document, 'script', extensions.scriptsToLoad(), function () {
-			delete MM.Extensions.pendingScripts[$(this).attr('src')];
-		});
-		mapController.addEventListener('mapLoaded', function (idea) {
+		if (!config.isTouch) {
+			jQuery('[rel=tooltip]').tooltip();
+		}
+		jQuery('[data-category]').trackingWidget(activityLog);
+		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
-		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
-			var alertId = alert.show ('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
-			var intervalId = window.setInterval( function () {
-				if (_.isEmpty(MM.Extensions.pendingScripts)) {
-					alert.hide(alertId);
-					window.clearInterval(intervalId);
-					postInit();
-
-				} else {
-					$('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + " remaining");
-				}
-			}, 1000);
-		} else {
-			postInit();
-		}
-
+		extensions.load().then(navigation.loadInitial.bind(navigation));
 	});
-	loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
+
 };

@@ -2,9 +2,13 @@ var MAPJS = {};
 var observable = function (base) {
 	'use strict';
 	var eventListenersByType = {};
-	base.addEventListener = function (type, listener) {
-		eventListenersByType[type] = eventListenersByType[type] || [];
-		eventListenersByType[type].push(listener);
+	base.addEventListener = function (types, listener) {
+		types.split(' ').forEach(function (type) {
+			if (type) {
+				eventListenersByType[type] = eventListenersByType[type] || [];
+				eventListenersByType[type].push(listener);
+			}
+		});
 	};
 	base.listeners = function (type) {
 		var listenersByType = eventListenersByType[type] || [], result = [], i;
@@ -192,11 +196,15 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			/* intentionally not returning 0 case, to help with split sorting into 2 groups */
 			return number < 0 ? -1 : 1;
 		},
-		eventStack = [],
-		redoStack = [],
+		eventStacks = {},
+		redoStacks = {},
 		isRedoInProgress = false,
 		notifyChange = function (method, args, undofunc, originSession) {
-			eventStack.push({eventMethod: method, eventArgs: args, undoFunction: undofunc});
+			if (!eventStacks[originSession]) {
+				eventStacks[originSession] = [];
+			}
+			eventStacks[originSession].push({eventMethod: method, eventArgs: args, undoFunction: undofunc});
+
 			if (isRedoInProgress) {
 				contentAggregate.dispatchEvent('changed', 'redo', undefined, originSession);
 			} else {
@@ -205,7 +213,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				} else {
 					contentAggregate.dispatchEvent('changed', method, args);
 				}
-				redoStack = [];
+				redoStacks[originSession] = [];
 			}
 		},
 		reorderChild = function (parentIdea, newRank, oldRank) {
@@ -247,6 +255,10 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		if (siblingsAfter.length === 0) { return false; }
 		return parentIdea.ideas[_.min(siblingsAfter, Math.abs)].id;
 	};
+	contentAggregate.getAttrById = function (ideaId, attrName) {
+		var idea = findIdeaById(ideaId);
+		return idea && idea.getAttr(attrName);
+	};
 	contentAggregate.previousSiblingId = function (subIdeaId) {
 		var parentIdea = contentAggregate.findParent(subIdeaId),
 			currentRank,
@@ -264,10 +276,27 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return JSON.parse(JSON.stringify(toClone));
 	};
 	/*** private utility methods ***/
+	contentAggregate.calculatePath = function (ideaId, currentPath, potentialParent) {
+		var result;
+		if (contentAggregate.id == ideaId) {
+			return [];
+		}
+		currentPath = currentPath || [contentAggregate];
+		potentialParent = potentialParent || contentAggregate;
+		if (potentialParent.containsDirectChild(ideaId)) {
+			return currentPath;
+		}
+		return _.reduce(
+			potentialParent.ideas,
+			function (result, child) {
+				return result || contentAggregate.calculatePath(ideaId, [child].concat(currentPath), child);
+			},
+			false
+		);
+	};
 	contentAggregate.findParent = function (subIdeaId, parentIdea) {
 		parentIdea = parentIdea || contentAggregate;
-		var childRank = parentIdea.findChildRankById(subIdeaId);
-		if (childRank) {
+		if (parentIdea.containsDirectChild(subIdeaId)) {
 			return parentIdea;
 		}
 		return _.reduce(
@@ -593,7 +622,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			alreadyExists = _.find(
 				contentAggregate.links,
 				function (link) {
-					return link.ideaIdFrom === ideaIdFrom && link.ideaIdTo === ideaIdTo || link.ideaIdFrom === ideaIdTo && link.ideaIdTo === ideaIdFrom;
+					return (link.ideaIdFrom === ideaIdFrom && link.ideaIdTo === ideaIdTo) || (link.ideaIdFrom === ideaIdTo && link.ideaIdTo === ideaIdFrom);
 				}
 			);
 			if (alreadyExists) {
@@ -648,10 +677,13 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	};
 	commandProcessors.undo = function (originSession) {
 		var topEvent;
-		topEvent = eventStack.pop();
+		topEvent = eventStacks[originSession] && eventStacks[originSession].pop();
 		if (topEvent && topEvent.undoFunction) {
 			topEvent.undoFunction();
-			redoStack.push(topEvent);
+			if (!redoStacks[originSession]) {
+				redoStacks[originSession] = [];
+			}
+			redoStacks[originSession].push(topEvent);
 			contentAggregate.dispatchEvent('changed', 'undo', [], originSession);
 			return true;
 		}
@@ -662,7 +694,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	};
 	commandProcessors.redo = function (originSession) {
 		var topEvent;
-		topEvent = redoStack.pop();
+		topEvent = redoStacks[originSession] && redoStacks[originSession].pop();
 		if (topEvent) {
 			isRedoInProgress = true;
 			contentAggregate.execCommand(topEvent.eventMethod, topEvent.eventArgs, originSession);
@@ -1819,7 +1851,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				onCancelEdit = function () {
 					updateText(unformattedText);
 					if (deleteOnCancel) {
-						self.fire(':request', {type: 'removeSubIdea', source: 'internal'});
+						self.fire(':request', {type: 'undo', source: 'internal'});
 					}
 				},
 				scale = self.getStage().getScale().x || 1;
@@ -2223,12 +2255,12 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			});
 		};
 	stage.add(layer);
-	document.body.style.cursor = 'move';
+	stage.getContainer().style.cursor = 'move';
 	layer.on('mouseover', function () {
-		document.body.style.cursor = 'pointer';
+		stage.getContainer().style.cursor = 'pointer';
 	});
 	layer.on('mouseout', function () {
-		document.body.style.cursor = 'move';
+		stage.getContainer().style.cursor = 'move';
 	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
@@ -2243,7 +2275,8 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			y: n.y,
 			text: n.title,
 			mmAttr: n.attr,
-			opacity: 1
+			opacity: 1,
+			id: 'node_' + n.id
 		});
 		if (imageRendering) {
 			node = Kinetic.IdeaProxy(node, stage, layer);
@@ -2599,6 +2632,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				}
 			});
 		});
+		element.data('mm-stage', stage);
 		mapModel.addEventListener('inputEnabledChanged', function (canInput) {
 			stage.setDraggable(!canInput);
 			actOnKeys = canInput;

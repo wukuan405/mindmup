@@ -101,10 +101,9 @@ describe('MM.htmlTableExporter', function () {
 });
 describe('MM.exportToHtmlDocument', function () {
 	'use strict';
-	var pngExporter = {};
 	it('adds a UTF header', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z'})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z'})).then(function (doc) {
 			result = $(doc).filter('meta');
 		});
 		waitsFor(function () {return result; });
@@ -115,7 +114,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('transforms the top level idea into a H1 title', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z'})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z'})).then(function (doc) {
 			result = $(doc).filter('h1');
 		});
 		waitsFor(function () {return result; });
@@ -126,7 +125,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('transforms the first level subideas into UL/LI list, sorted by child rank', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}})).then(function (doc) {
 			result = $(doc).filter('ul');
 		});
 		waitsFor(function () {return result; });
@@ -141,7 +140,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('transforms the lower level subideas into UL/LI lists, sorted by child rank, recursively', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: { 1: { title: '2', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}}}})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 1: { title: '2', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}}}})).then(function (doc) {
 			result = $(doc).filter('ul');
 		});
 		waitsFor(function () {return result; });
@@ -159,7 +158,7 @@ describe('MM.exportToHtmlDocument', function () {
 	it('paints the background color according to node', function () {
 		/*jslint newcap:true*/
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: { 6 : {title: 's', attr : { style : { background: '#FF0000' }}}}})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 's', attr : { style : { background: '#FF0000' }}}}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first();
 		});
 		waitsFor(function () {return result; });
@@ -170,11 +169,11 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('converts ideas with URLs into hyperlinks', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: {
-				6 : {title: 'zoro http://www.google.com'}
-			}})).then(function (doc) {
-				result = $(doc).filter('ul').children().first().children().first();
-			});
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+			6 : {title: 'zoro http://www.google.com'}
+		}})).then(function (doc) {
+			result = $(doc).filter('ul').children().first().children().first();
+		});
 		waitsFor(function () {return result; });
 		runs(function () {
 			expect(result).toBe('a');
@@ -184,11 +183,11 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('converts ideas with only URLs into hyperlinks using hyperlink as text', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: {
-				6 : {title: 'http://www.google.com'}
-			}})).then(function (doc) {
-				result = $(doc).filter('ul').children().first().children().first();
-			});
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+			6 : {title: 'http://www.google.com'}
+		}})).then(function (doc) {
+			result = $(doc).filter('ul').children().first().children().first();
+		});
 		waitsFor(function () {return result; });
 		runs(function () {
 			expect(result).toBe('a');
@@ -198,7 +197,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('root idea with URL is converted into a hyperlink', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'zoro http://www.google.com'})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'zoro http://www.google.com'})).then(function (doc) {
 			result = $(doc).filter('h1').children();
 		});
 		waitsFor(function () {return result; });
@@ -210,7 +209,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('root idea with only URL is converted into a hyperlink using link text', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'http://www.google.com'})).then(function (doc) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'http://www.google.com'})).then(function (doc) {
 			result = $(doc).filter('h1').children();
 		});
 		waitsFor(function () {return result; });
@@ -222,11 +221,11 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('exports HTML attachments', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', ideas: {
-				6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}},
-			}})).then(function (doc) {
-				result = $(doc).filter('ul').children().first().children('div').first();
-			});
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
+			6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}},
+		}})).then(function (doc) {
+			result = $(doc).filter('ul').children().first().children('div').first();
+		});
 		waitsFor(function () {return result; });
 		runs(function () {
 			expect(result.html()).toBe('<b>Bold</b>');
@@ -234,9 +233,9 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('exports HTML attachments to root nodes', function () {
 		var result;
-		MM.exportToHtmlDocument(pngExporter, MAPJS.content({title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}})).then(function (doc) {
-				result = $(doc).filter('div').first();
-			});
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}})).then(function (doc) {
+			result = $(doc).filter('div').first();
+		});
 		waitsFor(function () {return result; });
 		runs(function () {
 			expect(result.html()).toBe('<b>Bold</b>');

@@ -338,10 +338,6 @@ body.offline-enabled .offline-disabled-hidden {
 .non-group .btn {
 	margin-left: 5px;
 }
-.modal {
-	cursor: default;
-}
-
 #linkEditWidget {
 	display: none;
 	z-index: 999;

@@ -3,4 +3,9 @@
 	background-repeat: no-repeat;
 	background-position:left center;
 }
-
+img.collab-photo {
+	width:20px;
+	height:20px;
+	float:left;
+	padding-right:10px;
+}

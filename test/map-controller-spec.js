@@ -7,10 +7,10 @@ describe('Map Controller', function () {
 		MM.MapController.mapLocationChange = function () {};
 		var adapterPrototype = observable({
 				loadMap: function (mapId) {
-					return jQuery.Deferred().resolve(map, mapId).promise();
+					return jQuery.Deferred().resolve(map, mapId, {editable: true}).promise();
 				},
 				saveMap: function (contentToSave, oldId) {
-					return jQuery.Deferred().resolve(oldId).promise();
+					return jQuery.Deferred().resolve(oldId, {editable: true}).promise();
 				},
 				recognises: function () {
 					return true;
@@ -68,12 +68,15 @@ describe('Map Controller', function () {
 
 			expect(adapter2.loadMap).not.toHaveBeenCalled();
 		});
-		it('should use first adapter to load as a fallback option', function () {
-			spyOn(adapter1, 'loadMap').andCallThrough();
+		it('should dispatch mapIdNotRecognised event if no adapters recognise the mapId', function () {
+			var listener = jasmine.createSpy();
+			underTest.addEventListener('mapIdNotRecognised', listener);
+			spyOn(adapter1, 'recognises').andReturn(false);
+			spyOn(adapter2, 'recognises').andReturn(false);
 
 			underTest.loadMap('foo');
 
-			expect(adapter1.loadMap).toHaveBeenCalledWith('foo');
+			expect(listener).toHaveBeenCalledWith('foo');
 		});
 		it('should dispatch mapLoading Event beforeLoadingStarts', function () {
 			var listener = jasmine.createSpy();
@@ -118,8 +121,8 @@ describe('Map Controller', function () {
 
 			underTest.loadMap('foo');
 
-			expect(JSON.stringify(listener.mostRecentCall.args[0])).toBe('{"title":"hello","formatVersion":2,"id":1}');
-			expect(listener.mostRecentCall.args[1]).toBe('foo');
+			expect(JSON.stringify(listener.mostRecentCall.args[1])).toBe('{"title":"hello","formatVersion":2,"id":1}');
+			expect(listener.mostRecentCall.args[0]).toBe('foo');
 		});
 		it('should not dispatch mapLoaded if the same map is loaded twice', function () {
 
@@ -131,6 +134,30 @@ describe('Map Controller', function () {
 			underTest.loadMap('foo');
 
 			expect(listener).not.toHaveBeenCalled();
+		});
+		it('should dispatch mapLoaded if the same map is loaded twice if forced', function () {
+
+			var listener = jasmine.createSpy();
+
+			underTest.loadMap('foo');
+			underTest.addEventListener('mapLoaded', listener);
+
+			underTest.loadMap('foo', true);
+
+			expect(listener).toHaveBeenCalled();
+		});
+		it('should reload map with redirected id', function () {
+			var listener = jasmine.createSpy();
+			adapter1.recognises = function (mapId) {return mapId === 'foo'; };
+			spyOn(adapter1, 'loadMap').andReturn(jQuery.Deferred().reject('map-load-redirect', 'bar').promise());
+			spyOn(adapter2, 'loadMap').andCallThrough();
+			underTest.addEventListener('mapLoaded', listener);
+
+			underTest.loadMap('foo', false);
+
+			expect(adapter2.loadMap).toHaveBeenCalledWith('bar');
+			expect(listener.callCount).toBe(1);
+			expect(listener.mostRecentCall.args[0]).toBe('bar');
 		});
 		describe('mapLoadingConfirmationRequired event', function () {
 			var listener;
@@ -170,7 +197,7 @@ describe('Map Controller', function () {
 		var map;
 		beforeEach(function () {
 			map = MAPJS.content({});
-			underTest.setMap(map, 'loadedMapId');
+			underTest.setMap(map, 'loadedMapId', {editable: true});
 		});
 		it('should use first adapter to load as a fallback option', function () {
 			spyOn(adapter1, 'saveMap').andCallThrough();
@@ -236,7 +263,13 @@ describe('Map Controller', function () {
 
 			underTest.publishMap();
 
-			expect(listener).toHaveBeenCalledWith('loadedMapId', map);
+			expect(listener).toHaveBeenCalledWith('loadedMapId', map, {editable: true});
+		});
+		it('should reload the map if saved map properties has reloadOnSave set to true', function () {
+			spyOn(adapter1, 'saveMap').andReturn(jQuery.Deferred().resolve('foo', {reloadOnSave: true}).promise());
+			spyOn(underTest, 'loadMap').andCallThrough();
+			underTest.publishMap();
+			expect(underTest.loadMap).toHaveBeenCalledWith('foo', true);
 		});
 	});
 });

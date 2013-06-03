@@ -2,6 +2,7 @@
 /*global FormData, jQuery, MM */
 MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyLoadUrl) {
 	'use strict';
+	var properties = {editable: true, sharable: true};
 	this.description = 'S3_CORS';
 
 	this.recognises = function (mapId) {
@@ -11,7 +12,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 	this.loadMap = function (mapId) {
 		var deferred = jQuery.Deferred(),
 			onMapLoaded = function (result) {
-				deferred.resolve(result, mapId, 'application/json');
+				deferred.resolve(result, mapId, 'application/json', properties);
 			},
 			mapUrl = s3Url + folder + mapId + '.json',
 			loadMapUsingProxy = function () {
@@ -45,7 +46,7 @@ MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyL
 					contentType: false,
 					data: formData
 				}).done(function () {
-					deferred.resolve(publishingConfig.s3UploadIdentifier);
+					deferred.resolve(publishingConfig.s3UploadIdentifier, properties);
 				}).fail(function (evt) {
 					var errorReason = 'network-error',
 						errorLabel = (evt && evt.responseText) || 'network-error',

@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable, XMLHttpRequest*/
+/*global jQuery, MM, observable, XMLHttpRequest*/
 MM.MapController = function (initialMapSources) {
 	// order of mapSources is important, the first mapSource is default
 	'use strict';
@@ -18,36 +18,33 @@ MM.MapController = function (initialMapSources) {
 				}
 			}
 		},
-		mapLoaded = function (idea, mapId, readOnly) {
+		mapLoaded = function (idea, mapId, properties) {
 			mapLoadingConfirmationRequired = false;
-			if (!self.isMapAutoSaved()) {
+			properties = properties || {};
+			if (!properties.autoSave) {
 				idea.addEventListener('changed', function () {
 					mapLoadingConfirmationRequired = true;
 				});
 			}
 			mapInfo = {
 				idea: idea,
-				mapId: (readOnly) ? '' : mapId
+				mapId: properties.editable && mapId
 			};
-			dispatchEvent('mapLoaded', idea, mapId);
+			dispatchEvent('mapLoaded', mapId, idea, properties);
 		};
-	this.addMapSource = function (mapSource) {
+	self.addMapSource = function (mapSource) {
 		mapSources.push(mapSource);
 	};
-	this.setMap = mapLoaded;
-	this.isMapLoadingConfirmationRequired = function () {
+	self.setMap = mapLoaded;
+	self.isMapLoadingConfirmationRequired = function () {
 		return mapLoadingConfirmationRequired;
 	};
-	this.currentMapId = function () {
+
+	self.currentMapId = function () {
 		return mapInfo && mapInfo.mapId;
 	};
-	this.isMapSharable = function () {
-		return this.currentMapId() && activeMapSource && (!activeMapSource.notSharable);
-	};
-	this.isMapAutoSaved = function () {
-		return activeMapSource && activeMapSource.autoSave;
-	};
-	this.loadMap = function (mapId, force) {
+
+	self.loadMap = function (mapId, force) {
 		var progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
 					total = (evt && evt.total) || 1,
@@ -59,14 +56,16 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('mapLoading', mapId);
 					activeMapSource.loadMap(mapId, true).then(mapLoaded, mapLoadFailed, progressEvent);
 				}, mapSourceName = activeMapSource.description ? ' [' + activeMapSource.description + ']' : '';
-				label = label ? label + mapSourceName : mapSourceName;
 				if (reason === 'no-access-allowed') {
 					dispatchEvent('mapLoadingUnAuthorized', mapId, reason);
 				} else if (reason === 'failed-authentication') {
 					dispatchEvent('authorisationFailed', activeMapSource.description, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
 					dispatchEvent('authRequired', activeMapSource.description, retryWithDialog);
+				} else if (reason === 'map-load-redirect') {
+					self.loadMap(label, force);
 				} else {
+					label = label ? label + mapSourceName : mapSourceName;
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);
 				}
 			};
@@ -80,7 +79,7 @@ MM.MapController = function (initialMapSources) {
 		}
 		activeMapSource = chooseMapSource(mapId);
 		if (!activeMapSource) {
-			dispatchEvent('mapSourceExtensionRequired', mapId);
+			dispatchEvent('mapIdNotRecognised', mapId);
 			return;
 		}
 		dispatchEvent('mapLoading', mapId);
@@ -91,12 +90,15 @@ MM.MapController = function (initialMapSources) {
 		);
 	};
 	this.publishMap = function (mapSourceType) {
-		var deferred = jQuery.Deferred(),
-			mapSaved = function (savedMapId) {
+		var mapSaved = function (savedMapId, properties) {
+				properties = properties || {};
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
-				deferred.resolve(savedMapId, mapInfo.idea);
-				dispatchEvent('mapSaved', savedMapId, mapInfo.idea);
+				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, properties);
+
+				if (properties.reloadOnSave) {
+					self.loadMap(savedMapId, true);
+				}
 			},
 			progressEvent = function (evt) {
 				var done = (evt && evt.loaded) || 0,
@@ -122,8 +124,7 @@ MM.MapController = function (initialMapSources) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			},
-			result;
+			};
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
 		dispatchEvent('mapSaving', activeMapSource.description);
 		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
@@ -131,7 +132,6 @@ MM.MapController = function (initialMapSources) {
 			mapSaveFailed,
 			progressEvent
 		);
-		return deferred.promise();
 	};
 };
 MM.MapController.activityTracking = function (mapController, activityLog) {
@@ -154,7 +154,7 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 	mapController.addEventListener('mapLoading', function (mapUrl, percentDone) {
 		activityLog.log('loading map [' + mapUrl + '] (' + percentDone + '%)');
 	});
-	mapController.addEventListener('mapLoaded', function (idea, mapId) {
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		activityLog.log('Map', 'View', mapId);
 		wasRelevantOnLoad = isMapRelevant(idea);
 		if (oldIdea !== idea) {
@@ -239,10 +239,7 @@ MM.MapController.alerts = function (mapController, alert) {
 			authCallback
 		);
 	});
-	mapController.addEventListener('mapSaved', function () {
-		alert.hide(alertId);
-	});
-	mapController.addEventListener('mapLoaded', function () {
+	mapController.addEventListener('mapSaved mapLoaded', function () {
 		alert.hide(alertId);
 	});
 	mapController.addEventListener('authorisationFailed', function (providerName, authCallback) {

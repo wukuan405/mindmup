@@ -1,14 +1,25 @@
-/*global jQuery, MM, _, location, window */
-MM.Extensions = function (storage, storageKey, cachePreventionKey) {
+/*global jQuery, MM, _, location, window, document */
+MM.Extensions = function (storage, storageKey, config, components) {
 	'use strict';
-	var active = [];
+	var active = [],
+		loadScriptsAsynchronously = function (d, s, urls, callback) {
+			urls.forEach(function (url) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				js = d.createElement(s);
+				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
+				js.onload = callback;
+				fjs.parentNode.insertBefore(js, fjs);
+			});
+		};
 	if (storage[storageKey]) {
 		active = storage[storageKey].split(' ');
 	}
 	this.scriptsToLoad = function () {
-		return _.map(_.reject(_.map(active, function (ext) {
-			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script;
-		}), function (e) { return !e; }), function (script) { return script + "?v=" + cachePreventionKey; });
+		var activeExtensions = _.reject(_.map(active, function (ext) {
+			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
+		}), function (e) { return !e; });
+
+		return _.map(_.flatten(activeExtensions), function (script) { return '/' + config.cachePreventionKey + script; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -20,15 +31,54 @@ MM.Extensions = function (storage, storageKey, cachePreventionKey) {
 			active = _.without(active, ext);
 		}
 		storage[storageKey] = active.join(' ');
-		if (window._gaq) {
-			window._gaq.push(['_setCustomVar', 2, 'Active Extensions', active.join(' '), 1], ['_trackEvent', 'Extensions', ext, shouldActivate]);
+		if (components && components.activityLog) {
+			components.activityLog.log('Extensions', ext, shouldActivate);
 		}
+	};
+	this.load = function () {
+		var deferred = jQuery.Deferred(),
+			scripts = this.scriptsToLoad(),
+			alertId,
+			intervalId;
+		MM.Extensions.components = components;
+		MM.Extensions.mmConfig = config;
+		loadScriptsAsynchronously(document, 'script', config.scriptsToLoadAsynchronously.split(' '));
+		MM.Extensions.pendingScripts = _.invert(scripts);
+		loadScriptsAsynchronously(document, 'script', scripts, function () {
+			delete MM.Extensions.pendingScripts[jQuery(this).attr('src')];
+		});
+
+		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
+			alertId = components.alert.show('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
+			intervalId = window.setInterval(function () {
+				if (_.isEmpty(MM.Extensions.pendingScripts)) {
+					components.alert.hide(alertId);
+					window.clearInterval(intervalId);
+					deferred.resolve();
+				} else {
+					jQuery('[data-mm-role=num-extensions]').text(_.size(MM.Extensions.pendingScripts) + ' remaining');
+				}
+			}, 1000);
+		} else {
+			deferred.resolve();
+		}
+		return deferred.promise();
 	};
 };
 MM.Extensions.config = {
 	'goggle-collaboration' : {
 		name: 'Realtime collaboration',
-		script: '/e/google-collaboration.js'
+		script: '/e/google-collaboration.js',
+		icon: 'icon-group',
+		doc: 'http://blog.mindmup.com/p/realtime-collaboration.html',
+		desc: 'Realtime collaboration on a map, where several people can concurrently change it and updates are shown to everyone almost instantly. Collaboration is persisted using Google Drive.'
+	},
+	'progress' : {
+		name: 'Progress',
+		script: '/e/content-status-updater.js /e/progress.js',
+		icon: 'icon-dashboard',
+		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
+		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
@@ -40,7 +90,9 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 		causedByMapId;
 	_.each(MM.Extensions.config, function (ext, extkey) {
 		var item = template.clone().appendTo(listElement).show();
-		item.find('[data-mm-role=title]').text(ext.name);
+		item.find('[data-mm-role=title]').html("&nbsp;" + ext.name).addClass(ext.icon);
+		item.find('[data-mm-role=doc]').attr('href', ext.doc);
+		item.find('[data-mm-role=desc]').prepend(ext.desc);
 		item.find('input[type=checkbox]').attr('checked', extensions.isActive(extkey)).change(function () {
 			extensions.setActive(extkey, this.checked);
 			changed = true;
@@ -51,13 +103,13 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 			if (!causedByMapId) {
 				location.reload();
 			} else {
-				window.location = "/map/" + causedByMapId;
+				window.location = '/map/' + causedByMapId;
 			}
 		}
 		causedByMapId = undefined;
 	});
 
-	mapController.addEventListener('mapSourceExtensionRequired', function (newMapId) {
+	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
 		var showAlertWithCallBack = function (message, prompt, type, callback) {
 			var alertId = alert.show(
 				message,

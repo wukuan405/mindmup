@@ -1,6 +1,7 @@
 /*global jQuery, MM, observable*/
 MM.OfflineAdapter = function (storage) {
 	'use strict';
+	var properties = {editable: true};
 	this.description = 'OFFLINE';
 	this.notSharable = true;
 	this.recognises = function (mapId) {
@@ -10,7 +11,7 @@ MM.OfflineAdapter = function (storage) {
 		var result = jQuery.Deferred(),
 			map = storage.load(mapId);
 		if (map) {
-			result.resolve(map, mapId, 'application/json');
+			result.resolve(map, mapId, 'application/json', properties);
 		} else {
 			result.reject('not-found');
 		}
@@ -26,10 +27,10 @@ MM.OfflineAdapter = function (storage) {
 		try {
 			title = title.replace(/\.mup$/, '');
 			if (!this.recognises(mapId)) {
-				result.resolve(storage.saveNew(contentToSave, title));
+				result.resolve(storage.saveNew(contentToSave, title), properties);
 			} else {
 				storage.save(mapId, contentToSave, title);
-				result.resolve(mapId);
+				result.resolve(mapId, properties);
 			}
 		} catch (e) {
 			var reason = knownErrors[e.name];
