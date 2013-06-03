@@ -76,7 +76,7 @@ describe("MM.Extensions", function () {
 				ext = new MM.Extensions(storage, key, {}, {activityLog: al});
 			al.log = jasmine.createSpy();
 			ext.setActive('extension name', true);
-			expect(al.log).toHaveBeenCalledWith('Extensions', 'extension name', true);
+			expect(al.log).toHaveBeenCalledWith('Extensions', 'extension name', 'act-true');
 		});
 	});
 	describe("isActive", function () {
