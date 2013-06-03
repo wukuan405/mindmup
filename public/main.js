@@ -75,6 +75,8 @@ MM.main = function (config) {
 			}
 		};
 		jQuery('#linkEditWidget .updateStyle').colorPicker();
+		jQuery('#linkEditWidget .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+
 		jQuery('#modalFeedback').feedbackWidget(jotForm, activityLog);
 		jQuery('#modalVote').voteWidget(activityLog, alert);
 		jQuery('#toolbarEdit .updateStyle').colorPicker();
