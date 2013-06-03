@@ -95,8 +95,10 @@ div.topbar-color-picker {
 .map-unchanged .visible-map-changed {
   display: none;
 }
-#toolbarEdit .btn-group { margin-left:5px; }
-#toolbarEdit button { margin-top:5px; }
+#toolbarEdit .btn-group { margin-left:0px; }
+#toolbarEdit button { margin-top:5px; width: 40px; height:32px; }
+#toolbarEdit button.two {width:80px; }
+#toolbarEdit button.three {width:120px;}
 .ideaInput {
   position: absolute;
   z-index: 999;

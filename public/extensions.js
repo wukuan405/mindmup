@@ -32,7 +32,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		}
 		storage[storageKey] = active.join(' ');
 		if (components && components.activityLog) {
-			components.activityLog.log('Extensions', ext, shouldActivate);
+			components.activityLog.log('Extensions', ext, 'act-' + shouldActivate);
 		}
 	};
 	this.load = function () {

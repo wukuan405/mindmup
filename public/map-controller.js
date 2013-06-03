@@ -151,9 +151,6 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 		wasRelevantOnLoad,
 		changed = false,
 		oldIdea;
-	mapController.addEventListener('mapLoading', function (mapUrl, percentDone) {
-		activityLog.log('loading map [' + mapUrl + '] (' + percentDone + '%)');
-	});
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		activityLog.log('Map', 'View', mapId);
 		wasRelevantOnLoad = isMapRelevant(idea);
