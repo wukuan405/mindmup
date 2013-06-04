@@ -182,6 +182,10 @@ describe('MM.ContentStatusUpdater', function () {
 			underTest.setStatusConfig(configOne);
 			expect(content.getAttr('test-statuses')).toEqual(configOne);
 		});
+		it("changes status configuration on current content", function () {
+			underTest.setStatusConfig(false);
+			expect(content.getAttr('test-statuses')).toBeFalsy();
+		});
 		it("dispatches config changed event when configuration changes", function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener("configChanged", listener);

@@ -23,6 +23,10 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			});
 		};
 	self.setStatusConfig = function (statusConfig) {
+		if (!statusConfig) {
+			content.updateAttr(content.id, statusConfigurationAttributeName, false);
+			return;
+		}
 		var validatedConfig = {}, parsedPriority;
 		_.each(statusConfig, function (element, key) {
 			validatedConfig[key] = _.clone(element);
