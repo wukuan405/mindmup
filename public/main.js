@@ -3,7 +3,7 @@
 MM.main = function (config) {
 	'use strict';
 
-	var mapModelAnalytics = false,
+	var mapModelAnalytics = true,
 		setupTracking = function (activityLog, jotForm, mapModel) {
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
 			activityLog.addEventListener('error', function (message) {
@@ -63,6 +63,7 @@ MM.main = function (config) {
 		jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, jQuery('body').hasClass('image-render'));
 		jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 		jQuery('#topbar').alertWidget(alert).mapToolbarWidget(mapModel);
+
 		jQuery('#topbar .updateStyle').colorPicker();
 		jQuery('#topbar .colorPicker-picker').parent('a').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 		jQuery('.colorPicker-palette').addClass('topbar-color-picker');
@@ -73,6 +74,9 @@ MM.main = function (config) {
 				palette.css('top', jQuery('#topbar').outerHeight());
 			}
 		};
+		jQuery('#linkEditWidget .updateStyle').colorPicker();
+		jQuery('#linkEditWidget .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+
 		jQuery('#modalFeedback').feedbackWidget(jotForm, activityLog);
 		jQuery('#modalVote').voteWidget(activityLog, alert);
 		jQuery('#toolbarEdit .updateStyle').colorPicker();

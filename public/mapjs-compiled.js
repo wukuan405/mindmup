@@ -275,9 +275,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		var toClone = (subIdeaId && subIdeaId != contentAggregate.id && contentAggregate.findSubIdeaById(subIdeaId)) || contentAggregate;
 		return JSON.parse(JSON.stringify(toClone));
 	};
-	/*** private utility methods ***/
 	contentAggregate.calculatePath = function (ideaId, currentPath, potentialParent) {
-		var result;
 		if (contentAggregate.id == ideaId) {
 			return [];
 		}
@@ -487,34 +485,41 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}, originSession);
 		return true;
 	};
+	var updateAttr = function (object, attrName, attrValue) {
+		var oldAttr;
+		if (!object) {
+			return false;
+		}
+		oldAttr = _.extend({}, object.attr);
+		object.attr = _.extend({}, object.attr);
+		if (!attrValue || attrValue === 'false') {
+			if (!object.attr[attrName]) {
+				return false;
+			}
+			delete object.attr[attrName];
+		} else {
+			if (_.isEqual(object.attr[attrName], attrValue)) {
+				return false;
+			}
+			object.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
+		}
+		if (_.size(object.attr) === 0) {
+			delete object.attr;
+		}
+		return function () {
+			object.attr = oldAttr;
+		};
+	};
 	contentAggregate.updateAttr = function (ideaId, attrName, attrValue) {
 		return contentAggregate.execCommand('updateAttr', arguments);
 	};
 	commandProcessors.updateAttr = function (originSession, ideaId, attrName, attrValue) {
-		var idea = findIdeaById(ideaId), oldAttr;
-		if (!idea) {
-			return false;
+		var idea = findIdeaById(ideaId), undoAction;
+		undoAction = updateAttr(idea, attrName, attrValue);
+		if (undoAction) {
+			notifyChange('updateAttr', [ideaId, attrName, attrValue], undoAction, originSession);
 		}
-		oldAttr = _.extend({}, idea.attr);
-		idea.attr = _.extend({}, idea.attr);
-		if (!attrValue || attrValue === 'false') {
-			if (!idea.attr[attrName]) {
-				return false;
-			}
-			delete idea.attr[attrName];
-		} else {
-			if (_.isEqual(idea.attr[attrName], attrValue)) {
-				return false;
-			}
-			idea.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
-		}
-		if (_.size(idea.attr) === 0) {
-			delete idea.attr;
-		}
-		notifyChange('updateAttr', [ideaId, attrName, attrValue], function () {
-			idea.attr = oldAttr;
-		}, originSession);
-		return true;
+		return !!undoAction;
 	};
 	contentAggregate.moveRelative = function (ideaId, relativeMovement) {
 		var parentIdea = contentAggregate.findParent(ideaId),
@@ -574,7 +579,6 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return false;
 		}
 		reorderChild(parentIdea, newRank, currentRank);
-
 		notifyChange('positionBefore', [ideaId, positionBeforeIdeaId], function () {
 			reorderChild(parentIdea, currentRank, newRank);
 		}, originSession);
@@ -631,7 +635,13 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			contentAggregate.links = contentAggregate.links || [];
 			link = {
 				ideaIdFrom: ideaIdFrom,
-				ideaIdTo: ideaIdTo
+				ideaIdTo: ideaIdTo,
+				attr: {
+					style: {
+						color: '#FF0000',
+						lineStyle: 'dashed'
+					}
+				}
 			};
 			contentAggregate.links.push(link);
 			notifyChange('addLink', [ideaIdFrom, ideaIdTo], function () {
@@ -649,14 +659,23 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				if (String(link.ideaIdFrom) === String(ideaIdOne) && String(link.ideaIdTo) === String(ideaIdTwo)) {
 					contentAggregate.links.splice(i, 1);
 					notifyChange('removeLink', [ideaIdOne, ideaIdTwo], function () {
-						contentAggregate.links.push({
-							ideaIdFrom: ideaIdOne,
-							ideaIdTo: ideaIdTwo
-						});
+						contentAggregate.links.push(_.clone(link));
 					}, originSession);
 					return true;
 				}
 				i += 1;
+			}
+			return false;
+		};
+		contentAggregate.getLinkAttr = function (ideaIdFrom, ideaIdTo, name) {
+			var link = _.find(
+				contentAggregate.links,
+				function (link) {
+					return link.ideaIdFrom == ideaIdFrom && link.ideaIdTo == ideaIdTo;
+				}
+			);
+			if (link && link.attr && link.attr[name]) {
+				return link.attr[name];
 			}
 			return false;
 		};
@@ -669,9 +688,24 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				});
 			}
 		});
+		contentAggregate.updateLinkAttr = function (ideaIdFrom, ideaIdTo, attrName, attrValue) {
+			return contentAggregate.execCommand('updateLinkAttr', arguments);
+		};
+		commandProcessors.updateLinkAttr = function (originSession, ideaIdFrom, ideaIdTo, attrName, attrValue) {
+			var link = _.find(
+				contentAggregate.links,
+				function (link) {
+					return link.ideaIdFrom == ideaIdFrom && link.ideaIdTo == ideaIdTo;
+				}
+			), undoAction;
+			undoAction = updateAttr(link, attrName, attrValue);
+			if (undoAction) {
+				notifyChange('updateLinkAttr', [ideaIdFrom, ideaIdTo, attrName, attrValue], undoAction, originSession);
+			}
+			return !!undoAction;
+		};
 	}());
 	/* undo/redo */
-
 	contentAggregate.undo = function () {
 		return contentAggregate.execCommand('undo', arguments);
 	};
@@ -798,7 +832,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		var result = {
 			nodes: {},
 			connectors: {},
-			links: _.clone(idea.links) || []
+			links: {}
 		},
 			root = MAPJS.calculatePositions(idea, dimensionProvider, margin, 0, 0),
 			calculateLayoutInner = function (positions, level) {
@@ -826,12 +860,16 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			};
 		MAPJS.LayoutCompressor.compress(root);
 		calculateLayoutInner(root, 1);
-		result.links = _.filter(
-			result.links,
-			function (link) {
-				return result.nodes[link.ideaIdFrom] && result.nodes[link.ideaIdTo];
+		_.each(idea.links, function (link) {
+			if (result.nodes[link.ideaIdFrom] && result.nodes[link.ideaIdTo]) {
+				result.links[link.ideaIdFrom + '_' + link.ideaIdTo] = {
+					ideaIdFrom: link.ideaIdFrom,
+					ideaIdTo: link.ideaIdTo,
+					attr: _.clone(link.attr)
+				};
+				//todo - clone
 			}
-		);
+		});
 		return result;
 	};
 	MAPJS.calculateFrame = function (nodes, margin) {
@@ -1064,26 +1102,24 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 					self.dispatchEvent('connectorCreated', newConnector);
 				}
 			}
-			if (newLayout.links) {
-				var join = function (link) {
-					return link.ideaIdFrom + '_' + link.ideaIdTo;
-				},
-					split = function (link) {
-						var split = link.split('_');
-						return {
-							ideaIdFrom: split[0],
-							ideaIdTo: split[1]
-						};
-					},
-					dispatchFunc = function (type) {
-						return function (link) {
-							self.dispatchEvent(type, link);
-						};
-					},
-					newLinks = _.map(newLayout.links || [], join),
-					oldLinks = _.map(currentLayout.links || [], join);
-				_.map(_.difference(newLinks, oldLinks), split).forEach(dispatchFunc('linkCreated'));
-				_.map(_.difference(oldLinks, newLinks), split).forEach(dispatchFunc('linkRemoved'));
+			var linkId, newLink, oldLink;
+			for (linkId in newLayout.links) {
+				newLink = newLayout.links[linkId];
+				oldLink = currentLayout.links && currentLayout.links[linkId];
+				if (oldLink) {
+					if (!_.isEqual(newLink.attr || {}, oldLink && oldLink.attr || {})) {
+						self.dispatchEvent('linkAttrChanged', newLink);
+					}
+				} else {
+					self.dispatchEvent('linkCreated', newLink);
+				}
+			}
+			for (linkId in currentLayout.links) {
+				oldLink = currentLayout.links[linkId];
+				newLink = newLayout.links && newLayout.links[linkId];
+				if (!newLink) {
+					self.dispatchEvent('linkRemoved', oldLink);
+				}
 			}
 			currentLayout = newLayout;
 		},
@@ -1151,6 +1187,14 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			self.dispatchEvent('nodeSelectionChanged', id, true);
 		}
 	};
+	this.clickNode = function (id) {
+		if (isAddLinkMode) {
+			this.addLink(id);
+			this.toggleAddLinkMode();
+		} else {
+			this.selectNode(id);
+		}
+	};
 	this.getSelectedStyle = function (prop) {
 		var node = currentLayout.nodes[currentlySelectedIdeaId];
 		return node && node.attr && node.attr.style && node.attr.style[prop];
@@ -1175,6 +1219,14 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			var merged = _.extend({}, currentlySelectedIdea().getAttr('style'));
 			merged[prop] = value;
 			idea.updateAttr(currentlySelectedIdeaId, 'style', merged);
+		}
+	};
+	this.updateLinkStyle = function (source, ideaIdFrom, ideaIdTo, prop, value) {
+		if (isInputEnabled) {
+			analytic('updateLinkStyle:' + prop, source);
+			var merged = _.extend({}, idea.getLinkAttr(ideaIdFrom, ideaIdTo, 'style'));
+			merged[prop] = value;
+			idea.updateLinkAttr(ideaIdFrom, ideaIdTo, 'style', merged);
 		}
 	};
 	this.addSubIdea = function (source, parentId) {
@@ -1269,11 +1321,65 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		idea.addLink(currentlySelectedIdeaId, nodeIdTo);
 	};
 	this.selectLink = function (link, selectionPoint) {
-		self.dispatchEvent('linkSelected', link, selectionPoint);
+		self.dispatchEvent('linkSelected', link, selectionPoint, idea.getLinkAttr(link.ideaIdFrom, link.ideaIdTo, 'style'));
 	};
 	this.removeLink = function (nodeIdFrom, nodeIdTo) {
 		idea.removeLink(nodeIdFrom, nodeIdTo);
 	};
+	var isAddLinkMode = false;
+	this.toggleAddLinkMode = function () {
+		isAddLinkMode = !isAddLinkMode;
+		self.dispatchEvent('addLinkModeToggled', isAddLinkMode);
+	};
+	self.undo = function (source) {
+		analytic('undo', source);
+		if (isInputEnabled) {
+			idea.undo();
+		}
+	};
+	self.redo = function (source) {
+		analytic('redo', source);
+		if (isInputEnabled) {
+			idea.redo();
+		}
+	};
+	self.moveRelative = function (source, relativeMovement) {
+		analytic('moveRelative', source);
+		if (isInputEnabled) {
+			idea.moveRelative(currentlySelectedIdeaId, relativeMovement);
+		}
+	};
+	self.cut = function (source) {
+		analytic('cut', source);
+		if (isInputEnabled) {
+			self.clipBoard = idea.clone(currentlySelectedIdeaId);
+			var parent = idea.findParent(currentlySelectedIdeaId);
+			if (idea.removeSubIdea(currentlySelectedIdeaId)) {
+				self.selectNode(parent.id);
+			}
+		}
+	};
+	self.copy = function (source) {
+		analytic('copy', source);
+		if (isInputEnabled) {
+			self.clipBoard = idea.clone(currentlySelectedIdeaId);
+		}
+	};
+	self.paste = function (source) {
+		analytic('paste', source);
+		if (isInputEnabled) {
+			idea.paste(currentlySelectedIdeaId, self.clipBoard);
+		}
+	};
+	self.pasteStyle = function (source) {
+		analytic('pasteStyle', source);
+		if (isInputEnabled && self.clipBoard) {
+			var pastingStyle = self.clipBoard.attr && self.clipBoard.attr.style;
+			idea.updateAttr(currentlySelectedIdeaId, 'style', pastingStyle);
+		}
+	};
+	self.moveUp = function (source) { self.moveRelative(source, -1); };
+	self.moveDown = function (source) { self.moveRelative(source, 1); };
 	(function () {
 		var isRootOrRightHalf = function (id) {
 				return currentLayout.nodes[id].x >= currentLayout.nodes[idea.id].x;
@@ -1334,7 +1440,6 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				self.selectNode(idea.findParent(currentlySelectedIdeaId).id);
 			}
 		};
-
 		self.selectNodeUp = function (source) {
 			var previousSibling = idea.previousSiblingId(currentlySelectedIdeaId),
 				nodesAbove,
@@ -1385,55 +1490,6 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				self.selectNode(closestNode.id);
 			}
 		};
-		self.undo = function (source) {
-			analytic('undo', source);
-			if (isInputEnabled) {
-				idea.undo();
-			}
-		};
-		self.redo = function (source) {
-			analytic('redo', source);
-			if (isInputEnabled) {
-				idea.redo();
-			}
-		};
-		self.moveRelative = function (source, relativeMovement) {
-			analytic('moveRelative', source);
-			if (isInputEnabled) {
-				idea.moveRelative(currentlySelectedIdeaId, relativeMovement);
-			}
-		};
-		self.cut = function (source) {
-			analytic('cut', source);
-			if (isInputEnabled) {
-				self.clipBoard = idea.clone(currentlySelectedIdeaId);
-				var parent = idea.findParent(currentlySelectedIdeaId);
-				if (idea.removeSubIdea(currentlySelectedIdeaId)) {
-					self.selectNode(parent.id);
-				}
-			}
-		};
-		self.copy = function (source) {
-			analytic('copy', source);
-			if (isInputEnabled) {
-				self.clipBoard = idea.clone(currentlySelectedIdeaId);
-			}
-		};
-		self.paste = function (source) {
-			analytic('paste', source);
-			if (isInputEnabled) {
-				idea.paste(currentlySelectedIdeaId, self.clipBoard);
-			}
-		};
-		self.pasteStyle = function (source) {
-			analytic('pasteStyle', source);
-			if (isInputEnabled && self.clipBoard) {
-				var pastingStyle = self.clipBoard.attr && self.clipBoard.attr.style;
-				idea.updateAttr(currentlySelectedIdeaId, 'style', pastingStyle);
-			}
-		};
-		self.moveUp = function (source) { self.moveRelative(source, -1); };
-		self.moveDown = function (source) { self.moveRelative(source, 1); };
 	}());
 	//Todo - clean up this shit below
 	(function () {
@@ -1658,6 +1714,16 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	Kinetic.Global.extend(Kinetic.Link, Kinetic.Shape);
 }());
+Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
+	'use strict';
+	var style = newMMAttr && newMMAttr.style;
+	this.attrs.stroke = style && style.color || 'red';
+	this.attrs.dashArray = {
+		solid: [],
+		dashed: [8, 8]
+	}[style && style.lineStyle || 'dashed'];
+	this.getLayer().draw();
+};
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
 	'use strict';
@@ -2155,7 +2221,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 	return container;
 };
 
-/*global _, document, Kinetic, MAPJS*/
+/*global _, Kinetic, MAPJS*/
 if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
 }
@@ -2286,7 +2352,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 				mapModel.addLink(n.id);
 			}
 		});
-		node.on('click tap', mapModel.selectNode.bind(mapModel, n.id));
+		node.on('click tap', mapModel.clickNode.bind(mapModel, n.id));
 		node.on('dblclick dbltap', mapModel.editNode.bind(mapModel, 'mouse', false, false));
 		node.on('dragstart', function () {
 			node.moveToTop();
@@ -2404,25 +2470,28 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	});
 	mapModel.addEventListener('linkCreated', function (l) {
 		var link = new Kinetic.Link({
+			id: 'link_' + l.ideaIdFrom + '_' + l.ideaIdTo,
 			shapeFrom: nodeByIdeaId[l.ideaIdFrom],
 			shapeTo: nodeByIdeaId[l.ideaIdTo],
 			dashArray: [8, 8],
 			stroke: '#800',
-			strokeWidth: 3,
-			opacity: 1,
-			id: 'link_' + l.ideaIdFrom + '_' + l.ideaIdTo
+			strokeWidth: 3
 		});
 		link.on('click mouseover', function (event) {
 			mapModel.selectLink(l, { x: event.layerX, y: event.layerY });
 		});
 		layer.add(link);
 		link.moveToBottom();
-		layer.draw();
+		link.setMMAttr(l.attr);
 	});
 	mapModel.addEventListener('linkRemoved', function (l) {
 		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
 		link.destroy();
 		layer.draw();
+	});
+	mapModel.addEventListener('linkAttrChanged', function (l) {
+		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
+		link.setMMAttr(l.attr);
 	});
 	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
 		var currentScale = stage.getScale().x || 1,
@@ -2485,7 +2554,7 @@ MAPJS.KineticMediator.layoutCalculator = function (idea) {
 jQuery.fn.mapToolbarWidget = function (mapModel) {
 	'use strict';
 	var clickMethodNames = ['insertIntermediate', 'scaleUp', 'scaleDown', 'addSubIdea', 'editNode', 'removeSubIdea', 'toggleCollapse', 'addSiblingIdea', 'undo', 'redo',
-			'copy', 'cut', 'paste', 'resetView', 'openAttachment'],
+			'copy', 'cut', 'paste', 'resetView', 'openAttachment', 'toggleAddLinkMode'],
 		changeMethodNames = ['updateStyle'];
 	return this.each(function () {
 		var element = jQuery(this);
@@ -2493,6 +2562,9 @@ jQuery.fn.mapToolbarWidget = function (mapModel) {
 			element.find('.updateStyle[data-mm-target-property]').val(function () {
 				return mapModel.getSelectedStyle(jQuery(this).data('mm-target-property'));
 			}).change();
+		});
+		mapModel.addEventListener('addLinkModeToggled', function (isAddLinkMode) {
+			var button = element.find('.toggleAddLinkMode').toggleClass('active');
 		});
 		clickMethodNames.forEach(function (methodName) {
 			element.find('.' + methodName).click(function () {
@@ -2637,7 +2709,6 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 			stage.setDraggable(!canInput);
 			actOnKeys = canInput;
 		});
-		activityLog.log('Creating canvas Size ' + element.width() + ' ' + element.height());
 		setStageDimensions();
 		stage.attrs.x = 0.5 * stage.getWidth();
 		stage.attrs.y = 0.5 * stage.getHeight();
@@ -2672,16 +2743,20 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 jQuery.fn.linkEditWidget = function (mapModel) {
 	'use strict';
 	return this.each(function () {
-		var element = jQuery(this), currentLink, width, height;
-		mapModel.addEventListener('linkSelected', function (link, selectionPoint) {
+		var element = jQuery(this), currentLink, width, height, colorElement, lineStyleElement;
+		colorElement = element.find('.color');
+		lineStyleElement = element.find('.lineStyle');
+		mapModel.addEventListener('linkSelected', function (link, selectionPoint, linkStyle) {
 			currentLink = link;
 			element.show();
 			width = width || element.width();
 			height = height || element.height();
 			element.css({
-				top: (selectionPoint.y - 0.5 * height) + 'px',
-				left: (selectionPoint.x - 0.5 * width) + 'px'
+				top: (selectionPoint.y - 0.5 * height - 15) + 'px',
+				left: (selectionPoint.x - 0.5 * width - 15) + 'px'
 			});
+			colorElement.val(linkStyle.color).change();
+			lineStyleElement.val(linkStyle.lineStyle);
 		});
 		mapModel.addEventListener('mapMoveRequested', function () {
 			element.hide();
@@ -2690,8 +2765,13 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 			mapModel.removeLink(currentLink.ideaIdFrom, currentLink.ideaIdTo);
 			element.hide();
 		});
-		element.mouseleave(function () {
-			element.hide();
+		colorElement.change(function () {
+			mapModel.updateLinkStyle('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo, 'color', jQuery(this).val());
 		});
+		lineStyleElement.find('a').click(function () {
+			console.log(jQuery(this).text());
+			mapModel.updateLinkStyle('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo, 'lineStyle', jQuery(this).text());
+		});
+		element.mouseleave(element.hide.bind(element));
 	});
 };
