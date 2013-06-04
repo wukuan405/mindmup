@@ -96,7 +96,11 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							deferred.reject('realtime-error', 'Session ' + mindMupId + ' has not been initialised');
 						},
 						function errorHandler(error) {
-							deferred.reject('realtime-error', error);
+							if (error && error.type === 'forbidden') {
+								deferred.reject('no-access-allowed');
+							} else {
+								deferred.reject('realtime-error', error.message ? error.message : error);
+							}
 						}
 					);
 				} catch (e) {
