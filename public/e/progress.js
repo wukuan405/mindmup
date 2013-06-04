@@ -1,7 +1,7 @@
 /*global MM, _, $*/
 MM.Extensions.progress = function () {
 	'use strict';
-	var statusConfigurationAttributeName = 'progress-statuses',
+	var statusConfigurationAttributeName = MM.Extensions.config.progress.aggregateAttributeName,
 		statusAttributeName = 'progress',
 		mapController = MM.Extensions.components.mapController,
 		mapModel = MM.Extensions.components.mapModel,

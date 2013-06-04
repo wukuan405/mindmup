@@ -71,26 +71,48 @@ MM.Extensions.config = {
 		script: '/e/google-collaboration.js',
 		icon: 'icon-group',
 		doc: 'http://blog.mindmup.com/p/realtime-collaboration.html',
-		desc: 'Realtime collaboration on a map, where several people can concurrently change it and updates are shown to everyone almost instantly. Collaboration is persisted using Google Drive.'
+		desc: 'Realtime collaboration on a map, where several people can concurrently change it and updates are shown to everyone almost instantly. Collaboration is persisted using Google Drive.',
+		providesMapId: function (mapId) {
+			'use strict';
+			return (/^cg/).test(mapId);
+		}
 	},
 	'progress' : {
 		name: 'Progress',
 		script: '/e/content-status-updater.js /e/progress.js',
 		icon: 'icon-dashboard',
 		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
-		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.'
+		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.',
+		aggregateAttributeName: 'progress-statuses',
+		isActiveOnMapContent: function (content) {
+			'use strict';
+			return content.getAttr(MM.Extensions.config.progress.aggregateAttributeName);
+		}
+
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	'use strict';
 	var element = this,
+		alertId,
+		showAlertWithCallBack = function (message, prompt, type, callback) {
+			alertId = alert.show(
+				message,
+				'<a href="#" data-mm-role="alert-callback">' + prompt + '</a>',
+				type
+			);
+			jQuery('[data-mm-role=alert-callback]').click(function () {
+				alert.hide(alertId);
+				callback();
+			});
+		},
 		listElement = element.find('[data-mm-role=ext-list]'),
 		template = listElement.find('[data-mm-role=template]').hide().clone(),
 		changed = false,
 		causedByMapId;
 	_.each(MM.Extensions.config, function (ext, extkey) {
 		var item = template.clone().appendTo(listElement).show();
-		item.find('[data-mm-role=title]').html("&nbsp;" + ext.name).addClass(ext.icon);
+		item.find('[data-mm-role=title]').html('&nbsp;' + ext.name).addClass(ext.icon);
 		item.find('[data-mm-role=doc]').attr('href', ext.doc);
 		item.find('[data-mm-role=desc]').prepend(ext.desc);
 		item.find('input[type=checkbox]').attr('checked', extensions.isActive(extkey)).change(function () {
@@ -110,26 +132,39 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	});
 
 	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
-		var showAlertWithCallBack = function (message, prompt, type, callback) {
-			var alertId = alert.show(
-				message,
-				'<a href="#" data-mm-role="alert-callback">' + prompt + '</a>',
-				type
+		var requiredExtension = _.find(MM.Extensions.config, function (ext) { return ext.providesMapId && ext.providesMapId(newMapId); });
+		alert.hide(alertId);
+		if (requiredExtension) {
+			showAlertWithCallBack(
+				'This map requires an extension to load: ' + requiredExtension.name,
+				'Click here to configure extensions',
+				'warning',
+				function () {
+					causedByMapId = newMapId;
+					element.modal('show');
+				}
 			);
-			jQuery('[data-mm-role=alert-callback]').click(function () {
-				alert.hide(alertId);
-				callback();
-			});
-		};
-		showAlertWithCallBack(
-			'This map requires an extension to load',
-			'Click here to configure extensions',
-			'warning',
-			function () {
-				causedByMapId = newMapId;
-				element.modal('show');
-			}
-		);
+		}
+		else {
+			alertId = alert.show('The URL is unrecognised!', 'it might depend on a custom extension that is not available to you.', 'error');
+		}
+
+	});
+	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
+		var requiredExtensions = _.filter(MM.Extensions.config, function (ext, id) { return ext.isActiveOnMapContent && ext.isActiveOnMapContent(mapContent) && !extensions.isActive(id); }),
+			plural = requiredExtensions.length > 1 ? 's' : '';
+		alert.hide(alertId);
+		if (requiredExtensions.length) {
+			showAlertWithCallBack(
+				'This map uses additional extensions!',
+				'Click here to enable the ' +  _.map(requiredExtensions, function (ext) { return ext.name; }).join(', ') + ' extension' + plural,
+				'warning',
+				function () {
+					causedByMapId = mapId;
+					element.modal('show');
+				}
+			);
+		}
 	});
 	return element;
 };
