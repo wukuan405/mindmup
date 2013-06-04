@@ -9,6 +9,7 @@ MM.Extensions.progress = function () {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
 				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable().css('position', 'absolute'),
+				modal = parsed.find('[data-mm-role=modal]').clone().appendTo($('body')),
 				activateAnalytics = function (element) {
 					element.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
 					if (!MM.Extensions.mmConfig.isTouch) {
@@ -20,8 +21,10 @@ MM.Extensions.progress = function () {
 			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
+			modal.tableEditWidget(updater.refresh.bind(updater)).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			activateAnalytics(menu);
 			activateAnalytics(toolbar);
+
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

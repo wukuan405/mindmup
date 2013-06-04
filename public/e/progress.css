@@ -29,3 +29,6 @@
 .progress-toolbar-header {
   margin-bottom:10px;
 }
+#progressEditModal .colorPicker-picker {
+	width:20px; height:20px;
+}

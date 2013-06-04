@@ -67,10 +67,14 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		}
 		_.each(idea.ideas, self.clear);
 	};
+	self.refresh = function () {
+		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
+	};
 	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
 		bindTo(mapContent);
-		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
+		self.refresh();
 	});
+
 };
 jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configurations) {
 	'use strict';
@@ -82,9 +86,11 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			_.each(config, function (status, statusName) {
 				var newItem = template.clone().prependTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
-				newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background);
+				newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
 				newItem.find('[data-mm-role=status-name]').text(status.description);
-				newItem.click(function () {
+				newItem.find('[data-mm-role=status-key]').text(statusName);
+				newItem.find('[data-mm-role=status-priority]').text(status.priority);
+				newItem.find('[data-mm-role=set-status]').click(function () {
 					updater.updateStatus(currentlySelectedId, statusName);
 				});
 			});
@@ -117,6 +123,23 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			element.find('[data-mm-role=toggle-toolbar]').click(function () {
 				jQuery('body').toggleClass('progress-toolbar-active');
 			});
+			element.find('[data-mm-role=save]').click(function () {
+				var config = {},
+					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]');
+				statuses.each(function () {
+					var status = jQuery(this),
+						statusConfig = {
+							description: status.find('[data-mm-role=status-name]').text(),
+							style: {background: status.find('[data-mm-role=status-color]').val()}
+						},
+						priority = status.find('[data-mm-role=status-priority]').text();
+					if (priority) {
+						statusConfig.priority = priority;
+					}
+					config[status.find('[data-mm-role=status-key]').text()] = statusConfig;
+				});
+				updater.setStatusConfig(config);
+			});
 		};
 	mapModel.addEventListener('nodeSelectionChanged', function (id) {
 		currentlySelectedId = id;
@@ -127,4 +150,60 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 	});
 	updateUI();
 	return this;
+};
+jQuery.fn.tableCellInPlaceEditorWidget = function () {
+	'use strict';
+
+	this.click(function () {
+		var element = jQuery(this),
+			previousText = element.text(),
+			input,
+			setContent = function (value) {
+				element.empty().text(value);
+			},
+			oldWidth = Math.max(element.innerWidth() - 60, 50);
+		element.empty();
+		input = jQuery('<input width="100%">').appendTo(element).val(previousText)
+			.blur(function () {
+				setContent(input.val());
+			}).keydown('esc', function (e) {
+				setContent(previousText);
+				e.preventDefault();
+				e.stopPropagation();
+			}).keydown('return', function (e) {
+				setContent(input.val());
+				e.preventDefault();
+				e.stopPropagation();
+			}).width(oldWidth).click(function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+			}).focus();
+	});
+	this.css('cursor', 'pointer');
+	return this;
+};
+jQuery.fn.tableEditWidget = function (contentRefreshCallBack) {
+	'use strict';
+	var modal = this,
+		template = modal.find('[data-mm-role=status-template]').clone().removeAttr('data-mm-role'),
+		rebind = function (container) {
+			container.find('[data-mm-editable]').tableCellInPlaceEditorWidget().removeAttr('data-mm-editable');
+			container.find('[data-mm-color-picker]').removeAttr('data-mm-color-picker').colorPicker();
+			container.find('[data-mm-role=remove]').click(function () {
+				jQuery(this).parents('tr').fadeOut(500, function () {
+					jQuery(this).remove();
+				});
+			}).removeAttr('data-mm-role');
+		};
+	modal.on('show', function () {
+		if (contentRefreshCallBack()) {
+			contentRefreshCallBack();
+		}
+		rebind(modal);
+	});
+	modal.find('[data-mm-role=append]').click(function () {
+		var newItem = template.clone().attr('data-mm-role', template.attr('data-mm-new-role')).appendTo(modal.find('[data-mm-role=status-list]'));
+		rebind(newItem);
+	});
+	return modal;
 };
