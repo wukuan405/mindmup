@@ -169,7 +169,8 @@ describe('MM.ContentStatusUpdater', function () {
 		});
 	});
 	describe("setStatusConfig", function () {
-		var content, underTest;
+		var content, underTest,
+			configOne = { 'passing': { style: { background: '#ffffff' } } };
 		beforeEach(function () {
 			content = MAPJS.content({
 				id: 1,
@@ -178,14 +179,22 @@ describe('MM.ContentStatusUpdater', function () {
 			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
 		});
 		it("changes status configuration on current content", function () {
-			underTest.setStatusConfig('new');
-			expect(content.getAttr('test-statuses')).toBe('new');
+			underTest.setStatusConfig(configOne);
+			expect(content.getAttr('test-statuses')).toEqual(configOne);
 		});
 		it("dispatches config changed event when configuration changes", function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener("configChanged", listener);
-			underTest.setStatusConfig('new');
-			expect(listener).toHaveBeenCalledWith('new');
+			underTest.setStatusConfig(configOne);
+			expect(listener).toHaveBeenCalledWith(configOne);
+		});
+		it("ignores non numerical priority", function () {
+			underTest.setStatusConfig({ 'passing': { priority: 'abc', style: { background: '#ffffff' } } });
+			expect(content.getAttr('test-statuses')).toEqual(configOne);
+		});
+		it("parses numerical priorities if provided as strings", function () {
+			underTest.setStatusConfig({ 'passing': { priority: '2', style: { background: '#ffffff' } } });
+			expect(content.getAttr('test-statuses')).toEqual({ 'passing': { priority: '2', style: { background: '#ffffff' } } });
 		});
 	});
 	describe("mapController bindings", function () {
@@ -249,6 +258,7 @@ describe("progressStatusUpdateWidget", function () {
 		singleConfig = { passed: {style: {background: '#FF0000' }}},
 		doubleConfig = { passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
 						failed: {description: 'Failed desc', priority: 1, style: {background: 'rgb(255, 0, 0)'}}};
+
 	beforeEach(function () {
 		mapModel = observable({});
 		updater = observable({});
@@ -278,13 +288,29 @@ describe("progressStatusUpdateWidget", function () {
 			var statuses = domElement.find('[data-mm-role=progress]');
 			expect(statuses.size()).toBe(2);
 			expect(statuses.first().find('[data-mm-role=status-name]').text()).toBe('Failed desc');
-			expect(statuses.first().find('[data-mm-role=status-key]').text()).toBe('failed');
+			expect(statuses.first().attr('data-mm-progress-key')).toBe('failed');
 			expect(statuses.first().find('[data-mm-role=status-priority]').text()).toBe('1');
 			expect(statuses.first().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(255, 0, 0)');
 			expect(statuses.last().find('[data-mm-role=status-name]').text()).toBe('Passed desc');
 			expect(statuses.last().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(0, 0, 255)');
-			expect(statuses.last().find('[data-mm-role=status-key]').text()).toBe('passed');
+			expect(statuses.last().attr('data-mm-progress-key')).toBe('passed');
 			expect(statuses.last().find('[data-mm-role=status-priority]').text()).toBe('');
+		});
+		it("orders by priority, highest priority first, then items without priority in alphabetic order", function () {
+			var numericOrderConfig = {
+				'kalpha': {description: 'F', style: {background: 'rgb(255, 0, 0)'}},
+				'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+				'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+				'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+			},
+				statuses;
+			updater.dispatchEvent('configChanged', numericOrderConfig);
+			statuses = domElement.find('[data-mm-role=progress]');
+			expect(statuses.size()).toBe(4);
+			expect(statuses.eq(0).attr('data-mm-progress-key')).toBe('k999');
+			expect(statuses.eq(1).attr('data-mm-progress-key')).toBe('k888');
+			expect(statuses.eq(2).attr('data-mm-progress-key')).toBe('k777');
+			expect(statuses.eq(3).attr('data-mm-progress-key')).toBe('kalpha');
 		});
 		it("supports inputs for color, setting the value", function () {
 			var inputElHTML = '<div>  ' +
@@ -335,16 +361,14 @@ describe("progressStatusUpdateWidget", function () {
 			expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
 		});
 		it("serialises current list of statuses to updater when clicked on save link", function () {
-			var newStatusHtml = '<li data-mm-role="progress">'
+			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
-				+ '<span data-mm-role="status-key">Key 1</span>'
 				+ '<span data-mm-role="status-priority">1</span>'
 				+ '</li>'
-				+ '<li data-mm-role="progress">'
+				+ '<li data-mm-role="progress" data-mm-progress-key="Key 2">'
 				+ '<input data-mm-role="status-color" value="#FFFFFF"/>'
 				+ '<span data-mm-role="status-name">No Priority</span>'
-				+ '<span data-mm-role="status-key">Key 2</span>'
 				+ '<span data-mm-role="status-priority"></span>'
 				+ '</li>';
 			domElement.find('[data-mm-role=progress]').remove();
@@ -358,6 +382,60 @@ describe("progressStatusUpdateWidget", function () {
 					priority: '1'
 				},
 				'Key 2': {
+					description: 'No Priority',
+					style: { background: '#FFFFFF' }
+				}
+			});
+		});
+		it("autogenerates keys for statuses without a key, numerically skipping any existing values", function () {
+			var newStatusHtml = '<li data-mm-role="progress" >'
+				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
+				+ '<span data-mm-role="status-name">Name 1</span>'
+				+ '<span data-mm-role="status-priority">1</span>'
+				+ '</li>'
+				+ '<li data-mm-role="progress" data-mm-progress-key="6">'
+				+ '<input data-mm-role="status-color" value="#FFFFFF"/>'
+				+ '<span data-mm-role="status-name">No Priority</span>'
+				+ '<span data-mm-role="status-priority"></span>'
+				+ '</li>';
+			domElement.find('[data-mm-role=progress]').remove();
+			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-role=save]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith({
+				'7': {
+					description: 'Name 1',
+					style: { background: '#0FF0FF'},
+					priority: '1'
+				},
+				'6': {
+					description: 'No Priority',
+					style: { background: '#FFFFFF' }
+				}
+			});
+		});
+		it("autogenerates keys starting from 1 when no keys are defined", function () {
+			var newStatusHtml = '<li data-mm-role="progress" >'
+				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
+				+ '<span data-mm-role="status-name">Name 1</span>'
+				+ '<span data-mm-role="status-priority">1</span>'
+				+ '</li>'
+				+ '<li data-mm-role="progress">'
+				+ '<input data-mm-role="status-color" value="#FFFFFF"/>'
+				+ '<span data-mm-role="status-name">No Priority</span>'
+				+ '<span data-mm-role="status-priority"></span>'
+				+ '</li>';
+			domElement.find('[data-mm-role=progress]').remove();
+			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-role=save]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith({
+				'1': {
+					description: 'Name 1',
+					style: { background: '#0FF0FF'},
+					priority: '1'
+				},
+				'2': {
 					description: 'No Priority',
 					style: { background: '#FFFFFF' }
 				}

@@ -23,7 +23,14 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			});
 		};
 	self.setStatusConfig = function (statusConfig) {
-		content.updateAttr(content.id, statusConfigurationAttributeName, statusConfig);
+		var validatedConfig = {}, parsedPriority;
+		_.each(statusConfig, function (element, key) {
+			validatedConfig[key] = _.clone(element);
+			if (isNaN(validatedConfig[key].priority)) {
+				delete validatedConfig[key].priority;
+			}
+		});
+		content.updateAttr(content.id, statusConfigurationAttributeName, validatedConfig);
 	};
 	self.updateStatus = function (ideaId, newStatusName) {
 		var changeStatus = function (id, statusName) {
@@ -82,16 +89,20 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 		template = element.find('[data-mm-role=status-template]').detach(),
 		currentlySelectedId,
 		generateStatuses = function (config) {
-			var domParent = element.find('[data-mm-role=status-list]');
-			_.each(config, function (status, statusName) {
+			var domParent = element.find('[data-mm-role=status-list]'),
+				configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
+				sortedConfig = _.sortBy(configWithKeys, function (status) {
+					return status.priority || 0;
+				});
+			_.each(sortedConfig, function (status) {
 				var newItem = template.clone().prependTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
 				newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
 				newItem.find('[data-mm-role=status-name]').text(status.description);
-				newItem.find('[data-mm-role=status-key]').text(statusName);
+				newItem.attr('data-mm-progress-key', status.key);
 				newItem.find('[data-mm-role=status-priority]').text(status.priority);
 				newItem.find('[data-mm-role=set-status]').click(function () {
-					updater.updateStatus(currentlySelectedId, statusName);
+					updater.updateStatus(currentlySelectedId, status.key);
 				});
 			});
 		},
@@ -125,18 +136,30 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			});
 			element.find('[data-mm-role=save]').click(function () {
 				var config = {},
-					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]');
+					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
+					existing_num_keys = _.reject(
+						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
+						function (x) {return isNaN(x); }
+					),
+					autoKey = 1;
+				if (existing_num_keys.length > 0) {
+					autoKey = 1 + _.max(existing_num_keys);
+				}
 				statuses.each(function () {
 					var status = jQuery(this),
 						statusConfig = {
 							description: status.find('[data-mm-role=status-name]').text(),
 							style: {background: status.find('[data-mm-role=status-color]').val()}
 						},
-						priority = status.find('[data-mm-role=status-priority]').text();
+						priority = status.find('[data-mm-role=status-priority]').text(),
+						key = status.attr('data-mm-progress-key');
+					if (!key) {
+						key = autoKey++;
+					}
 					if (priority) {
 						statusConfig.priority = priority;
 					}
-					config[status.find('[data-mm-role=status-key]').text()] = statusConfig;
+					config[key] = statusConfig;
 				});
 				updater.setStatusConfig(config);
 			});
