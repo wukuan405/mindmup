@@ -136,8 +136,8 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 		alert.hide(alertId);
 		if (requiredExtension) {
 			showAlertWithCallBack(
-				'This map requires an extension to load: ' + requiredExtension.name,
-				'Click here to configure extensions',
+				'This map requires an extension to load!',
+				'Click here to enable the ' +  requiredExtension.name + ' extension',
 				'warning',
 				function () {
 					causedByMapId = newMapId;
