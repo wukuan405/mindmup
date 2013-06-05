@@ -1054,7 +1054,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		},
 		updateCurrentLayout = function (newLayout, contextNodeId) {
 			var nodeId, newNode, oldNode, newConnector, oldConnector;
-			if (contextNodeId && currentLayout.nodes[contextNodeId] && newLayout.nodes[contextNodeId]) {
+			if (contextNodeId && currentLayout.nodes && currentLayout.nodes[contextNodeId] && newLayout.nodes[contextNodeId]) {
 				moveNodes(newLayout.nodes,
 					currentLayout.nodes[contextNodeId].x - newLayout.nodes[contextNodeId].x,
 					currentLayout.nodes[contextNodeId].y - newLayout.nodes[contextNodeId].y
@@ -1160,6 +1160,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
+			self.setActiveNodes([anIdea.id]);
 			self.dispatchEvent('nodeSelectionChanged', currentlySelectedIdeaId, false);
 			currentlySelectedIdeaId = undefined;
 		}
@@ -1184,6 +1185,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				self.dispatchEvent('nodeSelectionChanged', currentlySelectedIdeaId, false);
 			}
 			currentlySelectedIdeaId = id;
+			self.setActiveNodes([id]);
 			self.dispatchEvent('nodeSelectionChanged', id, true);
 		}
 	};
@@ -1195,30 +1197,61 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			this.selectNode(id);
 		}
 	};
+	this.findIdeaById = function (id) {
+		/*jslint eqeq:true */
+		if (idea.id == id) {
+			return idea;
+		}
+		return idea.findSubIdeaById(id);
+	};
 	this.getSelectedStyle = function (prop) {
-		var node = currentLayout.nodes[currentlySelectedIdeaId];
+		return this.getStyleForId(currentlySelectedIdeaId, prop);
+	};
+	this.getStyleForId = function (id, prop) {
+		var node = currentLayout.nodes && currentLayout.nodes[id];
 		return node && node.attr && node.attr.style && node.attr.style[prop];
 	};
 	this.toggleCollapse = function (source) {
-		var isCollapsed = currentlySelectedIdea().getAttr('collapsed');
+		var selectedIdea = currentlySelectedIdea(),
+			isCollapsed;
+		if (_.size(selectedIdea.ideas) > 0) {
+			isCollapsed = currentlySelectedIdea().getAttr('collapsed');
+		} else {
+			isCollapsed = _.every(self.currentlyActivatedNodes(), function (id) {
+				var node = self.findIdeaById(id);
+				if (node && _.size(node.ideas) > 0) {
+					return node.getAttr('collapsed');
+				}
+				return true;
+			});
+		}
 		this.collapse(source, !isCollapsed);
 	};
 	this.collapse = function (source, doCollapse) {
 		analytic('collapse:' + doCollapse, source);
 		if (isInputEnabled) {
-			var node = currentlySelectedIdea();
-			if (node.ideas && _.size(node.ideas) > 0) {
-				idea.updateAttr(currentlySelectedIdeaId, 'collapsed', doCollapse);
-			}
+			var ids = self.currentlyActivatedNodes();
+			_.each(ids, function (id) {
+				var node = self.findIdeaById(id);
+				if (node && (!doCollapse || (node.ideas && _.size(node.ideas) > 0))) {
+					idea.updateAttr(id, 'collapsed', doCollapse);
+				}
+			});
 		}
 	};
 	this.updateStyle = function (source, prop, value) {
 		/*jslint eqeq:true */
-		if (isInputEnabled && this.getSelectedStyle(prop) != value) {
+		if (isInputEnabled) {
 			analytic('updateStyle:' + prop, source);
-			var merged = _.extend({}, currentlySelectedIdea().getAttr('style'));
-			merged[prop] = value;
-			idea.updateAttr(currentlySelectedIdeaId, 'style', merged);
+			var ids = self.currentlyActivatedNodes();
+			_.each(ids, function (id) {
+				if (self.getStyleForId(id, prop) != value) {
+					var node = self.findIdeaById(id),
+						merged = _.extend({}, node.getAttr('style'));
+					merged[prop] = value;
+					idea.updateAttr(id, 'style', merged);
+				}
+			});
 		}
 	};
 	this.updateLinkStyle = function (source, ideaIdFrom, ideaIdTo, prop, value) {
@@ -1380,6 +1413,32 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	self.moveUp = function (source) { self.moveRelative(source, -1); };
 	self.moveDown = function (source) { self.moveRelative(source, 1); };
+
+	//node activation
+	(function () {
+		var activatedNodes = [];
+		self.setActiveNodes = function (activated) {
+				var wasActivated = _.clone(activatedNodes);
+				activatedNodes = activated;
+
+				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
+			};
+
+		self.activateNodesForSameLevel = function () {
+			var parent = idea.findParent(currentlySelectedIdeaId),
+				siblingIds;
+			if (!parent || !parent.ideas) {
+				return;
+			}
+			siblingIds = _.map(parent.ideas, function (child) { return child.id; });
+			self.setActiveNodes(siblingIds);
+		};
+		self.currentlyActivatedNodes = function () {
+			return activatedNodes;
+		};
+	}());
+
+
 	(function () {
 		var isRootOrRightHalf = function (id) {
 				return currentLayout.nodes[id].x >= currentLayout.nodes[idea.id].x;
@@ -1506,6 +1565,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				}
 			},
 			canDropOnNode = function (id, x, y, node) {
+				/*jslint eqeq: true*/
 				return id != node.id &&
 					x >= node.x &&
 					y >= node.y &&
@@ -1833,9 +1893,11 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 		this.level = config.level;
 		this.mmAttr = config.mmAttr;
 		this.isSelected = false;
+		this.isActivated = false;
 		config.draggable = config.level > 1;
 		config.name = 'Idea';
 		Kinetic.Group.call(this, config);
+		this.rectAttrs = {stroke: '#888', strokeWidth: 1};
 		this.rect = new Kinetic.Rect({
 			strokeWidth: 1,
 			cornerRadius: 10
@@ -1933,7 +1995,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					'background-color': self.getBackground(),
 					'margin': -3 * scale,
 					'border-radius': self.rect.attrs.cornerRadius * scale + 'px',
-					'border': self.rect.attrs.strokeWidth * (2 * scale) + 'px dashed ' + self.rect.attrs.stroke,
+					'border': self.rectAttrs.strokeWidth * (2 * scale) + 'px dashed ' + self.rectAttrs.stroke,
 					'color': self.text.attrs.fill
 				})
 				.val(unformattedText)
@@ -2048,6 +2110,7 @@ Kinetic.Idea.prototype.setStyle = function () {
 	var self = this,
 		isDroppable = this.isDroppable,
 		isSelected = this.isSelected,
+		isActivated = this.isActivated,
 		background = this.getBackground(),
 		tintedBackground = Color(background).mix(Color('#EEEEEE')).hexString(),
 		isClipVisible = this.mmAttr && this.mmAttr.attachment || false,
@@ -2076,12 +2139,18 @@ Kinetic.Idea.prototype.setStyle = function () {
 		} else if (isSelected) {
 			r.attrs.fillLinearGradientColorStops = [0, background, 1, background];
 		} else {
-			r.attrs.stroke = '#888';
+			r.attrs.stroke = self.rectAttrs.stroke;
 			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
 			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
 			r.attrs.fillLinearGradientColorStops = [0, tintedBackground, 1, background];
 		}
 	});
+	if (isActivated) {
+		this.rect.attrs.stroke = '#2E9AFE';
+	}
+	this.rect.attrs.dashArray = this.isActivated ? [4, 1] : [];
+	this.rect.attrs.strokeWidth = this.isActivated ? 2 : self.rectAttrs.strokeWidth;
+
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
 	this.clip.attrs.x = this.text.getWidth() + padding;
@@ -2112,6 +2181,14 @@ Kinetic.Idea.prototype.setIsSelected = function (isSelected) {
 		this.stopEditing();
 	}
 };
+
+Kinetic.Idea.prototype.setIsActivated = function (isActivated) {
+	'use strict';
+	this.isActivated = isActivated;
+	this.setStyle();
+	this.getLayer().draw();
+};
+
 Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
 	'use strict';
 	this.isDroppable = isDroppable;
@@ -2520,6 +2597,17 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
 		moveStage(deltaX, deltaY);
 	});
+	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
+		var setActivated = function (active, id) {
+			var node = nodeByIdeaId[id];
+			if (!node) {
+				return;
+			}
+			node.setIsActivated(active);
+		};
+		_.each(activatedNodes, setActivated.bind(undefined, true));
+		_.each(deactivatedNodes, setActivated.bind(undefined, false));
+	});
 	(function () {
 		var x, y;
 		stage.on('dragmove', function () {
@@ -2668,6 +2756,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'del backspace': 'removeSubIdea',
 				'tab': 'addSubIdea',
 				'left': 'selectNodeLeft',
+				'meta+1 ctrl+1': 'activateNodesForSameLevel',
 				'up': 'selectNodeUp',
 				'right': 'selectNodeRight',
 				'down': 'selectNodeDown',
