@@ -1202,14 +1202,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			currentLayout = newLayout;
 		},
-		onIdeaChanged = function (command, args, originSession) {
-			var newIdeaId, localCommand;
-			localCommand = (!originSession) || originSession === idea.getSessionKey();
-
-			updateCurrentLayout(layoutCalculator(idea), command && getCurrentlySelectedIdeaId());
-			if (!localCommand) {
-				return;
-			}
+		checkDefaultUIActions = function (command, args) {
+			var newIdeaId;
 			if (command === 'addSubIdea') {
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
@@ -1223,6 +1217,24 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			if (command === 'paste') {
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
+			}
+
+		},
+		onIdeaChanged = function (command, args, originSession) {
+			var localCommand;
+			localCommand = (!originSession) || originSession === idea.getSessionKey();
+
+			updateCurrentLayout(layoutCalculator(idea), command && getCurrentlySelectedIdeaId());
+			if (!localCommand) {
+				return;
+			}
+			if (command === 'batch') {
+				_.each(args, function (singleCmd) {
+					checkDefaultUIActions(singleCmd[0], singleCmd.slice(1));
+				});
+			}
+			else {
+				checkDefaultUIActions(command, args);
 			}
 		},
 		getCurrentlySelectedIdeaId = function () {
