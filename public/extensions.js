@@ -79,6 +79,13 @@ MM.Extensions.config = {
 		icon: 'icon-dashboard',
 		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
 		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.'
+	},
+	'straight-lines' : {
+		name: 'Straight lines',
+		script: '/e/straight-lines.js',
+		icon: 'icon-reorder',
+		doc: 'http://blog.mindmup.com/p/straight-lines.html',
+		desc: 'This extension converts funky curve connectors into straight lines, which makes it clearer to see what connects to what on larger maps'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
