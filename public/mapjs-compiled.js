@@ -303,6 +303,20 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			false
 		);
 	};
+	contentAggregate.getSubTreeIds = function (rootIdeaId) {
+		var result = [],
+			collectIds = function (idea) {
+				if (_.isEmpty(idea.ideas)) {
+					return [];
+				}
+				_.each(idea.sortedSubIdeas(), function (child) {
+					collectIds(child);
+					result.push(child.id);
+				});
+			};
+		collectIds(contentAggregate.findSubIdeaById(rootIdeaId) || contentAggregate);
+		return result;
+	};
 	contentAggregate.findParent = function (subIdeaId, parentIdea) {
 		parentIdea = parentIdea || contentAggregate;
 		if (parentIdea.containsDirectChild(subIdeaId)) {
@@ -1192,7 +1206,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			var newIdeaId, localCommand;
 			localCommand = (!originSession) || originSession === idea.getSessionKey();
 
-			updateCurrentLayout(layoutCalculator(idea), command && (currentlySelectedIdeaId || idea.id));
+			updateCurrentLayout(layoutCalculator(idea), command && getCurrentlySelectedIdeaId());
 			if (!localCommand) {
 				return;
 			}
@@ -1210,6 +1224,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
 			}
+		},
+		getCurrentlySelectedIdeaId = function () {
+			return currentlySelectedIdeaId || idea.id;
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -1330,8 +1347,10 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		var target = parentId || currentlySelectedIdeaId;
 		analytic('addSubIdea', source);
 		if (isInputEnabled) {
-			ensureNodeIsExpanded(source, target);
-			idea.addSubIdea(target, getRandomTitle(titlesToRandomlyChooseFrom));
+			idea.batch(function () {
+				ensureNodeIsExpanded(source, target);
+				idea.addSubIdea(target, getRandomTitle(titlesToRandomlyChooseFrom));
+			});
 		}
 	};
 	this.insertIntermediate = function (source) {
@@ -1345,15 +1364,17 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		analytic('addSiblingIdea', source);
 		if (isInputEnabled) {
 			var parent = idea.findParent(currentlySelectedIdeaId) || idea;
-			ensureNodeIsExpanded(source, parent.id);
-			idea.addSubIdea(parent.id, getRandomTitle(titlesToRandomlyChooseFrom));
+			idea.batch(function () {
+				ensureNodeIsExpanded(source, parent.id);
+				idea.addSubIdea(parent.id, getRandomTitle(titlesToRandomlyChooseFrom));
+			});
 		}
 	};
 	this.removeSubIdea = function (source) {
 		analytic('removeSubIdea', source);
 		if (isInputEnabled) {
 			var shouldSelectParent,
-				previousSelectionId = currentlySelectedIdeaId || idea.id,
+				previousSelectionId = getCurrentlySelectedIdeaId(),
 				parent = idea.findParent(previousSelectionId);
 			self.applyToActivated(function (id) {
 				var removed  = idea.removeSubIdea(id);
@@ -1498,8 +1519,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 
 				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
 			};
-
-		self.activateNodesForSameLevel = function () {
+		self.activateSiblingNodes = function () {
 			var parent = idea.findParent(currentlySelectedIdeaId),
 				siblingIds;
 			if (!parent || !parent.ideas) {
@@ -1507,6 +1527,15 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			siblingIds = _.map(parent.ideas, function (child) { return child.id; });
 			setActiveNodes(siblingIds);
+		};
+		self.activateNodeAndChildren = function () {
+			var contextId = getCurrentlySelectedIdeaId(),
+				subtree = idea.getSubTreeIds(contextId);
+			subtree.push(contextId);
+			setActiveNodes(subtree);
+		};
+		self.activateChildren = function () {
+			setActiveNodes(idea.getSubTreeIds(getCurrentlySelectedIdeaId()));
 		};
 		self.applyToActivated = function (toApply) {
 			idea.batch(function () {_.each(activatedNodes, toApply); });
@@ -2834,18 +2863,16 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				lastGesture = gesture;
 				return !result;
 			},
-			keyboardEventHandlers = {
-				'a': 'openAttachment',
+			hotkeyEventHandlers = {
 				'return': 'addSiblingIdea',
 				'del backspace': 'removeSubIdea',
 				'tab': 'addSubIdea',
 				'left': 'selectNodeLeft',
-				'meta+1 ctrl+1': 'activateNodesForSameLevel',
 				'up': 'selectNodeUp',
 				'right': 'selectNodeRight',
 				'down': 'selectNodeDown',
 				'space': 'editNode',
-				'/ shift+up': 'toggleCollapse',
+				'shift+up': 'toggleCollapse',
 				'c meta+x ctrl+x': 'cut',
 				'p meta+v ctrl+v': 'paste',
 				'y meta+c ctrl+c': 'copy',
@@ -2858,6 +2885,13 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'meta+up ctrl+up': 'moveUp',
 				'meta+down ctrl+down': 'moveDown',
 				'ctrl+shift+v meta+shift+v': 'pasteStyle'
+			},
+			charEventHandlers = {
+				'[' : 'activateChildren',
+				'{'	: 'activateNodeAndChildren',
+				'='	: 'activateSiblingNodes',
+				'/' : 'toggleCollapse',
+				'a': 'openAttachment'
 			},
 			onScroll = function (event, delta, deltaX, deltaY) {
 				if (event.target === jQuery(stage.getContainer()).find('canvas')[0]) {
@@ -2873,9 +2907,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 					}
 				}
 			};
-		jQuery.hotkeys.specialKeys[187] = 'plus';
-		jQuery.hotkeys.specialKeys[189] = 'minus';
-		_.each(keyboardEventHandlers, function (mappedFunction, keysPressed) {
+		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			jQuery(document).keydown(keysPressed, function (event) {
 				if (actOnKeys) {
 					event.preventDefault();
@@ -2883,6 +2915,18 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				}
 			});
 		});
+		$(document).on('keypress', function (evt) {
+			if (!actOnKeys) {
+				return;
+			}
+			var unicode=evt.charCode? evt.charCode : evt.keyCode,
+				actualkey=String.fromCharCode(unicode),
+				mappedFunction = charEventHandlers[actualkey];
+			if (mappedFunction) {
+				event.preventDefault();
+				mapModel[mappedFunction]('keyboard');
+			}
+		})
 		element.data('mm-stage', stage);
 		mapModel.addEventListener('inputEnabledChanged', function (canInput) {
 			stage.setDraggable(!canInput);
