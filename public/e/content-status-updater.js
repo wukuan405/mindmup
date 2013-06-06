@@ -6,9 +6,6 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		findStatus = function (statusName) {
 			return content.getAttr(statusConfigurationAttributeName)[statusName];
 		},
-		ideaStatus = function (idea) {
-			return findStatus(idea.getAttr(statusAttributeName));
-		},
 		statusPriority = function (statusName) {
 			var s = findStatus(statusName);
 			return s && s.priority;
@@ -27,7 +24,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			content.updateAttr(content.id, statusConfigurationAttributeName, false);
 			return;
 		}
-		var validatedConfig = {}, parsedPriority;
+		var validatedConfig = {};
 		_.each(statusConfig, function (element, key) {
 			validatedConfig[key] = _.clone(element);
 			if (isNaN(validatedConfig[key].priority)) {
@@ -59,17 +56,17 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				}
 				return _.max(childStatusNames, statusPriority);
 			};
-		content.startBatch();
-		if (changeStatus(ideaId, newStatusName)) {
-			_.each(content.calculatePath(ideaId), function (parent) {
-				var parentStatusName = shouldPropagate(parent);
-				if (parentStatusName) {
-					changeStatus(parent.id, parentStatusName);
-				}
-			});
-			result = true;
-		}
-		content.endBatch();
+		content.batch(function () {
+			if (changeStatus(ideaId, newStatusName)) {
+				_.each(content.calculatePath(ideaId), function (parent) {
+					var parentStatusName = shouldPropagate(parent);
+					if (parentStatusName) {
+						changeStatus(parent.id, parentStatusName);
+					}
+				});
+				result = true;
+			}
+		});
 		return result;
 	};
 	self.clear = function (idea) {
@@ -143,13 +140,13 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			element.find('[data-mm-role=save]').click(function () {
 				var config = {},
 					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
-					existing_num_keys = _.reject(
+					existing = _.reject(
 						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
 						function (x) {return isNaN(x); }
 					),
 					autoKey = 1;
-				if (existing_num_keys.length > 0) {
-					autoKey = 1 + _.max(existing_num_keys);
+				if (existing.length > 0) {
+					autoKey = 1 + _.max(existing);
 				}
 				statuses.each(function () {
 					var status = jQuery(this),
