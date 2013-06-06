@@ -37,7 +37,8 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		content.updateAttr(content.id, statusConfigurationAttributeName, validatedConfig);
 	};
 	self.updateStatus = function (ideaId, newStatusName) {
-		var changeStatus = function (id, statusName) {
+		var result = false,
+			changeStatus = function (id, statusName) {
 				var status = findStatus(statusName),
 					merged;
 				if (!status) {
@@ -58,7 +59,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				}
 				return _.max(childStatusNames, statusPriority);
 			};
-
+		content.startBatch();
 		if (changeStatus(ideaId, newStatusName)) {
 			_.each(content.calculatePath(ideaId), function (parent) {
 				var parentStatusName = shouldPropagate(parent);
@@ -66,9 +67,10 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 					changeStatus(parent.id, parentStatusName);
 				}
 			});
-			return true;
+			result = true;
 		}
-		return false;
+		content.endBatch();
+		return result;
 	};
 	self.clear = function (idea) {
 		idea = idea || content;
