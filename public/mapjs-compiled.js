@@ -353,12 +353,25 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 		return commandProcessors[cmd].apply(contentAggregate, [originSession || sessionKey].concat(_.toArray(args)));
 	};
+	contentAggregate.batch = function (batchOp) {
+		contentAggregate.startBatch();
+		try {
+			batchOp();
+		}
+		finally {
+			contentAggregate.endBatch();
+		}
+	};
 	commandProcessors.batch = function (originSession) {
 		contentAggregate.startBatch(originSession);
-		_.each(_.toArray(arguments).slice(1), function (event) {
-			contentAggregate.execCommand(event[0], event.slice(1), originSession);
-		});
-		contentAggregate.endBatch(originSession);
+		try {
+			_.each(_.toArray(arguments).slice(1), function (event) {
+				contentAggregate.execCommand(event[0], event.slice(1), originSession);
+			});
+		}
+		finally {
+			contentAggregate.endBatch(originSession);
+		}
 	};
 	contentAggregate.paste = function (parentIdeaId, jsonToPaste, initialId) {
 		return contentAggregate.execCommand('paste', arguments);
@@ -1485,9 +1498,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			setActiveNodes(siblingIds);
 		};
 		self.applyToActivated = function (toApply) {
-			idea.startBatch();
-			_.each(activatedNodes, toApply);
-			idea.endBatch();
+			idea.batch(function () {_.each(activatedNodes, toApply); });
 		};
 		self.everyActivatedIs = function (predicate) {
 			return _.every(activatedNodes, predicate);
