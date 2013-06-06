@@ -32,7 +32,7 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		var events = storage.getItem(prefix + currentMapId);
 		if (events) {
 			events.forEach(function (event) {
-				currentIdea[event.cmd].apply(currentIdea, event.args);
+				currentIdea.execCommand(event.cmd, event.args);
 			});
 		}
 	};
