@@ -330,6 +330,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			batchUndoFunctions,
 			undo;
 		if (_.isEmpty(inBatch)) {
+			batches[activeSession] = undefined;
 			return;
 		}
 		batchArgs = _.map(inBatch, function (event) {
@@ -353,6 +354,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 		return commandProcessors[cmd].apply(contentAggregate, [originSession || sessionKey].concat(_.toArray(args)));
 	};
+
 	contentAggregate.batch = function (batchOp) {
 		contentAggregate.startBatch();
 		try {
@@ -362,6 +364,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			contentAggregate.endBatch();
 		}
 	};
+
 	commandProcessors.batch = function (originSession) {
 		contentAggregate.startBatch(originSession);
 		try {
@@ -1346,12 +1349,20 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			idea.addSubIdea(parent.id, getRandomTitle(titlesToRandomlyChooseFrom));
 		}
 	};
-	this.removeSubIdea = function (source, targetId) {
+	this.removeSubIdea = function (source) {
 		analytic('removeSubIdea', source);
 		if (isInputEnabled) {
-			var target = targetId || currentlySelectedIdeaId,
-				parent = idea.findParent(target);
-			if (idea.removeSubIdea(target)) {
+			var shouldSelectParent,
+				previousSelectionId = currentlySelectedIdeaId || idea.id,
+				parent = idea.findParent(previousSelectionId);
+			self.applyToActivated(function (id) {
+				var removed  = idea.removeSubIdea(id);
+				/*jslint eqeq: true*/
+				if (previousSelectionId == id) {
+					shouldSelectParent = removed;
+				}
+			});
+			if (shouldSelectParent) {
 				self.selectNode(parent.id);
 			}
 		}
