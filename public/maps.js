@@ -4,11 +4,11 @@ MM.Maps['new'] = {"title":"Press Space or double-click to edit","id":1};
 MM.Maps['new-g'] = MM.Maps['new'];
 
 MM.EmbeddedMapSource = function () {
+	var properties = {editable: true, sharable: false};
 	this.recognises = function (mapId) {
 		return MM.Maps[mapId];
 	};
 	this.loadMap = function (mapId) {
-		return jQuery.Deferred().resolve(MAPJS.content(_.clone(this.recognises(mapId))), mapId, false).promise();
+		return jQuery.Deferred().resolve(MAPJS.content(_.clone(this.recognises(mapId))), mapId, properties).promise();
 	};
-	this.notSharable = true;
 };
