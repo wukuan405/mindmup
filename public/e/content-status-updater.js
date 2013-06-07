@@ -56,17 +56,15 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				}
 				return _.max(childStatusNames, statusPriority);
 			};
-		content.batch(function () {
-			if (changeStatus(ideaId, newStatusName)) {
-				_.each(content.calculatePath(ideaId), function (parent) {
-					var parentStatusName = shouldPropagate(parent);
-					if (parentStatusName) {
-						changeStatus(parent.id, parentStatusName);
-					}
-				});
-				result = true;
-			}
-		});
+		if (changeStatus(ideaId, newStatusName)) {
+			_.each(content.calculatePath(ideaId), function (parent) {
+				var parentStatusName = shouldPropagate(parent);
+				if (parentStatusName) {
+					changeStatus(parent.id, parentStatusName);
+				}
+			});
+			result = true;
+		}
 		return result;
 	};
 	self.clear = function (idea) {
@@ -90,7 +88,6 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 	'use strict';
 	var	element = this,
 		template = element.find('[data-mm-role=status-template]').detach(),
-		currentlySelectedId,
 		generateStatuses = function (config) {
 			var domParent = element.find('[data-mm-role=status-list]'),
 				configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
@@ -105,7 +102,9 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				newItem.attr('data-mm-progress-key', status.key);
 				newItem.find('[data-mm-role=status-priority]').text(status.priority);
 				newItem.find('[data-mm-role=set-status]').click(function () {
-					updater.updateStatus(currentlySelectedId, status.key);
+					mapModel.applyToActivated(function (id) {
+						updater.updateStatus(id, status.key);
+					});
 				});
 			});
 		},
@@ -167,9 +166,6 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				updater.setStatusConfig(config);
 			});
 		};
-	mapModel.addEventListener('nodeSelectionChanged', function (id) {
-		currentlySelectedId = id;
-	});
 	bindGenericFunctions();
 	updater.addEventListener('configChanged', function (config) {
 		updateUI(config);
