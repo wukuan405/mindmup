@@ -1223,8 +1223,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		onIdeaChanged = function (command, args, originSession) {
 			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
 			localCommand = (!originSession) || originSession === idea.getSessionKey();
-			
-			updateCurrentLayout(layoutCalculator(idea), contextNodeId);
+
+			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
 				return;
 			}
@@ -1558,18 +1558,20 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		self.everyActivatedIs = function (predicate) {
 			return _.every(activatedNodes, predicate);
 		};
+		self.reactivate = function (layout) {
+			_.each(layout.nodes, function (node) {
+				if (_.contains(activatedNodes, node.id)) {
+					node.activated = true;
+				}
+			});
+			return layout;
+		};
 		self.addEventListener('nodeSelectionChanged', function (id, isSelected) {
 			if (!isSelected) {
 				setActiveNodes([]);
 				return;
 			}
 			setActiveNodes([id]);
-		}, 1);
-		self.addEventListener('nodeRemoved', function (oldNode, oldId) {
-			setActiveNodes(_.reject(activatedNodes,
-				/*jslint eqeq:true */
-				function (id) { return oldId == id; })
-			);
 		}, 1);
 	}());
 
@@ -2028,7 +2030,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 		this.level = config.level;
 		this.mmAttr = config.mmAttr;
 		this.isSelected = false;
-		this.isActivated = false;
+		this.isActivated = !!config.activated;
 		config.draggable = config.level > 1;
 		config.name = 'Idea';
 		Kinetic.Group.call(this, config);
@@ -2554,7 +2556,8 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			text: n.title,
 			mmAttr: n.attr,
 			opacity: 1,
-			id: 'node_' + n.id
+			id: 'node_' + n.id,
+			activated: n.activated
 		});
 		if (imageRendering) {
 			node = Kinetic.IdeaProxy(node, stage, layer);
