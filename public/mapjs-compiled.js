@@ -484,13 +484,16 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('removeSubIdea', arguments);
 	};
 	commandProcessors.removeSubIdea = function (originSession, subIdeaId) {
-		var parent = contentAggregate.findParent(subIdeaId), oldRank, oldIdea;
+		var parent = contentAggregate.findParent(subIdeaId), oldRank, oldIdea, oldLinks;
 		if (parent) {
 			oldRank = parent.findChildRankById(subIdeaId);
 			oldIdea = parent.ideas[oldRank];
 			delete parent.ideas[oldRank];
+			oldLinks = contentAggregate.links;
+			contentAggregate.links = _.reject(contentAggregate.links, function (link) { return link.ideaIdFrom == subIdeaId || link.ideaIdTo == subIdeaId; });
 			logChange('removeSubIdea', [subIdeaId], function () {
 				parent.ideas[oldRank] = oldIdea;
+				contentAggregate.links = oldLinks;
 			}, originSession);
 			return true;
 		}
@@ -756,15 +759,6 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			}
 			return false;
 		};
-		contentAggregate.addEventListener('changed', function () {
-			if (contentAggregate.links) {
-				contentAggregate.links.forEach(function (link) {
-					if (!isLinkValid(link.ideaIdFrom, link.ideaIdTo)) {
-						contentAggregate.removeLink(link.ideaIdFrom, link.ideaIdTo);
-					}
-				});
-			}
-		});
 		contentAggregate.updateLinkAttr = function (ideaIdFrom, ideaIdTo, attrName, attrValue) {
 			return contentAggregate.execCommand('updateLinkAttr', arguments);
 		};
@@ -1528,7 +1522,6 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			setActiveNodes = function (activated) {
 				var wasActivated = _.clone(activatedNodes);
 				activatedNodes = activated;
-
 				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
 			};
 		self.activateSiblingNodes = function () {
@@ -1557,7 +1550,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			setActiveNodes([getCurrentlySelectedIdeaId()]);
 		};
 		self.isActivated = function (id) {
-			return _.contains(activatedNodes, id);
+			/*jslint eqeq:true*/
+			return _.find(activatedNodes, function (activeId) { return id == activeId; });
 		};
 		self.applyToActivated = function (toApply) {
 			idea.batch(function () {_.each(activatedNodes, toApply); });
@@ -1596,12 +1590,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			setActiveNodes([id]);
 		}, 1);
-		self.addEventListener('nodeRemoved', function () {
+		self.addEventListener('nodeRemoved', function (node, id) {
 			var selectedId = getCurrentlySelectedIdeaId();
-			if (!_.contains(activatedNodes, selectedId)) {
+			if (self.isActivated(id) && !self.isActivated(selectedId)) {
 				setActiveNodes(activatedNodes.concat([selectedId]));
 			}
-
 		});
 	}());
 
