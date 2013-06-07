@@ -1540,9 +1540,6 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			siblingIds = _.map(parent.ideas, function (child) { return child.id; });
 			setActiveNodes(siblingIds);
 		};
-		self.isActivated = function (id) {
-			return _.contains(activatedNodes, id);
-		};
 		self.activateNodeAndChildren = function () {
 			var contextId = getCurrentlySelectedIdeaId(),
 				subtree = idea.getSubTreeIds(contextId);
@@ -1550,13 +1547,39 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			setActiveNodes(subtree);
 		};
 		self.activateChildren = function () {
-			setActiveNodes(idea.getSubTreeIds(getCurrentlySelectedIdeaId()));
+			var context = currentlySelectedIdea();
+			if (!context || _.isEmpty(context.ideas) || context.getAttr('collapsed')) {
+				return;
+			}
+			setActiveNodes(idea.getSubTreeIds(context.id));
+		};
+		self.activateSelectedNode = function () {
+			setActiveNodes([getCurrentlySelectedIdeaId()]);
+		};
+		self.isActivated = function (id) {
+			return _.contains(activatedNodes, id);
 		};
 		self.applyToActivated = function (toApply) {
 			idea.batch(function () {_.each(activatedNodes, toApply); });
 		};
 		self.everyActivatedIs = function (predicate) {
 			return _.every(activatedNodes, predicate);
+		};
+		self.activateLevel = function (source, level) {
+			analytic('activateLevel', source);
+			var toActivate = _.map(
+				_.filter(
+							currentLayout.nodes,
+							function (node) {
+								/*jslint eqeq:true*/
+								return node.level == level;
+							}
+					),
+				function (node) {return node.id; }
+			);
+			if (!_.isEmpty(toActivate)) {
+				setActiveNodes(toActivate);
+			}
 		};
 		self.reactivate = function (layout) {
 			_.each(layout.nodes, function (node) {
@@ -1573,6 +1596,13 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			setActiveNodes([id]);
 		}, 1);
+		self.addEventListener('nodeRemoved', function () {
+			var selectedId = getCurrentlySelectedIdeaId();
+			if (!_.contains(activatedNodes, selectedId)) {
+				setActiveNodes(activatedNodes.concat([selectedId]));
+			}
+
+		});
 	}());
 
 
@@ -2866,7 +2896,7 @@ MAPJS.pngExport = function (idea) {
 	});
 	return deferred.promise();
 };
-/*global _, jQuery, Kinetic, MAPJS, window, document*/
+/*global _, jQuery, Kinetic, MAPJS, window, document, $*/
 jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRendering) {
 	'use strict';
 	return this.each(function () {
@@ -2915,6 +2945,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'[' : 'activateChildren',
 				'{'	: 'activateNodeAndChildren',
 				'='	: 'activateSiblingNodes',
+				'.'	: 'activateSelectedNode',
 				'/' : 'toggleCollapse',
 				'a': 'openAttachment'
 			},
@@ -2944,14 +2975,18 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 			if (!actOnKeys) {
 				return;
 			}
-			var unicode=evt.charCode? evt.charCode : evt.keyCode,
-				actualkey=String.fromCharCode(unicode),
+			var unicode = evt.charCode ? evt.charCode : evt.keyCode,
+				actualkey = String.fromCharCode(unicode),
 				mappedFunction = charEventHandlers[actualkey];
 			if (mappedFunction) {
 				event.preventDefault();
 				mapModel[mappedFunction]('keyboard');
 			}
-		})
+			else if (Number(actualkey) <= 9 && Number(actualkey) >= 1) {
+				event.preventDefault();
+				mapModel.activateLevel('keyboard', Number(actualkey) + 1);
+			}
+		});
 		element.data('mm-stage', stage);
 		mapModel.addEventListener('inputEnabledChanged', function (canInput) {
 			stage.setDraggable(!canInput);
