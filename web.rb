@@ -69,6 +69,29 @@ end
 get '/fb' do
 	redirect "http://facebook.com/mindmupapp"
 end
+get '/github/login' do
+  github_login_response
+end
+get '/github/postback' do
+  content_type 'application/json'
+  json_fail "invalid response from github" unless params[:code]
+  if (params[:state]!= settings.cache_prevention_key) then
+    pp settings.cache_prevention_key
+    return github_login_response
+  end
+  begin
+    uri = URI('https://github.com/login/oauth/access_token')
+    https = Net::HTTP.start(uri.host, uri.port, :use_ssl=>uri.scheme =='https')
+    response=https.post(uri.path, "client_id=#{ENV["GITHUB_CLIENT_ID"]}&client_secret=#{ENV["GITHUB_SECRET"]}&code=#{params[:code]}")
+    json_fail response.body unless response.code == "200"
+    tokens = Rack::Utils.parse_query response.body
+    json_fail tokens["error"] if tokens["error"]
+    json_fail "Unknown github response" unless tokens["access_token"]
+    %Q{{"access_token" : "#{tokens["access_token"]}"}}
+  rescue Exception=>e
+    json_fail "Network error"
+  end
+end
 get '/trouble' do
  erb :trouble
 end
@@ -248,6 +271,9 @@ helpers do
     </script>
      ^
   end
-
+  def github_login_response
+    content_type 'application/json'
+    %Q{{"login-at": "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{settings.cache_prevention_key}"}}
+  end
 end
 
