@@ -1201,13 +1201,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		},
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
-			if (command === 'addSubIdea') {
+			if (command === 'addSubIdea' || command === 'insertIntermediate') {
 				newIdeaId = args[2];
-				self.selectNode(newIdeaId);
-				self.editNode(false, true, true);
-			}
-			if (command === 'insertIntermediate') {
-				newIdeaId = args[2];
+				revertSelectionForUndo = currentlySelectedIdeaId;
 				self.selectNode(newIdeaId);
 				self.editNode(false, true, true);
 			}
@@ -1220,10 +1216,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
+		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
 			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
 			localCommand = (!originSession) || originSession === idea.getSessionKey();
-
+			revertSelectionForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
 				return;
@@ -1282,7 +1279,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			self.addLink(id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
-			self.activateNode(id);
+			self.activateNode('mouse', id);
 		} else if (isAddLinkMode) {
 			this.addLink(id);
 			this.toggleAddLinkMode();
@@ -1472,8 +1469,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	self.undo = function (source) {
 		analytic('undo', source);
+		var undoSelection = revertSelectionForUndo;
 		if (isInputEnabled) {
 			idea.undo();
+			if (undoSelection) {
+				self.selectNode(undoSelection);
+			}
 		}
 	};
 	self.redo = function (source) {
@@ -1531,34 +1532,39 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				activatedNodes = activated;
 				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
 			};
-		self.activateSiblingNodes = function () {
+		self.activateSiblingNodes = function (source) {
 			var parent = idea.findParent(currentlySelectedIdeaId),
 				siblingIds;
+			analytic('activateSiblingNodes', source);
 			if (!parent || !parent.ideas) {
 				return;
 			}
 			siblingIds = _.map(parent.ideas, function (child) { return child.id; });
 			setActiveNodes(siblingIds);
 		};
-		self.activateNodeAndChildren = function () {
+		self.activateNodeAndChildren = function (source) {
+			analytic('activateNodeAndChildren', source);
 			var contextId = getCurrentlySelectedIdeaId(),
 				subtree = idea.getSubTreeIds(contextId);
 			subtree.push(contextId);
 			setActiveNodes(subtree);
 		};
-		self.activateNode = function (nodeId) {
+		self.activateNode = function (source, nodeId) {
+			analytic('activateNode', source);
 			if (!self.isActivated(nodeId)) {
 				setActiveNodes([nodeId].concat(activatedNodes));
 			}
 		};
-		self.activateChildren = function () {
+		self.activateChildren = function (source) {
+			analytic('activateChildren', source);
 			var context = currentlySelectedIdea();
 			if (!context || _.isEmpty(context.ideas) || context.getAttr('collapsed')) {
 				return;
 			}
 			setActiveNodes(idea.getSubTreeIds(context.id));
 		};
-		self.activateSelectedNode = function () {
+		self.activateSelectedNode = function (source) {
+			analytic('activateSelectedNode', source);
 			setActiveNodes([getCurrentlySelectedIdeaId()]);
 		};
 		self.isActivated = function (id) {
@@ -2454,7 +2460,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 			return idea && idea[fname] && idea[fname].apply(idea, arguments);
 		};
 	});
-	_.each([':textChanged', ':editing', ':openAttachmentRequested'], function (fname) {
+	_.each([':textChanged', ':editing', ':request'], function (fname) {
 		idea.on(fname, function (event) {
 			container.fire(fname, event);
 			reRender();
