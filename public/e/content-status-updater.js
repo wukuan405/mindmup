@@ -6,9 +6,6 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		findStatus = function (statusName) {
 			return content.getAttr(statusConfigurationAttributeName)[statusName];
 		},
-		ideaStatus = function (idea) {
-			return findStatus(idea.getAttr(statusAttributeName));
-		},
 		statusPriority = function (statusName) {
 			var s = findStatus(statusName);
 			return s && s.priority;
@@ -27,7 +24,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			content.updateAttr(content.id, statusConfigurationAttributeName, false);
 			return;
 		}
-		var validatedConfig = {}, parsedPriority;
+		var validatedConfig = {};
 		_.each(statusConfig, function (element, key) {
 			validatedConfig[key] = _.clone(element);
 			if (isNaN(validatedConfig[key].priority)) {
@@ -37,7 +34,8 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		content.updateAttr(content.id, statusConfigurationAttributeName, validatedConfig);
 	};
 	self.updateStatus = function (ideaId, newStatusName) {
-		var changeStatus = function (id, statusName) {
+		var result = false,
+			changeStatus = function (id, statusName) {
 				var status = findStatus(statusName),
 					merged;
 				if (!status) {
@@ -58,7 +56,6 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				}
 				return _.max(childStatusNames, statusPriority);
 			};
-
 		if (changeStatus(ideaId, newStatusName)) {
 			_.each(content.calculatePath(ideaId), function (parent) {
 				var parentStatusName = shouldPropagate(parent);
@@ -66,9 +63,9 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 					changeStatus(parent.id, parentStatusName);
 				}
 			});
-			return true;
+			result = true;
 		}
-		return false;
+		return result;
 	};
 	self.clear = function (idea) {
 		idea = idea || content;
@@ -91,7 +88,6 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 	'use strict';
 	var	element = this,
 		template = element.find('[data-mm-role=status-template]').detach(),
-		currentlySelectedId,
 		generateStatuses = function (config) {
 			var domParent = element.find('[data-mm-role=status-list]'),
 				configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
@@ -106,7 +102,9 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				newItem.attr('data-mm-progress-key', status.key);
 				newItem.find('[data-mm-role=status-priority]').text(status.priority);
 				newItem.find('[data-mm-role=set-status]').click(function () {
-					updater.updateStatus(currentlySelectedId, status.key);
+					mapModel.applyToActivated(function (id) {
+						updater.updateStatus(id, status.key);
+					});
 				});
 			});
 		},
@@ -141,13 +139,13 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			element.find('[data-mm-role=save]').click(function () {
 				var config = {},
 					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
-					existing_num_keys = _.reject(
+					existing = _.reject(
 						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
 						function (x) {return isNaN(x); }
 					),
 					autoKey = 1;
-				if (existing_num_keys.length > 0) {
-					autoKey = 1 + _.max(existing_num_keys);
+				if (existing.length > 0) {
+					autoKey = 1 + _.max(existing);
 				}
 				statuses.each(function () {
 					var status = jQuery(this),
@@ -168,9 +166,6 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				updater.setStatusConfig(config);
 			});
 		};
-	mapModel.addEventListener('nodeSelectionChanged', function (id) {
-		currentlySelectedId = id;
-	});
 	bindGenericFunctions();
 	updater.addEventListener('configChanged', function (config) {
 		updateUI(config);

@@ -88,7 +88,13 @@ MM.Extensions.config = {
 			'use strict';
 			return content.getAttr(MM.Extensions.config.progress.aggregateAttributeName);
 		}
-
+	},
+	'straight-lines' : {
+		name: 'Straight lines',
+		script: '/e/straight-lines.js',
+		icon: 'icon-reorder',
+		doc: 'http://blog.mindmup.com/p/straight-lines.html',
+		desc: 'This extension converts funky curve connectors into straight lines, which makes it clearer to see what connects to what on large maps'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {

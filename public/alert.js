@@ -1,15 +1,16 @@
 /*global jQuery, MM, observable, window */
 MM.Alert = function () {
 	'use strict';
-	var self = this, lastId = 0;
+	var self = this, lastId = 1;
 	observable(this);
 	this.show = function (message, detail, type) {
+		var currentId = lastId;
 		lastId += 1;
-		self.dispatchEvent('shown', lastId, message, detail, type === "flash" ? "info" : type);
+		self.dispatchEvent('shown', currentId, message, detail, type === "flash" ? "info" : type);
 		if (type === "flash") {
-			window.setTimeout(function () { self.hide(lastId); }, 3000);
+			window.setTimeout(function () { self.hide(currentId); }, 3000);
 		}
-		return lastId;
+		return currentId;
 	};
 	this.hide = this.dispatchEvent.bind(this, 'hidden');
 };

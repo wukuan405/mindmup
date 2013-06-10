@@ -102,14 +102,19 @@ MM.main = function (config) {
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
-		if (!config.isTouch) {
-			jQuery('[rel=tooltip]').tooltip();
-		}
-		jQuery('[data-category]').trackingWidget(activityLog);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
-		extensions.load().then(navigation.loadInitial.bind(navigation));
+		extensions.load().then(function () {
+			if (!config.isTouch) {
+				jQuery('[rel=tooltip]').tooltip();
+			}
+			jQuery('[data-category]').trackingWidget(activityLog);
+			jQuery('.modal')
+				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
+				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
+			navigation.loadInitial();
+		});
 	});
 
 };

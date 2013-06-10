@@ -51,6 +51,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 			realtimeError = function () {
 				deferred.reject('network-error');
 				$(window).off('error', realtimeError);
+				deferred = undefined;
 			},
 			initMap = function initMap() {
 				try {
@@ -79,6 +80,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							if (!contentText) {
 								$(window).off('error', realtimeError);
 								deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
+								deferred = undefined;
 								return;
 							}
 							contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
@@ -91,15 +93,24 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 							events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
 							deferred.resolve(contentAggregate, mindMupId, properties);
 							$(window).off('error', realtimeError);
+							deferred = undefined;
 						},
 						function initializeModel() {
 							deferred.reject('realtime-error', 'Session ' + mindMupId + ' has not been initialised');
 						},
 						function errorHandler(error) {
-							if (error && error.type === 'forbidden') {
-								deferred.reject('no-access-allowed');
+							if (deferred) {
+								if (error && error.type === 'forbidden') {
+									deferred.reject('no-access-allowed');
+								} else {
+									deferred.reject('realtime-error', error.message || error);
+								}
 							} else {
-								deferred.reject('realtime-error', error.message ? error.message : error);
+								if (error.type === gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
+									self.dispatchEvent('realtimeError', 'Session expired', true);
+								} else {
+									self.dispatchEvent('realtimeError', error.message || error, error.isFatal);
+								}
 							}
 						}
 					);
@@ -253,6 +264,7 @@ MM.Extensions.googleCollaboration = function () {
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
+				statusIcon = menu.find('[data-mm-role=status-icon]'),
 				modal = parsed.find('[data-mm-role=modal-start]').clone().appendTo($('body')),
 				collabModal = parsed.find('[data-mm-role=modal-collaborators]').clone().appendTo($('body')),
 				sessionNameField = modal.find('input[name=session-name]'),
@@ -279,7 +291,6 @@ MM.Extensions.googleCollaboration = function () {
 				sessionNameField.parent().removeClass('error');
 				modal.modal('show');
 			});
-			menu.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
 			modal.on('shown', function () {
 				sessionNameField.focus();
 			});
@@ -325,6 +336,15 @@ MM.Extensions.googleCollaboration = function () {
 				});
 				collabModal.modal('show');
 			});
+			realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
+				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
+					if (docState.isPending || docState.isSaving) {
+						statusIcon.removeClass(statusIcon.data('mm-saved-class')).addClass(statusIcon.data('mm-pending-class'));
+					} else {
+						statusIcon.removeClass(statusIcon.data('mm-pending-class')).addClass(statusIcon.data('mm-saved-class'));
+					}
+				});
+			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
 	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
@@ -332,6 +352,13 @@ MM.Extensions.googleCollaboration = function () {
 	});
 	realtimeMapSource.addEventListener("realtimeDocumentUpdated", function (googleSessionId) {
 		kineticSessions.showFocus(googleSessionId);
+	});
+	realtimeMapSource.addEventListener("realtimeError", function (errorMessage, isFatal) {
+		if (isFatal) {
+			alert.show('Network error: ' + errorMessage + '!', 'Please refresh the page before changing the map any further, your updates might not be saved', 'error');
+		} else {
+			alert.show('Network error: ' + errorMessage + '!', 'If the error persists, please refresh the page', 'flash');
+		}
 	});
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.html', loadUI);
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.css" />').appendTo($('body'));

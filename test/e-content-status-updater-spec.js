@@ -358,9 +358,11 @@ describe("progressStatusUpdateWidget", function () {
 			domElement.find('[data-mm-role=toggle-toolbar]').click();
 			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeFalsy();
 		});
-		it("updates currently selected node ID when clicked on a progress status link", function () {
+		it("updates currently activated nodes when clicked on a progress status link", function () {
 			updater.updateStatus = jasmine.createSpy();
-			mapModel.dispatchEvent('nodeSelectionChanged', 17, true);
+			mapModel.applyToActivated = function (func) {
+				func(17);
+			};
 			domElement.find('[data-mm-role=progress] [data-mm-role=set-status]').click();
 			expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
 		});
