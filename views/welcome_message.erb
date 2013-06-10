@@ -4,7 +4,7 @@
     <strong>Welcome to MindMup!</strong> If this is your first time here, have a look at our <a href='#'  href='#' data-target='#modalAbout' data-toggle='modal'>One Minute Introduction</a> to get started. 
       }
     session['welcome'] = true
-  elsif session['welcome'] != settings.last_news_id 
+  elsif settings.online && session['welcome'] != settings.last_news_id 
     message=%Q{
     <strong><i class="icon-rss"></i>&nbsp;News flash: #{settings.last_news_title}!</strong> <a href="http://blog.mindmup.com" target="_blank">Click here to read more about it</a>. 
       }
