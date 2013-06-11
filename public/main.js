@@ -100,11 +100,7 @@ MM.main = function (config) {
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
-		if (Math.random() * 2 < 1) {
-			jQuery('#modalScore').scoreWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
-		} else {
-			jQuery('#alertScore').scoreAlertWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
-		}
+		jQuery('#modalScore').scoreWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
