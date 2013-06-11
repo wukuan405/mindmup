@@ -346,3 +346,7 @@ body.offline-enabled .offline-disabled-hidden {
 	position: absolute;
 	padding: 10px;
 }
+.alert a {
+	text-decoration: underline;
+	cursor: pointer;
+}
