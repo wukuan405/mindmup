@@ -1,4 +1,4 @@
-/*global MM, _, $*/
+/*global MM, $*/
 MM.Extensions.progress = function () {
 	'use strict';
 	var statusConfigurationAttributeName = MM.Extensions.config.progress.aggregateAttributeName,
@@ -10,20 +10,12 @@ MM.Extensions.progress = function () {
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
 				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable().css('position', 'absolute'),
 				modal = parsed.find('[data-mm-role=modal]').clone().appendTo($('body')),
-				activateAnalytics = function (element) {
-					element.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
-					if (!MM.Extensions.mmConfig.isTouch) {
-						element.find('[rel=tooltip]').tooltip();
-					}
-				},
 				updater;
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			modal.tableEditWidget(updater.refresh.bind(updater)).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
-			activateAnalytics(menu);
-			activateAnalytics(toolbar);
 
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
