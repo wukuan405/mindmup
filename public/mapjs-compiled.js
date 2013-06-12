@@ -1201,13 +1201,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		},
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
-			if (command === 'addSubIdea') {
+			if (command === 'addSubIdea' || command === 'insertIntermediate') {
 				newIdeaId = args[2];
-				self.selectNode(newIdeaId);
-				self.editNode(false, true, true);
-			}
-			if (command === 'insertIntermediate') {
-				newIdeaId = args[2];
+				revertSelectionForUndo = currentlySelectedIdeaId;
 				self.selectNode(newIdeaId);
 				self.editNode(false, true, true);
 			}
@@ -1220,10 +1216,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
+		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
 			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
 			localCommand = (!originSession) || originSession === idea.getSessionKey();
-
+			revertSelectionForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
 				return;
@@ -1282,7 +1279,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			self.addLink(id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
-			self.activateNode(id);
+			self.activateNode('mouse', id);
 		} else if (isAddLinkMode) {
 			this.addLink(id);
 			this.toggleAddLinkMode();
@@ -1472,8 +1469,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	self.undo = function (source) {
 		analytic('undo', source);
+		var undoSelection = revertSelectionForUndo;
 		if (isInputEnabled) {
 			idea.undo();
+			if (undoSelection) {
+				self.selectNode(undoSelection);
+			}
 		}
 	};
 	self.redo = function (source) {
@@ -1531,34 +1532,39 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				activatedNodes = activated;
 				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
 			};
-		self.activateSiblingNodes = function () {
+		self.activateSiblingNodes = function (source) {
 			var parent = idea.findParent(currentlySelectedIdeaId),
 				siblingIds;
+			analytic('activateSiblingNodes', source);
 			if (!parent || !parent.ideas) {
 				return;
 			}
 			siblingIds = _.map(parent.ideas, function (child) { return child.id; });
 			setActiveNodes(siblingIds);
 		};
-		self.activateNodeAndChildren = function () {
+		self.activateNodeAndChildren = function (source) {
+			analytic('activateNodeAndChildren', source);
 			var contextId = getCurrentlySelectedIdeaId(),
 				subtree = idea.getSubTreeIds(contextId);
 			subtree.push(contextId);
 			setActiveNodes(subtree);
 		};
-		self.activateNode = function (nodeId) {
+		self.activateNode = function (source, nodeId) {
+			analytic('activateNode', source);
 			if (!self.isActivated(nodeId)) {
 				setActiveNodes([nodeId].concat(activatedNodes));
 			}
 		};
-		self.activateChildren = function () {
+		self.activateChildren = function (source) {
+			analytic('activateChildren', source);
 			var context = currentlySelectedIdea();
 			if (!context || _.isEmpty(context.ideas) || context.getAttr('collapsed')) {
 				return;
 			}
 			setActiveNodes(idea.getSubTreeIds(context.id));
 		};
-		self.activateSelectedNode = function () {
+		self.activateSelectedNode = function (source) {
+			analytic('activateSelectedNode', source);
 			setActiveNodes([getCurrentlySelectedIdeaId()]);
 		};
 		self.isActivated = function (id) {
@@ -1779,9 +1785,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 						clone = idea.clone(id);
 						if (!clone || !idea.paste(nodeId, clone)) {
 							self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+							analytic('nodeDragCloneFailed');
 						}
 					} else if (!idea.changeParent(id, nodeId)) {
 						self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+						analytic('nodeDragParentFailed');
 					}
 					return;
 				}
@@ -1798,6 +1806,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				return;
 			}
 			self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+			analytic('nodeDragFailed');
 		};
 	}());
 };
@@ -1912,15 +1921,56 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	var calculateConnectorInner = _.memoize(
 		function (parentX, parentY, parentWidth, parentHeight, childX, childY, childWidth, childHeight) {
-			return {
-				from: {
+			var parent = [
+				{
 					x: parentX + 0.5 * parentWidth,
+					y: parentY
+				},
+				{
+					x: parentX + parentWidth,
 					y: parentY + 0.5 * parentHeight
 				},
-				to: {
+				{
+					x: parentX + 0.5 * parentWidth,
+					y: parentY + parentHeight
+				},
+				{
+					x: parentX,
+					y: parentY + 0.5 * parentHeight
+				}
+			], child = [
+				{
 					x: childX + 0.5 * childWidth,
+					y: childY
+				},
+				{
+					x: childX + childWidth,
+					y: childY + 0.5 * childHeight
+				},
+				{
+					x: childX + 0.5 * childWidth,
+					y: childY + childHeight
+				},
+				{
+					x: childX,
 					y: childY + 0.5 * childHeight
 				}
+			], i, j, min = Infinity, bestParent, bestChild, dx, dy, current;
+			for (i = 0; i < parent.length; i += 1) {
+				for (j = 0; j < child.length; j += 1) {
+					dx = parent[i].x - child[j].x;
+					dy = parent[i].y - child[j].y;
+					current = dx * dx + dy * dy;
+					if (current < min) {
+						bestParent = i;
+						bestChild = j;
+						min = current;
+					}
+				}
+			}
+			return {
+				from: parent[bestParent],
+				to: child[bestChild]
 			};
 		},
 		function () {
@@ -1932,16 +1982,59 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				child.attrs.x, child.attrs.y, child.getWidth(), child.getHeight());
 		};
 	Kinetic.Link.prototype = {
-		drawFunc: function (canvas) {
+		drawHitFunc: function (canvas) {
 			var context = canvas.getContext(),
 				shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
-				conn;
+				conn,
+				strokeWidth = this.attrs.strokeWidth;
+			this.attrs.strokeWidth = this.attrs.strokeWidth * 9;
 			conn = calculateConnector(shapeFrom, shapeTo);
+			context.fillStyle = this.attrs.stroke;
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
 			canvas.stroke(this);
+			this.attrs.strokeWidth = strokeWidth;
+		},
+		drawFunc: function (canvas) {
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
+				shapeTo = this.shapeTo,
+				conn,
+				n = Math.tan(Math.PI / 9);
+			conn = calculateConnector(shapeFrom, shapeTo);
+			context.fillStyle = this.attrs.stroke;
+			context.beginPath();
+			context.moveTo(conn.from.x, conn.from.y);
+			context.lineTo(conn.to.x, conn.to.y);
+			canvas.stroke(this);
+			if (this.attrs.arrow) {
+				var a1x, a1y, a2x, a2y, len = 14, iy, m,
+					dx = conn.to.x - conn.from.x,
+					dy = conn.to.y - conn.from.y;
+				if (dx === 0) {
+					iy = dy < 0 ? -1 : 1;
+					a1x = conn.to.x + len * Math.sin(n) * iy;
+					a2x = conn.to.x - len * Math.sin(n) * iy;
+					a1y = conn.to.y - len * Math.cos(n) * iy;
+					a2y = conn.to.y - len * Math.cos(n) * iy;
+				} else {
+					m = dy / dx;
+					if (conn.from.x < conn.to.x) {
+						len = -len;
+					}
+					a1x = conn.to.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+					a1y = conn.to.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+					a2x = conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+					a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+				}
+				context.moveTo(a1x, a1y);
+				context.lineTo(conn.to.x, conn.to.y);
+				context.lineTo(a2x, a2y);
+				context.lineTo(a1x, a1y);
+				context.fill();
+			}
 		}
 	};
 	Kinetic.Global.extend(Kinetic.Link, Kinetic.Shape);
@@ -1954,6 +2047,7 @@ Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 		solid: [],
 		dashed: [8, 8]
 	}[style && style.lineStyle || 'dashed'];
+	this.attrs.arrow = style && style.arrow || false;
 	this.getLayer().draw();
 };
 /*global Kinetic*/
@@ -2014,7 +2108,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				shadowOffset: [2, 2],
 				shadow: '#CCCCCC',
 				shadowBlur: 0.4,
-				shadowOpacity: 0.4,
+				shadowOpacity: 0.4
 			},
 			rect = new Kinetic.Rect(rectProps),
 			rect2 = new Kinetic.Rect(rectProps);
@@ -2045,7 +2139,6 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 			clip.attrs.stroke = 'skyblue';
 			group.getLayer().draw();
 		});
-
 		return group;
 	}
 	Kinetic.Idea = function (config) {
@@ -2212,10 +2305,8 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					ideaInput.width(Math.max(ideaInput.width(), text.getWidth() * scale));
 					ideaInput.height(Math.max(ideaInput.height(), text.getHeight() * scale));
 				});
-
 			self.stopEditing = onCancelEdit;
 			ideaInput.focus();
-
 			self.getStage().on('xChange yChange', onStageMoved);
 		};
 	};
@@ -2262,6 +2353,7 @@ Kinetic.Idea.prototype.setupShadows = function () {
 		r.setShadowOffset(shadow.offset);
 	});
 };
+
 Kinetic.Idea.prototype.getBackground = function () {
 	'use strict';
 	/*jslint newcap: true*/
@@ -2276,6 +2368,7 @@ Kinetic.Idea.prototype.getBackground = function () {
 		};
 	return validColor(this.mmAttr && this.mmAttr.style && this.mmAttr.style.background, defaultBg);
 };
+
 Kinetic.Idea.prototype.setStyle = function () {
 	'use strict';
 	/*jslint newcap: true*/
@@ -2304,41 +2397,58 @@ Kinetic.Idea.prototype.setStyle = function () {
 		rectOffset += rectIncrement;
 		if (isDroppable) {
 			r.attrs.stroke = '#9F4F4F';
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
-			background = '#EF6F6F';
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, '#CF4F4F'];
+			r.attrs.fill = '#EF6F6F';
 		} else if (isSelected) {
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, background];
+			r.attrs.fill = background;
 		} else {
 			r.attrs.stroke = self.rectAttrs.stroke;
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
-			r.attrs.fillLinearGradientColorStops = [0, tintedBackground, 1, background];
+			r.attrs.fill = background;
 		}
 	});
 	if (isActivated) {
 		this.rect.attrs.stroke = '#2E9AFE';
+		var dashes = [[5, 3, 0, 0], [4, 3, 1, 0], [3, 3, 2, 0], [2, 3, 3, 0], [1, 3, 4, 0], [0, 3, 5, 0], [0, 2, 5, 1], [0, 1, 5, 2]];
+		if (true || this.disableAnimations) {
+			self.rect.attrs.dashArray = dashes[0];
+		} else {
+			if (!this.activeAnimation) {
+				this.activeAnimation = new Kinetic.Animation(
+			        function (frame) {
+						var da = dashes[Math.floor(frame.time / 30) % 8];
+						self.rect.attrs.dashArray = da;
+			        },
+			        self.getLayer()
+			    );
+			}
+			this.activeAnimation.start();
+		}
+	} else {
+		if (this.activeAnimation) {
+			this.activeAnimation.stop();
+		}
+		this.rect.attrs.dashArray = [];
 	}
 	this.rect.attrs.dashArray = this.isActivated ? [5, 3] : [];
 	this.rect.attrs.strokeWidth = this.isActivated ? 3 : self.rectAttrs.strokeWidth;
-
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
 	this.clip.attrs.x = this.text.getWidth() + padding;
 	this.setupShadows();
 	this.text.attrs.fill = MAPJS.contrastForeground(tintedBackground);
 };
+
 Kinetic.Idea.prototype.setMMAttr = function (newMMAttr) {
 	'use strict';
 	this.mmAttr = newMMAttr;
 	this.setStyle();
 	this.getLayer().draw();
 };
+
 Kinetic.Idea.prototype.getIsSelected = function () {
 	'use strict';
 	return this.isSelected;
 };
+
 Kinetic.Idea.prototype.isCollapsed = function () {
 	'use strict';
 	return this.mmAttr && this.mmAttr.collapsed || false;
@@ -2366,6 +2476,7 @@ Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
 	this.isDroppable = isDroppable;
 	this.setStyle(this.attrs);
 };
+
 Kinetic.Global.extend(Kinetic.Idea, Kinetic.Group);
 /*global _, Kinetic, MAPJS */
 Kinetic.IdeaProxy = function (idea, stage, layer) {
@@ -2413,6 +2524,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 			cacheImage();
 		},
 		nodeImageDrawFunc;
+	idea.disableAnimations = true;
 	container.attrs.x = idea.attrs.x;
 	container.attrs.y = idea.attrs.y;
 	idea.attrs.x = 0;
@@ -2454,13 +2566,13 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 			return idea && idea[fname] && idea[fname].apply(idea, arguments);
 		};
 	});
-	_.each([':textChanged', ':editing', ':openAttachmentRequested'], function (fname) {
+	_.each([':textChanged', ':editing', ':request'], function (fname) {
 		idea.on(fname, function (event) {
 			container.fire(fname, event);
 			reRender();
 		});
 	});
-	_.each(['setMMAttr', 'setIsSelected', 'setText', 'setIsDroppable', 'editNode', 'setupShadows', 'setShadowOffset'], function (fname) {
+	_.each(['setMMAttr', 'setIsSelected', 'setText', 'setIsDroppable', 'editNode', 'setupShadows', 'setShadowOffset', 'setIsActivated'], function (fname) {
 		container[fname] = function () {
 			var result = idea && idea[fname] && idea[fname].apply(idea, arguments);
 			reRender();
@@ -2720,9 +2832,9 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			shapeTo: nodeByIdeaId[l.ideaIdTo],
 			dashArray: [8, 8],
 			stroke: '#800',
-			strokeWidth: 3
+			strokeWidth: 1.5
 		});
-		link.on('click mouseover', function (event) {
+		link.on('click tap', function (event) {
 			mapModel.selectLink(l, { x: event.layerX, y: event.layerY });
 		});
 		layer.add(link);
@@ -2935,8 +3047,8 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'shift+tab': 'insertIntermediate',
 				'meta+0 ctrl+0': 'resetView',
 				'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo',
-				'meta+plus ctrl+plus': 'scaleUp',
-				'meta+minus ctrl+minus': 'scaleDown',
+				'meta+plus ctrl+plus z': 'scaleUp',
+				'meta+minus ctrl+minus shift+z': 'scaleDown',
 				'meta+up ctrl+up': 'moveUp',
 				'meta+down ctrl+down': 'moveDown',
 				'ctrl+shift+v meta+shift+v': 'pasteStyle'
@@ -2975,14 +3087,16 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 			if (!actOnKeys) {
 				return;
 			}
-			var unicode = evt.charCode ? evt.charCode : evt.keyCode,
+			if (/INPUT|TEXTAREA/.test(evt && evt.target && evt.target.tagName)) {
+				return;
+			}
+			var unicode = evt.charCode || evt.keyCode,
 				actualkey = String.fromCharCode(unicode),
 				mappedFunction = charEventHandlers[actualkey];
 			if (mappedFunction) {
 				evt.preventDefault();
 				mapModel[mappedFunction]('keyboard');
-			}
-			else if (Number(actualkey) <= 9 && Number(actualkey) >= 1) {
+			} else if (Number(actualkey) <= 9 && Number(actualkey) >= 1) {
 				evt.preventDefault();
 				mapModel.activateLevel('keyboard', Number(actualkey) + 1);
 			}
@@ -2996,9 +3110,6 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 		stage.attrs.x = 0.5 * stage.getWidth();
 		stage.attrs.y = 0.5 * stage.getHeight();
 		jQuery(window).bind('orientationchange resize', setStageDimensions);
-		jQuery('.modal')
-			.on('show', mapModel.setInputEnabled.bind(mapModel, false))
-			.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
 		if (!touchEnabled) {
 			jQuery(window).mousewheel(onScroll);
 		} else {
@@ -3026,9 +3137,10 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 jQuery.fn.linkEditWidget = function (mapModel) {
 	'use strict';
 	return this.each(function () {
-		var element = jQuery(this), currentLink, width, height, colorElement, lineStyleElement;
+		var element = jQuery(this), currentLink, width, height, colorElement, lineStyleElement, arrowElement;
 		colorElement = element.find('.color');
 		lineStyleElement = element.find('.lineStyle');
+		arrowElement = element.find('.arrow');
 		mapModel.addEventListener('linkSelected', function (link, selectionPoint, linkStyle) {
 			currentLink = link;
 			element.show();
@@ -3040,6 +3152,7 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 			});
 			colorElement.val(linkStyle.color).change();
 			lineStyleElement.val(linkStyle.lineStyle);
+			arrowElement[linkStyle.arrow ? 'addClass' : 'removeClass']('active');
 		});
 		mapModel.addEventListener('mapMoveRequested', function () {
 			element.hide();
@@ -3052,8 +3165,10 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 			mapModel.updateLinkStyle('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo, 'color', jQuery(this).val());
 		});
 		lineStyleElement.find('a').click(function () {
-			console.log(jQuery(this).text());
 			mapModel.updateLinkStyle('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo, 'lineStyle', jQuery(this).text());
+		});
+		arrowElement.click(function () {
+			mapModel.updateLinkStyle('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo, 'arrow', !arrowElement.hasClass('active'));
 		});
 		element.mouseleave(element.hide.bind(element));
 	});

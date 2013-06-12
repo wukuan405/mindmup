@@ -100,16 +100,26 @@ MM.main = function (config) {
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
+		if (Math.random() * 2 < 1) {
+			jQuery('#modalScore').scoreWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
+		} else {
+			jQuery('#alertScore').scoreAlertWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
+		}
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
-		if (!config.isTouch) {
-			jQuery('[rel=tooltip]').tooltip();
-		}
-		jQuery('[data-category]').trackingWidget(activityLog);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
-		extensions.load().then(navigation.loadInitial.bind(navigation));
+		extensions.load().then(function () {
+			if (!config.isTouch) {
+				jQuery('[rel=tooltip]').tooltip();
+			}
+			jQuery('[data-category]').trackingWidget(activityLog);
+			jQuery('.modal')
+				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
+				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
+			navigation.loadInitial();
+		});
 	});
 
 };

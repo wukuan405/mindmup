@@ -291,7 +291,6 @@ MM.Extensions.googleCollaboration = function () {
 				sessionNameField.parent().removeClass('error');
 				modal.modal('show');
 			});
-			menu.find('[data-category]').trackingWidget(MM.Extensions.components.activityLog);
 			modal.on('shown', function () {
 				sessionNameField.focus();
 			});
