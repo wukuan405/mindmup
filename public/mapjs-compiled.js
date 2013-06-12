@@ -2090,7 +2090,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				shadowOffset: [2, 2],
 				shadow: '#CCCCCC',
 				shadowBlur: 0.4,
-				shadowOpacity: 0.4,
+				shadowOpacity: 0.4
 			},
 			rect = new Kinetic.Rect(rectProps),
 			rect2 = new Kinetic.Rect(rectProps);
@@ -2121,7 +2121,6 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 			clip.attrs.stroke = 'skyblue';
 			group.getLayer().draw();
 		});
-
 		return group;
 	}
 	Kinetic.Idea = function (config) {
@@ -2288,10 +2287,8 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					ideaInput.width(Math.max(ideaInput.width(), text.getWidth() * scale));
 					ideaInput.height(Math.max(ideaInput.height(), text.getHeight() * scale));
 				});
-
 			self.stopEditing = onCancelEdit;
 			ideaInput.focus();
-
 			self.getStage().on('xChange yChange', onStageMoved);
 		};
 	};
@@ -2338,6 +2335,7 @@ Kinetic.Idea.prototype.setupShadows = function () {
 		r.setShadowOffset(shadow.offset);
 	});
 };
+
 Kinetic.Idea.prototype.getBackground = function () {
 	'use strict';
 	/*jslint newcap: true*/
@@ -2352,6 +2350,7 @@ Kinetic.Idea.prototype.getBackground = function () {
 		};
 	return validColor(this.mmAttr && this.mmAttr.style && this.mmAttr.style.background, defaultBg);
 };
+
 Kinetic.Idea.prototype.setStyle = function () {
 	'use strict';
 	/*jslint newcap: true*/
@@ -2380,17 +2379,12 @@ Kinetic.Idea.prototype.setStyle = function () {
 		rectOffset += rectIncrement;
 		if (isDroppable) {
 			r.attrs.stroke = '#9F4F4F';
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
-			background = '#EF6F6F';
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, '#CF4F4F'];
+			r.attrs.fill = '#EF6F6F';
 		} else if (isSelected) {
-			r.attrs.fillLinearGradientColorStops = [0, background, 1, background];
+			r.attrs.fill = background;
 		} else {
 			r.attrs.stroke = self.rectAttrs.stroke;
-			r.attrs.fillLinearGradientStartPoint = {x: 0, y: 0};
-			r.attrs.fillLinearGradientEndPoint = {x: 100, y: 100};
-			r.attrs.fillLinearGradientColorStops = [0, tintedBackground, 1, background];
+			r.attrs.fill = background;
 		}
 	});
 	if (isActivated) {
@@ -2398,23 +2392,25 @@ Kinetic.Idea.prototype.setStyle = function () {
 	}
 	this.rect.attrs.dashArray = this.isActivated ? [5, 3] : [];
 	this.rect.attrs.strokeWidth = this.isActivated ? 3 : self.rectAttrs.strokeWidth;
-
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
 	this.clip.attrs.x = this.text.getWidth() + padding;
 	this.setupShadows();
 	this.text.attrs.fill = MAPJS.contrastForeground(tintedBackground);
 };
+
 Kinetic.Idea.prototype.setMMAttr = function (newMMAttr) {
 	'use strict';
 	this.mmAttr = newMMAttr;
 	this.setStyle();
 	this.getLayer().draw();
 };
+
 Kinetic.Idea.prototype.getIsSelected = function () {
 	'use strict';
 	return this.isSelected;
 };
+
 Kinetic.Idea.prototype.isCollapsed = function () {
 	'use strict';
 	return this.mmAttr && this.mmAttr.collapsed || false;
@@ -2442,6 +2438,7 @@ Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
 	this.isDroppable = isDroppable;
 	this.setStyle(this.attrs);
 };
+
 Kinetic.Global.extend(Kinetic.Idea, Kinetic.Group);
 /*global _, Kinetic, MAPJS */
 Kinetic.IdeaProxy = function (idea, stage, layer) {
