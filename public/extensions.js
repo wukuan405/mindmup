@@ -98,7 +98,7 @@ MM.Extensions.config = {
 	},
 	'github' : {
 		name: 'Github',
-		script: '/e/gh3.js /e/github.js',
+		script: '/e/github.js',
 		icon: 'icon-github',
 		doc: 'http://www.github.com',
 		desc: 'Store your maps on Github'
