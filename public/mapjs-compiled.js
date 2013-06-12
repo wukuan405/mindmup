@@ -1785,9 +1785,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 						clone = idea.clone(id);
 						if (!clone || !idea.paste(nodeId, clone)) {
 							self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+							analytic('nodeDragCloneFailed');
 						}
 					} else if (!idea.changeParent(id, nodeId)) {
 						self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+						analytic('nodeDragParentFailed');
 					}
 					return;
 				}
@@ -1804,6 +1806,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				return;
 			}
 			self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+			analytic('nodeDragFailed');
 		};
 	}());
 };
@@ -1979,6 +1982,21 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				child.attrs.x, child.attrs.y, child.getWidth(), child.getHeight());
 		};
 	Kinetic.Link.prototype = {
+		drawHitFunc: function (canvas) {
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
+				shapeTo = this.shapeTo,
+				conn,
+				strokeWidth = this.attrs.strokeWidth;
+			this.attrs.strokeWidth = this.attrs.strokeWidth * 9;
+			conn = calculateConnector(shapeFrom, shapeTo);
+			context.fillStyle = this.attrs.stroke;
+			context.beginPath();
+			context.moveTo(conn.from.x, conn.from.y);
+			context.lineTo(conn.to.x, conn.to.y);
+			canvas.stroke(this);
+			this.attrs.strokeWidth = strokeWidth;
+		},
 		drawFunc: function (canvas) {
 			var context = canvas.getContext(),
 				shapeFrom = this.shapeFrom,
@@ -2007,9 +2025,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 						len = -len;
 					}
 					a1x = conn.to.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-					a1y = conn.to.y + (m + n) * len / Math.sqrt((1 + m * m)*(1 + n * n));
+					a1y = conn.to.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
 					a2x = conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-					a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m)*(1 + n * n));
+					a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
 				}
 				context.moveTo(a1x, a1y);
 				context.lineTo(conn.to.x, conn.to.y);
@@ -2389,6 +2407,26 @@ Kinetic.Idea.prototype.setStyle = function () {
 	});
 	if (isActivated) {
 		this.rect.attrs.stroke = '#2E9AFE';
+		var dashes = [[5, 3, 0, 0], [4, 3, 1, 0], [3, 3, 2, 0], [2, 3, 3, 0], [1, 3, 4, 0], [0, 3, 5, 0], [0, 2, 5, 1], [0, 1, 5, 2]];
+		if (true || this.disableAnimations) {
+			self.rect.attrs.dashArray = dashes[0];
+		} else {
+			if (!this.activeAnimation) {
+				this.activeAnimation = new Kinetic.Animation(
+			        function (frame) {
+						var da = dashes[Math.floor(frame.time / 30) % 8];
+						self.rect.attrs.dashArray = da;
+			        },
+			        self.getLayer()
+			    );
+			}
+			this.activeAnimation.start();
+		}
+	} else {
+		if (this.activeAnimation) {
+			this.activeAnimation.stop();
+		}
+		this.rect.attrs.dashArray = [];
 	}
 	this.rect.attrs.dashArray = this.isActivated ? [5, 3] : [];
 	this.rect.attrs.strokeWidth = this.isActivated ? 3 : self.rectAttrs.strokeWidth;
@@ -2486,6 +2524,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 			cacheImage();
 		},
 		nodeImageDrawFunc;
+	idea.disableAnimations = true;
 	container.attrs.x = idea.attrs.x;
 	container.attrs.y = idea.attrs.y;
 	idea.attrs.x = 0;
@@ -2795,7 +2834,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			stroke: '#800',
 			strokeWidth: 1.5
 		});
-		link.on('click mouseover', function (event) {
+		link.on('click tap', function (event) {
 			mapModel.selectLink(l, { x: event.layerX, y: event.layerY });
 		});
 		layer.add(link);
@@ -3008,8 +3047,8 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'shift+tab': 'insertIntermediate',
 				'meta+0 ctrl+0': 'resetView',
 				'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo',
-				'meta+plus ctrl+plus': 'scaleUp',
-				'meta+minus ctrl+minus': 'scaleDown',
+				'meta+plus ctrl+plus z': 'scaleUp',
+				'meta+minus ctrl+minus shift+z': 'scaleDown',
 				'meta+up ctrl+up': 'moveUp',
 				'meta+down ctrl+down': 'moveDown',
 				'ctrl+shift+v meta+shift+v': 'pasteStyle'
@@ -3048,14 +3087,16 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 			if (!actOnKeys) {
 				return;
 			}
-			var unicode = evt.charCode ? evt.charCode : evt.keyCode,
+			if (/INPUT|TEXTAREA/.test(evt && evt.target && evt.target.tagName)) {
+				return;
+			}
+			var unicode = evt.charCode || evt.keyCode,
 				actualkey = String.fromCharCode(unicode),
 				mappedFunction = charEventHandlers[actualkey];
 			if (mappedFunction) {
 				evt.preventDefault();
 				mapModel[mappedFunction]('keyboard');
-			}
-			else if (Number(actualkey) <= 9 && Number(actualkey) >= 1) {
+			} else if (Number(actualkey) <= 9 && Number(actualkey) >= 1) {
 				evt.preventDefault();
 				mapModel.activateLevel('keyboard', Number(actualkey) + 1);
 			}
