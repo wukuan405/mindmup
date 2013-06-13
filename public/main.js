@@ -89,7 +89,7 @@ MM.main = function (config) {
 		jQuery('#modalShareEmail').shareEmailWidget();
 		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, config.baseUrl);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
-		jQuery('[data-mm-role=save]').saveWidget(mapController);
+
 		jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 		jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
 		jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, mapController);
@@ -118,6 +118,7 @@ MM.main = function (config) {
 			jQuery('.modal')
 				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
 				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
+			jQuery('[data-mm-role=save]').saveWidget(mapController);
 			navigation.loadInitial();
 		});
 	});
