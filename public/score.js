@@ -24,11 +24,11 @@ jQuery.fn.scoreWidget = function (activityLog, alert, timeout, storage, storageK
 		    alertId,
 			showIfNeeded = function () {
 				var now = Date.now();
-				activityLog.log('Score', 'show-modal-alert');
 				/*jslint eqeq:true*/
 				if (storage[storageKey] || currentCohort != dateToYMD(now)) {
 					return;
 				}
+				activityLog.log('Score', 'show-modal-alert');
 				alertId = alert.show('Please help us improve!', '<a data-toggle="modal" data-target="#modalScore">Click here to answer one very quick question</a>, we would appreciate that very much', 'warning');
 				storage[storageKey] = now;
 			};
