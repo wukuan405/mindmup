@@ -2,8 +2,7 @@
 /*global _gaq, document, jQuery, MM, MAPJS, window, localStorage*/
 MM.main = function (config) {
 	'use strict';
-
-	var mapModelAnalytics = true,
+	var mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
 			activityLog.addEventListener('error', function (message) {
@@ -13,11 +12,11 @@ MM.main = function (config) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
 		};
-	window._gaq = [	['_setAccount', config.googleAnalyticsAccount],
-					['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
-					['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
-					['_trackPageview']
-				];
+	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
+		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
+		['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
+		['_trackPageview']
+	];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
@@ -100,11 +99,6 @@ MM.main = function (config) {
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
-		if (Math.random() * 2 < 1) {
-			jQuery('#modalScore').scoreWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
-		} else {
-			jQuery('#alertScore').scoreAlertWidget(activityLog, alert, 90, localStorage, 'scoreAlert', config.userCohort);
-		}
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
