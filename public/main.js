@@ -114,7 +114,6 @@ MM.main = function (config) {
 				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
 			navigation.loadInitial();
 		});
-		$('#logo-img').popover({placement:'bottom', content: $('#modalKeyActions').html(), html: true})
 	});
 
 };

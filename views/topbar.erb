@@ -4,7 +4,55 @@
       <button id="toggleTopbar" data-mm-role="toggle-class" data-mm-target="body" data-mm-class="hidden-topbar" rel="tooltip" data-title="toggle menu bar (ctrl+shift+b)"
       data-placement='right' data-mm-key="ctrl+shift+b meta+shift+b"><i class="icon-hand-down"></i><i class="icon-hand-up"></i></button>
       <ul class="nav pull-left" id="mainMenu">
-        <li><a id="logo-img" href="#" data-title="Start here" rel="tooltip" title="Mindmup Home" data-category="Top Bar" data-event-type="Logo">&nbsp;</a>
+        <li class="dropdown">
+        <a id="logo-img" href="#" class="dropdown-toggle" data-toggle="dropdown" data-title="Start here" rel="tooltip" title="Mindmup Home" data-category="Top Bar" data-event-type="Logo">
+          <img src="//mindmup.s3.amazonaws.com/lib/img/logo_32.png"/>
+          </a>
+
+
+          <ul class="dropdown-menu">
+
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-lightbulb icon-large"></i>&nbsp;Create a new map</a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Public online map to share with the world</a></li>
+                  <li><a href="#">Private online map on Google Drive</a></li>
+                  <li><a href="#">Private offline map in your browser storage</a></li>
+              </ul>
+            </li>
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-cloud-upload icon-large"></i>&nbsp;Open an existing map</a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">From Google drive</a></li>
+                  <li><a href="#">From your browser storage</a></li>
+                  <li><a href="#">From recently open maps</a></li>
+                  <li><a href="#">Upload a Freemind or MindMup file from your computer</a></li>
+              </ul>
+            </li>
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-book icon-large"></i>&nbsp;Learn how to</a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Create a new map</a></li>
+                  <li><a href="#">Share a new map</a></li>
+                  <li><a href="#">Collaborate on a map with colleagues</a></li>
+                  <li><a href="#">Be more productive with keyboard shortcuts</a></li>
+              </ul>
+            </li>
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-envelope icon-large"></i>&nbsp;Get in touch</a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">E-mail</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Google+</a></li>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">Vote on features</a></li>
+              </ul>
+            </li>
+      </ul>
+
+
+
+
         </li>
         <li class="dropdown changed-phone-hidden"> <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="Top Bar" data-event-type="Open Bookmarks">
           <span class="hidden-phone">File</span></a>

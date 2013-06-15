@@ -9,13 +9,12 @@ html, body {
   margin-right: 20px;
 }
 #logo-img {
- background-image:url('//mindmup.s3.amazonaws.com/lib/img/logo_32.png');
- background-position:left center;
- background-repeat:no-repeat;
  width: 40px;
  height: 40px;
- padding: 0;
- margin-left:50px;
+ padding: 0px;
+}
+#logo-img img {
+  margin-top:5px;
 }
 @media (max-width: 979px) {
 .navbar-fixed-top, .navbar-fixed-bottom {
@@ -360,4 +359,7 @@ body.offline-enabled .offline-disabled-hidden {
     width: 240px;
     height: 100px;
     margin-bottom:10px;
+}
+#modalKeyActions {
+    height: 500px;
 }
