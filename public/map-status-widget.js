@@ -30,6 +30,10 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 		} else {
 			element.removeClass('map-changed').addClass('map-unchanged');
 		}
+		element.removeClass('map-overwritable');
+		if (properties.overwritable) {
+			element.addClass('map-overwritable');
+		}
 		rebindIfChanged(idea, properties.autoSave);
 		updateSharable(properties.sharable);
 	});

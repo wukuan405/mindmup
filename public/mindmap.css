@@ -88,11 +88,21 @@ div.topbar-color-picker {
 }
 .map-changed .hidden-map-changed {
   display: none;
+  visibility:hidden;
 }
-.map-not-sharable .hidden-map-not-sharable {
+.map-overwritable .hidden-map-changed {
   display: none;
+  visibility:hidden;
 }
 .map-unchanged .visible-map-changed {
+  display: none;
+  visibility:hidden;
+}
+.map-overwritable .visible-map-changed {
+	display: block !important;
+  visibility:visible !important;
+}
+.map-not-sharable .hidden-map-not-sharable {
   display: none;
 }
 #toolbarEdit .btn-group { margin-left:0px; }

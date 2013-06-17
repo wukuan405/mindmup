@@ -1,7 +1,7 @@
 /*global jQuery, MM, observable*/
 MM.OfflineAdapter = function (storage) {
 	'use strict';
-	var properties = {editable: true};
+	var properties = {editable: true, overwritable: true};
 	this.description = 'OFFLINE';
 	this.notSharable = true;
 	this.recognises = function (mapId) {

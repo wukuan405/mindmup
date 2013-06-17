@@ -47,11 +47,13 @@ jQuery.fn.saveWidget = function (mapController) {
 		idea.addEventListener('changed', mapChangedListener);
 	});
 	mapController.addEventListener('mapSaving', function () {
+		element.find('[data-mm-role=publish-disabled]')
+			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving');
 		element.find('[data-mm-role=publish]')
 			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
 			.removeClass('btn-primary')
 			.attr('disabled', true);
-		element.find('.dropdown-toggle').hide();
+		element.find('.dropdown-toggle').attr('disabled', true);
 	});
 	_.each(resetSaveButtonEvents, function (eventName) {
 		mapController.addEventListener(eventName, resetSaveButton);
@@ -61,7 +63,8 @@ jQuery.fn.saveWidget = function (mapController) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
-		element.find('.dropdown-toggle').show();
+		element.find('[data-mm-role=publish-disabled]').text('Save');
+		element.find('.dropdown-toggle').attr('disabled', false);
 	});
 	return element;
 };
