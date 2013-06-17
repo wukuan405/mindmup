@@ -90,17 +90,9 @@ div.topbar-color-picker {
   display: none;
   visibility:hidden;
 }
-.map-overwritable .hidden-map-changed {
-  display: none;
-  visibility:hidden;
-}
 .map-unchanged .visible-map-changed {
   display: none;
   visibility:hidden;
-}
-.map-overwritable .visible-map-changed {
-	display: block !important;
-  visibility:visible !important;
 }
 .map-not-sharable .hidden-map-not-sharable {
   display: none;
