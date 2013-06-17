@@ -31,10 +31,18 @@ MM.Bookmark = function (mapController, storage, storageKey) {
 		list = storage.getItem(storageKey) || [];
 	}
 	mapController.addEventListener('mapSaved', function (key, idea) {
+		var couldPin = self.canPin();
+		currentMap = {
+			mapId: key,
+			title: idea.title
+		};
 		self.store({
 			mapId: key,
 			title: idea.title
 		});
+		if (couldPin !== self.canPin()) {
+			self.dispatchEvent('pinChanged');
+		}
 	});
 	mapController.addEventListener('mapLoaded', function (key, idea) {
 		var couldPin = self.canPin();
@@ -103,26 +111,20 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 	return this.each(function () {
 		var element = jQuery(this),
 			alertId,
-			template = element.find('.template').clone(),
-			originalContent = element.children().clone(),
-			keep = element.children().filter('[data-mm-role=bookmark-keep]').clone(),
+			template = element.find('.template').detach(),
+			pin = element.find('[data-mm-role=bookmark-pin]'),
+			originalContent = element.children().filter('[data-mm-role!=bookmark-keep]').clone(),
 			updateLinks = function () {
 				var list = bookmarks.links(),
 					link,
 					children,
-					addition, 
-					kept;
-				element.empty();
+					addition;
+				element.children().filter('[data-mm-role!=bookmark-keep]').remove();
+				pin.parent().hide();
+				if (bookmarks.canPin()) {
+					pin.parent().show();
+				}
 				if (list.length) {
-					kept = keep.clone().appendTo(element);
-					if (bookmarks.canPin()) {
-						kept.find('[data-mm-role=bookmark-pin]').click(function () {
-							bookmarks.pin();
-						});
-					}
-					else {
-						kept.find('[data-mm-role=bookmark-pin]').parent().hide();
-					}
 					list.slice(0, 10).forEach(function (bookmark) {
 						addition = template.clone().show().appendTo(element);
 						link = addition.find('a');
@@ -139,11 +141,12 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 						});
 					});
 				} else {
-					originalContent.clone().appendTo(element).filter('[data-mm-role=bookmark-pin]').find('a').click(function () {
-						bookmarks.pin();
-					});
+					element.append(originalContent.clone());
 				}
 			};
+		pin.click(function () {
+			bookmarks.pin();
+		});
 		bookmarks.addEventListener('added', updateLinks);
 		bookmarks.addEventListener('pinChanged', updateLinks);
 		bookmarks.addEventListener('deleted', function (mark, suppressAlert) {

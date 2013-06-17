@@ -232,14 +232,14 @@ describe('Bookmarks', function () {
 	});
 
 	describe('Bookmark widget', function () {
-		var ulTemplate = '<ul><li>Old</li><<li class="template" style="display: none"><a data-category="Top Bar" data-event-type="Bookmark click"><span data-mm-role="x"></span></a></li></ul>',
+		var ulTemplate = '<ul><li>Old</li><li class="template" style="display: none"><a data-category="Top Bar" data-event-type="Bookmark click"><span data-mm-role="x"></span></a></li></ul>',
 			wrap = function (list, repo) {
 				repo = repo || observable({});
 				return new MM.Bookmark(repo, { getItem: function () { return list; }, setItem: function () { } }, 'key');
 			};
 		it('does not remove previous content if the bookmark list is empty', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([]));
-			expect(list.children('li').length).toBe(2);
+			expect(list.children('li').length).toBe(1);
 			expect(list.children('li').first().text()).toBe('Old');
 		});
 		it('removes previous content if the list is not empty', function () {
@@ -284,7 +284,7 @@ describe('Bookmarks', function () {
 				bookmark = wrap(links),
 				list = jQuery(ulTemplate).bookmarkWidget(bookmark);
 			bookmark.remove('u1');
-			expect(list.children('li').length).toBe(2);
+			expect(list.children('li').length).toBe(1);
 			expect(list.children('li').first().text()).toBe('Old');
 		});
 		it('displays only first 10 links', function () {
