@@ -27,7 +27,6 @@ jQuery.fn.shareEmailWidget = function () {
 				shareModal.modal('hide');
 			}
 		};
-	shareModal.detach().appendTo('body');
 	formElement.find('input').blur(function () { validate(jQuery(this)); });
 	shareModal.find('[data-mm-role=submit]').click(submitForm);
 	return shareModal;

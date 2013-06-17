@@ -355,3 +355,8 @@ body.offline-enabled .offline-disabled-hidden {
 	text-decoration: underline;
 	cursor: pointer;
 }
+input.noglow {
+  outline: none;
+  border:none !important;
+  box-shadow:none !important;
+}
