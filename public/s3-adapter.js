@@ -2,7 +2,7 @@
 /*global FormData, jQuery, MM */
 MM.S3Adapter = function (s3Url, folder, activityLog, publishingConfigUrl, proxyLoadUrl) {
 	'use strict';
-	var properties = {editable: true, sharable: true, overwritable: false };
+	var properties = {editable: true, sharable: true};
 	this.description = 'S3_CORS';
 
 	this.recognises = function (mapId) {
