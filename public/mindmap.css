@@ -377,3 +377,8 @@ input.noglow {
 	display: inherit;
 }
 
+@media (max-width: 1200px) { 
+	.hidden-narrow-screen {
+		display: none;
+	}
+}
