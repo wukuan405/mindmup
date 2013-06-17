@@ -32,7 +32,9 @@ body {
 	padding: 0px; /* cancel default bootstrap padding on mobile screens, we use full screen */
 }
 }
-
+.span-toolbar {
+	width: 120px;
+}
 @media (max-width: 768px) {
   .hidden-tablet-portrait {
     display: none !important;
