@@ -1199,6 +1199,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			currentLayout = newLayout;
 		},
+		revertSelectionForUndo,
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
 			if (command === 'addSubIdea' || command === 'insertIntermediate') {
@@ -1216,12 +1217,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
-		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
-			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
+			var localCommand, contextNodeId = command && command === 'updateAttr'  && getCurrentlySelectedIdeaId();
 			localCommand = (!originSession) || originSession === idea.getSessionKey();
 			revertSelectionForUndo = false;
-			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
+			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), localCommand && contextNodeId);
 			if (!localCommand) {
 				return;
 			}
@@ -2239,7 +2239,11 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					self.getStage().off('xChange yChange', onStageMoved);
 				},
 				onCommit = function () {
-					updateText(ideaInput.val());
+					if (ideaInput.val() === '') {
+						onCancelEdit();
+					} else {
+						updateText(ideaInput.val());
+					}
 				},
 				onCancelEdit = function () {
 					updateText(unformattedText);
@@ -2267,11 +2271,7 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				.appendTo('body')
 				.keydown(function (e) {
 					if (e.which === ENTER_KEY_CODE) {
-						if (ideaInput.val() === '') {
-							onCancelEdit();
-						} else {
-							onCommit();
-						}
+						onCommit();
 					} else if (e.which === ESC_KEY_CODE) {
 						onCancelEdit();
 					} else if (e.which === 9) {
@@ -2686,12 +2686,11 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			});
 		};
 	stage.add(layer);
-	stage.getContainer().style.cursor = 'move';
 	layer.on('mouseover', function () {
 		stage.getContainer().style.cursor = 'pointer';
 	});
 	layer.on('mouseout', function () {
-		stage.getContainer().style.cursor = 'move';
+		stage.getContainer().style.cursor = 'auto';
 	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
