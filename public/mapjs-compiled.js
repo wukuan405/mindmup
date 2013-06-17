@@ -1199,6 +1199,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			currentLayout = newLayout;
 		},
+		revertSelectionForUndo,
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
 			if (command === 'addSubIdea' || command === 'insertIntermediate') {
@@ -1216,10 +1217,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
-		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
-			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
-			localCommand = (!originSession) || originSession === idea.getSessionKey();
+			var localCommand = (!originSession) || originSession === idea.getSessionKey(),
+				contextNodeId = ((command && command === 'updateAttr') || (!localCommand))  && getCurrentlySelectedIdeaId();
 			revertSelectionForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
@@ -2686,12 +2686,11 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			});
 		};
 	stage.add(layer);
-	stage.getContainer().style.cursor = 'move';
 	layer.on('mouseover', function () {
 		stage.getContainer().style.cursor = 'pointer';
 	});
 	layer.on('mouseout', function () {
-		stage.getContainer().style.cursor = 'move';
+		stage.getContainer().style.cursor = 'auto';
 	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
