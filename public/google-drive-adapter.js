@@ -1,8 +1,7 @@
 /*global _, jQuery, MM, window, gapi, google */
 MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
-	var self = this,
-		properties = {editable: true, sharable: true},
+	var properties = {editable: true, sharable: true, overwritable: true},
 		driveLoaded,
 		isAuthorised = function () {
 			return !!(window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
