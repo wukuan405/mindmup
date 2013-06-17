@@ -1199,7 +1199,6 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			currentLayout = newLayout;
 		},
-		revertSelectionForUndo,
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
 			if (command === 'addSubIdea' || command === 'insertIntermediate') {
@@ -1217,9 +1216,10 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
+		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
-			var localCommand = (!originSession) || originSession === idea.getSessionKey(),
-				contextNodeId = ((command && command === 'updateAttr') || (!localCommand))  && getCurrentlySelectedIdeaId();
+			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
+			localCommand = (!originSession) || originSession === idea.getSessionKey();
 			revertSelectionForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
@@ -2267,7 +2267,11 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 				.appendTo('body')
 				.keydown(function (e) {
 					if (e.which === ENTER_KEY_CODE) {
-						onCommit();
+						if (ideaInput.val() === '') {
+							onCancelEdit();
+						} else {
+							onCommit();
+						}
 					} else if (e.which === ESC_KEY_CODE) {
 						onCancelEdit();
 					} else if (e.which === 9) {
@@ -2682,11 +2686,12 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			});
 		};
 	stage.add(layer);
+	stage.getContainer().style.cursor = 'move';
 	layer.on('mouseover', function () {
 		stage.getContainer().style.cursor = 'pointer';
 	});
 	layer.on('mouseout', function () {
-		stage.getContainer().style.cursor = 'auto';
+		stage.getContainer().style.cursor = 'move';
 	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
