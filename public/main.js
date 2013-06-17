@@ -34,7 +34,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(localStorage, mapController),
-			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [' '], [' ']),
+			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			extensions = new MM.Extensions(localStorage, 'active-extensions', config, {
