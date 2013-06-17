@@ -5,7 +5,6 @@
       data-placement='right' data-mm-key="ctrl+shift+b meta+shift+b"><i class="icon-hand-down"></i><i class="icon-hand-up"></i></button>
       <ul class="nav pull-left" id="mainMenu">
         <li><a id="logo-img" class="hidden-phone" href="#m:default" rel="tooltip" title="Mindmup Home" data-category="Top Bar" data-event-type="Logo">&nbsp;</a></li>
-        <li data-mm-role="optional" class="hidden-tablet-portrait hidden-touch"> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;Create&nbsp;a&nbsp;Map</a> </li>
 
         <li class="dropdown changed-phone-hidden"> <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="Top Bar" data-event-type="Open Bookmarks">
           <span class="hidden-phone">File</span></a>
@@ -96,10 +95,23 @@
             <li rel="tooltip" data-title="z"><a data-category="Tools" data-event-type="Zoom in" class="scaleUp"><i class="icon-zoom-in"></i>&nbsp;Zoom in</a></li>
             <li rel="tooltip" data-title="z"><a data-category="Tools" data-event-type="Zoom out" class="scaleDown"><i class="icon-zoom-out"></i>&nbsp;Zoom out</a></li>
             <li rel="tooltip" data-title="Ctrl+0"><a data-category="Tools" data-event-type="Zoom reset" class="resetView"><i class="icon-circle-blank"></i>&nbsp;Re-center view</a></li>
+          </ul>
+        </li>
+        <li><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Extensions</a></li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="About" data-event-type="Open">About<span class="hidden-phone"></span></a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            <li> <a href="#" class="menuAbout" data-target="#modalAbout" data-toggle="modal" data-category="About" data-event-type="One-minute intro"><i class="icon-coffee"></i>&nbsp;One-minute intro</a> </li>
+            <li> <a target="_blank" data-category="About" href="http://mindmup.uservoice.com/" data-event-type="Vote on features"><i class="icon-bullhorn"></i>&nbsp;Vote on features</a> </li>
+            <li> <a href="#" class="menuterms" data-target="#modalTerms" data-toggle="modal" data-category="About" data-event-type="Legal info"><i class="icon-legal"></i>&nbsp;Legal info</a> </li>
+            <li> <a href="http://blog.mindmup.com" target="_blank" data-category="About" data-event-type="News/Blog"><i class="icon-rss"></i>&nbsp;News/Blog</a> </li>
+            <li> <a href="http://github.com/mindmup" target="_blank" data-category="About" data-event-type="Source Code"><i class="icon-github-sign"></i>&nbsp;Source Code</a> </li>
+            <li> <a href="#" id="menuFeedback" data-target="#modalFeedback" data-toggle="modal" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-comment"></i>&nbsp;Talk to Us</a> </li>
 
-            <li class="divider hidden-touch"></li>
-
-            <li data-mm-role="bookmark-keep"><a data-toggle="modal" data-target="#modalExtensions" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions (Tools menu)"><i class="icon-cogs"></i>&nbsp;Extensions</a></li>
+            <li class="visible-phone divider"></li>
+            <li class="visible-phone"> <a target="_blank" href="http://facebook.com/mindmupapp" data-category="About" data-event-type="Connect on FB"><i class="icon-facebook"></i>&nbsp;Connect on Facebook</a></li>
+            <li class="visible-phone"> <a target="_blank" href="http://twitter.com/mindmup" data-category="About" data-event-type="Connect on Twitter"><i class="icon-twitter"></i>&nbsp;Follow on Twitter</a></li>
+            <li class="visible-phone"> <a target="_blank" href="https://plus.google.com/u/0/communities/112831595986131146219" data-category="About" data-event-type="Connect on G+"><i class="icon-google-plus"></i>&nbsp;Join Google+ Community</a></li>
           </ul>
         </li>
       </ul>
@@ -131,24 +143,7 @@
           </ul>
         </li>
 
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="About" data-event-type="Open">About<span class="hidden-phone"></span></a>
-          <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-            <li> <a href="#" class="menuAbout" data-target="#modalAbout" data-toggle="modal" data-category="About" data-event-type="One-minute intro"><i class="icon-coffee"></i>&nbsp;One-minute intro</a> </li>
-            <li> <a target="_blank" data-category="About" href="http://mindmup.uservoice.com/" data-event-type="Vote on features"><i class="icon-bullhorn"></i>&nbsp;Vote on features</a> </li>
-            <li> <a href="#" class="menuterms" data-target="#modalTerms" data-toggle="modal" data-category="About" data-event-type="Legal info"><i class="icon-legal"></i>&nbsp;Legal info</a> </li>
-            <li> <a href="http://blog.mindmup.com" target="_blank" data-category="About" data-event-type="News/Blog"><i class="icon-rss"></i>&nbsp;News/Blog</a> </li>
-            <li> <a href="http://github.com/mindmup" target="_blank" data-category="About" data-event-type="Source Code"><i class="icon-github-sign"></i>&nbsp;Source Code</a> </li>
-            <li> <a href="#" id="menuFeedback" data-target="#modalFeedback" data-toggle="modal" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-comment"></i>&nbsp;Talk to Us</a> </li>
 
-            <li class="visible-phone divider"></li>
-            <li class="visible-phone"> <a target="_blank" href="http://facebook.com/mindmupapp" data-category="About" data-event-type="Connect on FB"><i class="icon-facebook"></i>&nbsp;Connect on Facebook</a></li>
-            <li class="visible-phone"> <a target="_blank" href="http://twitter.com/mindmup" data-category="About" data-event-type="Connect on Twitter"><i class="icon-twitter"></i>&nbsp;Follow on Twitter</a></li>
-            <li class="visible-phone"> <a target="_blank" href="https://plus.google.com/u/0/communities/112831595986131146219" data-category="About" data-event-type="Connect on G+"><i class="icon-google-plus"></i>&nbsp;Join Google+ Community</a></li>
-            <li class="divider"></li>
-            <li><a data-toggle="modal" data-target="#modalExtensions" data-category="Top Bar" data-event-type="Extensions"><i class="icon-cogs"></i> Extensions</a></li>
-          </ul>
-        </li>
       </ul>
     </div>
   </div>
