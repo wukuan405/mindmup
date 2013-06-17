@@ -34,6 +34,7 @@ body {
 }
 .span-toolbar {
 	width: 120px;
+	cursor: move;
 }
 @media (max-width: 768px) {
   .hidden-tablet-portrait {
