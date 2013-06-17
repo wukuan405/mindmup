@@ -34,9 +34,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(localStorage, mapController),
-			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator,
-				['I have a cunning plan...', 'We\'ll be famous...', 'Lancelot, Galahad, and I wait until nightfall, and then leap out of the rabbit, taking the French by surprise'],
-				['Luke, I AM your father!', 'Who\'s your daddy?', 'I\'m not a doctor, but I play one on TV', 'Press Space or double-click to edit']),
+			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [' '], [' ']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			extensions = new MM.Extensions(localStorage, 'active-extensions', config, {
