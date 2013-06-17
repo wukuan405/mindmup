@@ -62,6 +62,7 @@ jQuery.fn.saveWidget = function (mapController) {
 	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
+		element.removeClass('hidden');
 		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
 		element.find('[data-mm-role=publish-disabled]').text('Save');
 		element.find('.dropdown-toggle').attr('disabled', false);
