@@ -20,8 +20,8 @@
             <li data-mm-role="bookmark-keep">
               <a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;Open from Browser Storage</a>
             </li>
-            <li data-mm-role="bookmark-keep">
-              <a data-event-type="Import" class="hidden-touch" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;Import a Freemind or MindMup file</a>
+            <li data-mm-role="bookmark-keep" class="hidden-touch">
+              <a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;Import a Freemind or MindMup file</a>
             </li>
 
             <li data-mm-role="bookmark-keep" class="divider hidden-touch"></li>
@@ -36,15 +36,20 @@
                 <li><a rel="nofollow" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="txt"  data-category="Top Bar" data-event-type="Export CSV">Text (tab separated)</a> </li>
               </ul>
             </li>
-            <li data-mm-role="bookmark-keep" class="hidden-touch hidden-map-changed hidden-map-not-sharable dropdown-submenu">
+            <li data-mm-role="bookmark-keep" class="hidden-touch visible-map-source-a dropdown-submenu">
               <a href="#"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
               <ul class="dropdown-menu" role="menu">
-                <li><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
-                <li><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
-                <li><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
-                <li rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
+                <li class="hidden-map-changed"><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
+                <li class="hidden-map-changed"><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
+                <li class="hidden-map-changed"><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
+                <li class="hidden-map-changed" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
+                <li class="visible-map-changed disabled"><a>Save this map first to share it</a></li>
               </ul>
-            </li>
+             </li>
+             <li class="hidden-touch visible-map-source-g" data-mm-role="bookmark-keep">
+             <a href="#" data-mm-role="share-google" data-category="Top Bar" data-event-type="Share Google"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
+             </li>
+             <li class="disabled hidden-touch visible-map-source-o" data-mm-role="bookmark-keep"><a>Sharing is not available for offline maps</a></li>  
 
             <li class="divider hidden-touch"></li>
 

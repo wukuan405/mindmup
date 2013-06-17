@@ -86,6 +86,7 @@ MM.main = function (config) {
 		jQuery(document).titleUpdateWidget(mapController);
 		jQuery('[data-mm-role=share]').shareWidget();
 		jQuery('#modalShareEmail').shareEmailWidget();
+		jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
 		jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, config.baseUrl);
 		jQuery('#modalImport').importWidget(activityLog, mapController);
 		jQuery('[data-mm-role=save]').saveWidget(mapController);

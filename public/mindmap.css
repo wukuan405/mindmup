@@ -359,4 +359,21 @@ input.noglow {
   outline: none;
   border:none !important;
   box-shadow:none !important;
+  cursor: pointer;
 }
+
+
+.visible-map-source-a, .visible-map-source-o, .visible-map-source-g {
+	display: none;
+}
+
+.map-source-a .visible-map-source-a {
+	display: inherit;
+}
+.map-source-g .visible-map-source-g {
+	display: inherit;
+}
+.map-source-o .visible-map-source-o {
+	display: inherit;
+}
+
