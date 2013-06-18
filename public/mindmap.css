@@ -410,4 +410,5 @@ input.noglow {
 }
 #modalKeyActions a {
   cursor: pointer;
+  color: black;
 }
