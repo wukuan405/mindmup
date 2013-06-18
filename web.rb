@@ -73,7 +73,7 @@ get '/trouble' do
  erb :trouble
 end
 get '/default' do
-  redirect "/#m:default"
+  redirect "/#m:new"
 end
 get "/s3/:mapid" do
   redirect "/#m:#{params[:mapid]}"

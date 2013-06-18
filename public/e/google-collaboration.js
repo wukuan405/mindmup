@@ -306,7 +306,7 @@ MM.Extensions.googleCollaboration = function () {
 				});
 			});
 			menu.find('[data-mm-role=leave]').click(function () {
-				mapController.loadMap('default');
+				mapController.loadMap('new-g');
 			});
 			modal.find('[data-mm-role=start-session]').click(initializeSessionFromUi);
 			modal.find('form').submit(initializeSessionFromUi);
