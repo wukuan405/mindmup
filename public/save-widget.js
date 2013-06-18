@@ -18,11 +18,11 @@ jQuery.fn.saveWidget = function (mapController) {
 		setDefaultRepo = function (mapId) {
 			var validrepos = 'aog';
 			repository = (mapId && mapId[0]);
+			if (/^new-/.test(mapId) && mapId.length > 4) {
+				repository = mapId[4];
+			}
 			if (!_.contains(validrepos, repository)) {
 				repository = validrepos[0];
-			}
-			if (mapId === 'new-g') {
-				repository = 'g';
 			}
 			element.find('[data-mm-role=currentrepo]').removeClass(
 				_.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('')

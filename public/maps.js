@@ -6,6 +6,9 @@ MM.Maps['new-g'] = MM.Maps['new'];
 MM.EmbeddedMapSource = function () {
 	var properties = {editable: true, sharable: false};
 	this.recognises = function (mapId) {
+		if (/^new-/.test(mapId)) {
+			mapId = 'new'
+		}		
 		return MM.Maps[mapId];
 	};
 	this.loadMap = function (mapId) {
