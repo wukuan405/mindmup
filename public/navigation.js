@@ -29,9 +29,10 @@ MM.navigation = function (storage, mapController) {
 	self.loadInitial = function () {
 		var initialMapId = getMapIdFromHash();
 		if (!initialMapId || initialMapId === unknownMapId) {
-			initialMapId = (storage && storage.getItem && storage.getItem('mostRecentMapLoaded')) || 'default';
+			initialMapId = (storage && storage.getItem && storage.getItem('mostRecentMapLoaded'));
 		}
-		mapController.loadMap(initialMapId);
+		mapController.loadMap(initialMapId || 'new');
+		return initialMapId;
 	};
 	mapController.addEventListener('mapSaved mapLoaded', function (newMapId) {
 		changeMapId(newMapId);

@@ -18,27 +18,27 @@ describe('MM.navigation', function () {
 		});
 		it('loads a map from hash URL if it is given', function () {
 			window.location.hash = 'm:abc';
-			underTest.loadInitial();
+			expect(underTest.loadInitial()).toBeTruthy();
 			expect(mapController.loadMap).toHaveBeenCalledWith('abc');
 		});
 		it('loads the most recently loaded map if hash is not given', function () {
 			localStorage.setItem('mostRecentMapLoaded', 'most recent');
-			underTest.loadInitial();
+			expect(underTest.loadInitial()).toBeTruthy();
 			expect(mapController.loadMap).toHaveBeenCalledWith('most recent');
 		});
-		it('loads the default map if no most recent', function () {
-			underTest.loadInitial();
-			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+		it('loads the new map if no most recent', function () {
+			expect(underTest.loadInitial()).toBeFalsy();
+			expect(mapController.loadMap).toHaveBeenCalledWith('new');
 		});
-		it('loads default map if the hash format is invalid', function () {
+		it('loads the new map if the hash format is invalid', function () {
 			window.location.hash = 'abc';
-			underTest.loadInitial();
-			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+			expect(underTest.loadInitial()).toBeFalsy();
+			expect(mapController.loadMap).toHaveBeenCalledWith('new');
 		});
-		it('loads default map if the hash format is valid but special marker NIL is used as map ID', function () {
+		it('loads the new map if the hash format is valid but special marker NIL is used as map ID', function () {
 			window.location.hash = 'm:nil';
-			underTest.loadInitial();
-			expect(mapController.loadMap).toHaveBeenCalledWith('default');
+			expect(underTest.loadInitial()).toBeFalsy();
+			expect(mapController.loadMap).toHaveBeenCalledWith('new');
 		});
 	});
 	describe('mapController event listeners', function () {

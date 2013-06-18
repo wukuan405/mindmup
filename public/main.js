@@ -112,7 +112,9 @@ MM.main = function (config) {
 				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
 				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
 			jQuery('#modalKeyActions').keyActionsWidget();
-			navigation.loadInitial();
+			if (!navigation.loadInitial()) {
+				jQuery('#logo-img').click();
+			}
 		});
 	});
 
