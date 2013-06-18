@@ -1,8 +1,5 @@
 <%
   if session['welcome'].nil?
-    message=%q{
-    <strong>Welcome to MindMup!</strong> If this is your first time here, have a look at our <a href='#'  href='#' data-target='#modalAbout' data-toggle='modal'>One Minute Introduction</a> to get started. 
-      }
     session['welcome'] = true
   elsif settings.online && session['welcome'] != settings.last_news_id 
     message=%Q{
@@ -10,7 +7,6 @@
       }
     session['welcome'] = settings.last_news_id
   end
-
 if ! message.nil? then
 %>
  <div id='welcome_message' data-message='<%=session['welcome']%>' class='alert alert-info'><button type='button' class='close' data-dismiss='alert'>&times;</button>
