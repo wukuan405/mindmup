@@ -1,7 +1,13 @@
 html, body {
   height: 100%;
+  overflow: hidden;
 }
 
+#container, #topbar, #floating-toolbar {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
 #container {
   width:100%;
   min-height: 100%;
