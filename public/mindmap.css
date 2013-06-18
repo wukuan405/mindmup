@@ -405,10 +405,57 @@ input.noglow {
     margin-bottom:10px;
 }
 
+
+@media (max-height: 320px) {
+	.btn-xlarge {
+	    padding: 9px 14px;
+	    font-size: 20px;
+	    line-height: normal;
+	    -webkit-border-radius: 4px;
+	    -moz-border-radius: 4px;
+	    border-radius: 4px;
+	    width: 230px;
+	    height: 70px;
+	    margin-left:5px;
+	    margin-bottom:5px;
+	}
+}
+
+@media (max-width: 320px) {
+	.btn-xlarge {
+	    padding: 9px 14px;
+	    font-size: 20px;
+	    line-height: normal;
+	    -webkit-border-radius: 4px;
+	    -moz-border-radius: 4px;
+	    border-radius: 4px;
+	    width: 230px;
+	    height: 70px;
+	    margin-left:5px;
+	    margin-bottom:5px;
+	}
+	#mainMenu>li>a {
+		padding-left: 0px;
+		padding-right: 15px;
+	}
+	#logo-img {
+		margin: 0;
+		padding-left: 5px;
+		padding-right: 0px;
+	}
+}
+@media (min-height:640px) {
+	#modalKeyActions .modal-body{
+		min-height: 400px;
+	}
+}
 #modalKeyActions .item a span {
 	padding-right: 10px;
 }
 #modalKeyActions a {
   cursor: pointer;
   color: black;
+}
+#modalKeyActions div.item>a {
+  text-decoration: underline;
 }

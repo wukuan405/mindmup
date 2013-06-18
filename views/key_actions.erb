@@ -1,9 +1,11 @@
 <div id='modalKeyActions' class='modal hide fade'>
   <div class='modal-header'>
-    <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+    <button type='button' class='close' data-dismiss='modal' aria-hidden='true'><i class="icon-remove"></i></button>
     <h3>
       <i class="logo">&nbsp;</i>
-      &nbsp;MindMup: Zero-friction mind mapping</h3>
+      &nbsp;MindMup
+      <small class="hidden-phone">Zero-friction free online mind mapping</small>
+    </h3>
   </div>
   <div class='modal-body'>
     <div class="carousel slide" data-interval="false" id="topbox">
@@ -17,11 +19,12 @@
         <div class="item">
           <h1><i class="icon-lightbulb icon-large"></i>&nbsp;Create a new map</h1>
           <ul class="nav nav-tabs nav-stacked">
-            <li><a data-mm-role="dismiss-modal" href="#m:new-a"><span class="repo repo-a"></span>Public online map to share with the world</a></li>
-            <li><a data-mm-role="dismiss-modal" href="#m:new-g"><span class="repo repo-g"></span>Private map on Google Drive (you control sharing)</a></li>
-            <li><a data-mm-role="dismiss-modal" href="#m:new-o"><span class="repo repo-o"></span>Private, offline map in your browser</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Create - s3" href="#m:new-a"><span class="repo repo-a"></span>Public online map to share with the world</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Create - google" href="#m:new-g"><span class="repo repo-g"></span>Private map on Google Drive (you control sharing)</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Create - browser" href="#m:new-o"><span class="repo repo-o"></span>Private, offline map in your browser</a></li>
             <li><a class="slide-control" data-slide-to="0" data-target="#topbox"><span class="icon-arrow-left"></span>Main menu</a></li>
           </ul>
+          <a data-category="Start Menu" data-event-type="Describe - storage" target="_blank" href="http://blog.mindmup.com/p/storage-options.html" class="pull-right">More information about storage options</a>
         </div>
 
         <div class="item">
@@ -38,9 +41,10 @@
         <div class="item">
           <h1><i class="icon-book icon-large"></i>&nbsp;Learn how to...</h1>
           <ul class="nav nav-tabs nav-stacked">
-            <li><a data-mm-role="dismiss-modal" href="#m:new-a"><span class="repo repo-a"></span>Public online map to share with the world</a></li>
-            <li><a data-mm-role="dismiss-modal" href="#m:new-g"><span class="repo repo-g"></span>Private map on Google Drive (you control sharing)</a></li>
-            <li><a data-mm-role="dismiss-modal" href="#m:new-o"><span class="repo repo-o"></span>Private, offline map in your browser</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Learn - mouse" target="_blank" href="http://blog.mindmup.com/p/mouse-and-touch-operations.html"><span class="icon-hand-up"></span>Edit the map using touch or a mouse</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Learn - keyboard" target="_blank" href="http://blog.mindmup.com/p/keyboard-shortcuts.html"><span class="icon-keyboard"></span>Be more productive with keyboard shortcuts</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Learn - realtime" target="_blank" href="http://blog.mindmup.com/p/realtime-collaboration.html"><span class="icon-group"></span>Collaborate in real time with your colleagues</a></li>
+            <li><a data-mm-role="dismiss-modal" data-category="Start Menu" data-event-type="Learn - screen-max" target="_blank" href="http://blog.mindmup.com/2013/03/go-full-screen-remove-all-distractions.html"><span class="icon-laptop"></span>Get the most out of your screen</a></li>
             <li><a class="slide-control" data-slide-to="0" data-target="#topbox"><span class="icon-arrow-left"></span>Main menu</a></li>
           </ul>
         </div>

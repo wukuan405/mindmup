@@ -6,8 +6,7 @@
       <ul class="nav pull-left" id="mainMenu">
         <li><a id="logo-img" data-toggle="modal" data-target="#modalKeyActions" data-placement="bottom" href="#" data-title="Show start menu again" rel="tooltip" data-category="Top Bar" data-event-type="Logo">&nbsp;</a>
         </li>
-        <li class="dropdown changed-phone-hidden"> <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="Top Bar" data-event-type="Open Bookmarks">
-          <span class="hidden-phone">File</span></a>
+        <li class="dropdown"> <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="Top Bar" data-event-type="Open Bookmarks">File</a>
           <ul class="dropdown-menu" role="menu" id="listBookmarks">
 
             <li class="template" style="display:none"><a data-category="Top Bar" data-event-type="Bookmark click" class="repo"><button data-mm-role='bookmark-delete' class='btn-inline pull-right icon-remove' rel='tooltip' data-title='Remove bookmark'></button></a></li>
@@ -66,7 +65,7 @@
             <li rel="tooltip" data-title="Ctrl+z"><a data-category="Tools" data-event-type="Undo" class="undo"><i class="icon-undo"></i>&nbsp;Undo</a></li>
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+Shift+z"><a data-category="Tools" data-event-type="Redo" class="redo"><i class="icon-repeat"></i>&nbsp;Redo</a></li>
 
-            <li class="divider hidden-touch"></li>
+            <li class="divider hidden-phone"></li>
 
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+c"><a data-category="Tools" data-event-type="Copy" class="copy"><i class="icon-copy"></i>&nbsp;Copy</a></li>
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+x"><a data-category="Tools" data-event-type="Cut" class="cut"><i class="icon-cut"></i>&nbsp;Cut</a></li>
@@ -75,7 +74,7 @@
             <li class="hidden-phone" rel="tooltip" data-title="["><a data-category="Tools" data-event-type="Select all children" class="activateChildren"><i class="icon-th-list"></i>&nbsp;Select&nbsp;all&nbsp;children</a></li>
             <li class="hidden-phone" rel="tooltip" data-title="="><a data-category="Tools" data-event-type="Select all siblings" class="activateSiblingNodes"><i class="icon-ellipsis-vertical"></i>&nbsp;Select&nbsp;all&nbsp;siblings</a></li>
 
-            <li class="divider hidden-touch"></li>
+            <li class="divider hidden-phone"></li>
 
             <li rel="tooltip" data-title="Tab"><a data-category="Tools" data-event-type="Add idea" class="addSubIdea"><i class="icon-signout" ></i>&nbsp;Add Child</a></li>
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Enter"><a data-category="Tool
@@ -83,7 +82,7 @@
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Shift+Tab"><a data-category="Tools" data-event-type="Insert Intermediate" class="insertIntermediate"><i class="icon-signin" ></i>&nbsp;Add Parent</a></li>
             <li rel="tooltip" data-title="Backspace"><a data-category="Tools" data-event-type="Delete idea" class="removeSubIdea"><i class="icon-remove"></i>&nbsp;Delete</a></li>
 
-            <li class="divider hidden-touch"></li>
+            <li class="divider hidden-phone"></li>
 
             <li rel="tooltip" data-title="Spacebar"><a data-category="Tools" data-event-type="Edit idea" class="editNode"><i class="icon-pencil"></i>&nbsp;Edit node text</a></li>
             <li rel="tooltip" data-title="Shift+Spacebar"><a data-category="Tools" data-event-type="Node Color"><input type="hidden" data-mm-target-property='background' class="updateStyle"></input>&nbsp;Node color</a></li>
@@ -104,7 +103,7 @@
             <li class="hidden-touch" rel="tooltip"><a href="http://blog.mindmup.com/p/keyboard-shortcuts.html" target="_blank"><i class="icon-keyboard"></i>&nbsp;Hotkeys</a></li>
           </ul>
         </li>
-        <li><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Extensions</a></li>
+        <li class="hidden-phone-portrait"><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Extensions</a></li>
 
       </ul>
 
@@ -128,7 +127,7 @@
             <li><a data-mm-repository='o' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Brownser Storage">Browser&nbsp;Storage</a></li>
           </ul>
         </li>
-        <li class="dropdown">
+        <li class="dropdown hidden-phone-portrait">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="About" data-event-type="Open"><i class="icon-info-sign"></i></a>
           <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             <li> <a href="#" class="menuAbout" data-target="#modalAbout" data-toggle="modal" data-category="About" data-event-type="What is MindMup"><i class="icon-info"></i>&nbsp;What is MindMup</a> </li>
