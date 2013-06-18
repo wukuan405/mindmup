@@ -408,3 +408,6 @@ input.noglow {
 #modalKeyActions .item a span {
 	padding-right: 10px;
 }
+#modalKeyActions a {
+  cursor: pointer;
+}
