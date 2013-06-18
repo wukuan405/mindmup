@@ -111,6 +111,7 @@ MM.main = function (config) {
 			jQuery('.modal')
 				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
 				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
+			jQuery('#modalKeyActions').keyActionsWidget();
 			navigation.loadInitial();
 		});
 	});

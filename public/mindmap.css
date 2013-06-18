@@ -404,3 +404,7 @@ input.noglow {
     margin-left:10px;
     margin-bottom:10px;
 }
+
+#modalKeyActions .item a span {
+	padding-right: 10px;
+}
