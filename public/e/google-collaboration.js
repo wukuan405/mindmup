@@ -76,7 +76,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 										self.dispatchEvent('realtimeDocumentUpdated', event.sessionId);
 									}
 								};
-							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, contentAggregate);
+							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, mindMupId);
 							if (!contentText) {
 								$(window).off('error', realtimeError);
 								deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
@@ -199,6 +199,11 @@ MM.Extensions.googleCollaboration = function () {
 				},
 				onCollaboratorJoined = function (event) {
 					alert.show("Collaborator joined!", event.collaborator.displayName + " joined this session", "flash");
+				},
+				onSelectionChanged = function (id, isSelected) {
+					if (isSelected) {
+						focusNodes.set(localSessionId, id);
+					}
 				};
 			self.getCollaborators = function () {
 				return doc.getCollaborators();
@@ -246,15 +251,17 @@ MM.Extensions.googleCollaboration = function () {
 					}
 				});
 			};
+			self.stop = function () {
+				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
+				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+			};
 			if (!focusNodes) {
 				focusNodes = doc.getModel().createMap();
 				doc.getModel().getRoot().set('focusNodes', focusNodes);
 			}
-			mapModel.addEventListener('nodeSelectionChanged', function (id, isSelected) {
-				if (isSelected) {
-					focusNodes.set(localSessionId, id);
-				}
-			});
+			mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
 			focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
 			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
@@ -352,8 +359,15 @@ MM.Extensions.googleCollaboration = function () {
 			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
-	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
+	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId, mindMupId) {
 		kineticSessions = new KineticSessionManager(doc, googleSessionId);
+		kineticSessions.mapId = mindMupId;
+	});
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
+		if (kineticSessions && kineticSessions.mapId !== mapId) {
+			kineticSessions.stop();
+			kineticSessions = undefined;
+		}
 	});
 	realtimeMapSource.addEventListener("realtimeDocumentUpdated", function (googleSessionId) {
 		kineticSessions.showFocus(googleSessionId);
