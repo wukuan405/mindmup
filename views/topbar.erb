@@ -8,24 +8,38 @@
         </li>
         <li class="dropdown"> <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="Top Bar" data-event-type="Open Bookmarks">File</a>
           <ul class="dropdown-menu" role="menu" id="listBookmarks">
-
             <li class="template" style="display:none"><a data-category="Top Bar" data-event-type="Bookmark click" class="repo"><button data-mm-role='bookmark-delete' class='btn-inline pull-right icon-remove' rel='tooltip' data-title='Remove bookmark'></button></a></li>
 
-            <li data-mm-role="bookmark-keep"> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
+            <li> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
 
-            <li data-mm-role="bookmark-keep">
+            <li>
               <a data-event-type="Open from Google" data-category="Top Bar" data-target="#modalGoogleOpen" data-toggle="modal"><i class="icon-cloud-upload"></i>&nbsp;Open from Google Drive</a>
             </li>
-            <li data-mm-role="bookmark-keep">
+            <li>
               <a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;Open from Browser Storage</a>
             </li>
-            <li data-mm-role="bookmark-keep" class="hidden-touch">
+            <li  class="hidden-touch">
               <a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;Import a Freemind or MindMup file</a>
             </li>
 
-            <li data-mm-role="bookmark-keep" class="divider hidden-touch"></li>
+            <li class="divider hidden-touch"></li>
 
-            <li data-mm-role="bookmark-keep" class="hidden-touch dropdown-submenu">
+
+			<li class="hidden-map-changed disabled">
+			  <a>Save</a>
+			</li>
+			<li data-mm-role="save" class="visible-map-changed">
+			  <a data-mm-role="publish" data-category="Top Bar" data-event-type="Save Map"><span data-mm-role="currentrepo" class="repo repo-a"></span>&nbsp;Save</a>
+			</li>
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-download-alt"></i>&nbsp;Save As</a>
+              <ul data-mm-role="save" class="dropdown-menu" role="menu">
+				<li><a data-mm-repository='a' href="#" data-category="Top Bar" data-event-type="Save to MindMup">MindMup</a></li>
+				<li><a data-mm-repository='g' href="#" data-category="Top Bar" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
+				<li><a data-mm-repository='o' href="#" data-category="Top Bar" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
+			  </ul>
+			</li>
+            <li class="hidden-touch dropdown-submenu">
               <a href="#"><i class="icon-download-alt"></i>&nbsp;Export Map</a>
               <ul class="dropdown-menu" role="menu">
                 <li><a rel="nofollow" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="mup"  data-category="Top Bar" data-event-type="Export MindMup">MindMup</a> </li>
@@ -35,7 +49,7 @@
                 <li><a rel="nofollow" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="txt"  data-category="Top Bar" data-event-type="Export CSV">Text (tab separated)</a> </li>
               </ul>
             </li>
-            <li data-mm-role="bookmark-keep" class="hidden-touch visible-map-source-a dropdown-submenu">
+            <li class="hidden-touch visible-map-source-a dropdown-submenu">
               <a href="#"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
               <ul class="dropdown-menu" role="menu">
                 <li class="hidden-map-changed"><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
@@ -44,18 +58,16 @@
                 <li class="hidden-map-changed" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
                 <li class="visible-map-changed disabled"><a>Save this map first to share it</a></li>
               </ul>
-             </li>
-             <li class="visible-map-source-g" data-mm-role="bookmark-keep">
-             <a href="#" data-mm-role="share-google" data-category="Top Bar" data-event-type="Share Google"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
-             </li>
-             <li class="disabled hidden-touch visible-map-source-o" data-mm-role="bookmark-keep"><a>Sharing is not available for offline maps</a></li>  
-
-
-            <li data-mm-role="bookmark-keep">
+            </li>
+            <li class="visible-map-source-g" >
+              <a href="#" data-mm-role="share-google" data-category="Top Bar" data-event-type="Share Google"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
+            </li>
+            <li class="disabled hidden-touch visible-map-source-o" ><a>Sharing is not available for offline maps</a></li>  
+            <li>
               <a data-event-type="Pin" data-mm-role="bookmark-pin" data-category="Top Bar"><i class="icon-pushpin"></i>&nbsp;Bookmark this map</a>
             </li>
-            <li class="divider" data-mm-role="bookmark-keep" />
-            <li><a>Save a map and it will appear here</a></li>
+            <li class="divider"  />
+            <li data-mm-role="bookmark"><a>Save a map and it will appear here</a></li>
           </ul>
         </li>
 
@@ -114,7 +126,7 @@
           <ul class="dropdown-menu">
             <li><a data-mm-repository='a' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to MindMup">MindMup</a></li>
             <li><a data-mm-repository='g' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
-            <li><a data-mm-repository='o' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Brownser Storage">Browser&nbsp;Storage</a></li>
+            <li><a data-mm-repository='o' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
           </ul>
         </li>
 

@@ -113,20 +113,20 @@ jQuery.fn.bookmarkWidget = function (bookmarks, alert, mapController) {
 			alertId,
 			template = element.find('.template').detach(),
 			pin = element.find('[data-mm-role=bookmark-pin]'),
-			originalContent = element.children().filter('[data-mm-role!=bookmark-keep]').clone(),
+			originalContent = element.children().filter('[data-mm-role=bookmark]').clone(),
 			updateLinks = function () {
 				var list = bookmarks.links(),
 					link,
 					children,
 					addition;
-				element.children().filter('[data-mm-role!=bookmark-keep]').remove();
+				element.children().filter('[data-mm-role=bookmark]').remove();
 				pin.parent().hide();
 				if (bookmarks.canPin()) {
 					pin.parent().show();
 				}
 				if (list.length) {
 					list.slice(0, 10).forEach(function (bookmark) {
-						addition = template.clone().show().appendTo(element);
+						addition = template.clone().show().attr('data-mm-role', 'bookmark').appendTo(element);
 						link = addition.find('a');
 						children = link.children().detach();
 						link.click(function () {

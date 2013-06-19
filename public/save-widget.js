@@ -10,8 +10,8 @@ jQuery.fn.saveWidget = function (mapController) {
 		element = jQuery(this),
 		resetSaveButtonEvents = ['mapSavingFailed', 'mapSavingUnAuthorized', 'authorisationFailed', 'authRequired'],
 		resetSaveButton = function () {
-			if (element.find('[data-mm-role=publish]').attr('disabled')) {
-				element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
+			if (element.find('button[data-mm-role=publish]').attr('disabled')) {
+				element.find('button[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
 				element.find('.dropdown-toggle').show();
 			}
 		},
@@ -36,7 +36,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			evt.preventDefault();
 		}
 	});
-	element.find('[data-mm-role=publish]').add('a', element).click(function () {
+	element.find('[data-mm-role=publish]').add('a[data-mm-repository]', element).click(function () {
 		mapController.publishMap($(this).attr('data-mm-repository') || repository);
 	});
 	element.find('a[data-mm-repository]').addClass(function () {
@@ -47,9 +47,9 @@ jQuery.fn.saveWidget = function (mapController) {
 		idea.addEventListener('changed', mapChangedListener);
 	});
 	mapController.addEventListener('mapSaving', function () {
-		element.find('[data-mm-role=publish-disabled]')
+		element.find('button[data-mm-role=publish-disabled]')
 			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving');
-		element.find('[data-mm-role=publish]')
+		element.find('button[data-mm-role=publish]')
 			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
 			.removeClass('btn-primary')
 			.attr('disabled', true);
@@ -63,8 +63,8 @@ jQuery.fn.saveWidget = function (mapController) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
 		element.removeClass('hidden');
-		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
-		element.find('[data-mm-role=publish-disabled]').text('Save');
+		element.find('button[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
+		element.find('button[data-mm-role=publish-disabled]').text('Save');
 		element.find('.dropdown-toggle').attr('disabled', false);
 	});
 	return element;
