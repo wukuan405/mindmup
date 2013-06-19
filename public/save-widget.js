@@ -17,7 +17,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		},
 		resetSaveButtonEvents = ['mapSavingFailed', 'mapSavingUnAuthorized', 'authorisationFailed', 'authRequired'],
 		setDefaultRepo = function (mapId) {
-			var validrepos = 'aogc';
+			var validrepos = 'aog';
 			repository = (mapId && mapId[0]);
 			if (/^new-/.test(mapId) && mapId.length > 4) {
 				repository = mapId[4];

@@ -341,7 +341,9 @@ MM.Extensions.googleCollaboration = function () {
 				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
 					if (docState.isPending || docState.isSaving) {
 						statusIcon.removeClass(statusIcon.data('mm-saved-class')).addClass(statusIcon.data('mm-pending-class'));
-						saveButton.prepend('<i class="icon-spinner icon-spin"></i>');
+						if (!$('i[class="icon-spinner icon-spin"]', saveButton).length) {
+							saveButton.prepend('<i class="icon-spinner icon-spin"></i>');
+						}
 					} else {
 						statusIcon.removeClass(statusIcon.data('mm-pending-class')).addClass(statusIcon.data('mm-saved-class'));
 						$('i[class="icon-spinner icon-spin"]', saveButton).remove();
