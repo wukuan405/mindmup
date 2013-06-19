@@ -17,7 +17,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		},
 		resetSaveButtonEvents = ['mapSavingFailed', 'mapSavingUnAuthorized', 'authorisationFailed', 'authRequired'],
 		setDefaultRepo = function (mapId) {
-			var validrepos = 'aog';
+			var validrepos = 'aogc';
 			repository = (mapId && mapId[0]);
 			if (/^new-/.test(mapId) && mapId.length > 4) {
 				repository = mapId[4];
@@ -31,7 +31,7 @@ jQuery.fn.saveWidget = function (mapController) {
 		};
 	$(window).keydown(function (evt) {
 		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
-			if (!autoSave) {
+			if (!autoSave && mapChanged) {
 				mapController.publishMap(repository);
 			}
 			evt.preventDefault();
@@ -45,7 +45,9 @@ jQuery.fn.saveWidget = function (mapController) {
 	});
 	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
 		autoSave = properties.autoSave;
-		idea.addEventListener('changed', mapChangedListener);
+		if (!autoSave) {
+			idea.addEventListener('changed', mapChangedListener);
+		}
 	});
 	mapController.addEventListener('mapSaving', function () {
 		element.find('button[data-mm-role=publish]')
