@@ -268,6 +268,7 @@ MM.Extensions.googleCollaboration = function () {
 				modal = parsed.find('[data-mm-role=modal-start]').clone().appendTo($('body')),
 				collabModal = parsed.find('[data-mm-role=modal-collaborators]').clone().appendTo($('body')),
 				sessionNameField = modal.find('input[name=session-name]'),
+				saveButton = jQuery('[data-mm-role=publish]'),
 				setOnline = function (online) {
 					var flag = online ? 'online' : 'offline',
 						items = menu.find('[data-mm-collab-visible]');
@@ -340,8 +341,10 @@ MM.Extensions.googleCollaboration = function () {
 				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
 					if (docState.isPending || docState.isSaving) {
 						statusIcon.removeClass(statusIcon.data('mm-saved-class')).addClass(statusIcon.data('mm-pending-class'));
+						saveButton.prepend('<i class="icon-spinner icon-spin"></i>');
 					} else {
 						statusIcon.removeClass(statusIcon.data('mm-pending-class')).addClass(statusIcon.data('mm-saved-class'));
+						$('i[class="icon-spinner icon-spin"]', saveButton).remove();
 					}
 				});
 			});
