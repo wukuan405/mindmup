@@ -11,12 +11,13 @@ MM.main = function (config) {
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
+			jQuery('#container').on('contextmenu', function () { _gaq.push(['_trackEvent', 'Experiment', 'Right-click']); });
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
 		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
 		['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
 		['_trackPageview']
-	];
+			];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
