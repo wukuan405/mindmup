@@ -9,6 +9,7 @@ MM.MapController = function (initialMapSources) {
 		mapInfo = {},
 		activeMapSource,
 		mapSources = [].concat(initialMapSources),
+		lastProperties,
 		chooseMapSource = function (identifier) {
 			// order of identifiers is important, the first identifier takes precedence
 			var mapSourceIndex;
@@ -19,6 +20,7 @@ MM.MapController = function (initialMapSources) {
 			}
 		},
 		mapLoaded = function (idea, mapId, properties) {
+			lastProperties = properties;
 			mapLoadingConfirmationRequired = false;
 			properties = properties || {};
 			if (!properties.autoSave) {
@@ -91,12 +93,13 @@ MM.MapController = function (initialMapSources) {
 	};
 	this.publishMap = function (mapSourceType) {
 		var mapSaved = function (savedMapId, properties) {
+				var previousWasReloadOnSave = lastProperties && lastProperties.reloadOnSave;
 				properties = properties || {};
+				lastProperties = properties;
 				mapLoadingConfirmationRequired = false;
 				mapInfo.mapId = savedMapId;
 				dispatchEvent('mapSaved', savedMapId, mapInfo.idea, properties);
-
-				if (properties.reloadOnSave) {
+				if (previousWasReloadOnSave || properties.reloadOnSave) {
 					self.loadMap(savedMapId, true);
 				}
 			},

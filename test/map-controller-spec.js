@@ -265,11 +265,43 @@ describe('Map Controller', function () {
 
 			expect(listener).toHaveBeenCalledWith('loadedMapId', map, {editable: true});
 		});
-		it('should reload the map if saved map properties has reloadOnSave set to true', function () {
-			spyOn(adapter1, 'saveMap').andReturn(jQuery.Deferred().resolve('foo', {reloadOnSave: true}).promise());
-			spyOn(underTest, 'loadMap').andCallThrough();
-			underTest.publishMap();
-			expect(underTest.loadMap).toHaveBeenCalledWith('foo', true);
+		describe("reloadOnSave", function () {
+			beforeEach(function () {
+				adapter1.recognises = function (mapId) { return mapId === '1foo'; };
+				adapter2.recognises = function (mapId) { return mapId === '2foo'; };
+				spyOn(adapter1, 'saveMap').andReturn(jQuery.Deferred().resolve('1foo', {reloadOnSave: true}).promise());
+				spyOn(adapter1, 'loadMap').andReturn(jQuery.Deferred().resolve(map, '1foo', {reloadOnSave: true, editable: true}).promise());
+				spyOn(adapter2, 'saveMap').andReturn(jQuery.Deferred().resolve('2foo', {}).promise());
+				spyOn(underTest, 'loadMap').andCallThrough();
+			});
+			it('should not reload the map if saved map properties do not specify reloadOnSave', function () {
+				underTest.publishMap('2foo');
+				expect(underTest.loadMap).not.toHaveBeenCalled();
+			});
+			it('should reload the map if saved map properties has reloadOnSave set to true', function () {
+				underTest.publishMap('1foo');
+				expect(underTest.loadMap).toHaveBeenCalledWith('1foo', true);
+			});
+			it('should reload the map if saving over a map that had reloadOnSave set to true', function () {
+				underTest.publishMap('1foo');
+				underTest.loadMap.reset();
+				underTest.publishMap('2foo');
+				expect(underTest.loadMap).toHaveBeenCalledWith('2foo', true);
+			});
+			it('should reload only once, and stop reloading after', function () {
+				underTest.publishMap('1foo');
+				underTest.publishMap('2foo');
+				underTest.loadMap.reset();
+				underTest.publishMap('2foo');
+				expect(underTest.loadMap).not.toHaveBeenCalled();
+			});
+			it('should not reload if a different map was loaded between saving', function () {
+				underTest.publishMap('1foo');
+				underTest.loadMap('2foo');
+				underTest.loadMap.reset();
+				underTest.publishMap('2foo');
+				expect(underTest.loadMap).not.toHaveBeenCalled();
+			});
 		});
 	});
 });

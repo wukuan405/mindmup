@@ -2,7 +2,7 @@
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
 	var nextSessionName,
-		properties = {autoSave: true, sharable: true, editable: true},
+		properties = {autoSave: true, sharable: true, editable: true, reloadOnSave: true},
 		self = observable(this),
 		makeRealtimeReady = function (showAuth) {
 			var deferred = jQuery.Deferred(),
@@ -21,7 +21,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 				fileCreated = function (mindMupId) {
 					gapi.drive.realtime.load(googleDriveAdapter.toGoogleFileId(mindMupId),
 						function onFileLoaded() {
-							deferred.resolve('c' + mindMupId, {autoSave: true, sharable: true, editable: true, reloadOnSave: true});
+							deferred.resolve('c' + mindMupId, properties);
 						},
 						function initializeModel(model) {
 							var list = model.createList();
@@ -370,7 +370,9 @@ MM.Extensions.googleCollaboration = function () {
 		}
 	});
 	realtimeMapSource.addEventListener("realtimeDocumentUpdated", function (googleSessionId) {
-		kineticSessions.showFocus(googleSessionId);
+		if (kineticSessions) {
+			kineticSessions.showFocus(googleSessionId);
+		}
 	});
 	realtimeMapSource.addEventListener("realtimeError", function (errorMessage, isFatal) {
 		if (isFatal) {
