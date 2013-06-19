@@ -5,9 +5,10 @@ jQuery.fn.saveWidget = function (mapController) {
 		repository,
 		autoSave,
 		element = jQuery(this),
+		saveButton = element.find('button[data-mm-role=publish]'),
 		resetSaveButton = function () {
-			if (element.find('button[data-mm-role=publish]').attr('disabled')) {
-				element.find('button[data-mm-role=publish]').text('Save').addClass('btn-primary').removeAttr('disabled');
+			if (saveButton.attr('disabled')) {
+				saveButton.text('Save').addClass('btn-primary').removeAttr('disabled');
 				element.find('.dropdown-toggle').removeAttr('disabled');
 			}
 		},
@@ -15,7 +16,6 @@ jQuery.fn.saveWidget = function (mapController) {
 			mapChanged = true;
 			resetSaveButton();
 		},
-		resetSaveButtonEvents = ['mapSavingFailed', 'mapSavingUnAuthorized', 'authorisationFailed', 'authRequired'],
 		setDefaultRepo = function (mapId) {
 			var validrepos = 'aog';
 			repository = (mapId && mapId[0]);
@@ -43,28 +43,27 @@ jQuery.fn.saveWidget = function (mapController) {
 	element.find('a[data-mm-repository]').addClass(function () {
 		return 'repo repo-' + $(this).data('mm-repository');
 	});
-	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
-		autoSave = properties.autoSave;
-		if (!autoSave) {
-			idea.addEventListener('changed', mapChangedListener);
-		}
-	});
+
 	mapController.addEventListener('mapSaving', function () {
-		element.find('button[data-mm-role=publish]')
+		saveButton
 			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
 			.attr('disabled', true)
 			.removeClass('btn-primary');
 		element.find('.dropdown-toggle').attr('disabled', true);
 	});
-	_.each(resetSaveButtonEvents, function (eventName) {
-		mapController.addEventListener(eventName, resetSaveButton);
-	});
+	mapController.addEventListener('mapSavingFailed mapSavingUnAuthorized authorisationFailed authRequired', resetSaveButton);
 
-	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId, idea, properties) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
-		element.find('button[data-mm-role=publish]').text('Save').attr('disabled', true).removeClass('btn-primary');
+		saveButton.text('Save').attr('disabled', true).removeClass('btn-primary');
 		element.find('.dropdown-toggle').removeAttr('disabled');
+		autoSave = properties.autoSave;
+		if (!autoSave) {
+			idea.addEventListener('changed', mapChangedListener);
+		} else {
+			saveButton.text(' Auto-saved');
+		}
 	});
 	return element;
 };
