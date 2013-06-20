@@ -56,15 +56,17 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 			initMap = function initMap() {
 				try {
 					$(window).on('error', realtimeError);
+					deferred.notify('Connecting to Google Drive Realtime');
 					gapi.drive.realtime.load(
 						mindMupId.substr(3),
 						function onFileLoaded(doc) {
+							deferred.notify('Getting realtime document contents');
 							var modelRoot = doc.getModel().getRoot(),
 								contentText = modelRoot.get('initialContent'),
 								events = modelRoot.get('events'),
 								contentAggregate,
-								googleSessionId = _.find(doc.getCollaborators(), function (x) {return x.isMe; }).sessionId,
-								localSessionId = 'gd' + googleSessionId,
+								googleSessionId,
+								localSessionId,
 								applyEvents = function (mindmupEvents, sessionId) {
 									mindmupEvents.forEach(function (event) {
 										contentAggregate.execCommand(event.cmd, event.args, sessionId);
@@ -75,25 +77,41 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 										applyEvents(event.values, 'gd' + event.sessionId);
 										self.dispatchEvent('realtimeDocumentUpdated', event.sessionId);
 									}
-								};
-							self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, mindMupId);
-							if (!contentText) {
-								$(window).off('error', realtimeError);
-								deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
-								deferred = undefined;
-								return;
+								},
+								onMyJoining = function (collaboratorMe) {
+									googleSessionId = collaboratorMe.sessionId;
+									localSessionId = 'gd' + googleSessionId;
+									deferred.notify('Initializing map from realtime document');
+									self.dispatchEvent('realtimeDocumentLoaded', doc, googleSessionId, mindMupId);
+									if (!contentText) {
+										$(window).off('error', realtimeError);
+										deferred.reject('realtime-error', 'Error loading ' + mindMupId + ' content');
+										deferred = undefined;
+										return;
+									}
+									contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
+									applyEvents(events.asArray(), localSessionId);
+									contentAggregate.addEventListener('changed', function (command, params, session) {
+										if (session === localSessionId) {
+											events.push({cmd: command, args: params});
+										}
+									});
+									events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
+									deferred.resolve(contentAggregate, mindMupId, properties);
+									$(window).off('error', realtimeError);
+									deferred = undefined;
+								},
+								me = _.find(doc.getCollaborators(), function (x) {return x.isMe; });
+							if (me) {
+								onMyJoining(me);
+							} else {
+								deferred.notify('Waiting for session to start');
+								doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, function (event) {
+									if (event.collaborator.isMe) {
+										onMyJoining(event.collaborator);
+									}
+								});
 							}
-							contentAggregate = MAPJS.content(JSON.parse(contentText), localSessionId);
-							applyEvents(events.asArray(), localSessionId);
-							contentAggregate.addEventListener('changed', function (command, params, session) {
-								if (session === localSessionId) {
-									events.push({cmd: command, args: params});
-								}
-							});
-							events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
-							deferred.resolve(contentAggregate, mindMupId, properties);
-							$(window).off('error', realtimeError);
-							deferred = undefined;
 						},
 						function initializeModel() {
 							deferred.reject('realtime-error', 'Session ' + mindMupId + ' has not been initialised');
@@ -256,6 +274,7 @@ MM.Extensions.googleCollaboration = function () {
 				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+				doc.close();
 			};
 			if (!focusNodes) {
 				focusNodes = doc.getModel().createMap();
