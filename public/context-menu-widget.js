@@ -30,7 +30,13 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 	});
 	mapModel.addEventListener('mapMoveRequested mapScaleChanged', hide);
 	mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
-		element.css('left', x).css('top', y).css('display', 'block').show();
+		element.css('left', x).css('top', y - 10).css('display', 'block').show();
+		if (element.offset().top + element.outerHeight() > jQuery(window).height() - 20) {
+			element.css('top', jQuery(window).height() - 20 - element.outerHeight());
+		}
+		if (element.offset().left + (2 * element.outerWidth()) > jQuery(window).width() - 20) {
+			element.css('left', jQuery(window).width() - 20 - (2 * element.outerWidth()));
+		}
 		jQuery(document).on('click touch keydown', hide);
 	});
 	return element;
