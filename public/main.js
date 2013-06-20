@@ -11,7 +11,6 @@ MM.main = function (config) {
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
-			jQuery('#container').on('contextmenu', function () { _gaq.push(['_trackEvent', 'Experiment', 'Right-click']); });
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
 		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
@@ -62,8 +61,9 @@ MM.main = function (config) {
 		jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 		jQuery('#topbar').alertWidget(alert).mapToolbarWidget(mapModel);
 
-		jQuery('#topbar .updateStyle').colorPicker();
-		jQuery('#topbar .colorPicker-picker').parent('a').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+
+
+
 		jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 		oldShowPalette = jQuery.fn.colorPicker.showPalette;
 		jQuery.fn.colorPicker.showPalette = function (palette) {
@@ -72,13 +72,9 @@ MM.main = function (config) {
 				palette.css('top', jQuery('#topbar').outerHeight());
 			}
 		};
-		jQuery('#linkEditWidget .updateStyle').colorPicker();
-		jQuery('#linkEditWidget .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 
 		jQuery('#modalFeedback').feedbackWidget(jotForm, activityLog);
 		jQuery('#modalVote').voteWidget(activityLog, alert);
-		jQuery('#toolbarEdit .updateStyle').colorPicker();
-		jQuery('#toolbarEdit .colorPicker-picker').parent('button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 		jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 		jQuery('#floating-toolbar').floatingToolbarWidget();
 		jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
@@ -104,10 +100,12 @@ MM.main = function (config) {
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
+		jQuery('#nodeContextMenu').contextMenuWidget(mapModel).mapToolbarWidget(mapModel);
 		extensions.load().then(function () {
 			if (!config.isTouch) {
 				jQuery('[rel=tooltip]').tooltip();
 			}
+			jQuery('.dropdown-submenu>a').click(function () { return false; });
 			jQuery('[data-category]').trackingWidget(activityLog);
 			jQuery('.modal')
 				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
@@ -116,6 +114,10 @@ MM.main = function (config) {
 			if (!navigation.loadInitial()) {
 				jQuery('#logo-img').click();
 			}
+
+			jQuery('.updateStyle').colorPicker();
+			jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+
 		});
 	});
 
