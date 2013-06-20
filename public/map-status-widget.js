@@ -1,4 +1,4 @@
-/*global jQuery, window*/
+/*global jQuery, window, _*/
 jQuery.fn.mapStatusWidget = function (mapController) {
 	'use strict';
 	var element = this,
@@ -31,6 +31,10 @@ jQuery.fn.mapStatusWidget = function (mapController) {
 			element.removeClass('map-changed').addClass('map-unchanged');
 		}
 		rebindIfChanged(idea, properties.autoSave);
+		element.removeClass(_.filter(element.attr('class').split(' '), function (css) { return (/^map-source-/).test(css); }).join(' '));
+		if (mapId) {
+			element.addClass('map-source-' + mapId[0]);
+		}
 		updateSharable(properties.sharable);
 	});
 	jQuery(window).bind('beforeunload', function () {

@@ -34,7 +34,7 @@ configure do
   set :network_timeout_millis, ENV['NETWORK_TIMEOUT_MILLIS']||10000
   set :publishing_config_url, '/publishingConfig'
   set :proxy_load_url, 's3proxy/'
-  set :async_scripts, '//www.google-analytics.com/ga.js //platform.twitter.com/widgets.js //connect.facebook.net/en_US/all.js#xfbml=1'
+  set :async_scripts, '//www.google-analytics.com/ga.js'
   offline =  ENV['OFFLINE'] || "online"
   set :online, offline == "offline" ? false : true
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
@@ -96,7 +96,7 @@ get '/trouble' do
  erb :trouble
 end
 get '/default' do
-  redirect "/#m:default"
+  redirect "/#m:new"
 end
 get "/s3/:mapid" do
   redirect "/#m:#{params[:mapid]}"

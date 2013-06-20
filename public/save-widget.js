@@ -4,63 +4,66 @@ jQuery.fn.saveWidget = function (mapController) {
 	var mapChanged = false,
 		repository,
 		autoSave,
+		element = jQuery(this),
+		saveButton = element.find('button[data-mm-role=publish]'),
+		resetSaveButton = function () {
+			if (saveButton.attr('disabled')) {
+				saveButton.text('Save').addClass('btn-primary').removeAttr('disabled');
+				element.find('.dropdown-toggle').removeAttr('disabled');
+			}
+		},
 		mapChangedListener = function () {
 			mapChanged = true;
-		},
-		element = jQuery(this),
-		resetSaveButtonEvents = ['mapSavingFailed', 'mapSavingUnAuthorized', 'authorisationFailed', 'authRequired'],
-		resetSaveButton = function () {
-			if (element.find('[data-mm-role=publish]').attr('disabled')) {
-				element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
-				element.find('.dropdown-toggle').show();
-			}
+			resetSaveButton();
 		},
 		setDefaultRepo = function (mapId) {
+			var validrepos = 'aog';
 			repository = (mapId && mapId[0]);
-			if (!_.contains(mapController.validMapSourcePrefixesForSaving, repository)) {
-				repository = mapController.defaultMapSourcePrefix;
+			if (/^new-/.test(mapId) && mapId.length > 4) {
+				repository = mapId[4];
 			}
-			if (mapId === 'new-g') {
-				repository = 'g';
+			if (!_.contains(validrepos, repository)) {
+				repository = validrepos[0];
 			}
 			element.find('[data-mm-role=currentrepo]').removeClass(
-				_.map(mapController.validMapSourcePrefixesForSaving, function (x) { return 'repo-' + x + ' '; }).join('')
+				_.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('')
 			).addClass('repo repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
 		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
-			if (!autoSave) {
+			if (!autoSave && mapChanged) {
 				mapController.publishMap(repository);
 			}
 			evt.preventDefault();
 		}
 	});
-	element.find('[data-mm-role=publish]').add('a', element).click(function () {
+	element.find('[data-mm-role=publish]').add('a[data-mm-repository]', element).click(function () {
 		mapController.publishMap($(this).attr('data-mm-repository') || repository);
 	});
 	element.find('a[data-mm-repository]').addClass(function () {
 		return 'repo repo-' + $(this).data('mm-repository');
 	});
-	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
-		autoSave = properties.autoSave;
-		idea.addEventListener('changed', mapChangedListener);
-	});
-	mapController.addEventListener('mapSaving', function () {
-		element.find('[data-mm-role=publish]')
-			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
-			.removeClass('btn-primary')
-			.attr('disabled', true);
-		element.find('.dropdown-toggle').hide();
-	});
-	_.each(resetSaveButtonEvents, function (eventName) {
-		mapController.addEventListener(eventName, resetSaveButton);
-	});
 
-	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
+	mapController.addEventListener('mapSaving', function () {
+		saveButton
+			.html('<i class="icon-spinner icon-spin"></i>&nbsp;Saving')
+			.attr('disabled', true)
+			.removeClass('btn-primary');
+		element.find('.dropdown-toggle').attr('disabled', true);
+	});
+	mapController.addEventListener('mapSavingFailed mapSavingUnAuthorized authorisationFailed authRequired', resetSaveButton);
+
+	mapController.addEventListener('mapLoaded mapSaved', function (mapId, idea, properties) {
 		setDefaultRepo(mapId);
 		mapChanged = false;
-		element.find('[data-mm-role=publish]').text('Save').addClass('btn-primary').attr('disabled', false);
-		element.find('.dropdown-toggle').show();
+		saveButton.text('Save').attr('disabled', true).removeClass('btn-primary');
+		element.find('.dropdown-toggle').removeAttr('disabled');
+		autoSave = properties.autoSave;
+		if (!autoSave) {
+			idea.addEventListener('changed', mapChangedListener);
+		} else {
+			saveButton.text(' Auto-saved');
+		}
 	});
 	return element;
 };

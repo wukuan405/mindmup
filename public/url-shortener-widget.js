@@ -24,6 +24,7 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 							} else {
 								this.select();
 							}
+							return false;
 						});
 				},
 				error: function (xhr, err, msg) {

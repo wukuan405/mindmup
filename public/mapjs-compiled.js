@@ -1199,6 +1199,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 			currentLayout = newLayout;
 		},
+		revertSelectionForUndo,
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
 			if (command === 'addSubIdea' || command === 'insertIntermediate') {
@@ -1216,10 +1217,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
-		revertSelectionForUndo,
 		onIdeaChanged = function (command, args, originSession) {
-			var localCommand, contextNodeId = command && command !== 'updateTitle'  && getCurrentlySelectedIdeaId();
-			localCommand = (!originSession) || originSession === idea.getSessionKey();
+			var localCommand = (!originSession) || originSession === idea.getSessionKey(),
+				contextNodeId = ((command && command === 'updateAttr') || (!localCommand))  && getCurrentlySelectedIdeaId();
 			revertSelectionForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
 			if (!localCommand) {
@@ -1275,16 +1275,20 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 	};
 	this.clickNode = function (id, event) {
+		var button = event && event.button;
 		if (event && (event.altKey || event.ctrlKey || event.metaKey)) {
 			self.addLink(id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
 			self.activateNode('mouse', id);
-		} else if (isAddLinkMode) {
+		} else if (isAddLinkMode && !button) {
 			this.addLink(id);
 			this.toggleAddLinkMode();
 		} else {
 			this.selectNode(id);
+			if (button) {
+				self.dispatchEvent('contextMenuRequested', id, event.layerX, event.layerY);
+			}
 		}
 	};
 	this.findIdeaById = function (id) {
@@ -1409,8 +1413,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			return false;
 		}
 		var title = currentlySelectedIdea().title;
-		if (intermediaryTitlesToRandomlyChooseFrom.indexOf(title) !== -1 ||
-				 titlesToRandomlyChooseFrom.indexOf(title) !== -1) {
+		if (title === 'Press Space or double-click to edit' || intermediaryTitlesToRandomlyChooseFrom.indexOf(title) !== -1 || titlesToRandomlyChooseFrom.indexOf(title) !== -1) {
 			shouldSelectAll = true;
 		}
 		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll, !!editingNew);
@@ -2239,7 +2242,11 @@ Kinetic.Global.extend(Kinetic.Clip, Kinetic.Shape);
 					self.getStage().off('xChange yChange', onStageMoved);
 				},
 				onCommit = function () {
-					updateText(ideaInput.val());
+					if (ideaInput.val() === '') {
+						onCancelEdit();
+					} else {
+						updateText(ideaInput.val());
+					}
 				},
 				onCancelEdit = function () {
 					updateText(unformattedText);
@@ -2682,12 +2689,11 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			});
 		};
 	stage.add(layer);
-	stage.getContainer().style.cursor = 'move';
 	layer.on('mouseover', function () {
 		stage.getContainer().style.cursor = 'pointer';
 	});
 	layer.on('mouseout', function () {
-		stage.getContainer().style.cursor = 'move';
+		stage.getContainer().style.cursor = 'auto';
 	});
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
@@ -3110,6 +3116,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 		stage.attrs.x = 0.5 * stage.getWidth();
 		stage.attrs.y = 0.5 * stage.getHeight();
 		jQuery(window).bind('orientationchange resize', setStageDimensions);
+		element.on('contextmenu', function (e) { e.preventDefault(); });
 		if (!touchEnabled) {
 			jQuery(window).mousewheel(onScroll);
 		} else {

@@ -6,11 +6,11 @@ describe 'Welcome message banner' do
     set :last_news_id, 'abc'
     set :last_news_title, 'def'
   end
-  it "shows the first welcome message about beta on an empty session" do
+  it "shows initialise welcome on an empty session, but not show any news" do
     local_session={}
     get "/",{}, {'rack.session'=>local_session}
-    welcome_div=Nokogiri::HTML(last_response.body).css('#welcome_message')[0]
-    welcome_div.text.should include 'Welcome to MindMup'
+    welcome_div=Nokogiri::HTML(last_response.body).css('#welcome_message')
+    welcome_div.should be_empty
     local_session['welcome'].should == true 
   end
   it "shows the last news item if different from the session" do

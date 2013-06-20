@@ -20,22 +20,13 @@
   </head>
   <body class="map-unchanged <%=browser.body_class %>">
 	  <%=erb :topbar %>
-	<div id="floating-toolbar" class="floating span2 well well-small hidden-phone hidden-touch hidden-collapsed-toolbar">
-      <button class="close pull-right" data-category="Toolbar Click" data-mm-key="ctrl+b meta+b" data-event-type="Expand/Collapse" data-mm-target="body" data-mm-class='collapsed-toolbar' data-mm-role="toggle-class" data-title="Convert to menu (Ctrl+b)" data-placement='left' rel='tooltip'><i class="toggle icon-resize-small"></i></button>
+	<div id="floating-toolbar" class="floating span-toolbar well well-small hidden-phone hidden-touch hidden-collapsed-toolbar">
+      <button class="close pull-right" data-category="Toolbar Click" data-mm-key="ctrl+b meta+b" data-event-type="Expand/Collapse" data-mm-target="body" data-mm-class='collapsed-toolbar' data-mm-role="toggle-class" data-title="Hide toolbar (Ctrl+b)" data-placement='left' rel='tooltip'><i class="toggle icon-remove"></i></button>
       <div class="toolbar-inner">
-        <div data-mm-role="save" class="visible-map-changed pull-left btn-group">
-          <button class="btn btn-primary" data-mm-role="publish" data-category="Toolbar Click" data-event-type="Save Map">Save Map</button>
-          <button class="btn dropdown-toggle" data-toggle='dropdown'><span data-mm-role='currentrepo' class='repo-a'>&nbsp;</span><b class="caret"></b></button>
-          <ul class="dropdown-menu">
-            <li><a data-mm-repository='a' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to MindMup">MindMup</a></li>
-            <li><a data-mm-repository='g' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
-            <li><a data-mm-repository='o' rel="nofollow" href="#" data-category="Toolbar Click" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
-          </ul>
-        </div>
         <div class="btn-toolbar" id="toolbarEdit">
               <div class="btn-group">
-                <button rel="tooltip" data-placement="bottom" data-title="Zoom&nbsp;in&nbsp;(Ctrl&nbsp;+)" data-category="Toolbar Click" data-event-type="Zoom in" class="btn  scaleUp"><i class="icon-zoom-in"></i></button>
-                <button rel="tooltip" data-placement="bottom" data-title="Zoom&nbsp;out&nbsp;(Ctrl&nbsp;-)" data-category="Toolbar Click" data-event-type="Zoom out" class="btn  scaleDown"><i class="icon-zoom-out"></i></button>
+                <button rel="tooltip" data-placement="bottom" data-title="Zoom&nbsp;in&nbsp;(z)" data-category="Toolbar Click" data-event-type="Zoom in" class="btn  scaleUp"><i class="icon-zoom-in"></i></button>
+                <button rel="tooltip" data-placement="bottom" data-title="Zoom&nbsp;out&nbsp;(Shift+z)" data-category="Toolbar Click" data-event-type="Zoom out" class="btn  scaleDown"><i class="icon-zoom-out"></i></button>
                 <button rel="tooltip" data-placement="bottom" data-title="Re-center view (Ctrl+0)" data-category="Toolbar Click" data-event-type="Zoom reset" class="btn  resetView"><i class="icon-circle-blank"></i></button>
               </div>
 
@@ -67,23 +58,9 @@
 				        <button rel="tooltip" data-placement="bottom" data-title="Attachment (A)" data-category="Toolbar Click" data-event-type="Open Attachment" class="btn openAttachment"><i class="icon-paper-clip"></i></button>
                 <button rel="tooltip" data-placement="bottom" data-title="Connect (Alt+click)" data-category="Toolbar Click" data-event-type="Link" class="btn toggleAddLinkMode"><i class="toggle icon-resize-horizontal"></i></button>
               </div>
-              <div class="btn-group">
-                <button data-toggle="modal" data-target="#modalExtensions" data-title="Extensions" class="btn three" data-category="Toolbar Click" data-event-type="Extensions"><span class="pull-left"><i class="icon-cogs"></i>&nbsp;Extensions</span></button>
-              </div>
-			  <div class="btn-group">
-          <button data-title="Export" class="btn three dropdown-toggle" data-toggle="dropdown" data-category="Toolbar Click" data-event-type="Export Open"><span class="pull-left"><i class="icon-download-alt"></i>&nbsp;Export&nbsp;</span><span class="caret pull-right"></span></button>
-				  <ul class="dropdown-menu">
-					  <li><a rel="nofollow" href="#" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="mup"  data-category="Map" data-event-type="Export MindMup">MindMup</a> </li>
-					  <li><a rel="nofollow" href="#" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="mm"   data-category="Map" data-event-type="Export FreeMind">FreeMind</a> </li>
-					  <li><a rel="nofollow" href="#" data-mm-role='remote-export' data-mm-target="#formExport" data-mm-format="png"  data-category="Map" data-event-type="Export Image">Image (PNG)</a> </li>
-					  <li><a rel="nofollow" href="#" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="html" data-category="Map" data-event-type="Export Html">HTML</a> </li>
-					  <li><a rel="nofollow" href="#" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="txt"  data-category="Map" data-event-type="Export CSV">Text (tab separated)</a> </li>
-          </ul>
-        </div>
           </div>
-        <%= erb :share %>
                 <a class="pull-right small" data-title="Keyboard shortcuts" data-category="Toolbar Click" data-event-type="Keyboard shortcuts" target="_blank" href="http://blog.mindmup.com/p/keyboard-shortcuts.html">
-                  keyboard shortcuts
+					Hotkeys
                 </a>
 
       </div>
@@ -99,6 +76,8 @@
     <%= erb :attachment_editor %>
     <%= erb :auto_save %>
     <%= erb :extensions %>
+    <%= erb :share_email %>
+    <%= erb :key_actions %>
     <div id="container"></div>
     <div id="linkEditWidget">
       <div class="btn-group">
@@ -123,7 +102,6 @@
 		<input type="hidden" name="map" />
 		<input type="hidden" name="title" />
 	</form>
-    <div id="fb-root"></div>
     <%= erb :scripts %>
     <script id="main">
       var _gaq = _gaq || [];
