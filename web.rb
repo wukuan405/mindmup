@@ -143,6 +143,10 @@ get '/browserok/:mapid' do
   session['browserok']=true
   redirect "/#m:#{params[:mapid]}"
 end
+get '/browserok/' do
+  session['browserok']=true
+  redirect "/"
+end
 post '/import' do
   file = params['file']
   json_fail('No file uploaded') unless file 
