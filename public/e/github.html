@@ -7,22 +7,22 @@
       <h3>Open a file from Github</h3>
     </div>
     <div class="modal-body">
-      <div data-mm-role="status"></div>
+
       <form class="form-horizontal">
-        <div class="input-prepend input-append">
-          <span class="add-on">Owner</span>
-          <input type="text" name="user" class="span2"/>
+        <div class="input-append">
+          <input type="text" data-mm-role="owner" name="user" class="span2"/>
           <div class="btn-group">
-          <button class="btn dropdown-toggle" data-toggle="dropdown">
-            <span class="caret"></span>
+          <button class="btn dropdown-toggle" data-toggle="dropdown" data-mm-role="owner-search">
+            <i class="icon-spinner icon-spin"></i>User / Org&nbsp;<span class="caret"></span>
           </button>
-          <ul class="dropdown-menu">
-            <li><a>gojko</a></li>
-            <li><a>mindmup</a></li>
+          <ul class="dropdown-menu" data-mm-role="owner-list">
           </ul>
         </div>
         </div>
       </form>
+
+      <div data-mm-role="status"></div>
+
       <table class="table table-striped table-condensed">
         <thead>
         <tr>

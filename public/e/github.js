@@ -22,27 +22,33 @@ MM.GithubFileSystem = function () {
 			return jQuery.Deferred().reject("Unsupported").promise();
 		},
 		properties = {editable: true, sharable: true},
-		sendRequest = function (url) {
+		sendRequest = function (url, resultParser) {
 			var baseUrl = 'https://api.github.com',
-				request_type = 'GET';
+				request_type = 'GET',
+				result = jQuery.Deferred();
 			if (!authToken()) {
-				return jQuery.Deferred().reject('not-authenticated').promise();
+				return result.reject('not-authenticated').promise();
 			}
-			return jQuery.ajax({
+			jQuery.ajax({
 				url: baseUrl + url,
 				type: request_type,
 				headers: {'Authorization': 'bearer ' + authToken()}
-			});
-		},
-		repoParser = function (githubData) {
-			return {
-				type: 'repo',
-				name: githubData.full_name,
-				defaultBranch: githubData.default_branch
-			};
-		},
-		filesAndDirsParser = function (githubData) {
-			return _.pick(githubData, ['type', 'name', 'path']);
+			}).then(
+				function (githubData) {
+					if (resultParser) {
+						if (_.isArray(githubData)) {
+							result.resolve(_.map(githubData, resultParser));
+						} else {
+							result.resolve(resultParser(githubData));
+						}
+					} else {
+						result.resolve(githubData);
+					}
+				},
+				result.reject,
+				result.notify
+			);
+			return result.promise();
 		};
 	self.prefix = 'h';
 	self.login = function (withDialog) {
@@ -69,31 +75,43 @@ MM.GithubFileSystem = function () {
 		return mapId && mapId[0] === self.prefix;
 	};
 	self.description = "GitHub";
-	this.getRepositories = function () {
-		var deferred = jQuery.Deferred();
-		sendRequest('/user/repos').then(
-			function (result) {
-				deferred.resolve(_.map(result, repoParser));
+	self.getRepositories = function (owner, ownerType) {
+		var repoParser = function (githubData) {
+				return {
+					type: 'repo',
+					name: githubData.full_name,
+					defaultBranch: githubData.default_branch
+				};
 			},
-			deferred.reject,
-			deferred.notify
-		);
-		return deferred.promise();
+			url;
+		if (ownerType === 'org') {
+			url = '/orgs/' + owner + '/repos';
+		} else {
+			url = '/user/repos';
+		}
+		return sendRequest(url, repoParser);
 	};
-	this.getFiles = function (repository, branch, path) {
-		var deferred = jQuery.Deferred(),
+	self.getFiles = function (repository, branch, path) {
+		var filesAndDirsParser = function (githubData) {
+				return _.pick(githubData, ['type', 'name', 'path']);
+			},
 			url = '/repos/' + repository + '/contents/' + path;
 		if (branch) {
 			url = url + "?ref=" + branch;
 		}
-		sendRequest(url).then(
-			function (result) {
-				deferred.resolve(_.map(result, filesAndDirsParser));
-			},
-			deferred.reject,
-			deferred.notify
-		);
-		return deferred.promise();
+		return sendRequest(url, filesAndDirsParser);
+	};
+	self.getOrgs = function () {
+		var orgParser = function (githubData) {
+			return { name: githubData.login, pictureUrl: githubData.avatar_url, type: 'org' };
+		};
+		return sendRequest('/user/orgs', orgParser);
+	};
+	self.getUser = function () {
+		var userParser = function (githubData) {
+			return { name: githubData.login, pictureUrl: githubData.avatar_url, type: 'user' };
+		};
+		return sendRequest('/user', userParser);
 	};
 	this.loadMap = function (mapId, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred(),
@@ -139,7 +157,8 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 				statusDiv.find('a').click(callback);
 			}
 		},
-		fileRetrieval = function (showPopup, repo, branch, path) {
+
+		fileRetrieval = function (showPopup, repo, branch, path, org) {
 			var	filesLoaded = function (result) {
 					statusDiv.empty();
 					var sorted = _.sortBy(result, function (item) {
@@ -151,7 +170,7 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 							if (item.type === 'repo') {
 								added = template.filter('[data-mm-type=repo]').clone().appendTo(fileList);
 								added.find('[data-mm-role=repo-link]').click(function () {
-									fileRetrieval(false, item.name, item.defaultBranch, '');
+									fileRetrieval(false, item.name, item.defaultBranch);
 								});
 								added.find('[data-mm-role=repo-name]').text(item.name);
 								added.find('[data-mm-role=repo-branch]').text(item.defaultBranch);
@@ -192,16 +211,75 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 			fileList.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
 			fileSystem.login(showPopup).then(function () {
-				if (repo) {
+				if (org) {
+					fileSystem.getRepositories(org, 'org').then(filesLoaded, showError);
+				} else if (repo) {
 					fileSystem.getFiles(repo, branch, path).then(filesLoaded, showError);
 				} else {
 					fileSystem.getRepositories().then(filesLoaded, showError);
 				}
 			}, showError);
+		},
+		changeOwner = function () {
+			var link = $(this);
+			modal.find('[data-mm-role=owner]').val(link.data('mm-owner'));
+			if (link.data('mm-owner-type') === 'org') {
+				fileRetrieval(false, false, false, false, link.data('mm-owner'));
+			} else {
+				fileRetrieval();
+			}
+		},
+		userMetaDataLoaded = false,
+		loadUserMetaData = function () {
+			var ownerSearch = modal.find('[data-mm-role=owner-search]'),
+				list = modal.find('[data-mm-role=owner-list]'),
+				startSpin = function () {
+					ownerSearch.find('.icon-spinner').show();
+				},
+				stopSpin = function () {
+					ownerSearch.find('.icon-spinner').hide();
+				},
+				appendUser = function (user) {
+					var userLink = $('<a>').data('mm-owner', user.name).data('mm-owner-type', user.type).text(user.name);
+					userLink.click(changeOwner);
+					$("<li>").append(userLink).appendTo(list);
+				},
+				appendOrgs = function (orgs) {
+					_.each(orgs, appendUser);
+				},
+				loaded = function () {
+					userMetaDataLoaded = true;
+					statusDiv.empty();
+					stopSpin();
+				},
+				loadError = function () {
+					stopSpin();
+					showAlert('Could not load user information from Github, please try later');
+				};
+			if (userMetaDataLoaded) {
+				return;
+			}
+			list.empty();
+			startSpin();
+			fileSystem.getUser().then(
+				function (userInfo) {
+					appendUser(userInfo);
+					fileSystem.getOrgs().then(
+						function (orgs) {
+							appendOrgs(orgs);
+							loaded();
+						},
+						loadError
+					);
+				},
+				loadError
+			);
 		};
 	modal.on('show', function () {
-		fileRetrieval(false, '');
+		modal.find('.icon-spinner').hide();
+		fileRetrieval();
 	});
+	modal.find('[data-mm-role=owner-search]').click(loadUserMetaData);
 };
 MM.Extensions.GitHub = function () {
 	'use strict';
