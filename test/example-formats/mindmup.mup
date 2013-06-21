@@ -1,5 +1,5 @@
 {
-  "title": "Usability improvements",
+  "title": "Usability improvements 3",
   "id": 1,
   "ideas": {
     "12": {
@@ -94,6 +94,10 @@
         }
       }
     },
+    "25": {
+      "title": "sdged",
+      "id": 81
+    },
     "-22": {
       "title": "UI tweaks",
       "id": 2,
@@ -151,11 +155,15 @@
                 }
               },
               "attr": {
-                "collapsed": true,
                 "style": {
                   "background": "#E0E0E0"
-                }
+                },
+                "collapsed": true
               }
+            },
+            "2": {
+              "title": "sdsa",
+              "id": 80
             }
           }
         }
