@@ -69,7 +69,7 @@ MM.main = function (config) {
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		jQuery('body').mapStatusWidget(mapController);
 		if (!jQuery('body').hasClass('image-render-checked')) {
-			if (config.isTouch || jQuery('body').hasClass('gecko')) {
+			if (config.isTouch) {
 				jQuery('body').addClass('image-render');
 			}
 			jQuery('body').addClass('image-render-checked');
