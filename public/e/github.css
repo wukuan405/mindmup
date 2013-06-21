@@ -5,4 +5,7 @@
 #modalGithubOpen td a {
 	color: black;
 }
+#modalGithubCommit input {
+	width: 90%;
+}
 

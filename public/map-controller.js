@@ -126,6 +126,8 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
 					dispatchEvent('authRequired', label, retryWithDialog);
+				} else if (reason === 'user-cancel') {
+					dispatchEvent('mapSavingCancelled');
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
@@ -265,6 +267,9 @@ MM.MapController.alerts = function (mapController, alert) {
 	});
 	mapController.addEventListener('mapLoadingFailed', function (mapId, reason, label) {
 		showErrorAlert('Unfortunately, there was a problem loading the map.', label || 'An automated error report was sent and we will look into this as soon as possible');
+	});
+	mapController.addEventListener('mapSavingCancelled', function () {
+		alert.hide(alertId);
 	});
 	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {

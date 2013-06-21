@@ -172,7 +172,7 @@ MM.GithubAPI = function () {
 		return sendRequest('/user', userParser);
 	};
 };
-MM.GithubFileSystem = function (api) {
+MM.GithubFileSystem = function (api, commitPrompter) {
 	'use strict';
 	var self = this,
 		toGithubComponentPath = function (mindMupMapId) {
@@ -201,21 +201,25 @@ MM.GithubFileSystem = function (api) {
 		api.login(showAuthenticationDialogs).then(readySucceeded, deferred.reject, deferred.notify);
 		return deferred.promise();
 	};
-
 	self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred();
-		api.login(showAuthenticationDialogs).then(
-			function () {
-				api.saveFile(contentToSave, toGithubComponentPath(mapId), 'Will this commit 3?').then(
+		commitPrompter.promptForCommit().then(
+			function (commitMessage) {
+				api.login(showAuthenticationDialogs).then(
 					function () {
-						deferred.resolve(mapId, properties);
+						api.saveFile(contentToSave, toGithubComponentPath(mapId), commitMessage).then(
+							function () {
+								deferred.resolve(mapId, properties);
+							},
+							deferred.reject,
+							deferred.notify
+						);
 					},
 					deferred.reject,
 					deferred.notify
 				);
 			},
-			deferred.reject,
-			deferred.notify
+			deferred.reject
 		);
 		return deferred.promise();
 	};
@@ -419,21 +423,63 @@ $.fn.githubOpenWidget = function (api, mapController) {
 		return false;
 	});
 };
+$.fn.githubCommitWidget = function () {
+	'use strict';
+	var self = this,
+		deferredCommitCall,
+		input = self.find('input'),
+		controlGroup = self.find('.control-group'),
+		commit = self.find('[data-mm-role=commit]');
+	self.on('show', function () {
+		controlGroup.removeClass('error');
+		input.val('');
+	});
+	self.on('shown', function () {
+		input.focus();
+	});
+	self.on('hidden', function () {
+		if (deferredCommitCall) {
+			deferredCommitCall.reject('user-cancel');
+			deferredCommitCall = undefined;
+		}
+	});
+	self.find('form').submit(function () {
+		commit.click();
+		return false;
+	});
+	commit.click(function () {
+		if (!input.val()) {
+			controlGroup.addClass('error');
+			return false;
+		}
+		if (deferredCommitCall) {
+			deferredCommitCall.resolve(input.val());
+			deferredCommitCall = undefined;
+		}
+	});
+	self.promptForCommit = function () {
+		deferredCommitCall = jQuery.Deferred();
+		self.modal('show');
+		return deferredCommitCall.promise();
+	};
+	return self;
+};
 MM.Extensions.GitHub = function () {
 	'use strict';
 	var api = new MM.GithubAPI(),
-		fileSystem = new MM.GithubFileSystem(api),
+
 		mapController = MM.Extensions.components.mapController,
-		modalOpen,
+
 		loadUI = function (html) {
-			var dom = $(html);
-			modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController);
+			var dom = $(html),
+				modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController),
+				modalCommit = dom.find('#modalGithubCommit').detach().appendTo('body').githubCommitWidget(),
+				fileSystem = new MM.GithubFileSystem(api, modalCommit);
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]'));
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
-
+			mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
+			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
-	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
-	mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.html', loadUI);
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.css" />').appendTo($('body'));
 
