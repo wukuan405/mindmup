@@ -1,8 +1,25 @@
 /*jslint nomen: true*/
-/*global _gaq, document, jQuery, MM, MAPJS, window, localStorage*/
+/*global _gaq, document, jQuery, MM, MAPJS, window*/
 MM.main = function (config) {
 	'use strict';
-	var mapModelAnalytics = false,
+	var getStorage = function () {
+			try {
+				window.localStorage.setItem('testkey', 'testval');
+				if (window.localStorage.getItem('testkey') === 'testval') {
+
+					return window.localStorage;
+				}
+			} catch (e) {
+			}
+			return {
+				fake: true,
+				getItem: function (key) { return this[key]; },
+				setItem: function (key, val) { this[key] = val; },
+				removeItem: function (key) { delete this[key]; }
+			};
+		},
+		browserStorage = getStorage(),
+		mapModelAnalytics = false,
 		setupTracking = function (activityLog, jotForm, mapModel) {
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
 			activityLog.addEventListener('error', function (message) {
@@ -14,14 +31,14 @@ MM.main = function (config) {
 		};
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
 		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
-		['_setCustomVar', 2, 'Active Extensions', localStorage['active-extensions'], 1],
+		['_setCustomVar', 2, 'Active Extensions', browserStorage['active-extensions'], 1],
 		['_trackPageview']
 			];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
-			objectStorage = MM.jsonStorage(localStorage),
+			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
@@ -33,11 +50,11 @@ MM.main = function (config) {
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
-			navigation = MM.navigation(localStorage, mapController),
+			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
-			extensions = new MM.Extensions(localStorage, 'active-extensions', config, {
+			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
 				'mapController': mapController,
@@ -49,7 +66,7 @@ MM.main = function (config) {
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
-		jQuery('body').classCachingWidget('cached-classes');
+		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		jQuery('body').mapStatusWidget(mapController);
 		if (!jQuery('body').hasClass('image-render-checked')) {
 			if (config.isTouch || jQuery('body').hasClass('gecko')) {
@@ -101,6 +118,10 @@ MM.main = function (config) {
 			mapModel.setIdea(idea);
 		});
 		jQuery('#nodeContextMenu').contextMenuWidget(mapModel).mapToolbarWidget(mapModel);
+		if (browserStorage.fake) {
+			alert.show('Browser storage unavailable!', 'You might be running the app in private mode or have no browser storage - some features of this application will not work fully.', 'warning');
+			activityLog.log('Warning', 'Local storage not available');
+		}
 		extensions.load().then(function () {
 			if (!config.isTouch) {
 				jQuery('[rel=tooltip]').tooltip();
