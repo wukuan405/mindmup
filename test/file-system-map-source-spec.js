@@ -103,7 +103,7 @@ describe("MM.FileSystemMapSource", function () {
 				id = 'mapIdxxx';
 			spyOn(fs, 'saveMap').andCallThrough();
 			underTest.saveMap(map, id, true);
-			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map), id, 'abc.mup', true);
+			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map, '', 2), id, 'abc.mup', true);
 		});
 		it("propagates success", function () {
 			var fs = fakeFS(),

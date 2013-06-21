@@ -36,7 +36,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 	};
 	self.saveMap = function (map, mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
-			contentToSave = JSON.stringify(map),
+			contentToSave = JSON.stringify(map, null, 2),
 			fileName = map.title + '.mup';
 		fileSystem.saveMap(contentToSave, mapId, fileName, !!showAuth).then(deferred.resolve, deferred.reject, deferred.notify);
 		return deferred.promise();
