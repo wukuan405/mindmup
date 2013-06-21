@@ -98,7 +98,7 @@ MM.Extensions.config = {
 	},
 	'github' : {
 		name: 'Github',
-		script: '/e/github.js',
+		script: '/e/github-compat-b64.js /e/github.js',
 		icon: 'icon-github',
 		doc: 'http://www.github.com',
 		desc: 'Store your maps on Github'

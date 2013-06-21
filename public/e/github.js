@@ -13,10 +13,7 @@ MM.GithubFileSystem = function () {
 			window.sessionStorage[SESSION_AUTH_CACHE_KEY] = tokenString;
 		},
 		toGithubFileId = function (mapId) {
-			return mapId.slice(1);
-		},
-		loadFile = function (githubId) {
-			return jQuery.Deferred().reject("Unsupported").promise();
+			return mapId.slice(2);
 		},
 		saveFile = function (contentToSave, mapId, fileName) {
 			return jQuery.Deferred().reject("Unsupported").promise();
@@ -49,6 +46,36 @@ MM.GithubFileSystem = function () {
 				result.notify
 			);
 			return result.promise();
+		},
+		guessMimeType = function (fileName) {
+			if (/\.mm$/.test(fileName)) {
+				return 'application/x-freemind';
+			}
+			if (/\.mup$/.test(fileName)) {
+				return 'application/json';
+			}
+		},
+		loadFile = function (githubId) {
+			var components = githubId.split(':'),
+				url = '/repos/' + components[0] + '/contents/' + components[2],
+				deferred = jQuery.Deferred();
+			if (components[1]) {
+				url = url + "?ref=" + components[1];
+			}
+			sendRequest(url).then(
+				function (githubData) {
+					var contents;
+					if (githubData.encoding === 'base64') {
+						contents = window.Base64.decode(githubData.content);
+						deferred.resolve(contents, guessMimeType(githubData.name));
+					} else {
+						deferred.reject('format-error', 'Unknown encoding ' + githubData.encoding);
+					}
+				},
+				deferred.reject,
+				deferred.notify
+			);
+			return deferred.promise();
 		};
 	self.prefix = 'h';
 	self.login = function (withDialog) {
@@ -238,7 +265,7 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 								added = template.filter('[data-mm-type=file]').clone().appendTo(fileList);
 								added.find('[data-mm-role=file-link]').click(function () {
 									modal.modal('hide');
-									mapController.loadMap('h1' + item.path);
+									mapController.loadMap('h1' + query.repo + ':' + query.branch + ':' + item.path);
 								});
 								added.find('[data-mm-role=file-name]').text(item.name);
 							}
