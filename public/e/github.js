@@ -93,6 +93,12 @@ MM.GithubFileSystem = function () {
 		}
 		return sendRequest(url, repoParser);
 	};
+	self.getBranches = function (repository) {
+		var branchParser = function (githubData) {
+			return githubData.name;
+		};
+		return sendRequest('/repos/' + repository + '/branches', branchParser);
+	};
 	self.getFiles = function (repository, branch, path) {
 		path = path || '';
 		var filesAndDirsParser = function (githubData) {
@@ -142,6 +148,7 @@ MM.GithubFileSystem = function () {
 		return deferred.promise();
 	};
 };
+
 $.fn.githubOpenWidget = function (fileSystem, mapController) {
 	'use strict';
 	var modal = this,
@@ -160,28 +167,71 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 				statusDiv.find('a').click(callback);
 			}
 		},
-
+		dynamicDropDown = function (self, buttonRole, listRole, deferredQuery) {
+			var deferred = jQuery.Deferred(),
+				ownerSearch = self.find('[data-mm-role=' + buttonRole + ']'),
+				list = self.find('[data-mm-role=' + listRole + ']'),
+				startSpin = function () {
+					ownerSearch.find('.icon-spinner').show();
+				},
+				stopSpin = function () {
+					ownerSearch.find('.icon-spinner').hide();
+				},
+				appendResults = function (results) {
+					_.each(results, function (element) {
+						var link = $('<a>').text(element);
+						link.click(function () {
+							deferred.resolve(element);
+						});
+						$("<li>").append(link).appendTo(list);
+					});
+				};
+			ownerSearch.click(function () {
+				list.empty();
+				startSpin();
+				deferredQuery().done(appendResults).fail(deferred.reject).always(stopSpin);
+			});
+			return deferred.promise();
+		},
 		fileRetrieval = function (showPopup, query) {
 			query = query || {};
 			var	filesLoaded = function (result) {
 					statusDiv.empty();
 					var sorted = _.sortBy(result, function (item) {
-						return item && item.type + ':' + item.name;
-					});
+							return item && item.type + ':' + item.name;
+						}),
+						added;
+					if (query.back) {
+						added = template.filter('[data-mm-type=dir]').clone().appendTo(fileList);
+						added.find('[data-mm-role=dir-link]').click(function () {
+							fileRetrieval(false, query.back);
+						});
+						added.find('[data-mm-role=dir-name]').text('..');
+					}
 					_.each(sorted, function (item) {
-						var added;
+
 						if (item) {
 							if (item.type === 'repo') {
 								added = template.filter('[data-mm-type=repo]').clone().appendTo(fileList);
 								added.find('[data-mm-role=repo-link]').click(function () {
-									fileRetrieval(false, {repo: item.name, branch: item.defaultBranch});
+									fileRetrieval(false, {repo: item.name, branch: item.defaultBranch, back: query});
 								});
 								added.find('[data-mm-role=repo-name]').text(item.name);
-								added.find('[data-mm-role=repo-branch]').text(item.defaultBranch);
+								added.find('[data-mm-role=repo-default-branch]').text(item.defaultBranch);
+								dynamicDropDown(added, 'branch-search', 'branch-list', function () {
+									return fileSystem.getBranches(item.name);
+								}).then(
+									function (selectedBranch) {
+										fileRetrieval(false, {repo: item.name, branch: selectedBranch, back: query});
+									},
+									function () {
+										showAlert('Could not load user information from Github, please try later');
+									}
+								);
 							} else if (item.type === 'dir') {
 								added = template.filter('[data-mm-type=dir]').clone().appendTo(fileList);
 								added.find('[data-mm-role=dir-link]').click(function () {
-									fileRetrieval(false, {repo: query.repo, branch: item.defaultBranch, path: item.path});
+									fileRetrieval(false, {repo: query.repo, branch: query.branch, path: item.path, back: query});
 								});
 								added.find('[data-mm-role=dir-name]').text(item.name);
 							} else if (item.type === 'file') {
