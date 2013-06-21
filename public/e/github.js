@@ -86,12 +86,15 @@ MM.GithubFileSystem = function () {
 			url;
 		if (ownerType === 'org') {
 			url = '/orgs/' + owner + '/repos';
+		} else if (owner) {
+			url = '/users/' + owner + '/repos';
 		} else {
 			url = '/user/repos';
 		}
 		return sendRequest(url, repoParser);
 	};
 	self.getFiles = function (repository, branch, path) {
+		path = path || '';
 		var filesAndDirsParser = function (githubData) {
 				return _.pick(githubData, ['type', 'name', 'path']);
 			},
@@ -158,7 +161,8 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 			}
 		},
 
-		fileRetrieval = function (showPopup, repo, branch, path, org) {
+		fileRetrieval = function (showPopup, query) {
+			query = query || {};
 			var	filesLoaded = function (result) {
 					statusDiv.empty();
 					var sorted = _.sortBy(result, function (item) {
@@ -170,14 +174,14 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 							if (item.type === 'repo') {
 								added = template.filter('[data-mm-type=repo]').clone().appendTo(fileList);
 								added.find('[data-mm-role=repo-link]').click(function () {
-									fileRetrieval(false, item.name, item.defaultBranch);
+									fileRetrieval(false, {repo: item.name, branch: item.defaultBranch});
 								});
 								added.find('[data-mm-role=repo-name]').text(item.name);
 								added.find('[data-mm-role=repo-branch]').text(item.defaultBranch);
 							} else if (item.type === 'dir') {
 								added = template.filter('[data-mm-type=dir]').clone().appendTo(fileList);
 								added.find('[data-mm-role=dir-link]').click(function () {
-									fileRetrieval(false, repo, item.defaultBranch, item.path);
+									fileRetrieval(false, {repo: query.repo, branch: item.defaultBranch, path: item.path});
 								});
 								added.find('[data-mm-role=dir-name]').text(item.name);
 							} else if (item.type === 'file') {
@@ -201,7 +205,7 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 							'block',
 							'Click here to authorise with Github',
 							function () {
-								fileRetrieval(true, repo, branch, path);
+								fileRetrieval(true, query);
 							}
 						);
 					} else {
@@ -211,10 +215,10 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 			fileList.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
 			fileSystem.login(showPopup).then(function () {
-				if (org) {
-					fileSystem.getRepositories(org, 'org').then(filesLoaded, showError);
-				} else if (repo) {
-					fileSystem.getFiles(repo, branch, path).then(filesLoaded, showError);
+				if (query.owner) {
+					fileSystem.getRepositories(query.owner, query.ownerType).then(filesLoaded, showError);
+				} else if (query.repo) {
+					fileSystem.getFiles(query.repo, query.branch, query.path).then(filesLoaded, showError);
 				} else {
 					fileSystem.getRepositories().then(filesLoaded, showError);
 				}
@@ -224,7 +228,7 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 			var link = $(this);
 			modal.find('[data-mm-role=owner]').val(link.data('mm-owner'));
 			if (link.data('mm-owner-type') === 'org') {
-				fileRetrieval(false, false, false, false, link.data('mm-owner'));
+				fileRetrieval(false, {owner: link.data('mm-owner'), ownerType: 'org' });
 			} else {
 				fileRetrieval();
 			}
@@ -280,6 +284,13 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 		fileRetrieval();
 	});
 	modal.find('[data-mm-role=owner-search]').click(loadUserMetaData);
+	modal.find('[data-mm-role=owner]').change(function () {
+		fileRetrieval(false, {owner: this.value, ownerType: 'user'});
+	}).keydown('return', function (e) {
+		fileRetrieval(false, {owner: this.value, ownerType: 'user'});
+		e.stopPropagation();
+		return false;
+	});
 };
 MM.Extensions.GitHub = function () {
 	'use strict';
@@ -291,6 +302,7 @@ MM.Extensions.GitHub = function () {
 			modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(fileSystem, mapController);
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]'));
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
+
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 	mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
