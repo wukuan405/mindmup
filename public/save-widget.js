@@ -17,7 +17,8 @@ jQuery.fn.saveWidget = function (mapController) {
 			resetSaveButton();
 		},
 		setDefaultRepo = function (mapId) {
-			var validrepos = 'aog';
+			var validrepos = mapController.validMapSourcePrefixesForSaving,
+				repoClasses = _.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('');
 			repository = (mapId && mapId[0]);
 			if (/^new-/.test(mapId) && mapId.length > 4) {
 				repository = mapId[4];
@@ -25,9 +26,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			if (!_.contains(validrepos, repository)) {
 				repository = validrepos[0];
 			}
-			element.find('[data-mm-role=currentrepo]').removeClass(
-				_.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('')
-			).addClass('repo repo-' + repository);
+			element.find('[data-mm-role=currentrepo]').removeClass(repoClasses).addClass('repo repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
 		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
