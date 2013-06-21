@@ -1,5 +1,5 @@
 /*global $, _, jQuery, document, MM, window, sessionStorage */
-MM.GithubFileSystem = function () {
+MM.GithubAPI = function () {
 	'use strict';
 	var self = this,
 		SESSION_AUTH_CACHE_KEY = 'github_auth_token',
@@ -12,11 +12,6 @@ MM.GithubFileSystem = function () {
 			}
 			window.sessionStorage[SESSION_AUTH_CACHE_KEY] = tokenString;
 		},
-		toGithubFileId = function (mapId) {
-			return mapId.slice(2);
-		},
-
-		properties = {editable: true, sharable: true},
 		sendRequest = function (url, resultParser, requestType, requestData) {
 			var baseUrl = 'https://api.github.com',
 				result = jQuery.Deferred(),
@@ -56,65 +51,59 @@ MM.GithubFileSystem = function () {
 			if (/\.mup$/.test(fileName)) {
 				return 'application/json';
 			}
-		},
-		loadFile = function (githubId) {
-			var components = githubId.split(':'),
-				url = '/repos/' + components[0] + '/contents/' + components[2],
-				deferred = jQuery.Deferred();
-			if (components[1]) {
-				url = url + "?ref=" + components[1];
-			}
-			sendRequest(url).then(
-				function (githubData) {
-					var contents;
-					if (githubData.encoding === 'base64') {
-						contents = window.Base64.decode(githubData.content);
-						deferred.resolve(contents, guessMimeType(githubData.name));
-					} else {
-						deferred.reject('format-error', 'Unknown encoding ' + githubData.encoding);
-					}
-				},
-				deferred.reject,
-				deferred.notify
-			);
-			return deferred.promise();
-		},
-		saveFile = function (contentToSave, githubPath) {
-			var components = githubPath.split(':'),
-				repo = components[0],
-				branch = components[1],
-				path = components[2],
-				url = '/repos/' + repo + '/contents/' + path,
-				metaUrl = url,
-				deferred = jQuery.Deferred();
-			if (branch) {
-				metaUrl = metaUrl + "?ref=" + branch;
-			}
-			deferred.notify('fetching meta-data');
-			sendRequest(metaUrl).then(
-				function (githubFileMeta) {
-					if (githubFileMeta && githubFileMeta.sha) {
-						deferred.notify('sending file to Github');
-						sendRequest(url, false, 'PUT', {
-							content: window.Base64.encode(contentToSave),
-							message: "will it commit2?",
-							sha: githubFileMeta.sha,
-							branch: branch,
-						}).then(
-							deferred.resolve,
-							deferred.reject,
-							deferred.notify
-						);
-					} else {
-						deferred.reject('not-authorised');
-					}
-				},
-				deferred.reject,
-				deferred.notify
-			);
-			return deferred.promise();
 		};
-	self.prefix = 'h';
+	self.loadFile = function (githubComponentPath) {
+		var url = '/repos/' + githubComponentPath.repo + '/contents/' + githubComponentPath.path,
+			deferred = jQuery.Deferred();
+		if (githubComponentPath.branch) {
+			url = url + "?ref=" + githubComponentPath.branch;
+		}
+		sendRequest(url).then(
+			function (githubData) {
+				var contents;
+				if (githubData.encoding === 'base64') {
+					contents = window.Base64.decode(githubData.content);
+					deferred.resolve(contents, guessMimeType(githubData.name));
+				} else {
+					deferred.reject('format-error', 'Unknown encoding ' + githubData.encoding);
+				}
+			},
+			deferred.reject,
+			deferred.notify
+		);
+		return deferred.promise();
+	};
+	self.saveFile = function (contentToSave, githubComponentPath, commitMessage) {
+		var url = '/repos/' + githubComponentPath.repo + '/contents/' + githubComponentPath.path,
+			metaUrl = url,
+			deferred = jQuery.Deferred();
+		if (githubComponentPath.branch) {
+			metaUrl = metaUrl + "?ref=" + githubComponentPath.branch;
+		}
+		deferred.notify('fetching meta-data');
+		sendRequest(metaUrl).then(
+			function (githubFileMeta) {
+				if (githubFileMeta && githubFileMeta.sha) {
+					deferred.notify('sending file to Github');
+					sendRequest(url, false, 'PUT', {
+						content: window.Base64.encode(contentToSave),
+						message: commitMessage,
+						sha: githubFileMeta.sha,
+						branch: githubComponentPath.branch,
+					}).then(
+						deferred.resolve,
+						deferred.reject,
+						deferred.notify
+					);
+				} else {
+					deferred.reject('not-authorised');
+				}
+			},
+			deferred.reject,
+			deferred.notify
+		);
+		return deferred.promise();
+	};
 	self.login = function (withDialog) {
 		var deferred = jQuery.Deferred(),
 			popupFrame;
@@ -135,10 +124,6 @@ MM.GithubFileSystem = function () {
 		});
 		return deferred.promise();
 	};
-	self.recognises = function (mapId) {
-		return mapId && mapId[0] === self.prefix;
-	};
-	self.description = "GitHub";
 	self.getRepositories = function (owner, ownerType) {
 		var repoParser = function (githubData) {
 				return {
@@ -186,11 +171,26 @@ MM.GithubFileSystem = function () {
 		};
 		return sendRequest('/user', userParser);
 	};
-	this.loadMap = function (mapId, showAuthenticationDialogs) {
+};
+MM.GithubFileSystem = function (api) {
+	'use strict';
+	var self = this,
+		toGithubComponentPath = function (mindMupMapId) {
+			if (!mindMupMapId || mindMupMapId.length < 3) {
+				return {};
+			}
+			var components = mindMupMapId.slice(2).split(':');
+			return {
+				repo: components && components[0],
+				branch: components && components[1],
+				path: components && components[2]
+			};
+		},
+		properties = {editable: true, sharable: true};
+	self.loadMap = function (mapId, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred(),
-			githubId = toGithubFileId(mapId),
 			readySucceeded = function () {
-				loadFile(githubId).then(
+				api.loadFile(toGithubComponentPath(mapId)).then(
 					function (content, mimeType) {
 						deferred.resolve(content, mapId, mimeType, properties);
 					},
@@ -198,15 +198,15 @@ MM.GithubFileSystem = function () {
 					deferred.notify
 				);
 			};
-		this.login(showAuthenticationDialogs).then(readySucceeded, deferred.reject, deferred.notify);
+		api.login(showAuthenticationDialogs).then(readySucceeded, deferred.reject, deferred.notify);
 		return deferred.promise();
 	};
 
-	this.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
+	self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred();
-		this.login(showAuthenticationDialogs).then(
+		api.login(showAuthenticationDialogs).then(
 			function () {
-				saveFile(contentToSave, toGithubFileId(mapId)).then(
+				api.saveFile(contentToSave, toGithubComponentPath(mapId), 'Will this commit 3?').then(
 					function () {
 						deferred.resolve(mapId, properties);
 					},
@@ -219,9 +219,14 @@ MM.GithubFileSystem = function () {
 		);
 		return deferred.promise();
 	};
+	self.prefix = 'h';
+	self.recognises = function (mapId) {
+		return mapId && mapId[0] === self.prefix;
+	};
+	self.description = "GitHub";
 };
 
-$.fn.githubOpenWidget = function (fileSystem, mapController) {
+$.fn.githubOpenWidget = function (api, mapController) {
 	'use strict';
 	var modal = this,
 		template = this.find('[data-mm-role=template]'),
@@ -291,7 +296,7 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 								added.find('[data-mm-role=repo-name]').text(item.name);
 								added.find('[data-mm-role=repo-default-branch]').text(item.defaultBranch);
 								dynamicDropDown(added, 'branch-search', 'branch-list', function () {
-									return fileSystem.getBranches(item.name);
+									return api.getBranches(item.name);
 								}).then(
 									function (selectedBranch) {
 										fileRetrieval(false, {repo: item.name, branch: selectedBranch, back: query});
@@ -336,13 +341,13 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 				};
 			fileList.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
-			fileSystem.login(showPopup).then(function () {
+			api.login(showPopup).then(function () {
 				if (query.owner) {
-					fileSystem.getRepositories(query.owner, query.ownerType).then(filesLoaded, showError);
+					api.getRepositories(query.owner, query.ownerType).then(filesLoaded, showError);
 				} else if (query.repo) {
-					fileSystem.getFiles(query.repo, query.branch, query.path).then(filesLoaded, showError);
+					api.getFiles(query.repo, query.branch, query.path).then(filesLoaded, showError);
 				} else {
-					fileSystem.getRepositories().then(filesLoaded, showError);
+					api.getRepositories().then(filesLoaded, showError);
 				}
 			}, showError);
 		},
@@ -387,10 +392,10 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 			}
 			list.empty();
 			startSpin();
-			fileSystem.getUser().then(
+			api.getUser().then(
 				function (userInfo) {
 					appendUser(userInfo);
-					fileSystem.getOrgs().then(
+					api.getOrgs().then(
 						function (orgs) {
 							appendOrgs(orgs);
 							loaded();
@@ -416,12 +421,13 @@ $.fn.githubOpenWidget = function (fileSystem, mapController) {
 };
 MM.Extensions.GitHub = function () {
 	'use strict';
-	var fileSystem = new MM.GithubFileSystem(),
+	var api = new MM.GithubAPI(),
+		fileSystem = new MM.GithubFileSystem(api),
 		mapController = MM.Extensions.components.mapController,
 		modalOpen,
 		loadUI = function (html) {
 			var dom = $(html);
-			modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(fileSystem, mapController);
+			modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController);
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]'));
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 
