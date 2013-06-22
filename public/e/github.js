@@ -267,6 +267,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		statusDiv = this.find('[data-mm-role=status]'),
 		newFile = this.find('[data-mm-role=new-file]'),
 		currentLoc = this.find('[data-mm-role=current-location]'),
+		ownerField = this.find('[data-mm-role=owner]'),
 		showAlert = function (message, type, detail, callback) {
 			type = type || 'error';
 			if (callback) {
@@ -400,7 +401,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		},
 		changeOwner = function () {
 			var link = $(this);
-			modal.find('[data-mm-role=owner]').val(link.data('mm-owner'));
+			ownerField.val(link.data('mm-owner'));
 			if (link.data('mm-owner-type') === 'org') {
 				fileRetrieval(false, {owner: link.data('mm-owner'), ownerType: 'org' });
 			} else {
@@ -468,7 +469,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 	});
 	newFile.find('input').add(newFile.find('button')).click(createNewFile).keydown('return', createNewFile);
 	modal.find('[data-mm-role=owner-search]').click(loadUserMetaData);
-	modal.find('[data-mm-role=owner]').change(function () {
+	ownerField.change(function () {
 		fileRetrieval(false, {owner: this.value, ownerType: 'user'});
 	}).keydown('return', function (e) {
 		fileRetrieval(false, {owner: this.value, ownerType: 'user'});
@@ -483,6 +484,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		allowNew = false;
 		title = defaultTitle;
 		newFile.find('input').val('');
+		ownerField.val('');
 	});
 	modal.promptForFileName = function (dialogTitle, shouldAllowNewFile, defaultNewFileName) {
 		title = dialogTitle;
