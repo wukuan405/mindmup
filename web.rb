@@ -186,14 +186,14 @@ helpers do
     target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js"
     if (!File.exists? target_file) then
       script_url_array.each do |input_file|
-        infile = "#{settings.public_folder}/#{input_file}"
+        infile = "#{settings.public_folder}/#{input_file}.js"
         if !File.exists? infile then
           halt 503, "Script file not found! #{input_file}"
         end
       end
       File.open(target_file,"w") do |output_file|
         script_url_array.each do |input_file|
-          infile = "#{settings.public_folder}/#{input_file}"
+          infile = "#{settings.public_folder}/#{input_file}.js"
           content= File.readlines(infile)
           output_file.puts content
         end
