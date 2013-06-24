@@ -126,7 +126,7 @@ get '/browserok/' do
 end
 post '/import' do
   file = params['file']
-  json_fail('No file uploaded') unless file 
+  json_fail('No file uploaded') unless file
   uploaded_size=request.env['CONTENT_LENGTH']
   json_fail('Browser did not provide content length for upload') unless uploaded_size
   json_fail("File too big. Maximum size is #{settings.max_upload_size}kb") if uploaded_size.to_i>settings.max_upload_size*1024
@@ -162,7 +162,7 @@ helpers do
   def user_accepted_browser?
     !(session["browserok"].nil?)
   end
-  def browser_supported? 
+  def browser_supported?
     browser.chrome? || browser.gecko? || browser.safari?
   end
   def json_fail message
@@ -175,10 +175,15 @@ helpers do
      session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
      session["cohort"]
   end
+  def external_script_path script_name
+    if (!settings.online) then
+      script_name.sub!("//", "/offline/")
+    end
+    script_name
+  end
   def join_scripts script_url_array
     return script_url_array if (development? || test?)
-    target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js" 
-
+    target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js"
     if (!File.exists? target_file) then
       script_url_array.each do |input_file|
         infile = "#{settings.public_folder}/#{input_file}"
@@ -194,7 +199,7 @@ helpers do
         end
       end
     end
-    return ["/#{settings.cache_prevention_key}.js"] 
+    return ["/#{settings.cache_prevention_key}"]
   end
   def load_prefix
     if (!settings.online) then
@@ -203,55 +208,5 @@ helpers do
       ""
     end
   end
-  def load_scripts script_url_array
-    script_tags=script_url_array.map do |url|
-      if (!settings.online) then
-        url.sub!("//","/offline/")
-      end
-      %Q{<script>ScriptHelper.currentScript='#{url}'; ScriptHelper.expectedScripts.push('#{url}');</script>
-        <script src='#{url}' onload='ScriptHelper.loadedScripts.push("#{url}")' onerror='ScriptHelper.errorScripts.push("#{url}")'></script>}
-    end
-   %Q^<script>
-      var ScriptHelper={
-        loadedScripts:[],
-        expectedScripts:[],
-        errorScripts:[],
-        jsErrors:[],
-        logError:function(message,url,line){
-          ScriptHelper.jsErrors.push({'message':message, 'url':url||ScriptHelper.currentScript, 'line':line});
-        },
-        failed: function(){
-          return ScriptHelper.errorScripts.length>0 || ScriptHelper.jsErrors.length>0 || ScriptHelper.loadedScripts.length!=#{script_url_array.length}
-        },
-        failedScripts: function(){
-          var keys={},idx,result=[];
-          for (idx in ScriptHelper.errorScripts) { keys[ScriptHelper.errorScripts[idx]]=true };
-          for (idx in ScriptHelper.jsErrors) { keys[ScriptHelper.jsErrors[idx].url]=true };
-          for (idx in ScriptHelper.expectedScripts) { if (ScriptHelper.loadedScripts.indexOf(ScriptHelper.expectedScripts[idx])<0) keys[ScriptHelper.expectedScripts[idx]]=true; }
-          for (idx in keys) {result.push(idx)};
-          return result;
-        },
-		loading: function(){
-			return ScriptHelper.errorScripts.length==0 && ScriptHelper.jsErrors.length==0 && ScriptHelper.loadedScripts.length<ScriptHelper.expectedScripts.length;
-		},
-		afterLoad: function(config){
-			ScriptHelper.loadWaitRetry=(ScriptHelper.loadWaitRetry||50)-1;
-			if (ScriptHelper.loading() && ScriptHelper.loadWaitRetry>0){
-				setTimeout( function(){ScriptHelper.afterLoad(config)},100);
-			}
-			else {
-				if (ScriptHelper.failed()) config.fail(); else config.success();
-			}
-		}	
-      };
-      window.onerror=ScriptHelper.logError;
-    </script>
-    #{script_tags.join('')}
-    <script>
-      window.onerror=function(){};
-    </script>
-     ^
-  end
-
 end
 

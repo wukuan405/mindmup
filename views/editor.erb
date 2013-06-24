@@ -102,8 +102,7 @@
 		<input type="hidden" name="map" />
 		<input type="hidden" name="title" />
 	</form>
-    <%= erb :scripts %>
-    <script id="main">
+    <!--script id="main">
       var _gaq = _gaq || [];
       ScriptHelper.tryToNotifyGoogleAnalytics=function(){
         _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
@@ -148,6 +147,41 @@
 		});
 	  }
 	  ScriptHelper.afterLoad({success: initMM, fail:showErrors});
-    </script>
+    </script-->
+  <script src="/require.js"></script>
+  <%= erb :scripts %>
+  <script>
+    loadScripts(
+      function() {
+        MM.main({
+              googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
+              s3Url: 'http://<%= settings.s3_website %>/',
+              s3Folder: '<%= settings.s3_upload_folder %>/',
+              googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
+          googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
+          googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
+              publishingConfigUrl: '<%= settings.publishing_config_url %>',
+              baseUrl: '<%= settings.base_url%>',
+              proxyLoadUrl: '<%= settings.proxy_load_url %>',
+              scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
+              networkTimeoutMillis: <%= settings.network_timeout_millis %>,
+          userCohort: '<%= user_cohort %>',
+          cachePreventionKey: '<%= settings.cache_prevention_key %>'
+        });
+      },
+      function () {
+        var d=document.createElement("div");
+        var c=document.createElement('div');
+        d.appendChild(document.createTextNode("Unfortunately, there was an error while loading the JavaScript files required by this page."+
+          " This might be due to a temporary network issue or a firewall blocking access to required scripts. "+
+          " Please try again later. " +
+          " If the problem persists, we'd appreciate if you could contact us at contact@mindmup.com"));
+        d.style.position='absolute'; d.style.top='30%'; d.style.left='40%'; d.style.width='20%'; d.style.backgroundColor='#773333'; d.style.color='white'; d.style.fontWeight='bold'; d.style.padding='20px'; d.style.border='3px solid black';
+        c.style.position='absolute'; c.style.top=0; c.style.left=0; c.style.width='100%'; c.style.height='100%'; c.style.minHeight='100%'; c.style.backgroundColor='#999999';
+        c.appendChild(d);
+        document.getElementsByTagName("body")[0].appendChild(c);
+      }
+    );
+  </script>
   </body>
 </html>

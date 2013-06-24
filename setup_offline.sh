@@ -1,6 +1,6 @@
 LOCAL_RESOURCE_ROOT=public/offline
 function grab_remote () {
-  for c in $1; do 
+  for c in $1; do
     LOCAL_FILE=$2/${c#//}
     LOCAL_FILE=${LOCAL_FILE%%[#\?]*}
     if [[ "$c" != //* ]]; then
@@ -20,10 +20,8 @@ function grab_remote () {
 rm -rf $LOCAL_RESOURCE_ROOT
 mkdir -p $LOCAL_RESOURCE_ROOT
 
-REMOTE_SCRIPTS=`cat views/scripts.erb | tr -d '\n'  | grep -o '"//[^"]*"' | tr -d \" `
+REMOTE_SCRIPTS=`cat views/scripts.erb | tr -d '\n'  | grep -o '"//[^"]*"' | tr -d \" | awk '{ print $1".js" }'`
 grab_remote "$REMOTE_SCRIPTS" $LOCAL_RESOURCE_ROOT
-
-LOCAL_SCRIPTS=`cat ../mindmup/views/scripts.erb | tr -d '\n'  | grep -o '"/[^/][^"]*"' | tr -d \"`
 
 REMOTE_CSS=`sed 's/<%=load_prefix%>//g' views/editor.erb | grep -o "//[^\"]*.css"`
 grab_remote "$REMOTE_CSS" $LOCAL_RESOURCE_ROOT
