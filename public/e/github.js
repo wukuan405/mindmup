@@ -465,7 +465,8 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		modal.find('[data-mm-role=dialog-title]').text(title);
 		fileRetrieval();
 	});
-	newFile.find('input').add(newFile.find('button')).click(createNewFile).keydown('return', createNewFile);
+	newFile.find('input').keydown('return', createNewFile);
+	newFile.find('button').click(createNewFile);
 	modal.find('[data-mm-role=owner-search]').click(loadUserMetaData);
 	ownerField.change(function () {
 		fileRetrieval(false, {owner: this.value, ownerType: 'user'});
