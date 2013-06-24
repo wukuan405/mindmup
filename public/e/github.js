@@ -1,16 +1,14 @@
 /*global $, _, jQuery, document, MM, window, sessionStorage */
-MM.GithubAPI = function () {
+MM.GithubAPI = function (optionalSessionStorage) {
 	'use strict';
 	var self = this,
+		sessionStorage = optionalSessionStorage || window.sessionStorage,
 		SESSION_AUTH_CACHE_KEY = 'github_auth_token',
 		authToken = function () {
-			return window.sessionStorage && window.sessionStorage[SESSION_AUTH_CACHE_KEY];
+			return sessionStorage && sessionStorage[SESSION_AUTH_CACHE_KEY];
 		},
 		setAuthToken = function (tokenString) {
-			if (!window.sessionStorage) { // fake it
-				window.sessionStorage = {};
-			}
-			window.sessionStorage[SESSION_AUTH_CACHE_KEY] = tokenString;
+			sessionStorage[SESSION_AUTH_CACHE_KEY] = tokenString;
 		},
 		sendRequest = function (url, resultParser, requestType, requestData) {
 			var baseUrl = 'https://api.github.com',
@@ -555,4 +553,6 @@ MM.Extensions.GitHub = function () {
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.css" />').appendTo($('body'));
 
 };
-MM.Extensions.GitHub();
+if (!window.jasmine) {
+	MM.Extensions.GitHub();
+}
