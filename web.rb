@@ -199,7 +199,7 @@ helpers do
         end
       end
     end
-    return ["/#{settings.cache_prevention_key}"]
+    return [settings.cache_prevention_key]
   end
   def load_prefix
     if (!settings.online) then
