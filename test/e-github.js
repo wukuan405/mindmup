@@ -11,7 +11,6 @@ describe("Github integration", function () {
 				rejected = jasmine.createSpy('rejected');
 			});
 			it("sends a request to Github V3 API URL using auth token and base64 decodes file contents", function () {
-
 				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
 					content: window.Base64.encode('hey there'),
 					name: 'test.mup',
@@ -29,6 +28,25 @@ describe("Github integration", function () {
 				underTest.loadFile({repo: 'r', path: '/test.mup'}).then(done, rejected);
 				expect(done).not.toHaveBeenCalled();
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+			});
+			it('resolves with mime-type appliction/x-freemind for .mm files', function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
+					content: window.Base64.encode('hey there'),
+					name: 'test.mm',
+					encoding: 'base64'
+				}).promise());
+				underTest.loadFile({}).then(done);
+				expect(done).toHaveBeenCalledWith('hey there', 'application/x-freemind');
+			});
+			it('rejects with format-error if encoding is not base64', function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
+					content: window.Base64.encode('hey there'),
+					name: 'test.mm',
+					encoding: 'base65'
+				}).promise());
+				underTest.loadFile({}).then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('format-error', 'Unknown encoding base65');
+				expect(done).not.toHaveBeenCalled();
 			});
 		});
 	});
