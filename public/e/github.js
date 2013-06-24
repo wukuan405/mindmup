@@ -544,7 +544,8 @@ MM.Extensions.GitHub = function () {
 				modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController.loadMap.bind(mapController)),
 				modalCommit = dom.find('#modalGithubCommit').detach().appendTo('body').githubCommitWidget(),
 				fileSystem = new MM.GithubFileSystem(api, modalCommit, modalOpen);
-			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]'));
+			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
+			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
