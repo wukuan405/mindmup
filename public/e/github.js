@@ -49,6 +49,7 @@ MM.GithubAPI = function (optionalSessionStorage) {
 			if (/\.mup$/.test(fileName)) {
 				return 'application/json';
 			}
+			return 'application/octet-stream';
 		},
 		componentPathToUrl = function (githubComponentPath) {
 			var url = '/repos/' + githubComponentPath.repo + '/contents';
@@ -548,6 +549,7 @@ MM.Extensions.GitHub = function () {
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
+			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
 			mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
