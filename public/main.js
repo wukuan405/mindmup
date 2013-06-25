@@ -1,6 +1,6 @@
 /*jslint nomen: true*/
 /*global _gaq, document, jQuery, MM, MAPJS, window*/
-MM.main = function (config) {
+MM1.main = function (config) {
 	'use strict';
 	var getStorage = function () {
 			try {
