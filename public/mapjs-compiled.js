@@ -2635,6 +2635,12 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 				y: (y - stage.attrs.y)/(stage.getScale().y || 1 )
 			};
 		},
+		getInteractionPoint = function (evt) {
+			if (evt.changedTouches && evt.changedTouches[0]) {
+				return screenToStageCoordinates(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY)
+			}
+			return screenToStageCoordinates(evt.layerX, evt.layerY);
+		},
 		connectorKey = function (fromIdeaId, toIdeaId) {
 			return fromIdeaId + '_' + toIdeaId;
 		},
@@ -2731,7 +2737,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			node.attrs.opacity = 0.3;
 		});
 		node.on('dragmove', function (evt) {
-			var stagePoint = screenToStageCoordinates(evt.layerX, evt.layerY);
+			var stagePoint = getInteractionPoint(evt);
 			mapModel.nodeDragMove(
 				n.id,
 				stagePoint.x,
@@ -2739,7 +2745,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			);
 		});
 		node.on('dragend', function (evt) {
-			var stagePoint = screenToStageCoordinates(evt.layerX, evt.layerY);
+			var stagePoint = getInteractionPoint(evt);
 			node.setShadowOffset(4);
 			node.attrs.opacity = 1;
 			mapModel.nodeDragEnd(
