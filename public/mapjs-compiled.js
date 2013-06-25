@@ -1438,9 +1438,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	this.resetView = function (source) {
 		if (isInputEnabled) {
+			self.selectNode(idea.id);
 			self.dispatchEvent('mapViewResetRequested');
 			analytic('resetView', source);
 		}
+
 	};
 	this.openAttachment = function (source, nodeId) {
 		analytic('openAttachment', source);
@@ -3063,7 +3065,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'y meta+c ctrl+c': 'copy',
 				'u meta+z ctrl+z': 'undo',
 				'shift+tab': 'insertIntermediate',
-				'meta+0 ctrl+0': 'resetView',
+				'Esc 0 meta+0 ctrl+0': 'resetView',
 				'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo',
 				'meta+plus ctrl+plus z': 'scaleUp',
 				'meta+minus ctrl+minus shift+z': 'scaleDown',
