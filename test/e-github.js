@@ -1,4 +1,4 @@
-/*global describe, it, expect, beforeEach, afterEach, MM, window, spyOn, jQuery, window, jasmine*/
+/*global describe, it, expect, beforeEach, afterEach, MM, window, spyOn, jQuery, window, jasmine, waitsFor, runs*/
 describe('Github integration', function () {
 	'use strict';
 	describe('MM.GithubAPI', function () {
@@ -119,37 +119,66 @@ describe('Github integration', function () {
 			var fakeFrame;
 			beforeEach(function () {
 				fakeFrame = jQuery('<iframe>').appendTo('body');
-				spyOn(window, 'open').andReturn(fakeFrame[0]);
+				spyOn(window, 'open').andReturn(fakeFrame[0].contentWindow);
 			});
 			afterEach(function () {
 				fakeFrame.remove();
 			});
-			it('resolves immediately without opening a popup when auth token is defined', function () {
-				underTest.login().then(done, rejected);
-				expect(done).toHaveBeenCalled();
-				expect(rejected).not.toHaveBeenCalled();
-				expect(window.open).not.toHaveBeenCalled();
+			describe('when auth token is defined', function () {
+				it('resolves immediately without opening a popup when auth token is defined', function () {
+					underTest.login().then(done, rejected);
+					expect(done).toHaveBeenCalled();
+					expect(rejected).not.toHaveBeenCalled();
+					expect(window.open).not.toHaveBeenCalled();
+				});
+				it('resolves immediately without opening a popup even if popup allowed when auth token is defined', function () {
+					underTest.login(true).then(done, rejected);
+					expect(done).toHaveBeenCalled();
+					expect(rejected).not.toHaveBeenCalled();
+					expect(window.open).not.toHaveBeenCalled();
+				});
 			});
-			it('resolves immediately without opening a popup even if popup allowed when auth token is defined', function () {
-				underTest.login(true).then(done, rejected);
-				expect(done).toHaveBeenCalled();
-				expect(rejected).not.toHaveBeenCalled();
-				expect(window.open).not.toHaveBeenCalled();
-			});
-			it('fails with not-authenticated when auth token is not defined but popups not allowed', function () {
-				delete sessionStorage.github_auth_token;
-				underTest.login().then(done, rejected);
-				expect(done).not.toHaveBeenCalled();
-				expect(rejected).toHaveBeenCalledWith('not-authenticated');
-				expect(window.open).not.toHaveBeenCalled();
-			});
-			it('opens a login dialog in a separate frame if allowed to do so', function () {
-				delete sessionStorage.github_auth_token;
-				underTest.login(true).then(done, rejected);
-				expect(done).not.toHaveBeenCalled();
-				expect(rejected).not.toHaveBeenCalledWith('not-authenticated');
-				expect(window.open).toHaveBeenCalled();
-				expect(window.open.calls[0].args[0]).toBe('/github/login');
+			describe('when auth token is not defined', function () {
+				beforeEach(function () {
+					delete sessionStorage.github_auth_token;
+				});
+				it('fails with not-authenticated when auth token is not defined but popups not allowed', function () {
+					underTest.login().then(done, rejected);
+					expect(done).not.toHaveBeenCalled();
+					expect(rejected).toHaveBeenCalledWith('not-authenticated');
+					expect(window.open).not.toHaveBeenCalled();
+				});
+				it('opens a login dialog in a separate frame if allowed to do so', function () {
+					underTest.login(true).then(done, rejected);
+					expect(done).not.toHaveBeenCalled();
+					expect(rejected).not.toHaveBeenCalled();
+					expect(window.open).toHaveBeenCalled();
+					expect(window.open.calls[0].args[0]).toBe('/github/login');
+				});
+				it('attaches a message listener to the popup frame, resolving when the message with an auth token comes back and setting the session token', function () {
+					underTest.login(true).then(done, rejected);
+					fakeFrame[0].contentWindow.postMessage({github_token: 'tkn'}, '*');
+					waitsFor(function () {
+						return done.callCount;
+					});
+					runs(function () {
+						expect(done).toHaveBeenCalled();
+						expect(rejected).not.toHaveBeenCalled();
+						expect(sessionStorage.github_auth_token).toBe('tkn');
+					});
+				});
+				it('rejects with error message if postback contains github_error', function () {
+					underTest.login(true).then(done, rejected);
+					fakeFrame[0].contentWindow.postMessage({github_error: 'err'}, '*');
+					waitsFor(function () {
+						return rejected.callCount;
+					});
+					runs(function () {
+						expect(rejected).toHaveBeenCalled();
+						expect(done).not.toHaveBeenCalled();
+						expect(sessionStorage.github_auth_token).toBeFalsy();
+					});
+				});
 			});
 		});
 	});
