@@ -130,7 +130,7 @@ MM.main = function (config) {
 			jQuery('[data-category]').trackingWidget(activityLog);
 			jQuery('.modal')
 				.on('show', mapModel.setInputEnabled.bind(mapModel, false))
-				.on('hidden', mapModel.setInputEnabled.bind(mapModel, true));
+				.on('hide', mapModel.setInputEnabled.bind(mapModel, true));
 			jQuery('#modalKeyActions').keyActionsWidget();
 			if (!navigation.loadInitial()) {
 				jQuery('#logo-img').click();
