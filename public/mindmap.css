@@ -220,8 +220,14 @@ span.repo-g, span.repo-a, span.repo-o {
 .dropdown-menu li a {
 	cursor: pointer
 }
+.visible-collapsed-toolbar {
+	display: none;
+}
 .collapsed-toolbar .visible-collapsed-toolbar {
 	display: block !important;
+}
+.collapsed-toolbar span.visible-collapsed-toolbar {
+	display: inline !important;
 }
 .collapsed-toolbar .hidden-collapsed-toolbar {
 	display: none !important;
@@ -241,20 +247,17 @@ span.repo-g, span.repo-a, span.repo-o {
 .hidden-topbar #topbar:hover .navbar-inner {
 	visibility:visible;
 }
-#toggleTopbar {
-	position:absolute; top:0; left:0; height:40px;
+.topbar-autohide {
+	display: inline;
 }
-.ios #toggleTopbar, .android #toggleTopbar {
+.hidden-topbar .topbar-autohide { 
 	display: none;
 }
-#toggleTopbar .icon-hand-down {
+span.topbar-fixed {
 	display: none;
 }
-.hidden-topbar #toggleTopbar .icon-hand-down {
-	display: block;
-}
-.hidden-topbar #toggleTopbar .icon-hand-up {
-	display: none;
+.hidden-topbar span.topbar-fixed {
+	display: inline;
 }
 body.ipad {
   margin: 1px; /* ios performance fix for scrolling on ipad */
