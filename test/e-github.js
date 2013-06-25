@@ -115,5 +115,42 @@ describe('Github integration', function () {
 				expect(done).not.toHaveBeenCalled();
 			});
 		});
+		describe('login', function () {
+			var fakeFrame;
+			beforeEach(function () {
+				fakeFrame = jQuery('<iframe>').appendTo('body');
+				spyOn(window, 'open').andReturn(fakeFrame[0]);
+			});
+			afterEach(function () {
+				fakeFrame.remove();
+			});
+			it('resolves immediately without opening a popup when auth token is defined', function () {
+				underTest.login().then(done, rejected);
+				expect(done).toHaveBeenCalled();
+				expect(rejected).not.toHaveBeenCalled();
+				expect(window.open).not.toHaveBeenCalled();
+			});
+			it('resolves immediately without opening a popup even if popup allowed when auth token is defined', function () {
+				underTest.login(true).then(done, rejected);
+				expect(done).toHaveBeenCalled();
+				expect(rejected).not.toHaveBeenCalled();
+				expect(window.open).not.toHaveBeenCalled();
+			});
+			it('fails with not-authenticated when auth token is not defined but popups not allowed', function () {
+				delete sessionStorage.github_auth_token;
+				underTest.login().then(done, rejected);
+				expect(done).not.toHaveBeenCalled();
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+				expect(window.open).not.toHaveBeenCalled();
+			});
+			it('opens a login dialog in a separate frame if allowed to do so', function () {
+				delete sessionStorage.github_auth_token;
+				underTest.login(true).then(done, rejected);
+				expect(done).not.toHaveBeenCalled();
+				expect(rejected).not.toHaveBeenCalledWith('not-authenticated');
+				expect(window.open).toHaveBeenCalled();
+				expect(window.open.calls[0].args[0]).toBe('/github/login');
+			});
+		});
 	});
 });
