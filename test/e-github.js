@@ -351,4 +351,55 @@ describe('Github integration', function () {
 			});
 		});
 	});
+	describe('MM.GitHub.GithubFileSystem', function () {
+		var api, commitPrompter, fileNamePrompter, loginCall, loadFileCall, mapId;
+		beforeEach(function () {
+			loginCall = jQuery.Deferred();
+			loadFileCall = jQuery.Deferred();
+			api = {
+				login: jasmine.createSpy('login').andReturn(loginCall.promise()),
+				loadFile: jasmine.createSpy('loadFile').andReturn(loadFileCall.promise())
+			};
+			commitPrompter = {};
+			fileNamePrompter = {};
+			mapId = 'h1REPO:BRANCH:PATH';
+			underTest = new MM.GitHub.GithubFileSystem(api, commitPrompter, fileNamePrompter);
+		});
+		describe('loadMap', function () {
+			it('propagates API login rejects without asking for a file', function () {
+				loginCall.reject('not-authenticated');
+				underTest.loadMap('x', false).then(done, rejected);
+				expect(api.login).toHaveBeenCalledWith(false);
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+				expect(api.loadFile).not.toHaveBeenCalled();
+			});
+			it('passes showAuthDialogs to login', function () {
+				underTest.loadMap('x', true).then(done, rejected);
+				expect(api.login).toHaveBeenCalledWith(true);
+			});
+			it('decomposes a colon-separated url into a component url and asks for that file if login succeeded', function () {
+				loginCall.resolve();
+				underTest.loadMap(mapId, true);
+				expect(api.loadFile).toHaveBeenCalledWith({repo: 'REPO', branch: 'BRANCH', path: 'PATH'});
+			});
+			it('propagates file retrieval failure', function () {
+				loginCall.resolve();
+				loadFileCall.reject('failed');
+				underTest.loadMap(mapId, true).then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('failed');
+			});
+			it('propagates file retrieval success', function () {
+				loginCall.resolve();
+				loadFileCall.resolve('content', 'mime');
+				underTest.loadMap(mapId, true).then(done, rejected);
+				expect(done).toHaveBeenCalledWith('content', 'h1REPO:BRANCH:PATH', 'mime', { editable : true, sharable : true });
+			});
+			it('propagates file retrieval progress', function () {
+				loginCall.resolve();
+				loadFileCall.notify('99%');
+				underTest.loadMap(mapId, true).then(done, rejected, notified);
+				expect(notified).toHaveBeenCalledWith('99%');
+			});
+		});
+	});
 });
