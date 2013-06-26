@@ -22,57 +22,31 @@ describe('Github integration', function () {
 			expect(window.open).toHaveBeenCalled();
 			expect(window.open.calls[0].args[0]).toBe('/github/login');
 		});
-		it('attaches a message listener to the window, resolving when the message with an auth token comes back and setting the session token', function () {
+		it('attaches a message listener to window.MMGithubCallBack, resolving when the message with an auth token comes back and setting the session token', function () {
 			underTest().then(done, rejected);
-			window.postMessage({github_token: 'tkn'}, '*');
-			waitsFor(function () {
-				return done.callCount;
-			}, '', 50);
-			runs(function () {
-				expect(done).toHaveBeenCalledWith('tkn');
-				expect(rejected).not.toHaveBeenCalled();
-			});
+			window.MMGithubCallBack({github_token: 'tkn'});
+			expect(done).toHaveBeenCalledWith('tkn');
+			expect(rejected).not.toHaveBeenCalled();
 		});
 		it('rejects with error message if postback contains github_error', function () {
 			underTest().then(done, rejected);
-			window.postMessage({github_error: 'err'}, '*');
-			waitsFor(function () {
-				return rejected.callCount;
-			}, '', 50);
-			runs(function () {
-				expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
-				expect(done).not.toHaveBeenCalled();
-			});
+			window.MMGithubCallBack({github_error: 'err'});
+			expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
+			expect(done).not.toHaveBeenCalled();
 		});
 		it('ignores messages without github_auth_token or github_error', function () {
 			var notified = jasmine.createSpy();
 			underTest().then(done, rejected, notified);
-			window.postMessage({github_xxx: 'err'}, '*');
-			waitsFor(function () {
-				return notified.callCount;
-			}, '', 50);
-			runs(function () {
-				expect(rejected).not.toHaveBeenCalled();
-				expect(done).not.toHaveBeenCalled();
-			});
+			window.MMGithubCallBack({github_xxx: 'err'});
+			expect(rejected).not.toHaveBeenCalled();
+			expect(done).not.toHaveBeenCalled();
 		});
 		it('does not unbind after an ignored message', function () {
 			underTest().then(done, rejected, notified);
-			window.postMessage({github_xxx: 'err'}, '*');
-
-			waitsFor(function () {
-				return notified.callCount;
-			}, '', 50);
-			runs(function () {
-				window.postMessage({github_error: 'err'}, '*');
-			});
-			waitsFor(function () {
-				return rejected.callCount;
-			}, '', 50);
-			runs(function () {
-				expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
-				expect(done).not.toHaveBeenCalled();
-			});
+			window.MMGithubCallBack({github_xxx: 'err'});
+			window.MMGithubCallBack({github_error: 'err'});
+			expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
+			expect(done).not.toHaveBeenCalled();
 		});
 
 	});

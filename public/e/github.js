@@ -6,12 +6,10 @@ MM.GitHub.popupWindowLoginLauncher = function () {
 		deferred = jQuery.Deferred(),
 		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 		onMessage = function (message) {
-			if (message && message.data && message.data.github_token) {
-				deferred.resolve(message.data.github_token);
-			} else if (message && message.data && message.data.github_error) {
-				deferred.reject('failed-authentication', message.data.github_error);
-			} else {
-				deferred.notify();
+			if (message && message.github_token) {
+				deferred.resolve(message.github_token);
+			} else if (message && message.github_error) {
+				deferred.reject('failed-authentication', message.github_error);
 			}
 		},
 		checkClosed = function () {
@@ -19,12 +17,13 @@ MM.GitHub.popupWindowLoginLauncher = function () {
 				deferred.reject('user-cancel');
 			}
 		},
-		interval = window.setInterval(checkClosed, 500);
+		interval = window.setInterval(checkClosed, 200);
 	deferred.always(function () {
-		window.removeEventListener('message', onMessage);
+		window.MMGithubCallBack = undefined;
 		window.clearInterval(interval);
 	});
-	window.addEventListener('message', onMessage);
+	/* don't do window.addListener here as it's not deterministic if that or window.close will get to us first */
+	window.MMGithubCallBack = onMessage;
 	return deferred.promise();
 };
 MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
