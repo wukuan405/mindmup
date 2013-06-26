@@ -5,7 +5,6 @@ MM.GitHub.popupWindowLoginLauncher = function () {
 	var deferred = jQuery.Deferred(),
 		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 		onMessage = function (message) {
-			console.log('onmessage');
 			if (message && message.data && message.data.github_token) {
 				deferred.resolve(message.data.github_token);
 				window.removeEventListener('message', onMessage);
@@ -18,7 +17,6 @@ MM.GitHub.popupWindowLoginLauncher = function () {
 		};
 	//TODO: if the window is closed before the message is resolved, reject. make sure this is not done for redirects!
 	window.addEventListener('message', onMessage);
-
 	return deferred.promise();
 };
 MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
