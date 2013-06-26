@@ -79,6 +79,9 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 			return 'application/octet-stream';
 		},
 		componentPathToUrl = function (githubComponentPath) {
+			if (!githubComponentPath) {
+				return '';
+			}
 			var url = '/repos/' + githubComponentPath.repo + '/contents';
 			if (!(/^\//).test(githubComponentPath.path)) {
 				url = url + '/';
@@ -86,14 +89,14 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 			if (githubComponentPath.path) {
 				url = url + githubComponentPath.path;
 			}
+			if (githubComponentPath.branch) {
+				url = url + "?ref=" + githubComponentPath.branch;
+			}
 			return url;
 		};
 	self.loadFile = function (githubComponentPath) {
 		var url = componentPathToUrl(githubComponentPath),
 			deferred = jQuery.Deferred();
-		if (githubComponentPath.branch) {
-			url = url + "?ref=" + githubComponentPath.branch;
-		}
 		sendRequest(url).then(
 			function (githubData) {
 				var contents;
@@ -110,8 +113,9 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		return deferred.promise();
 	};
 	self.saveFile = function (contentToSave, githubComponentPath, commitMessage) {
-		var url = componentPathToUrl(githubComponentPath),
-			metaUrl = url,
+		var pathWithoutBranch = _.extend({}, githubComponentPath, {branch: false}),
+			url = componentPathToUrl(pathWithoutBranch),
+			metaUrl = componentPathToUrl(githubComponentPath),
 			deferred = jQuery.Deferred(),
 			saveWithSha = function (sha) {
 				deferred.notify('sending file to Github');
@@ -126,9 +130,6 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 					deferred.notify
 				);
 			};
-		if (githubComponentPath.branch) {
-			metaUrl = metaUrl + "?ref=" + githubComponentPath.branch;
-		}
 		deferred.notify('fetching meta-data');
 		sendRequest(metaUrl).then(
 			function (githubFileMeta) {
@@ -183,26 +184,18 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		};
 		return sendRequest('/repos/' + repository + '/branches', branchParser);
 	};
-	self.getFiles = function (repository, branch, path) {
-		path = path || '';
-		var filesAndDirsParser = function (githubData) {
-				return _.pick(githubData, ['type', 'name', 'path']);
-			},
-			url = '/repos/' + repository + '/contents/' + path;
-		if (branch) {
-			url = url + "?ref=" + branch;
-		}
-		return sendRequest(url, filesAndDirsParser);
+	self.getFiles = function (componentPath) {
+		return sendRequest(componentPathToUrl(componentPath));
 	};
 	self.getOrgs = function () {
 		var orgParser = function (githubData) {
-			return { name: githubData.login, pictureUrl: githubData.avatar_url, type: 'org' };
+			return { name: githubData.login, type: 'org' };
 		};
 		return sendRequest('/user/orgs', orgParser);
 	};
 	self.getUser = function () {
 		var userParser = function (githubData) {
-			return { name: githubData.login, pictureUrl: githubData.avatar_url, type: 'user' };
+			return { name: githubData.login, type: 'user' };
 		};
 		return sendRequest('/user', userParser);
 	};
@@ -418,7 +411,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 				if (query.owner) {
 					api.getRepositories(query.owner, query.ownerType).then(filesLoaded, showError);
 				} else if (query.repo) {
-					api.getFiles(query.repo, query.branch, query.path).then(filesLoaded, showError);
+					api.getFiles(query).then(filesLoaded, showError);
 				} else {
 					api.getRepositories().then(filesLoaded, showError);
 				}
