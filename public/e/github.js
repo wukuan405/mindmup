@@ -2,20 +2,28 @@
 MM.GitHub = { };
 MM.GitHub.popupWindowLoginLauncher = function () {
 	'use strict';
-	var deferred = jQuery.Deferred(),
+	var context = {},
+		deferred = jQuery.Deferred(),
 		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 		onMessage = function (message) {
 			if (message && message.data && message.data.github_token) {
 				deferred.resolve(message.data.github_token);
-				window.removeEventListener('message', onMessage);
 			} else if (message && message.data && message.data.github_error) {
 				deferred.reject('failed-authentication', message.data.github_error);
-				window.removeEventListener('message', onMessage);
 			} else {
 				deferred.notify();
 			}
-		};
-	//TODO: if the window is closed before the message is resolved, reject. make sure this is not done for redirects!
+		},
+		checkClosed = function () {
+			if (popupFrame.closed) {
+				deferred.reject('user-cancel');
+			}
+		},
+		interval = window.setInterval(checkClosed, 500);
+	deferred.always(function () {
+		window.removeEventListener('message', onMessage);
+		window.clearInterval(interval);
+	});
 	window.addEventListener('message', onMessage);
 	return deferred.promise();
 };
