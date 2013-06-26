@@ -1,13 +1,87 @@
 /*global describe, it, expect, beforeEach, afterEach, MM, window, spyOn, jQuery, window, jasmine, waitsFor, runs*/
 describe('Github integration', function () {
 	'use strict';
-	describe('MM.GithubAPI', function () {
-		var underTest, sessionStorage, done, rejected;
+	var underTest, done, rejected, notified;
+	beforeEach(function () {
+		done = jasmine.createSpy('done');
+		rejected = jasmine.createSpy('rejected');
+		notified = jasmine.createSpy('notified');
+	});
+	describe('MM.GitHub.popupWindowLoginLauncher', function () {
+		var fakeFrame;
+		afterEach(function () {
+			fakeFrame.remove();
+		});
+		beforeEach(function () {
+			underTest = MM.GitHub.popupWindowLoginLauncher;
+			fakeFrame = jQuery('<iframe>').appendTo('body');
+			spyOn(window, 'open').andReturn(fakeFrame[0].contentWindow);
+		});
+		it('opens a login dialog in a separate frame if allowed to do so', function () {
+			underTest().then(done, rejected);
+			expect(window.open).toHaveBeenCalled();
+			expect(window.open.calls[0].args[0]).toBe('/github/login');
+		});
+		it('attaches a message listener to the window, resolving when the message with an auth token comes back and setting the session token', function () {
+			underTest().then(done, rejected);
+			window.postMessage({github_token: 'tkn'}, '*');
+			waitsFor(function () {
+				return done.callCount;
+			}, '', 50);
+			runs(function () {
+				expect(done).toHaveBeenCalledWith('tkn');
+				expect(rejected).not.toHaveBeenCalled();
+			});
+		});
+		it('rejects with error message if postback contains github_error', function () {
+			underTest().then(done, rejected);
+			window.postMessage({github_error: 'err'}, '*');
+			waitsFor(function () {
+				return rejected.callCount;
+			}, '', 50);
+			runs(function () {
+				expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
+				expect(done).not.toHaveBeenCalled();
+			});
+		});
+		it('ignores messages without github_auth_token or github_error', function () {
+			var notified = jasmine.createSpy();
+			underTest().then(done, rejected, notified);
+			window.postMessage({github_xxx: 'err'}, '*');
+			waitsFor(function () {
+				return notified.callCount;
+			}, '', 50);
+			runs(function () {
+				expect(rejected).not.toHaveBeenCalled();
+				expect(done).not.toHaveBeenCalled();
+			});
+		});
+		it('does not unbind after an ignored message', function () {
+			underTest().then(done, rejected, notified);
+			window.postMessage({github_xxx: 'err'}, '*');
+
+			waitsFor(function () {
+				return notified.callCount;
+			}, '', 50);
+			runs(function () {
+				window.postMessage({github_error: 'err'}, '*');
+			});
+			waitsFor(function () {
+				return rejected.callCount;
+			}, '', 50);
+			runs(function () {
+				expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
+				expect(done).not.toHaveBeenCalled();
+			});
+		});
+
+	});
+	describe('MM.GitHub.GithubAPI', function () {
+		var sessionStorage, loginLauncher;
 		beforeEach(function () {
 			sessionStorage = {github_auth_token: 'x'};
-			underTest = new MM.GithubAPI(sessionStorage);
-			done = jasmine.createSpy('done');
-			rejected = jasmine.createSpy('rejected');
+			loginLauncher = jasmine.createSpy('login').andReturn(jQuery.Deferred().promise());
+			underTest = new MM.GitHub.GithubAPI(loginLauncher, sessionStorage);
 		});
 		describe('loadFile', function () {
 			it('sends a request to Github V3 API URL using auth token and base64 decodes file contents', function () {
@@ -116,26 +190,19 @@ describe('Github integration', function () {
 			});
 		});
 		describe('login', function () {
-			var fakeFrame;
-			beforeEach(function () {
-				fakeFrame = jQuery('<iframe>').appendTo('body');
-				spyOn(window, 'open').andReturn(fakeFrame[0].contentWindow);
-			});
-			afterEach(function () {
-				fakeFrame.remove();
-			});
+
 			describe('when auth token is defined', function () {
 				it('resolves immediately without opening a popup when auth token is defined', function () {
 					underTest.login().then(done, rejected);
 					expect(done).toHaveBeenCalled();
 					expect(rejected).not.toHaveBeenCalled();
-					expect(window.open).not.toHaveBeenCalled();
+					expect(loginLauncher).not.toHaveBeenCalled();
 				});
 				it('resolves immediately without opening a popup even if popup allowed when auth token is defined', function () {
 					underTest.login(true).then(done, rejected);
 					expect(done).toHaveBeenCalled();
 					expect(rejected).not.toHaveBeenCalled();
-					expect(window.open).not.toHaveBeenCalled();
+					expect(loginLauncher).not.toHaveBeenCalled();
 				});
 			});
 			describe('when auth token is not defined', function () {
@@ -146,38 +213,27 @@ describe('Github integration', function () {
 					underTest.login().then(done, rejected);
 					expect(done).not.toHaveBeenCalled();
 					expect(rejected).toHaveBeenCalledWith('not-authenticated');
-					expect(window.open).not.toHaveBeenCalled();
+					expect(loginLauncher).not.toHaveBeenCalled();
 				});
 				it('opens a login dialog in a separate frame if allowed to do so', function () {
 					underTest.login(true).then(done, rejected);
 					expect(done).not.toHaveBeenCalled();
 					expect(rejected).not.toHaveBeenCalled();
-					expect(window.open).toHaveBeenCalled();
-					expect(window.open.calls[0].args[0]).toBe('/github/login');
+					expect(loginLauncher).toHaveBeenCalled();
 				});
-				it('attaches a message listener to the popup frame, resolving when the message with an auth token comes back and setting the session token', function () {
+				it('stores token and resolves when login launcher resolves', function () {
+					loginLauncher.andReturn(jQuery.Deferred().resolve('tkn').promise());
 					underTest.login(true).then(done, rejected);
-					fakeFrame[0].contentWindow.postMessage({github_token: 'tkn'}, '*');
-					waitsFor(function () {
-						return done.callCount;
-					});
-					runs(function () {
-						expect(done).toHaveBeenCalled();
-						expect(rejected).not.toHaveBeenCalled();
-						expect(sessionStorage.github_auth_token).toBe('tkn');
-					});
+					expect(done).toHaveBeenCalled();
+					expect(rejected).not.toHaveBeenCalled();
+					expect(sessionStorage.github_auth_token).toBe('tkn');
 				});
-				it('rejects with error message if postback contains github_error', function () {
+				it('rejects when login launcher rejects', function () {
+					loginLauncher.andReturn(jQuery.Deferred().reject().promise());
 					underTest.login(true).then(done, rejected);
-					fakeFrame[0].contentWindow.postMessage({github_error: 'err'}, '*');
-					waitsFor(function () {
-						return rejected.callCount;
-					});
-					runs(function () {
-						expect(rejected).toHaveBeenCalled();
-						expect(done).not.toHaveBeenCalled();
-						expect(sessionStorage.github_auth_token).toBeFalsy();
-					});
+					expect(rejected).toHaveBeenCalled();
+					expect(done).not.toHaveBeenCalled();
+					expect(sessionStorage.github_auth_token).toBeFalsy();
 				});
 			});
 		});

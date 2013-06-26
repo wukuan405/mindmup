@@ -1,5 +1,27 @@
 /*global $, _, jQuery, document, MM, window, sessionStorage */
-MM.GithubAPI = function (optionalSessionStorage) {
+MM.GitHub = { };
+MM.GitHub.popupWindowLoginLauncher = function () {
+	'use strict';
+	var deferred = jQuery.Deferred(),
+		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
+		onMessage = function (message) {
+			console.log('onmessage');
+			if (message && message.data && message.data.github_token) {
+				deferred.resolve(message.data.github_token);
+				window.removeEventListener('message', onMessage);
+			} else if (message && message.data && message.data.github_error) {
+				deferred.reject('failed-authentication', message.data.github_error);
+				window.removeEventListener('message', onMessage);
+			} else {
+				deferred.notify();
+			}
+		};
+	//TODO: if the window is closed before the message is resolved, reject. make sure this is not done for redirects!
+	window.addEventListener('message', onMessage);
+
+	return deferred.promise();
+};
+MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 	'use strict';
 	var self = this,
 		sessionStorage = optionalSessionStorage || window.sessionStorage,
@@ -115,24 +137,21 @@ MM.GithubAPI = function (optionalSessionStorage) {
 		return deferred.promise();
 	};
 	self.login = function (withDialog) {
-		var deferred = jQuery.Deferred(),
-			popupFrame;
+		var deferred = jQuery.Deferred();
 		if (authToken()) {
 			return deferred.resolve();
 		}
 		if (!withDialog) {
 			return deferred.reject('not-authenticated');
 		}
-		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no');
-		//TODO: if the window is closed before the message is resolved, reject. make sure this is not done for redirects!
-		popupFrame.addEventListener('message', function (message) {
-			if (message && message.data && message.data.github_token) {
-				setAuthToken(message.data.github_token);
+		loginDialogLauncher().then(
+			function loggedIn(authToken) {
+				setAuthToken(authToken);
 				deferred.resolve();
-			} else if (message && message.data && message.data.github_error) {
-				deferred.reject('failed-authentication', message.data.github_error);
-			}
-		});
+			},
+			deferred.reject,
+			deferred.notify
+		);
 		return deferred.promise();
 	};
 	self.getRepositories = function (owner, ownerType) {
@@ -183,7 +202,8 @@ MM.GithubAPI = function (optionalSessionStorage) {
 		return sendRequest('/user', userParser);
 	};
 };
-MM.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
+
+MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
 	'use strict';
 	var self = this,
 		toGithubComponentPath = function (mindMupMapId) {
@@ -540,13 +560,13 @@ $.fn.githubCommitWidget = function () {
 };
 MM.Extensions.GitHub = function () {
 	'use strict';
-	var api = new MM.GithubAPI(),
+	var api = new MM.GitHub.GithubAPI(MM.GitHub.popupWindowLoginLauncher),
 		mapController = MM.Extensions.components.mapController,
 		loadUI = function (html) {
 			var dom = $(html),
 				modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController.loadMap.bind(mapController)),
 				modalCommit = dom.find('#modalGithubCommit').detach().appendTo('body').githubCommitWidget(),
-				fileSystem = new MM.GithubFileSystem(api, modalCommit, modalOpen);
+				fileSystem = new MM.GitHub.GithubFileSystem(api, modalCommit, modalOpen);
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
