@@ -445,10 +445,22 @@ describe('Github integration', function () {
 					expect(fileNamePrompter.promptForFileName).not.toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
+				it('rejects if file name prompt fails', function () {
+					promptForFileNameCall.reject('fail');
+					underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+					expect(api.saveFile).not.toHaveBeenCalled();
+					expect(rejected).toHaveBeenCalledWith('fail');
+				});
 				it('prompts for commit immediately if map ID is recognisable', function () {
 					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
 					expect(commitPrompter.promptForCommit).toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				it('rejects if commit prompt fails', function () {
+					promptForCommitCall.reject('fail');
+					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+					expect(rejected).toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalledWith('fail');
 				});
 				it('prompts for commit after the file prompt is resolved if map ID is not recognisable', function () {
 					promptForFileNameCall.resolve(mapId);
@@ -500,9 +512,9 @@ describe('Github integration', function () {
 						expect(rejected).toHaveBeenCalled();
 					});
 					it('propagates saveFile notifications', function () {
-						saveFileCall.reject();
+						saveFileCall.reject('fail');
 						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
-						expect(rejected).toHaveBeenCalled();
+						expect(rejected).toHaveBeenCalledWith('fail');
 					});
 				});
 			});
