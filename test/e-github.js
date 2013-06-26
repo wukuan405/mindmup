@@ -1,4 +1,4 @@
-/*global describe, it, expect, beforeEach, afterEach, MM, window, spyOn, jQuery, window, jasmine, waitsFor, runs*/
+/*global describe, it, expect, beforeEach, afterEach, MM, window, spyOn, jQuery, window, jasmine, sinon*/
 describe('Github integration', function () {
 	'use strict';
 	var underTest, done, rejected, notified;
@@ -8,14 +8,17 @@ describe('Github integration', function () {
 		notified = jasmine.createSpy('notified');
 	});
 	describe('MM.GitHub.popupWindowLoginLauncher', function () {
-		var fakeFrame;
+		var fakeFrame, clock;
+		beforeEach(function () {
+			clock = sinon.useFakeTimers();
+		});
 		afterEach(function () {
-			fakeFrame.remove();
+			clock.restore();
 		});
 		beforeEach(function () {
 			underTest = MM.GitHub.popupWindowLoginLauncher;
-			fakeFrame = jQuery('<iframe>').appendTo('body');
-			spyOn(window, 'open').andReturn(fakeFrame[0].contentWindow);
+			fakeFrame = {};
+			spyOn(window, 'open').andReturn(fakeFrame);
 		});
 		it('opens a login dialog in a separate frame if allowed to do so', function () {
 			underTest().then(done, rejected);
@@ -48,7 +51,19 @@ describe('Github integration', function () {
 			expect(rejected).toHaveBeenCalledWith('failed-authentication', 'err');
 			expect(done).not.toHaveBeenCalled();
 		});
-
+		it('does nothing if no message is resolved and the window is still open', function () {
+			underTest().then(done, rejected);
+			clock.tick(1000);
+			expect(rejected).not.toHaveBeenCalled();
+			expect(done).not.toHaveBeenCalled();
+		});
+		it('rejects when the popup is closed', function () {
+			underTest().then(done, rejected);
+			fakeFrame.closed = true;
+			clock.tick(1000);
+			expect(rejected).toHaveBeenCalledWith('user-cancel');
+			expect(done).not.toHaveBeenCalled();
+		});
 	});
 	describe('MM.GitHub.GithubAPI', function () {
 		var sessionStorage, loginLauncher;
@@ -139,6 +154,15 @@ describe('Github integration', function () {
 					processData : false
 				});
 			});
+			it('asks for an existing file using ?ref as a branch', function () {
+				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
+				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt', branch: 'br'}, 'commit msg');
+				expect(jQuery.ajax).toHaveBeenCalledWith({
+					url: 'https://api.github.com/repos/r/contents/p.txt?ref=br',
+					type : 'GET',
+					headers : { Authorization : 'bearer x' },
+				});
+			});
 			it('attaches the branch to PUT request as a branch data arg if defined', function () {
 				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
 				underTest.saveFile('abcd', {repo: 'r', branch: 'someb', path: 'p.txt'}, 'commit msg');
@@ -209,6 +233,57 @@ describe('Github integration', function () {
 					expect(done).not.toHaveBeenCalled();
 					expect(sessionStorage.github_auth_token).toBeFalsy();
 				});
+			});
+		});
+		describe('getRepositories', function () {
+			beforeEach(function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().promise());
+			});
+			it('rejects if not authenticated', function () {
+				delete sessionStorage.github_auth_token;
+				underTest.getRepositories().then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+			});
+			it('retrieves logged in users repositories when no params given', function () {
+				underTest.getRepositories().then(done, rejected);
+				expect(jQuery.ajax).toHaveBeenCalledWith({
+					url : 'https://api.github.com/user/repos',
+					type : 'GET',
+					headers : { Authorization : 'bearer x' }
+				});
+			});
+			it('retrieves repositories of the user specified in the first arg', function () {
+				underTest.getRepositories('my').then(done, rejected);
+				expect(jQuery.ajax).toHaveBeenCalledWith({
+					url : 'https://api.github.com/users/my/repos',
+					type : 'GET',
+					headers : { Authorization : 'bearer x' }
+				});
+			});
+			it('retrieves org repositories if the second argument is org', function () {
+				underTest.getRepositories('my', 'org').then(done, rejected);
+				expect(jQuery.ajax).toHaveBeenCalledWith({
+					url : 'https://api.github.com/orgs/my/repos',
+					type : 'GET',
+					headers : { Authorization : 'bearer x' }
+				});
+			});
+			it('transforms resulting github data into a list of repos', function () {
+				var githubData = [
+					{ full_name: 'n1', default_branch: 'b1'},
+					{ full_name: 'n2', default_branch: 'b2'}
+				];
+				jQuery.ajax.andReturn(jQuery.Deferred().resolve(githubData).promise());
+				underTest.getRepositories().then(done, rejected);
+				expect(done).toHaveBeenCalledWith([
+					{ type: 'repo', name: 'n1', defaultBranch: 'b1' },
+					{ type: 'repo', name: 'n2', defaultBranch: 'b2' }
+				]);
+			});
+			it('rejects if ajax call fails', function () {
+				jQuery.ajax.andReturn(jQuery.Deferred().reject().promise());
+				underTest.getRepositories().then(done, rejected);
+				expect(rejected).toHaveBeenCalled();
 			});
 		});
 	});
