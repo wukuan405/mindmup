@@ -205,7 +205,7 @@ MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
 	'use strict';
 	var self = this,
 		toGithubComponentPath = function (mindMupMapId) {
-			if (!mindMupMapId || mindMupMapId.length < 3) {
+			if (!mindMupMapId || mindMupMapId.length < 3 || !self.recognises(mindMupMapId)) {
 				return {};
 			}
 			var components = mindMupMapId.slice(2).split(':');

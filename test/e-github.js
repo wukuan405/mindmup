@@ -352,18 +352,28 @@ describe('Github integration', function () {
 		});
 	});
 	describe('MM.GitHub.GithubFileSystem', function () {
-		var api, commitPrompter, fileNamePrompter, loginCall, loadFileCall, mapId;
+		var api, commitPrompter, fileNamePrompter, loginCall, loadFileCall, mapId, content, saveFileCall,
+			promptForCommitCall, promptForFileNameCall;
 		beforeEach(function () {
 			loginCall = jQuery.Deferred();
 			loadFileCall = jQuery.Deferred();
+			saveFileCall = jQuery.Deferred();
+			promptForCommitCall = jQuery.Deferred();
+			promptForFileNameCall = jQuery.Deferred();
 			api = {
 				login: jasmine.createSpy('login').andReturn(loginCall.promise()),
-				loadFile: jasmine.createSpy('loadFile').andReturn(loadFileCall.promise())
+				loadFile: jasmine.createSpy('loadFile').andReturn(loadFileCall.promise()),
+				saveFile: jasmine.createSpy('saveFile').andReturn(saveFileCall.promise())
 			};
-			commitPrompter = {};
-			fileNamePrompter = {};
+			commitPrompter = {
+				promptForCommit: jasmine.createSpy('promptForComit').andReturn(promptForCommitCall.promise())
+			};
+			fileNamePrompter = {
+				promptForFileName: jasmine.createSpy('promptForFileName').andReturn(promptForFileNameCall.promise())
+			};
 			mapId = 'h1REPO:BRANCH:PATH';
 			underTest = new MM.GitHub.GithubFileSystem(api, commitPrompter, fileNamePrompter);
+			content = 'xcontentabc';
 		});
 		describe('loadMap', function () {
 			it('propagates API login rejects without asking for a file', function () {
@@ -390,9 +400,9 @@ describe('Github integration', function () {
 			});
 			it('propagates file retrieval success', function () {
 				loginCall.resolve();
-				loadFileCall.resolve('content', 'mime');
+				loadFileCall.resolve(content, 'mime');
 				underTest.loadMap(mapId, true).then(done, rejected);
-				expect(done).toHaveBeenCalledWith('content', 'h1REPO:BRANCH:PATH', 'mime', { editable : true, sharable : true });
+				expect(done).toHaveBeenCalledWith(content, 'h1REPO:BRANCH:PATH', 'mime', { editable : true, sharable : true });
 			});
 			it('propagates file retrieval progress', function () {
 				loginCall.resolve();
@@ -400,6 +410,103 @@ describe('Github integration', function () {
 				underTest.loadMap(mapId, true).then(done, rejected, notified);
 				expect(notified).toHaveBeenCalledWith('99%');
 			});
+		});
+		describe('saveMap', function () {
+			var fileName = 'fname.txt';
+			it('passes showAuthDialogs to login', function () {
+				underTest.saveMap(content, mapId, fileName, true).then(done, rejected);
+				expect(api.login).toHaveBeenCalledWith(true);
+			});
+			it('propagates API login rejects without sending a file', function () {
+				loginCall.reject('not-authenticated');
+				underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+				expect(api.login).toHaveBeenCalledWith(false);
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+				expect(api.saveFile).not.toHaveBeenCalled();
+			});
+			describe('when logged in', function () {
+				beforeEach(function () {
+					loginCall.resolve();
+				});
+				it('prompts for a file name if map ID is not specified (new file scenario)', function () {
+					underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+					expect(fileNamePrompter.promptForFileName).toHaveBeenCalledWith('Save to Github', true, fileName);
+					expect(commitPrompter.promptForCommit).not.toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				it('prompts for a file name if map ID is not recognised (moving from a different repo scenario)', function () {
+					underTest.saveMap(content, 'g1:a:b:c', fileName, false).then(done, rejected);
+					expect(fileNamePrompter.promptForFileName).toHaveBeenCalledWith('Save to Github', true, fileName);
+					expect(commitPrompter.promptForCommit).not.toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				it('does not prompt for a file name if map ID is recognisable (existing file scenario)', function () {
+					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+					expect(fileNamePrompter.promptForFileName).not.toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				it('prompts for commit immediately if map ID is recognisable', function () {
+					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+					expect(commitPrompter.promptForCommit).toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				it('prompts for commit after the file prompt is resolved if map ID is not recognisable', function () {
+					promptForFileNameCall.resolve(mapId);
+					underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+					expect(commitPrompter.promptForCommit).toHaveBeenCalled();
+					expect(api.saveFile).not.toHaveBeenCalled();
+				});
+				describe('when all prompts resolve', function () {
+					beforeEach(function () {
+						promptForFileNameCall.resolve(mapId);
+						promptForCommitCall.resolve('commit msg');
+					});
+					it('calls saveFile once commit resolution ends', function () {
+						underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+						expect(api.saveFile).toHaveBeenCalledWith(content, { repo : 'REPO', branch : 'BRANCH', path : 'PATH' }, 'commit msg');
+					});
+					it('resolves when saveFile resolves', function () {
+						saveFileCall.resolve();
+						underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+						expect(done).toHaveBeenCalledWith(mapId, { editable : true, sharable : true });
+					});
+					it('propagates saveFile rejections', function () {
+						saveFileCall.reject();
+						underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+						expect(rejected).toHaveBeenCalled();
+					});
+					it('propagates saveFile notifications', function () {
+						saveFileCall.reject();
+						underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
+						expect(rejected).toHaveBeenCalled();
+					});
+				});
+				describe('when commit resolves and map ID was recognisable', function () {
+					beforeEach(function () {
+						promptForCommitCall.resolve('commit msg');
+					});
+					it('calls saveFile once commit resolution ends', function () {
+						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+						expect(api.saveFile).toHaveBeenCalledWith(content, { repo : 'REPO', branch : 'BRANCH', path : 'PATH' }, 'commit msg');
+					});
+					it('resolves when saveFile resolves', function () {
+						saveFileCall.resolve();
+						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+						expect(done).toHaveBeenCalledWith(mapId, { editable : true, sharable : true });
+					});
+					it('propagates saveFile rejections', function () {
+						saveFileCall.reject();
+						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+						expect(rejected).toHaveBeenCalled();
+					});
+					it('propagates saveFile notifications', function () {
+						saveFileCall.reject();
+						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
+						expect(rejected).toHaveBeenCalled();
+					});
+				});
+			});
+
 		});
 	});
 });
