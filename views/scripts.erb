@@ -23,8 +23,9 @@
         "jquery.hammer": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hammer.min" %>',
         "jquery.hotkeys": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hotkeys" %>'
       },
-      waitSeconds: 60 ,
+      waitSeconds: 60 <% if development? then %> ,
       urlArgs: "version=" + (new Date()).getTime()
+    <% end %>
     });
     requirejs(
       ["jquery", "underscore"],
