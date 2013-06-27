@@ -23,7 +23,8 @@
         "jquery.hammer": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hammer.min" %>',
         "jquery.hotkeys": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hotkeys" %>'
       },
-      waitSeconds: 60
+      waitSeconds: 60 ,
+      urlArgs: "version=" + (new Date()).getTime()
     });
     requirejs(
       ["jquery", "underscore"],
@@ -74,6 +75,7 @@
                 "map-status-widget",
                 "key-actions-widget",
                 "context-menu-widget",
+                "embed-map-widget",
                 "main"
               ] %>,
               success,

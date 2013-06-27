@@ -44,11 +44,11 @@
 
     var MM = MM || {},
         _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
 
     loadScripts(
       function() {
         var config = {
-              googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
               s3Url: 'http://<%= settings.s3_website %>/',
               s3Folder: '<%= settings.s3_upload_folder %>/',
               publishingConfigUrl: '',
@@ -78,23 +78,19 @@
             jQuery('#container').hide();
             jQuery('#attachment').show();
           });
-
+          _gaq.push(['_trackEvent','Embedded Map', 'View', config.mapId]);
           mapLoader.loadMap(config.mapId).then(function (idea) {
             mapModel.setIdea(idea);
-            
+            _gaq.push(['_trackEvent','Embedded Map', 'Loaded', config.mapId]);
+          }, function (reason) {
+            _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
           });
       },
       function (err) {
         var d=document.createElement("div"),
             c=document.createElement('div'),
             tryToNotifyGoogleAnalytics=function(){
-              _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
-              _gaq.push(['_trackEvent','Error','Embedded Script Load', err && err.message]);
-              (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-              })();
+              _gaq.push(['_trackEvent','Embedded Map','Error - Script Load', err && err.message]);
             };
 
         d.appendChild(document.createTextNode("Unfortunately, there was an error while loading the JavaScript files required by this page."+
@@ -108,6 +104,12 @@
         tryToNotifyGoogleAnalytics();
       }
     );
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
   </script>
   </body>
 </html>

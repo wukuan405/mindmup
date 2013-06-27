@@ -469,3 +469,9 @@ input.noglow {
 #modalKeyActions div.item>a {
   text-decoration: underline;
 }
+#modalEmbedMap .modal-body textarea {
+	width: 97%;
+	height: 200px;
+	cursor: pointer;
+
+}

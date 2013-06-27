@@ -110,6 +110,7 @@ MM.main = function (config) {
 			.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 		jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);
 		jQuery('#modalAutoSave').autoSaveWidget(autoSave);
+		jQuery('#modalEmbedMap').embedMapWidget(mapController);
 		jQuery('#linkEditWidget').linkEditWidget(mapModel);
 		jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 		MM.MapController.activityTracking(mapController, activityLog);
