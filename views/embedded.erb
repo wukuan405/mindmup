@@ -13,18 +13,32 @@
         height: 100%;
         overflow: hidden;
       }
-      #container {
+      #container, #attachment, #attachment .content {
         -moz-user-select: none;
         -webkit-user-select: none;
         -ms-user-select: none;
         width:100%;
         min-height: 100%;
       }
-
+      #attachment .content {
+        overflow: scroll;
+      }
+      #attachment .header {
+        width: 100%; height: 20; background-color: lightgrey;
+      }
+      #attachment {
+        display:none;
+      }
     </style>
   </head>
   <body>
     <div id="container"></div>
+    <div id="attachment">
+      <div class="header">
+        <button>&lt; Back</button>
+      </div>
+      <div class="content"></div>
+    </div>
   <%= erb :embedded_scripts %>
   <script id="main">
 
@@ -48,8 +62,26 @@
             mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
             mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);          
           jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, config.renderImages);
+
+          jQuery('#attachment button').click(function () {
+            jQuery('#attachment').hide();
+            jQuery('#container').show();
+          });
+          jQuery(document).keydown('Esc backspace', function (){            
+            jQuery('#attachment').hide();
+            jQuery('#container').show();
+          });
+
+          mapModel.setEditingEnabled(false);
+          mapModel.addEventListener('attachmentOpened', function (nodeId, attachment) {
+            $('#attachment .content').html(attachment.content);
+            jQuery('#container').hide();
+            jQuery('#attachment').show();
+          });
+
           mapLoader.loadMap(config.mapId).then(function (idea) {
             mapModel.setIdea(idea);
+            
           });
       },
       function (err) {
