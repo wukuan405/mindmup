@@ -1,4 +1,4 @@
-/*global jQuery*/
+/*global jQuery, document*/
 jQuery.fn.embedMapWidget = function (mapController) {
 	'use strict';
 	var element = this,
@@ -13,10 +13,14 @@ jQuery.fn.embedMapWidget = function (mapController) {
 			textArea.focus();
 			return false;
 		};
-	element.find('textarea').click(selectText);
+	textArea.click(selectText);
 	element.on('show', function () {
-		element.find('textarea').val(templateText.replace('**mapid**', mapController.currentMapId()));
+		element.find('textarea').val(
+			templateText.replace(/MAPID/g, mapController.currentMapId()).replace(/TITLE/g, document.title)
+		);
 	});
-	element.on('shown', selectText);
+	element.on('shown', function () {
+		selectText();
+	});
 	return element;
 };

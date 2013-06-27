@@ -4,8 +4,12 @@
 		<h3>Embed this map</h3>
 	</div>
 	<div class="modal-body">
-		<textarea>
-			<iframe src="<%=settings.base_url%>embedded/**mapid**" width="90%" height="500" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px"></iframe>		
-		</textarea>
+    <p>Copy the HTML code below and paste in your web site. Modify the width and height attributes accordingly.</p>
+		<textarea readonly>
+      <iframe src="<%=settings.base_url%>embedded/MAPID" width="90%" height="500" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px"></iframe>		<div style="margin-bottom:5px"> <strong> <a href="<%=settings.base_url%>map/MAPID" title="TITLE">TITLE</a> </strong> 
+    </textarea>
 	</div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal">Close</button>
+  </div>
 </div>
