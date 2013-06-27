@@ -45,6 +45,7 @@ configure do
   set :static, true
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
+  set :protection, :except => :frame_options
   cache_last_news
 end
 get '/' do
@@ -100,7 +101,10 @@ post "/echo" do
     contents
   end
 end
-
+get "/embedded/:mapid" do
+  @mapid = params[:mapid]
+  erb :embedded
+end
 get "/map/:mapid" do
   redirect "/#m:#{params[:mapid]}"
 end
@@ -139,6 +143,10 @@ post '/import' do
 end
 get "/un" do
   erb :unsupported
+end
+
+get '/'+settings.cache_prevention_key+'/:fname' do
+  send_file File.join(settings.public_folder, params[:fname])
 end
 
 get '/'+settings.cache_prevention_key+'/e/:fname' do
