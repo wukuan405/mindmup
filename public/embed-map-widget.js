@@ -1,4 +1,4 @@
-/*global jQuery, document*/
+/*global jQuery, document, escape*/
 jQuery.fn.embedMapWidget = function (mapController) {
 	'use strict';
 	var element = this,
@@ -16,7 +16,8 @@ jQuery.fn.embedMapWidget = function (mapController) {
 	textArea.click(selectText);
 	element.on('show', function () {
 		element.find('textarea').val(
-			templateText.replace(/MAPID/g, mapController.currentMapId()).replace(/TITLE/g, document.title)
+			templateText.replace(/MAPID/g, mapController.currentMapId())
+				.replace(/TITLE/g, (document.title || '').replace(/"/g, '&quot;'))
 		);
 	});
 	element.on('shown', function () {

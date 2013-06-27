@@ -107,12 +107,10 @@ div.topbar-color-picker {
 	left: 5px;
 }
 .map-changed .hidden-map-changed {
-  display: none;
-  visibility:hidden;
+  display: none !important;
 }
 .map-unchanged .visible-map-changed {
-  display: none;
-  visibility:hidden;
+  display: none !important;
 }
 .map-not-sharable .hidden-map-not-sharable {
   display: none;
@@ -383,7 +381,7 @@ input.noglow {
 }
 
 
-.visible-map-source-a, .visible-map-source-o, .visible-map-source-g {
+.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n {
 	display: none;
 }
 
@@ -394,6 +392,9 @@ input.noglow {
 	display: inherit;
 }
 .map-source-o .visible-map-source-o {
+	display: inherit;
+}
+.map-source-n .visible-map-source-n {
 	display: inherit;
 }
 

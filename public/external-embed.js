@@ -1,0 +1,3 @@
+
+var links = document.querySelectorAll('[data-role=mindmup-embed]');
+for (var idx = 0; idx < links.length; idx++) { var mapid = links[idx].getAttribute('href').replace(/.*[\/:]/,''); var iframe = document.createElement('iframe'); iframe.setAttribute('src', 'http://localhost:5000/embedded/'+ mapid); iframe.setAttribute('width',links[idx].getAttribute('data-width') || '100%'); iframe.setAttribute('height', links[idx].getAttribute('data-height') || '500'); iframe.setAttribute('frameborder', '0'); iframe.setAttribute('marginwidth','0'); iframe.setAttribute('marginheight','0'); iframe.setAttribute('scrolling','no'); iframe.setAttribute('style','border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px'); links[idx].parentNode.replaceChild (iframe, links[idx]); }
