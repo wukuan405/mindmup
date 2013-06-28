@@ -95,6 +95,9 @@
             jQuery('.attachment').hide();
             jQuery('.map').show();
           });
+		  jQuery('a.mindmup').click(function () {
+            _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', config.mapId]);
+		  });
           jQuery(document).keydown('Esc backspace', function (){            
             jQuery('.attachment').hide();
             jQuery('.map').show();
