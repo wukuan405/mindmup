@@ -38,7 +38,6 @@ MM.MapController = function (initialMapSources) {
 		mapSources.push(mapSource);
 	};
 	self.validMapSourcePrefixesForSaving = 'aog';
-	self.defaultMapSourcePrefix = 'a';
 	self.setMap = mapLoaded;
 	self.isMapLoadingConfirmationRequired = function () {
 		return mapLoadingConfirmationRequired;
