@@ -106,9 +106,10 @@ get "/embedded/:mapid" do
   @mapid = params[:mapid]
   erb :embedded
 end
-get "/map/:mapid" do
-  redirect "/#m:#{params[:mapid]}"
+get %r{/map/(.*)} do |mapid|
+  redirect "/#m:#{mapid}"
 end
+
 get "/m" do
   show_map
 end
@@ -121,14 +122,11 @@ get "/publishingConfig" do
   erb :s3UploadConfig
 end
 
-get '/browserok/:mapid' do
+get %r{/browserok/?(.*)} do |mapid|
   session['browserok']=true
-  redirect "/#m:#{params[:mapid]}"
+  redirect "/#m:#{mapid}"
 end
-get '/browserok/' do
-  session['browserok']=true
-  redirect "/"
-end
+
 post '/import' do
   file = params['file']
   json_fail('No file uploaded') unless file

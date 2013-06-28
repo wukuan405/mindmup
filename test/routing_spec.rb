@@ -14,6 +14,11 @@ describe 'Map request routing' do
       last_response.should be_redirect
       last_response.header["Location"].should=='http://example.org/#m:ABCDEFGH'
     end
+    it "can include / in the route" do
+      get "/map/ABCD/EFGH"
+      last_response.should be_redirect
+      last_response.header["Location"].should=='http://example.org/#m:ABCD/EFGH'
+    end
   end
   describe "/gd" do
     it "parses JSON to retrieve google IDs and redirects to g1+ID" do
