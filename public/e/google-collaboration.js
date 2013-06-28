@@ -158,9 +158,8 @@ MM.Extensions.googleCollaboration = function () {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
 		mapModel = MM.Extensions.components.mapModel,
-		stage = MM.Extensions.components.container.data('mm-stage'),
 		alert = MM.Extensions.components.alert,
-		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter, mapModel, stage, alert),
+		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
 		mapController = MM.Extensions.components.mapController,
 		startSession = function (name) {
 			realtimeMapSource.setNextSessionName(name);
@@ -248,7 +247,11 @@ MM.Extensions.googleCollaboration = function () {
 					return;
 				}
 				makeImage(sessionId).done(function (kineticImg) {
-					var node = stage.get('#node_' + focusNodes.get(sessionId)), xpos, ypos, opacity;
+					var stage = MM.Extensions.components.container.data('mm-stage'),
+						node = stage.get('#node_' + focusNodes.get(sessionId)),
+						xpos,
+						ypos,
+						opacity;
 					if (!node || node.length === 0) {
 						return;
 					}
