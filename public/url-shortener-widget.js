@@ -43,7 +43,7 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 		};
 
 	mapController.addEventListener('mapLoaded mapSaved', function (mapId, map, properties) {
-		var navUrl = properties.sharable && sharingUrl(mapId);
+		var navUrl = sharingUrl(mapId);
 		if (previousUrl === navUrl) {
 			return;
 		}
