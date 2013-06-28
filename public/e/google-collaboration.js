@@ -290,7 +290,6 @@ MM.Extensions.googleCollaboration = function () {
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
-				statusIcon = menu.find('[data-mm-role=status-icon]'),
 				modal = parsed.find('[data-mm-role=modal-start]').clone().appendTo($('body')),
 				collabModal = parsed.find('[data-mm-role=modal-collaborators]').clone().appendTo($('body')),
 				sessionNameField = modal.find('input[name=session-name]'),
@@ -366,12 +365,10 @@ MM.Extensions.googleCollaboration = function () {
 			realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
 				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
 					if (docState.isPending || docState.isSaving) {
-						statusIcon.removeClass(statusIcon.data('mm-saved-class')).addClass(statusIcon.data('mm-pending-class'));
 						if (!$('i[class="icon-spinner icon-spin"]', saveButton).length) {
 							saveButton.prepend('<i class="icon-spinner icon-spin"></i>');
 						}
 					} else {
-						statusIcon.removeClass(statusIcon.data('mm-pending-class')).addClass(statusIcon.data('mm-saved-class'));
 						$('i[class="icon-spinner icon-spin"]', saveButton).remove();
 					}
 				});
