@@ -274,6 +274,9 @@ MM.Extensions.googleCollaboration = function () {
 			};
 			self.stop = function () {
 				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
+				_.each(sessionImages, function (img) {
+					img.remove();
+				});
 				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
