@@ -131,7 +131,7 @@ MM.main = function (config) {
 			alert.show('Browser storage unavailable!', 'You might be running the app in private mode or have no browser storage - some features of this application will not work fully.', 'warning');
 			activityLog.log('Warning', 'Local storage not available');
 		}
-		extensions.load().then(function () {
+		extensions.load(navigation.initialMapId()).then(function () {
 			jQuery('[data-mm-clone]').each(function () {
 				var element = jQuery(this),
 					toClone = element.data('mm-clone');

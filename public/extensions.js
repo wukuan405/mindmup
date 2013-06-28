@@ -10,16 +10,30 @@ MM.Extensions = function (storage, storageKey, config, components) {
 				js.onload = callback;
 				fjs.parentNode.insertBefore(js, fjs);
 			});
+		},
+		getScriptsForExtensions = function (extensionNameArray) {
+			return _.flatten(_.reject(_.map(extensionNameArray, function (ext) {
+				return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
+			}), function (e) { return !e; }));
 		};
 	if (storage[storageKey]) {
 		active = storage[storageKey].split(' ');
 	}
-	this.scriptsToLoad = function () {
-		var activeExtensions = _.reject(_.map(active, function (ext) {
-			return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
-		}), function (e) { return !e; });
-
-		return _.map(_.flatten(activeExtensions), function (script) { return '/' + config.cachePreventionKey + script; });
+	this.requiredExtension = function (mapId) {
+		var key, ext;
+		/*jslint forin:true*/
+		for (key in MM.Extensions.config) {
+			ext = MM.Extensions.config[key];
+			if (ext.providesMapId && ext.providesMapId(mapId)) {
+				return key;
+			}
+		}
+	};
+	this.scriptsToLoad = function (optionalMapId) {
+		var optional = this.requiredExtension(optionalMapId),
+			loading = optional ? _.union(active, optional) : active,
+			scriptArray = getScriptsForExtensions(loading);
+		return _.map(scriptArray, function (script) { return '/' + config.cachePreventionKey + script; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -35,9 +49,9 @@ MM.Extensions = function (storage, storageKey, config, components) {
 			components.activityLog.log('Extensions', ext, 'act-' + shouldActivate);
 		}
 	};
-	this.load = function () {
+	this.load = function (optionalMapId) {
 		var deferred = jQuery.Deferred(),
-			scripts = this.scriptsToLoad(),
+			scripts = this.scriptsToLoad(optionalMapId),
 			alertId,
 			intervalId;
 		MM.Extensions.components = components;
@@ -138,20 +152,19 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	});
 
 	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
-		var requiredExtension = _.find(MM.Extensions.config, function (ext) { return ext.providesMapId && ext.providesMapId(newMapId); });
+		var required = extensions.requiredExtension(newMapId);
 		alert.hide(alertId);
-		if (requiredExtension) {
+		if (required) {
 			showAlertWithCallBack(
 				'This map requires an extension to load!',
-				'Click here to enable the ' +  requiredExtension.name + ' extension',
+				'Click here to enable the ' +  MM.Extensions.config[required].name + ' extension',
 				'warning',
 				function () {
 					causedByMapId = newMapId;
 					element.modal('show');
 				}
 			);
-		}
-		else {
+		} else {
 			alertId = alert.show('The URL is unrecognised!', 'it might depend on a custom extension that is not available to you.', 'error');
 		}
 
