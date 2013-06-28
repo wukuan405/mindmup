@@ -115,7 +115,11 @@ MM.Extensions.config = {
 		script: '/e/github-compat-b64.js /e/github.js',
 		icon: 'icon-github',
 		doc: 'http://www.github.com',
-		desc: 'Store your maps on Github'
+		desc: 'Store your maps on Github',
+		providesMapId: function (mapId) {
+			'use strict';
+			return (/^h/).test(mapId);
+		}
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
