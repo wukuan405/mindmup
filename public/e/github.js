@@ -215,7 +215,7 @@ MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
 				path: components && components[2]
 			};
 		},
-		properties = {editable: true, sharable: true};
+		properties = {};
 	self.loadMap = function (mapId, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred(),
 			readySucceeded = function () {
@@ -567,6 +567,7 @@ MM.Extensions.GitHub = function () {
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
+			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
 			mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};

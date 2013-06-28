@@ -402,7 +402,7 @@ describe('Github integration', function () {
 				loginCall.resolve();
 				loadFileCall.resolve(content, 'mime');
 				underTest.loadMap(mapId, true).then(done, rejected);
-				expect(done).toHaveBeenCalledWith(content, 'h1REPO:BRANCH:PATH', 'mime', { editable : true, sharable : true });
+				expect(done).toHaveBeenCalledWith(content, 'h1REPO:BRANCH:PATH', 'mime', {});
 			});
 			it('propagates file retrieval progress', function () {
 				loginCall.resolve();
@@ -480,7 +480,7 @@ describe('Github integration', function () {
 					it('resolves when saveFile resolves', function () {
 						saveFileCall.resolve();
 						underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
-						expect(done).toHaveBeenCalledWith(mapId, { editable : true, sharable : true });
+						expect(done).toHaveBeenCalledWith(mapId, {});
 					});
 					it('propagates saveFile rejections', function () {
 						saveFileCall.reject();
@@ -504,7 +504,7 @@ describe('Github integration', function () {
 					it('resolves when saveFile resolves', function () {
 						saveFileCall.resolve();
 						underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
-						expect(done).toHaveBeenCalledWith(mapId, { editable : true, sharable : true });
+						expect(done).toHaveBeenCalledWith(mapId, {});
 					});
 					it('propagates saveFile rejections', function () {
 						saveFileCall.reject();

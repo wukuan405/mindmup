@@ -9,3 +9,11 @@
 	width: 90%;
 }
 
+.visible-map-source-h {
+	display: none;
+}
+
+.map-source-h .visible-map-source-h {
+	display: inherit;
+}
+
