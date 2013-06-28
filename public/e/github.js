@@ -298,27 +298,25 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 				statusDiv.find('a').click(callback);
 			}
 		},
-		dynamicDropDown = function (self, buttonRole, listRole, deferredQuery) {
+		dynamicDropDown = function (self, buttonRole, deferredQuery) {
 			var deferred = jQuery.Deferred(),
 				ownerSearch = self.find('[data-mm-role=' + buttonRole + ']'),
-				list = self.find('[data-mm-role=' + listRole + ']'),
 				startSpin = function () {
 					ownerSearch.find('.icon-spinner').show();
 				},
 				stopSpin = function () {
 					ownerSearch.find('.icon-spinner').hide();
-				},
-				appendResults = function (results) {
-					_.each(results, function (element) {
-						var link = $('<a>').text(element);
-						link.click(function () {
-							deferred.resolve(element);
-						});
-						$("<li>").append(link).appendTo(list);
-					});
 				};
-			ownerSearch.click(function () {
-				list.empty();
+			ownerSearch.click(function (evt) {
+				var appendResults = function (results) {
+					var options = $('<select>').css('width', ownerSearch.outerWidth());
+					_.each(results, function (element) {
+						$('<option>').text(element).appendTo(options);
+					});
+					options.change(function () {deferred.resolve(options.val()); });
+					ownerSearch.replaceWith(options);
+					options[0].dispatchEvent(evt.originalEvent);
+				};
 				startSpin();
 				deferredQuery().done(appendResults).fail(deferred.reject).always(stopSpin);
 			});
@@ -360,7 +358,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 								});
 								added.find('[data-mm-role=repo-name]').text(item.name);
 								added.find('[data-mm-role=repo-default-branch]').text(item.defaultBranch);
-								dynamicDropDown(added, 'branch-search', 'branch-list', function () {
+								dynamicDropDown(added, 'branch-search', function () {
 									return api.getBranches(item.name);
 								}).then(
 									function (selectedBranch) {
