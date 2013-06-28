@@ -6,8 +6,9 @@ require 'base64'
 
 require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
-
+require File.dirname(__FILE__)+'/lib/github_routes.rb'
 require 'net/http'
+
 
 def cache_last_news
   if settings.online && !test? then
@@ -157,7 +158,7 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
-
+include MindMup::GithubRoutes
 include Sinatra::UserAgentHelpers
 helpers do
   def show_map

@@ -10,19 +10,21 @@
 
             <li> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
 
-            <li>
-              <a data-event-type="Open from Google" data-category="Top Bar" data-target="#modalGoogleOpen" data-toggle="modal"><i class="icon-cloud-upload"></i>&nbsp;Open from Google Drive</a>
-            </li>
-            <li>
-              <a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;Open from Browser Storage</a>
-            </li>
-            <li  class="hidden-touch">
-              <a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;Import a Freemind or MindMup file</a>
-            </li>
-
+			<li class="dropdown-submenu">
+			<a href="#"><i class="icon-cloud-upload"></i>&nbsp;Open/Import</a>
+			<ul data-mm-role="open-sources" class="dropdown-menu" role="menu">
+				<li  class="hidden-touch">
+					<a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;From a local drive</a>
+				</li>
+				<li>
+					<a data-event-type="Open from Google" data-category="Top Bar" data-target="#modalGoogleOpen" data-toggle="modal"><i class="icon-cloud-upload"></i>&nbsp;From Google Drive</a>
+				</li>
+				<li>
+					<a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;From Browser Storage</a>
+				</li>
+			</ul>
+			</li>
             <li class="divider hidden-touch"></li>
-
-
 			<li class="hidden-map-changed disabled">
 			<a><i class="icon-save"></i>&nbsp;Save</a>
 			</li>

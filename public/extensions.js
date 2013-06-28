@@ -109,6 +109,13 @@ MM.Extensions.config = {
 		icon: 'icon-reorder',
 		doc: 'http://blog.mindmup.com/p/straight-lines.html',
 		desc: 'This extension converts funky curve connectors into straight lines, which makes it clearer to see what connects to what on large maps'
+	},
+	'github' : {
+		name: 'Github',
+		script: '/e/github-compat-b64.js /e/github.js',
+		icon: 'icon-github',
+		doc: 'http://www.github.com',
+		desc: 'Store your maps on Github'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {

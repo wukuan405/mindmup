@@ -26,7 +26,11 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 				if (editable[mimeType] === undefined) {
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);
 				} else {
-					deferred.resolve(stringToContent(stringContent, mimeType), fileId, properties);
+					try {
+						deferred.resolve(stringToContent(stringContent, mimeType), fileId, properties);
+					} catch (e) {
+						deferred.reject('format-error', 'File content not in correct format for this file type');
+					}
 				}
 			},
 			deferred.reject,
@@ -36,7 +40,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 	};
 	self.saveMap = function (map, mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
-			contentToSave = JSON.stringify(map),
+			contentToSave = JSON.stringify(map, null, 2),
 			fileName = map.title + '.mup';
 		fileSystem.saveMap(contentToSave, mapId, fileName, !!showAuth).then(deferred.resolve, deferred.reject, deferred.notify);
 		return deferred.promise();

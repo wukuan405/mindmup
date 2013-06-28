@@ -51,7 +51,13 @@ describe("MM.FileSystemMapSource", function () {
 			});
 			expect(wasCalled).toBeTruthy();
 		});
-
+		it("rejects incorrect JSON format without falling over", function () {
+			var incorrectmap = '<xml>{id: 1, title: "X"}</xml>',
+				underTest = new MM.FileSystemMapSource(fakeFS(incorrectmap, 'application/json')),
+				spy = jasmine.createSpy();
+			underTest.loadMap('abc').fail(spy);
+			expect(spy).toHaveBeenCalledWith('format-error', 'File content not in correct format for this file type');
+		});
 		it("converts freemind format as readonly", function () {
 			var map = {id: 1, title: "X"},
 				xml = '<map version="0.7.1"><node ID="1" TEXT="X"></node></map>',
@@ -103,7 +109,7 @@ describe("MM.FileSystemMapSource", function () {
 				id = 'mapIdxxx';
 			spyOn(fs, 'saveMap').andCallThrough();
 			underTest.saveMap(map, id, true);
-			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map), id, 'abc.mup', true);
+			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map, '', 2), id, 'abc.mup', true);
 		});
 		it("propagates success", function () {
 			var fs = fakeFS(),
