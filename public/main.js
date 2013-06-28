@@ -134,8 +134,9 @@ MM.main = function (config) {
 		extensions.load(navigation.initialMapId()).then(function () {
 			jQuery('[data-mm-clone]').each(function () {
 				var element = jQuery(this),
-					toClone = element.data('mm-clone');
-				jQuery(toClone).children().clone().appendTo(element);
+					toClone = jQuery(element.data('mm-clone'));
+				toClone.children().clone(true).appendTo(element);
+				element.attr('data-mm-role', toClone.attr('data-mm-role'));
 			});
 			loadWidgets();
 			if (!navigation.loadInitial()) {

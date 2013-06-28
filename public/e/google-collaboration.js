@@ -332,6 +332,7 @@ MM.Extensions.googleCollaboration = function () {
 					googleDriveAdapter.showSharingSettings(mapId.substr(1));
 				}
 			});
+			$('[data-mm-role=sharelinks]').append(menu.find('[data-mm-role=invite]').parent('li').clone(true).addClass('visible-map-source-c'));
 			menu.find('[data-mm-role=join]').click(function () {
 				googleDriveAdapter.showPicker('application/vnd.mindmup.collab', 'Choose a realtime session').done(function (id) {
 					mapController.loadMap('c' + id);

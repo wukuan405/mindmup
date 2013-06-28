@@ -9,3 +9,12 @@ img.collab-photo {
 	float:left;
 	padding-right:10px;
 }
+
+.visible-map-source-c {
+	display: none;
+}
+
+.map-source-c .visible-map-source-c {
+	display: inherit;
+}
+
