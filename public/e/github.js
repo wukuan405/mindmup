@@ -296,7 +296,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 	};
 };
 
-MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
+MM.GitHub.GithubFileSystem = function (api, prompters) {
 	'use strict';
 	var self = this,
 		toGithubComponentPath = function (mindMupMapId) {
@@ -330,7 +330,7 @@ MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
 			saveWhenAuthorised = function () {
 				var path = toGithubComponentPath(mapId);
 				if (!path.path) {
-					fileNamePrompter.promptForFileName('Save to Github', true, fileName).then(
+					prompters.fileName('Save to Github', true, fileName).then(
 						function (newMapId) {
 							self.saveMap(contentToSave, newMapId, fileName, showAuthenticationDialogs)
 								.then(deferred.resolve, deferred.reject, deferred.notify);
@@ -339,7 +339,7 @@ MM.GitHub.GithubFileSystem = function (api, commitPrompter, fileNamePrompter) {
 						deferred.notify
 					);
 				} else {
-					commitPrompter.promptForCommit().then(
+					prompters.commit().then(
 						function (commitMessage) {
 							api.saveFile(contentToSave, path, commitMessage).then(
 								function () {
@@ -653,19 +653,22 @@ MM.Extensions.GitHub = function () {
 	'use strict';
 	var api = new MM.GitHub.GithubAPI(MM.GitHub.popupWindowLoginLauncher),
 		mapController = MM.Extensions.components.mapController,
+		prompters = { },
+		fileSystem = new MM.GitHub.GithubFileSystem(api, prompters),
 		loadUI = function (html) {
 			var dom = $(html),
 				modalOpen = dom.find('#modalGithubOpen').detach().appendTo('body').githubOpenWidget(api, mapController.loadMap.bind(mapController)),
-				modalCommit = dom.find('#modalGithubCommit').detach().appendTo('body').githubCommitWidget(),
-				fileSystem = new MM.GitHub.GithubFileSystem(api, modalCommit, modalOpen);
+				modalCommit = dom.find('#modalGithubCommit').detach().appendTo('body').githubCommitWidget();
+			prompters.commit = modalCommit.promptForCommit;
+			prompters.fileName = modalOpen.promptForFileName;
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
 			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
-			mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
+	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.html', loadUI);
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.css" />').appendTo($('body'));
 

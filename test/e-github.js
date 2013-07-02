@@ -352,7 +352,7 @@ describe('Github integration', function () {
 		});
 	});
 	describe('MM.GitHub.GithubFileSystem', function () {
-		var api, commitPrompter, fileNamePrompter, loginCall, loadFileCall, mapId, content, saveFileCall,
+		var api, prompters, loginCall, loadFileCall, mapId, content, saveFileCall,
 			promptForCommitCall, promptForFileNameCall;
 		beforeEach(function () {
 			loginCall = jQuery.Deferred();
@@ -365,14 +365,12 @@ describe('Github integration', function () {
 				loadFile: jasmine.createSpy('loadFile').andReturn(loadFileCall.promise()),
 				saveFile: jasmine.createSpy('saveFile').andReturn(saveFileCall.promise())
 			};
-			commitPrompter = {
-				promptForCommit: jasmine.createSpy('promptForComit').andReturn(promptForCommitCall.promise())
-			};
-			fileNamePrompter = {
-				promptForFileName: jasmine.createSpy('promptForFileName').andReturn(promptForFileNameCall.promise())
+			prompters = {
+				commit: jasmine.createSpy('promptForComit').andReturn(promptForCommitCall.promise()),
+				fileName: jasmine.createSpy('promptForFileName').andReturn(promptForFileNameCall.promise())
 			};
 			mapId = 'h1REPO:BRANCH:PATH';
-			underTest = new MM.GitHub.GithubFileSystem(api, commitPrompter, fileNamePrompter);
+			underTest = new MM.GitHub.GithubFileSystem(api, prompters);
 			content = 'xcontentabc';
 		});
 		describe('loadMap', function () {
@@ -430,19 +428,19 @@ describe('Github integration', function () {
 				});
 				it('prompts for a file name if map ID is not specified (new file scenario)', function () {
 					underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
-					expect(fileNamePrompter.promptForFileName).toHaveBeenCalledWith('Save to Github', true, fileName);
-					expect(commitPrompter.promptForCommit).not.toHaveBeenCalled();
+					expect(prompters.fileName).toHaveBeenCalledWith('Save to Github', true, fileName);
+					expect(prompters.commit).not.toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
 				it('prompts for a file name if map ID is not recognised (moving from a different repo scenario)', function () {
 					underTest.saveMap(content, 'g1:a:b:c', fileName, false).then(done, rejected);
-					expect(fileNamePrompter.promptForFileName).toHaveBeenCalledWith('Save to Github', true, fileName);
-					expect(commitPrompter.promptForCommit).not.toHaveBeenCalled();
+					expect(prompters.fileName).toHaveBeenCalledWith('Save to Github', true, fileName);
+					expect(prompters.commit).not.toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
 				it('does not prompt for a file name if map ID is recognisable (existing file scenario)', function () {
 					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
-					expect(fileNamePrompter.promptForFileName).not.toHaveBeenCalled();
+					expect(prompters.fileName).not.toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
 				it('rejects if file name prompt fails', function () {
@@ -453,7 +451,7 @@ describe('Github integration', function () {
 				});
 				it('prompts for commit immediately if map ID is recognisable', function () {
 					underTest.saveMap(content, mapId, fileName, false).then(done, rejected);
-					expect(commitPrompter.promptForCommit).toHaveBeenCalled();
+					expect(prompters.commit).toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
 				it('rejects if commit prompt fails', function () {
@@ -465,7 +463,7 @@ describe('Github integration', function () {
 				it('prompts for commit after the file prompt is resolved if map ID is not recognisable', function () {
 					promptForFileNameCall.resolve(mapId);
 					underTest.saveMap(content, 'h1', fileName, false).then(done, rejected);
-					expect(commitPrompter.promptForCommit).toHaveBeenCalled();
+					expect(prompters.commit).toHaveBeenCalled();
 					expect(api.saveFile).not.toHaveBeenCalled();
 				});
 				describe('when all prompts resolve', function () {
