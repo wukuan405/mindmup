@@ -93,7 +93,7 @@ MM.Extensions.config = {
 	},
 	'progress' : {
 		name: 'Progress',
-		script: '/e/content-status-updater.js /e/progress.js',
+		script: '/e/progress.js',
 		icon: 'icon-dashboard',
 		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
 		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.',
@@ -112,7 +112,7 @@ MM.Extensions.config = {
 	},
 	'github' : {
 		name: 'Github',
-		script: '/e/github-compat-b64.js /e/github.js',
+		script: '/e/github.js',
 		icon: 'icon-github',
 		doc: 'http://www.github.com',
 		desc: 'Store your maps on Github',
