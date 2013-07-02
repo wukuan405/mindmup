@@ -13,12 +13,24 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 				json = MM.freemindImport(fileContent);
 			}
 			return MAPJS.content(json);
+		},
+		guessMimeType = function (fileName) {
+			if (/\.mm$/.test(fileName)) {
+				return 'application/x-freemind';
+			}
+			if (/\.mup$/.test(fileName)) {
+				return 'application/json';
+			}
+			return 'application/octet-stream';
 		};
 	self.loadMap = function loadMap(mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
 			editable = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false };
 		fileSystem.loadMap(mapId, showAuth).then(
-			function fileLoaded(stringContent, fileId, mimeType, properties) {
+			function fileLoaded(stringContent, fileId, mimeType, properties, optionalFileName) {
+				if (!mimeType && optionalFileName) {
+					mimeType = guessMimeType(optionalFileName);
+				}
 				properties = jQuery.extend({editable: editable[mimeType]}, properties);
 				if (mimeType === 'application/vnd.mindmup.collab') {
 					return deferred.reject('map-load-redirect', 'c' + fileId).promise();
