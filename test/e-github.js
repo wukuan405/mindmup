@@ -80,7 +80,7 @@ describe('Github integration', function () {
 					encoding: 'base64'
 				}).promise());
 				underTest.loadFile({repo: 'r', path: '/test.mup'}).then(done, rejected);
-				expect(done).toHaveBeenCalledWith('hey there', 'application/json');
+				expect(done).toHaveBeenCalledWith('hey there', 'test.mup');
 				expect(jQuery.ajax).toHaveBeenCalledWith(
 					{ url : 'https://api.github.com/repos/r/contents/test.mup', type : 'GET', headers : { Authorization : 'bearer x' } }
 				);
@@ -98,24 +98,6 @@ describe('Github integration', function () {
 				underTest.loadFile({repo: 'r', path: '/test.mup'}).then(done, rejected);
 				expect(done).not.toHaveBeenCalled();
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
-			});
-			it('resolves with mime-type appliction/x-freemind for .mm files', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
-					content: window.Base64.encode('hey there'),
-					name: 'test.mm',
-					encoding: 'base64'
-				}).promise());
-				underTest.loadFile({}).then(done);
-				expect(done).toHaveBeenCalledWith('hey there', 'application/x-freemind');
-			});
-			it('resolves with mime-type appliction/octet-stream for unrecognised extensions', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
-					content: window.Base64.encode('hey there'),
-					name: 'test.mxm',
-					encoding: 'base64'
-				}).promise());
-				underTest.loadFile({}).then(done);
-				expect(done).toHaveBeenCalledWith('hey there', 'application/octet-stream');
 			});
 			it('rejects with format-error if encoding is not base64', function () {
 				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
@@ -398,9 +380,9 @@ describe('Github integration', function () {
 			});
 			it('propagates file retrieval success', function () {
 				loginCall.resolve();
-				loadFileCall.resolve(content, 'mime');
+				loadFileCall.resolve(content, 'name.mup');
 				underTest.loadMap(mapId, true).then(done, rejected);
-				expect(done).toHaveBeenCalledWith(content, 'h1REPO:BRANCH:PATH', 'mime', {});
+				expect(done).toHaveBeenCalledWith(content, 'h1REPO:BRANCH:PATH', undefined, {}, 'name.mup');
 			});
 			it('propagates file retrieval progress', function () {
 				loginCall.resolve();

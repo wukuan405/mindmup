@@ -164,15 +164,6 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 			);
 			return result.promise();
 		},
-		guessMimeType = function (fileName) {
-			if (/\.mm$/.test(fileName)) {
-				return 'application/x-freemind';
-			}
-			if (/\.mup$/.test(fileName)) {
-				return 'application/json';
-			}
-			return 'application/octet-stream';
-		},
 		componentPathToUrl = function (githubComponentPath) {
 			if (!githubComponentPath) {
 				return '';
@@ -197,7 +188,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 				var contents;
 				if (githubData.encoding === 'base64') {
 					contents = window.Base64.decode(githubData.content);
-					deferred.resolve(contents, guessMimeType(githubData.name));
+					deferred.resolve(contents, githubData.name);
 				} else {
 					deferred.reject('format-error', 'Unknown encoding ' + githubData.encoding);
 				}
@@ -315,8 +306,8 @@ MM.GitHub.GithubFileSystem = function (api, prompters) {
 		var deferred = jQuery.Deferred(),
 			readySucceeded = function () {
 				api.loadFile(toGithubComponentPath(mapId)).then(
-					function (content, mimeType) {
-						deferred.resolve(content, mapId, mimeType, properties);
+					function (content, fileName) {
+						deferred.resolve(content, mapId, undefined, properties, fileName);
 					},
 					deferred.reject,
 					deferred.notify
