@@ -88,14 +88,12 @@ describe("MM.FileSystemMapSource", function () {
 		});
 		it("fails if content type is not supported", function () {
 			var underTest = new MM.FileSystemMapSource(fakeFS(undefined, 'application/x-unsupported')),
-				wasCalled = false,
 				errorCallback = jasmine.createSpy('error');
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('format-error', 'Unsupported format application/x-unsupported');
 		});
 		it("fails with map-load-redirect if content type is collaborative map", function () {
 			var underTest = new MM.FileSystemMapSource(fakeFS(undefined, 'application/vnd.mindmup.collab')),
-				wasCalled = false,
 				errorCallback = jasmine.createSpy('error');
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('map-load-redirect', 'cabc');
