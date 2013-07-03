@@ -140,6 +140,7 @@ post '/import' do
   content_type 'text/plain'
   result
 end
+
 get "/un" do
   erb :unsupported
 end
@@ -163,7 +164,7 @@ helpers do
     if (browser_supported? || user_accepted_browser?)
       erb :editor
     else
-      erb :unsupported
+      redirect '/un'
     end
   end
   def user_accepted_browser?
