@@ -140,6 +140,7 @@ post '/import' do
   content_type 'text/plain'
   result
 end
+
 get "/un" do
   erb :unsupported
 end
@@ -163,6 +164,9 @@ helpers do
     if (browser_supported? || user_accepted_browser?)
       erb :editor
     else
+      response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+      response.headers['Pragma'] = 'no-cache'
+      response.headers['Expires'] = '0'
       erb :unsupported
     end
   end
