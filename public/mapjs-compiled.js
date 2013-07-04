@@ -1262,7 +1262,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	this.getEditingEnabled = function () {
 		return isEditingEnabled;
-	}
+	};
 	this.setInputEnabled = function (value) {
 		if (isInputEnabled !== value) {
 			isInputEnabled = value;
@@ -1284,12 +1284,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	this.clickNode = function (id, event) {
 		var button = event && event.button;
 		if (event && (event.altKey || event.ctrlKey || event.metaKey)) {
-			self.addLink(id);
+			self.addLink('mouse', id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
 			self.activateNode('mouse', id);
 		} else if (isAddLinkMode && !button) {
-			this.addLink(id);
+			this.addLink('mouse', id);
 			this.toggleAddLinkMode();
 		} else {
 			this.selectNode(id);
@@ -1489,22 +1489,28 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		var hasAttachment = !!(attachment && attachment.content);
 		idea.updateAttr(nodeId, 'attachment', hasAttachment && attachment);
 	};
-	this.addLink = function (nodeIdTo) {
+	this.addLink = function (source, nodeIdTo) {
 		if (!isEditingEnabled) {
 			return false;
 		}
+		analytic('addLink', source);
 		idea.addLink(currentlySelectedIdeaId, nodeIdTo);
 	};
-	this.selectLink = function (link, selectionPoint) {
+	this.selectLink = function (source, link, selectionPoint) {
 		if (!isEditingEnabled) {
+			return false;
+		}
+		analytic('selectLink', source);
+		if (!link) {
 			return false;
 		}
 		self.dispatchEvent('linkSelected', link, selectionPoint, idea.getLinkAttr(link.ideaIdFrom, link.ideaIdTo, 'style'));
 	};
-	this.removeLink = function (nodeIdFrom, nodeIdTo) {
+	this.removeLink = function (source, nodeIdFrom, nodeIdTo) {
 		if (!isEditingEnabled) {
 			return false;
 		}
+		analytic('removeLink', source);
 		idea.removeLink(nodeIdFrom, nodeIdTo);
 	};
 
@@ -2954,7 +2960,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			strokeWidth: 1.5
 		});
 		link.on('click tap', function (event) {
-			mapModel.selectLink(l, { x: event.layerX, y: event.layerY });
+			mapModel.selectLink('mouse', l, { x: event.layerX, y: event.layerY });
 		});
 		layer.add(link);
 		link.moveToBottom();
@@ -3289,7 +3295,7 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 			element.hide();
 		});
 		element.find('.delete').click(function () {
-			mapModel.removeLink(currentLink.ideaIdFrom, currentLink.ideaIdTo);
+			mapModel.removeLink('mouse', currentLink.ideaIdFrom, currentLink.ideaIdTo);
 			element.hide();
 		});
 		colorElement.change(function () {
