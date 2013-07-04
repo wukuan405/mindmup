@@ -69,7 +69,7 @@ MM.main = function (config) {
 				jQuery('body').mapStatusWidget(mapController);
 				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, jQuery('body').hasClass('image-render'));
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
-				jQuery('#topbar').alertWidget(alert).mapToolbarWidget(mapModel);
+				jQuery('#topbar').mapToolbarWidget(mapModel);
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
 				jQuery.fn.colorPicker.showPalette = function (palette) {
@@ -131,6 +131,7 @@ MM.main = function (config) {
 			alert.show('Browser storage unavailable!', 'You might be running the app in private mode or have no browser storage - some features of this application will not work fully.', 'warning');
 			activityLog.log('Warning', 'Local storage not available');
 		}
+		jQuery('#topbar').alertWidget(alert);
 		extensions.load(navigation.initialMapId()).then(function () {
 			jQuery('[data-mm-clone]').each(function () {
 				var element = jQuery(this),
