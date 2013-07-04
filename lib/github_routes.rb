@@ -4,8 +4,11 @@ module MindMup
       redirect "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{settings.cache_prevention_key}"
     end
     get '/github/postback' do
-      json_fail "invalid response from github" unless params[:code]
-      if (params[:state]!= settings.cache_prevention_key) then
+      if params[:error]
+        erb :github_response, :locals => { :response => {"error" => params[:error] } }
+      elsif params[:code].nil?
+        erb :github_response, :locals => { :response => {"error" => "Invalid response from Github" } }
+      elsif (params[:state]!= settings.cache_prevention_key) then
         redirect "/github/login"
       else 
         begin

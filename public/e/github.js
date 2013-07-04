@@ -159,7 +159,16 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 						result.resolve(githubData);
 					}
 				},
-				result.reject,
+				function (xhr, problem) {
+					var unauthCodes = [401, 403];
+					if (xhr && _.contains(unauthCodes, xhr.status)) {
+						setAuthToken('');
+						result.reject('not-authenticated');
+					} else if (xhr && xhr.status === 404) {
+						result.reject('not-found');
+					}
+					result.reject('network-error', (xhr && xhr.statusText) || problem);
+				},
 				result.notify
 			);
 			return result.promise();
@@ -221,8 +230,12 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 			function (githubFileMeta) {
 				saveWithSha(githubFileMeta && githubFileMeta.sha);
 			},
-			function (result) {
-				saveWithSha('');
+			function (reason, message) {
+				if (reason === 'not-found') {
+					saveWithSha('');
+				} else {
+					deferred.reject(reason, message);
+				}
 			},
 			deferred.notify
 		);

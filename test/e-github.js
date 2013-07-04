@@ -99,6 +99,24 @@ describe('Github integration', function () {
 				expect(done).not.toHaveBeenCalled();
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
 			});
+			it('rejects with not-authenticated and clears session auth if ajax error is 403', function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 403, statusText: 'Pink'}));
+				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+				expect(sessionStorage.github_auth_token).toBeFalsy();
+			});
+			it('rejects with not-authenticated and clears session auth if ajax error is 401', function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 401, statusText: 'Pink'}));
+				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('not-authenticated');
+				expect(sessionStorage.github_auth_token).toBeFalsy();
+			});
+			it('rejects with not-found and does not clears session auth if ajax error is 404', function () {
+				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 404, statusText: 'Pink'}));
+				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
+				expect(rejected).toHaveBeenCalledWith('not-found');
+				expect(sessionStorage.github_auth_token).toBe('x');
+			});
 			it('rejects with format-error if encoding is not base64', function () {
 				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
 					content: window.Base64.encode('hey there'),
@@ -115,7 +133,7 @@ describe('Github integration', function () {
 				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().promise());
 			});
 			it('commits a new file without a SHA tag using PUT', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().reject().promise());
+				jQuery.ajax.andReturn(jQuery.Deferred().reject({status: 404}).promise());
 				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt'}, 'commit msg');
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt',
@@ -124,6 +142,12 @@ describe('Github integration', function () {
 					data : '{"content":"' + window.Base64.encode('abcd') + '","message":"commit msg","sha":""}',
 					processData : false
 				});
+			});
+			it('commits a new file without a SHA tag using PUT', function () {
+				jQuery.ajax.andReturn(jQuery.Deferred().reject({status: 503}, 'burp').promise());
+				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt'}, 'commit msg').then(done, rejected);
+				expect(jQuery.ajax.callCount).toBe(1);
+				expect(rejected).toHaveBeenCalledWith('network-error', 'burp');
 			});
 			it('commits an existing file with the previous sha tag SHA tag using PUT', function () {
 				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
