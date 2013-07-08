@@ -70,7 +70,7 @@ MM.main = function (config) {
 				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, false);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
-				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
+
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
 				jQuery.fn.colorPicker.showPalette = function (palette) {
 					oldShowPalette(palette);
@@ -108,7 +108,9 @@ MM.main = function (config) {
 					.on('show', mapModel.setInputEnabled.bind(mapModel, false))
 					.on('hide', mapModel.setInputEnabled.bind(mapModel, true));
 				jQuery('#modalKeyActions').keyActionsWidget();
-				jQuery('.updateStyle').colorPicker();
+				jQuery('#topbar .updateStyle').attr('data-mm-align', 'top').colorPicker();
+				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
+				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 			};
 		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
