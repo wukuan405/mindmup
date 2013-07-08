@@ -67,7 +67,7 @@ MM.main = function (config) {
 					jQuery('[rel=tooltip]').tooltip();
 				}
 				jQuery('body').mapStatusWidget(mapController);
-				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, jQuery('body').hasClass('image-render'));
+				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, false);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
@@ -116,12 +116,6 @@ MM.main = function (config) {
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
-		if (!jQuery('body').hasClass('image-render-checked')) {
-			if (config.isTouch) {
-				jQuery('body').addClass('image-render');
-			}
-			jQuery('body').addClass('image-render-checked');
-		}
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
