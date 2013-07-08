@@ -36,8 +36,7 @@ configure do
   set :publishing_config_url, '/publishingConfig'
   set :proxy_load_url, 's3proxy/'
   set :async_scripts, '//www.google-analytics.com/ga.js'
-  offline =  ENV['OFFLINE'] || "online"
-  set :online, offline == "offline" ? false : true
+  set :online, "offline" != ENV['OFFLINE']
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
@@ -47,6 +46,8 @@ configure do
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
   set :protection, :except => :frame_options
+  set :last_news_id, ""
+  set :last_news_title, ""
   cache_last_news
 end
 get '/' do
@@ -188,7 +189,7 @@ helpers do
   end
   def external_script_path script_name
     if (!settings.online) then
-      script_name.sub!("//", "/offline/")
+      return script_name.sub "//", "/offline/"
     end
     script_name
   end
