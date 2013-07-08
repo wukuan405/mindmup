@@ -2130,7 +2130,7 @@ Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 		dashed: [8, 8]
 	}[style && style.lineStyle || 'dashed'];
 	this.attrs.arrow = style && style.arrow || false;
-	this.getLayer().draw();
+//	this.getLayer().draw();
 };
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
@@ -2301,7 +2301,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		};
 		this.editNode = function (shouldSelectAll, deleteOnCancel) {
 			self.fire(':editing');
-			self.getLayer().draw();
+//			self.getLayer().draw();
 			var canvasPosition = jQuery(self.getLayer().getCanvas().getElement()).offset(),
 				ideaInput,
 				onStageMoved = _.throttle(function () {
@@ -2527,7 +2527,7 @@ Kinetic.Idea.prototype.setMMAttr = function (newMMAttr) {
 	'use strict';
 	this.mmAttr = newMMAttr;
 	this.setStyle();
-	this.getLayer().draw();
+//	this.getLayer().draw();
 };
 
 Kinetic.Idea.prototype.getIsSelected = function () {
@@ -2942,7 +2942,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	mapModel.addEventListener('nodeTitleChanged', function (n) {
 		var node = nodeByIdeaId[n.id];
 		node.setText(n.title);
-		layer.draw();
+//		layer.draw();
 	});
 	mapModel.addEventListener('connectorCreated', function (n) {
 		var connector = new Kinetic.Connector({
@@ -2996,7 +2996,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	mapModel.addEventListener('linkRemoved', function (l) {
 		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
 		link.destroy();
-		layer.draw();
+//		layer.draw();
 	});
 	mapModel.addEventListener('linkAttrChanged', function (l) {
 		var link = layer.get('#link_' + l.ideaIdFrom + '_' + l.ideaIdTo)[0];
