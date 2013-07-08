@@ -1247,6 +1247,16 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		};
 	observable(this);
 	analytic = self.dispatchEvent.bind(self, 'analytic', 'mapModel');
+	self.getIdea = function () {
+		return idea;
+	};
+	self.isEditingEnabled = function () {
+		return isEditingEnabled;
+	};
+	self.getCurrentLayout = function () {
+		return currentLayout;
+	};
+	self.analytic = analytic;
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
@@ -1808,78 +1818,89 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 		};
 	}());
-	//Todo - clean up this shit below
-	(function () {
-		var currentDroppable,
-			updateCurrentDroppable = function (value) {
-				if (currentDroppable !== value) {
-					if (currentDroppable) {
-						self.dispatchEvent('nodeDroppableChanged', currentDroppable, false);
-					}
-					currentDroppable = value;
-					if (currentDroppable) {
-						self.dispatchEvent('nodeDroppableChanged', currentDroppable, true);
-					}
+};
+/*global MAPJS*/
+MAPJS.dragdrop = function (mapModel, stage) {
+	'use strict';
+	var currentDroppable,
+		findNodeOnStage = function (nodeId) {
+			return stage.get('#node_' + nodeId)[0];
+		},
+		showAsDroppable = function (nodeId, isDroppable) {
+			var node = findNodeOnStage(nodeId);
+			node.setIsDroppable(isDroppable);
+		},
+		updateCurrentDroppable = function (nodeId) {
+			if (currentDroppable !== nodeId) {
+				if (currentDroppable) {
+					showAsDroppable(currentDroppable, false);
 				}
-			},
-			canDropOnNode = function (id, x, y, node) {
-				/*jslint eqeq: true*/
-				return id != node.id &&
-					x >= node.x &&
-					y >= node.y &&
-					x <= node.x + node.width - 2 * 10 &&
-					y <= node.y + node.height - 2 * 10;
-			},
-			tryFlip = function (rootNode, nodeBeingDragged, nodeDragEndX) {
-				var flipRightToLeft = rootNode.x < nodeBeingDragged.x && nodeDragEndX < rootNode.x,
-					flipLeftToRight = rootNode.x > nodeBeingDragged.x && rootNode.x < nodeDragEndX;
-				if (flipRightToLeft || flipLeftToRight) {
-					return idea.flip(nodeBeingDragged.id);
+				currentDroppable = nodeId;
+				if (currentDroppable) {
+					showAsDroppable(currentDroppable, true);
 				}
-				return false;
-			};
-		self.nodeDragMove = function (id, x, y) {
+			}
+		},
+		isPointOverNode = function (x, y, node) { //move to mapModel candidate
+			/*jslint eqeq: true*/
+			return x >= node.x &&
+				y >= node.y &&
+				x <= node.x + node.width - 2 * 10 &&
+				y <= node.y + node.height - 2 * 10;
+		},
+		canDropOnNode = function (id, x, y, node) {
+			/*jslint eqeq: true*/
+			return id != node.id && isPointOverNode(x, y, node);
+		},
+		tryFlip = function (rootNode, nodeBeingDragged, nodeDragEndX) {
+			var flipRightToLeft = rootNode.x < nodeBeingDragged.x && nodeDragEndX < rootNode.x,
+				flipLeftToRight = rootNode.x > nodeBeingDragged.x && rootNode.x < nodeDragEndX;
+			if (flipRightToLeft || flipLeftToRight) {
+				return mapModel.getIdea().flip(nodeBeingDragged.id);
+			}
+			return false;
+		},
+		nodeDragMove = function (id, x, y) {
 			var nodeId, node;
 
-			if (!isEditingEnabled) {
+			if (!mapModel.isEditingEnabled()) {
 				return;
 			}
 
-			for (nodeId in currentLayout.nodes) {
-				node = currentLayout.nodes[nodeId];
+			for (nodeId in mapModel.getCurrentLayout().nodes) {
+				node = mapModel.getCurrentLayout().nodes[nodeId];
 				if (canDropOnNode(id, x, y, node)) {
 					updateCurrentDroppable(nodeId);
 					return;
 				}
 			}
 			updateCurrentDroppable(undefined);
-		};
-		self.nodeDragEnd = function (id, x, y, shouldCopy) {
-			var nodeBeingDragged = currentLayout.nodes[id],
+		},
+		nodeDragEnd = function (id, x, y, shouldCopy) {
+			var nodeBeingDragged = mapModel.getCurrentLayout().nodes[id],
 				nodeId,
 				node,
-				rootNode = currentLayout.nodes[idea.id],
+				rootNode = mapModel.getCurrentLayout().nodes[mapModel.getIdea().id],
 				verticallyClosestNode = { id: null, y: Infinity },
 				clone;
-			if (!isEditingEnabled) {
-				self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+			if (!mapModel.isEditingEnabled()) {
+				mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
 				return;
 			}
 			updateCurrentDroppable(undefined);
-
-			self.dispatchEvent('nodeMoved', nodeBeingDragged);
-			for (nodeId in currentLayout.nodes) {
-				node = currentLayout.nodes[nodeId];
+			mapModel.dispatchEvent('nodeMoved', nodeBeingDragged);
+			for (nodeId in mapModel.getCurrentLayout().nodes) {
+				node = mapModel.getCurrentLayout().nodes[nodeId];
 				if (canDropOnNode(id, x, y, node)) {
 					if (shouldCopy) {
-						clone = idea.clone(id);
-						if (!clone || !idea.paste(nodeId, clone)) {
-							self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
-							analytic('nodeDragCloneFailed');
+						clone = mapModel.getIdea().clone(id);
+						if (!clone || !mapModel.getIdea().paste(nodeId, clone)) {
+							mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+							mapModel.analytic('nodeDragCloneFailed');
 						}
-					} else if (!idea.changeParent(id, nodeId)) {
-						self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
-						analytic('nodeDragParentFailed');
+					} else if (!mapModel.getIdea().changeParent(id, nodeId)) {
+						mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+						mapModel.analytic('nodeDragParentFailed');
 					}
 					return;
 				}
@@ -1892,15 +1913,52 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			if (tryFlip(rootNode, nodeBeingDragged, x)) {
 				return;
 			}
-			if (idea.positionBefore(id, verticallyClosestNode.id)) {
+			if (mapModel.getIdea().positionBefore(id, verticallyClosestNode.id)) {
 				return;
 			}
-			self.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
-			analytic('nodeDragFailed');
+			mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
+			mapModel.analytic('nodeDragFailed');
+		},
+		screenToStageCoordinates = function (x, y) {
+			return {
+				x: (x - stage.attrs.x) / (stage.getScale().x || 1),
+				y: (y - stage.attrs.y) / (stage.getScale().y || 1)
+			};
+		},
+		getInteractionPoint = function (evt) {
+			if (evt.changedTouches && evt.changedTouches[0]) {
+				return screenToStageCoordinates(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
+			}
+			return screenToStageCoordinates(evt.layerX, evt.layerY);
 		};
-	}());
-};
-/*global _, Kinetic, MAPJS*/
+	mapModel.addEventListener('nodeCreated', function (n) {
+		var node = findNodeOnStage(n.id);
+		node.on('dragstart', function () {
+			node.moveToTop();
+			node.setShadowOffset(8);
+			node.attrs.opacity = 0.3;
+		});
+		node.on('dragmove', function (evt) {
+			var stagePoint = getInteractionPoint(evt);
+			nodeDragMove(
+				n.id,
+				stagePoint.x,
+				stagePoint.y
+			);
+		});
+		node.on('dragend', function (evt) {
+			var stagePoint = getInteractionPoint(evt);
+			node.setShadowOffset(4);
+			node.attrs.opacity = 1;
+			nodeDragEnd(
+				n.id,
+				stagePoint.x,
+				stagePoint.y,
+				evt.shiftKey
+			);
+		});
+	});
+};/*global _, Kinetic, MAPJS*/
 /*jslint nomen: true*/
 (function () {
 	'use strict';
@@ -2673,8 +2731,8 @@ if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
 }
 
-Kinetic.Tween.prototype.reset = function() {
-	var node = this.node;
+Kinetic.Tween.prototype.reset = function () {
+	'use strict';
 	this.tween.reset();
 	return this;
 };
@@ -2733,18 +2791,6 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	var layer = new Kinetic.Layer(),
 		nodeByIdeaId = {},
 		connectorByFromIdeaIdToIdeaId = {},
-		screenToStageCoordinates = function (x, y) {
-			return {
-				x: (x - stage.attrs.x) / (stage.getScale().x || 1),
-				y: (y - stage.attrs.y) / (stage.getScale().y || 1)
-			};
-		},
-		getInteractionPoint = function (evt) {
-			if (evt.changedTouches && evt.changedTouches[0]) {
-				return screenToStageCoordinates(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
-			}
-			return screenToStageCoordinates(evt.layerX, evt.layerY);
-		},
 		connectorKey = function (fromIdeaId, toIdeaId) {
 			return fromIdeaId + '_' + toIdeaId;
 		},
@@ -2827,7 +2873,9 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 		var node = nodeByIdeaId[nodeId];
 		if (node) {
-			node.editNode(shouldSelectAll, editingNew);
+			setTimeout(function () {
+				node.editNode(shouldSelectAll, editingNew);
+			}, 1);
 		}
 	});
 	mapModel.addEventListener('nodeCreated', function (n) {
@@ -2852,30 +2900,6 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			}
 			mapModel.editNode('mouse', false, false);
 		});
-		node.on('dragstart', function () {
-			node.moveToTop();
-			node.setShadowOffset(8);
-			node.attrs.opacity = 0.3;
-		});
-		node.on('dragmove', function (evt) {
-			var stagePoint = getInteractionPoint(evt);
-			mapModel.nodeDragMove(
-				n.id,
-				stagePoint.x,
-				stagePoint.y
-			);
-		});
-		node.on('dragend', function (evt) {
-			var stagePoint = getInteractionPoint(evt);
-			node.setShadowOffset(4);
-			node.attrs.opacity = 1;
-			mapModel.nodeDragEnd(
-				n.id,
-				stagePoint.x,
-				stagePoint.y,
-				evt.shiftKey
-			);
-		});
 		node.on(':textChanged', function (event) {
 			mapModel.updateTitle(n.id, event.text);
 			mapModel.setInputEnabled(true);
@@ -2895,7 +2919,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			node.setupShadows();
 		});
 		nodeByIdeaId[n.id] = node;
-	});
+	}, 1);
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = nodeByIdeaId[ideaId];
 		if (!node) {
@@ -3246,6 +3270,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				}
 			});
 		});
+		MAPJS.dragdrop(mapModel, stage);
 		$(document).on('keypress', function (evt) {
 			if (!actOnKeys) {
 				return;
@@ -3273,6 +3298,12 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 		stage.setY(0.5 * stage.getHeight());
 		jQuery(window).bind('orientationchange resize', setStageDimensions);
 		$(document).on('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); return false; });
+		element.click(function (e) {
+			window.focus();
+			if (document.activeElement !== e.target) {
+				document.activeElement.blur();
+			}
+		});
 		if (!touchEnabled) {
 			jQuery(window).mousewheel(onScroll);
 		} else {
