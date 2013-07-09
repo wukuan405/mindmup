@@ -30,7 +30,7 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 			var newContent = editorArea.cleanHtml();
 			if (newContent) {
 				mapModel.setAttachment('attachmentEditorWidget', ideaId, {contentType: 'text/html', content: newContent });
-				switchToViewMode();
+				close();
 			} else {
 				mapModel.setAttachment('attachmentEditorWidget', ideaId, false);
 				close();
