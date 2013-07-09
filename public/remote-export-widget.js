@@ -36,7 +36,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 				};
 			},
 			exportFunctions = {
-				'mup' : toPromise(JSON.stringify, 'application/json'),
+				'mup' : toPromise(function (contentObject) { return JSON.stringify(contentObject, null, 2); }, 'application/json'),
 				'mm' : toPromise(MM.freemindExport, 'text/xml'),
 				'html': MM.exportToHtmlDocument,
 				'png': MAPJS.pngExport,
