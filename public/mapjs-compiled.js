@@ -2291,7 +2291,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 			return props.clipTo;
 		};
 		group.add(new Kinetic.Clip(_.extend({stroke: 'darkslategrey', x: 1, y: 1}, props)));
-		clip = new Kinetic.Clip(_.extend({stroke: 'skyblue'}, props));
+		clip = new Kinetic.Clip(_.extend({stroke: 'skyblue', x: 0, y: 0}, props));
 		group.add(clip);
 		group.on('mouseover', function () {
 			clip.attrs.stroke = 'black';
@@ -2553,13 +2553,13 @@ Kinetic.Idea.prototype.setStyle = function () {
 	this.attrs.width = this.text.getWidth() + 2 * padding;
 	this.attrs.height = this.text.getHeight() + 2 * padding + clipMargin;
 	this.text.attrs.x = padding;
-	this.text.attrs.y = padding + clipMargin;
+	this.text.setY(padding + clipMargin);
 	this.link.attrs.x = this.text.getWidth() + 10;
-	this.link.attrs.y = this.text.getHeight() + 5 + clipMargin;
+	this.link.setY(this.text.getHeight() + 5 + clipMargin);
 	_.each([this.rect, this.rectbg2, this.rectbg1], function (r) {
 		r.attrs.width = self.text.getWidth() + 2 * padding;
 		r.attrs.height = self.text.getHeight() + 2 * padding;
-		r.attrs.y = rectOffset;
+		r.setY(rectOffset);
 		rectOffset += rectIncrement;
 		if (isDroppable) {
 			r.attrs.stroke = '#9F4F4F';
