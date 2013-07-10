@@ -6,8 +6,9 @@ require 'base64'
 
 require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
-
+require File.dirname(__FILE__)+'/lib/github_routes.rb'
 require 'net/http'
+
 
 def cache_last_news
   if settings.online && !test? then
@@ -35,8 +36,7 @@ configure do
   set :publishing_config_url, '/publishingConfig'
   set :proxy_load_url, 's3proxy/'
   set :async_scripts, '//www.google-analytics.com/ga.js'
-  offline =  ENV['OFFLINE'] || "online"
-  set :online, offline == "offline" ? false : true
+  set :online, "offline" != ENV['OFFLINE']
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
@@ -45,6 +45,9 @@ configure do
   set :static, true
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
+  set :protection, :except => :frame_options
+  set :last_news_id, ""
+  set :last_news_title, ""
   cache_last_news
 end
 get '/' do
@@ -100,10 +103,14 @@ post "/echo" do
     contents
   end
 end
-
-get "/map/:mapid" do
-  redirect "/#m:#{params[:mapid]}"
+get "/embedded/:mapid" do
+  @mapid = params[:mapid]
+  erb :embedded
 end
+get %r{/map/(.*)} do |mapid|
+  redirect "/#m:#{mapid}"
+end
+
 get "/m" do
   show_map
 end
@@ -116,14 +123,11 @@ get "/publishingConfig" do
   erb :s3UploadConfig
 end
 
-get '/browserok/:mapid' do
+get %r{/browserok/?(.*)} do |mapid|
   session['browserok']=true
-  redirect "/#m:#{params[:mapid]}"
+  redirect "/#m:#{mapid}"
 end
-get '/browserok/' do
-  session['browserok']=true
-  redirect "/"
-end
+
 post '/import' do
   file = params['file']
   json_fail('No file uploaded') unless file
@@ -137,8 +141,13 @@ post '/import' do
   content_type 'text/plain'
   result
 end
+
 get "/un" do
   erb :unsupported
+end
+
+get '/'+settings.cache_prevention_key+'/:fname' do
+  send_file File.join(settings.public_folder, params[:fname])
 end
 
 get '/'+settings.cache_prevention_key+'/e/:fname' do
@@ -149,13 +158,16 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
-
+include MindMup::GithubRoutes
 include Sinatra::UserAgentHelpers
 helpers do
   def show_map
     if (browser_supported? || user_accepted_browser?)
       erb :editor
     else
+      response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+      response.headers['Pragma'] = 'no-cache'
+      response.headers['Expires'] = '0'
       erb :unsupported
     end
   end
@@ -177,7 +189,7 @@ helpers do
   end
   def external_script_path script_name
     if (!settings.online) then
-      script_name.sub!("//", "/offline/")
+      return script_name.sub "//", "/offline/"
     end
     script_name
   end

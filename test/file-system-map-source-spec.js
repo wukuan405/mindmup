@@ -1,10 +1,10 @@
 /*global MM, MAPJS, describe, it, beforeEach, afterEach, jQuery, expect, jasmine, observable, _, spyOn, sinon */
 describe("MM.FileSystemMapSource", function () {
 	'use strict';
-	var fakeFS = function (content, contentType) {
+	var fakeFS = function (content, contentType, fileName) {
 		return {
 			loadMap: function (mapId) {
-				return jQuery.Deferred().resolve(content, mapId, contentType).promise();
+				return jQuery.Deferred().resolve(content, mapId, contentType, {}, fileName).promise();
 			},
 			saveMap: function (content, mapId, fileName) {
 				return jQuery.Deferred().resolve(mapId);
@@ -51,7 +51,13 @@ describe("MM.FileSystemMapSource", function () {
 			});
 			expect(wasCalled).toBeTruthy();
 		});
-
+		it("rejects incorrect JSON format without falling over", function () {
+			var incorrectmap = '<xml>{id: 1, title: "X"}</xml>',
+				underTest = new MM.FileSystemMapSource(fakeFS(incorrectmap, 'application/json')),
+				spy = jasmine.createSpy();
+			underTest.loadMap('abc').fail(spy);
+			expect(spy).toHaveBeenCalledWith('format-error', 'File content not in correct format for this file type');
+		});
 		it("converts freemind format as readonly", function () {
 			var map = {id: 1, title: "X"},
 				xml = '<map version="0.7.1"><node ID="1" TEXT="X"></node></map>',
@@ -82,18 +88,34 @@ describe("MM.FileSystemMapSource", function () {
 		});
 		it("fails if content type is not supported", function () {
 			var underTest = new MM.FileSystemMapSource(fakeFS(undefined, 'application/x-unsupported')),
-				wasCalled = false,
 				errorCallback = jasmine.createSpy('error');
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('format-error', 'Unsupported format application/x-unsupported');
 		});
 		it("fails with map-load-redirect if content type is collaborative map", function () {
 			var underTest = new MM.FileSystemMapSource(fakeFS(undefined, 'application/vnd.mindmup.collab')),
-				wasCalled = false,
 				errorCallback = jasmine.createSpy('error');
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('map-load-redirect', 'cabc');
 		});
+		describe('tries to guess mime type if not defined',
+			[
+				['guesses .mm files starting with <map as freemind',	'freemind.mm',	'<map version="0.7.1"><node ID="1" TEXT="X"></node></map>'],
+				['guesses .mup as mindmup format',						'map.mup'		],
+				['ignores case when guessing, so .Mup is OK',			'map.Mup'		],
+				['uses only the last .XX when guessing',				'map.mm.mup'	],
+				['defaults to application/json when unknown extension',	'map.mindmap'	]
+			],
+			function (fileName, fileContent) {
+				var map = {id: 1, title: "X"},
+					underTest = new MM.FileSystemMapSource(fakeFS(fileContent  || JSON.stringify(map), undefined, fileName)),
+					wasCalled = false;
+				underTest.loadMap('abc').done(function (content, mapId, properties) {
+					wasCalled = true;
+					expect(content).toPartiallyMatch(map);
+				});
+				expect(wasCalled).toBeTruthy();
+			});
 	});
 	describe("saveMap", function () {
 		it("converts map to JSON string and extracts title before propagating", function () {
@@ -103,7 +125,7 @@ describe("MM.FileSystemMapSource", function () {
 				id = 'mapIdxxx';
 			spyOn(fs, 'saveMap').andCallThrough();
 			underTest.saveMap(map, id, true);
-			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map), id, 'abc.mup', true);
+			expect(fs.saveMap).toHaveBeenCalledWith(JSON.stringify(map, '', 2), id, 'abc.mup', true);
 		});
 		it("propagates success", function () {
 			var fs = fakeFS(),

@@ -158,9 +158,8 @@ MM.Extensions.googleCollaboration = function () {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
 		mapModel = MM.Extensions.components.mapModel,
-		stage = MM.Extensions.components.container.data('mm-stage'),
 		alert = MM.Extensions.components.alert,
-		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter, mapModel, stage, alert),
+		realtimeMapSource = new MM.RealtimeGoogleMapSource(googleDriveAdapter),
 		mapController = MM.Extensions.components.mapController,
 		startSession = function (name) {
 			realtimeMapSource.setNextSessionName(name);
@@ -248,7 +247,11 @@ MM.Extensions.googleCollaboration = function () {
 					return;
 				}
 				makeImage(sessionId).done(function (kineticImg) {
-					var node = stage.get('#node_' + focusNodes.get(sessionId)), xpos, ypos, opacity;
+					var stage = MM.Extensions.components.container.data('mm-stage'),
+						node = stage.get('#node_' + focusNodes.get(sessionId)),
+						xpos,
+						ypos,
+						opacity;
 					if (!node || node.length === 0) {
 						return;
 					}
@@ -271,6 +274,9 @@ MM.Extensions.googleCollaboration = function () {
 			};
 			self.stop = function () {
 				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
+				_.each(sessionImages, function (img) {
+					img.remove();
+				});
 				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
@@ -290,7 +296,6 @@ MM.Extensions.googleCollaboration = function () {
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
-				statusIcon = menu.find('[data-mm-role=status-icon]'),
 				modal = parsed.find('[data-mm-role=modal-start]').clone().appendTo($('body')),
 				collabModal = parsed.find('[data-mm-role=modal-collaborators]').clone().appendTo($('body')),
 				sessionNameField = modal.find('input[name=session-name]'),
@@ -327,6 +332,7 @@ MM.Extensions.googleCollaboration = function () {
 					googleDriveAdapter.showSharingSettings(mapId.substr(1));
 				}
 			});
+			$('[data-mm-role=sharelinks]').append(menu.find('[data-mm-role=invite]').parent('li').clone(true).addClass('visible-map-source-c'));
 			menu.find('[data-mm-role=join]').click(function () {
 				googleDriveAdapter.showPicker('application/vnd.mindmup.collab', 'Choose a realtime session').done(function (id) {
 					mapController.loadMap('c' + id);
@@ -366,12 +372,10 @@ MM.Extensions.googleCollaboration = function () {
 			realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
 				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
 					if (docState.isPending || docState.isSaving) {
-						statusIcon.removeClass(statusIcon.data('mm-saved-class')).addClass(statusIcon.data('mm-pending-class'));
 						if (!$('i[class="icon-spinner icon-spin"]', saveButton).length) {
 							saveButton.prepend('<i class="icon-spinner icon-spin"></i>');
 						}
 					} else {
-						statusIcon.removeClass(statusIcon.data('mm-pending-class')).addClass(statusIcon.data('mm-saved-class'));
 						$('i[class="icon-spinner icon-spin"]', saveButton).remove();
 					}
 				});

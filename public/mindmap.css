@@ -107,12 +107,10 @@ div.topbar-color-picker {
 	left: 5px;
 }
 .map-changed .hidden-map-changed {
-  display: none;
-  visibility:hidden;
+  display: none !important;
 }
 .map-unchanged .visible-map-changed {
-  display: none;
-  visibility:hidden;
+  display: none !important;
 }
 .map-not-sharable .hidden-map-not-sharable {
   display: none;
@@ -220,8 +218,14 @@ span.repo-g, span.repo-a, span.repo-o {
 .dropdown-menu li a {
 	cursor: pointer
 }
+.visible-collapsed-toolbar {
+	display: none;
+}
 .collapsed-toolbar .visible-collapsed-toolbar {
 	display: block !important;
+}
+.collapsed-toolbar span.visible-collapsed-toolbar {
+	display: inline !important;
 }
 .collapsed-toolbar .hidden-collapsed-toolbar {
 	display: none !important;
@@ -241,20 +245,17 @@ span.repo-g, span.repo-a, span.repo-o {
 .hidden-topbar #topbar:hover .navbar-inner {
 	visibility:visible;
 }
-#toggleTopbar {
-	position:absolute; top:0; left:0; height:40px;
+.topbar-autohide {
+	display: inline;
 }
-.ios #toggleTopbar, .android #toggleTopbar {
+.hidden-topbar .topbar-autohide { 
 	display: none;
 }
-#toggleTopbar .icon-hand-down {
+span.topbar-fixed {
 	display: none;
 }
-.hidden-topbar #toggleTopbar .icon-hand-down {
-	display: block;
-}
-.hidden-topbar #toggleTopbar .icon-hand-up {
-	display: none;
+.hidden-topbar span.topbar-fixed {
+	display: inline;
 }
 body.ipad {
   margin: 1px; /* ios performance fix for scrolling on ipad */
@@ -380,7 +381,7 @@ input.noglow {
 }
 
 
-.visible-map-source-a, .visible-map-source-o, .visible-map-source-g {
+.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n {
 	display: none;
 }
 
@@ -391,6 +392,9 @@ input.noglow {
 	display: inherit;
 }
 .map-source-o .visible-map-source-o {
+	display: inherit;
+}
+.map-source-n .visible-map-source-n {
 	display: inherit;
 }
 
@@ -465,4 +469,17 @@ input.noglow {
 }
 #modalKeyActions div.item>a {
   text-decoration: underline;
+}
+#modalEmbedMap .modal-body textarea {
+	width: 97%;
+	height: 120px;
+	cursor: pointer;
+
+}
+.social {
+  display: inline-block !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  margin-right: 2px !important;
+  cursor: pointer;
 }

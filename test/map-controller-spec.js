@@ -247,6 +247,18 @@ describe('Map Controller', function () {
 
 		});
 		it('should dispatch mapLoadingFailed event if saveMap fails', function () {
+			var failed = jasmine.createSpy('failed'),
+				cancelled = jasmine.createSpy('cancelled');
+			underTest.addEventListener('mapSavingFailed', failed);
+			underTest.addEventListener('mapSavingCancelled', cancelled);
+			adapter1.saveMap = function () {
+				return jQuery.Deferred().reject('user-cancel').promise();
+			};
+			underTest.publishMap();
+			expect(cancelled).toHaveBeenCalled();
+			expect(failed).not.toHaveBeenCalled();
+		});
+		it('should dispatch mapLoadingFailed event if saveMap fails', function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSavingFailed', listener);
 			adapter1.saveMap = function () {

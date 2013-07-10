@@ -29,7 +29,18 @@ describe("MM.Extensions", function () {
 			var ext = new MM.Extensions({'extkey': 'abc xyz'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js']);
 		});
-
+		it("includes inactive scripts that provide support for the given map ID", function () {
+			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js', providesMapId: function (mapId) {return mapId === 'xxxx'; }}};
+			var ext = new MM.Extensions({'extkey': 'abc'}, 'extkey', {cachePreventionKey: 'cacheKey'});
+			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js']);
+			expect(ext.scriptsToLoad('xxxx')).toEqual(['/cacheKey/abc.js', '/cacheKey/def.js']);
+			expect(ext.scriptsToLoad('yyyy')).toEqual(['/cacheKey/abc.js']);
+		});
+		it("does not load twice active extensions that provide a map id", function () {
+			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js', providesMapId: function (mapId) {return mapId === 'xxxx'; }}};
+			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
+			expect(ext.scriptsToLoad('xxxx')).toEqual(['/cacheKey/abc.js', '/cacheKey/def.js']);
+		});
 	});
 	describe("setActive", function () {
 		var storage, key = 'storekey';

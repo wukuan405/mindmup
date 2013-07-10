@@ -1,4 +1,5 @@
 <script>
+ <%= erb :require_js %>
   function loadScripts(success, failure) {
     requirejs.config({
       shim: {
@@ -11,67 +12,77 @@
       },
       baseUrl: "/",
       paths: {
-        "jquery": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-1.9.1.min" %>',
+        "jquery": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-2.0.2.min" %>',
         "underscore": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/underscore-1.4.4.min" %>',
         "bootstrap": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min" %>',
         "jquery-ui": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-ui-1.10.0.custom.min" %>',
         "jquery.mousewheel": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.mousewheel-3.1.3" %>',
         "color": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/color-0.4.1.min" %>',
         "jquery.colorPicker": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.colorPicker.min" %>',
-        "kinetic": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.4.3.min" %>',
+        "kinetic": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.5.4.min" %>',
         "jquery.hammer": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hammer.min" %>',
         "jquery.hotkeys": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hotkeys" %>'
-      }
+      },
+      waitSeconds: 60 <% if development? then %> ,
+      urlArgs: "version=" + (new Date()).getTime()
+    <% end %>
     });
     requirejs(
-      ["jquery", "underscore", "bootstrap", "jquery-ui", "jquery.mousewheel", "color", "jquery.colorPicker", "kinetic", "jquery.hammer", "jquery.hotkeys", "mm"],
+      ["jquery", "underscore"],
       function () {
         requirejs(
-          <%= join_scripts [
-            "mapjs-compiled",
-            "class-caching-widget",
-            "navigation",
-            "maps",
-            "activity-log",
-            "alert",
-            "map-controller",
-            "s3-adapter",
-            "google-drive-adapter",
-            "offline-adapter",
-            "feedback",
-            "vote",
-            "welcome-message",
-            "floating-toolbar",
-            "bookmark",
-            "title-update-widget",
-            "share-widget",
-            "share-email-widget",
-            "background-upload-widget",
-            "file-reader-upload-widget",
-            "import-widget",
-            "toggle-class-widget",
-            "url-shortener-widget",
-            "save-widget",
-            "remote-export-widget",
-            "google-drive-open-widget",
-            "local-storage-open-widget",
-            "command-line-widget",
-            "freemind-import",
-            "tabular-export",
-            "bootstrap-wysiwyg",
-            "attachment-editor-widget",
-            "auto-save",
-            "auto-save-widget",
-            "file-system-map-source",
-            "retriable-map-source-decorator",
-            "score",
-            "extensions",
-            "map-status-widget",
-            "key-actions-widget",
-            "context-menu-widget",
-            "main"
-          ] %>,
-          success,
+          ["bootstrap", "jquery-ui", "jquery.mousewheel", "color", "jquery.colorPicker", "kinetic", "jquery.hammer", "jquery.hotkeys", "mm"],
+          function () {
+            requirejs(
+              <%= join_scripts [
+                "mapjs-compiled",
+                "class-caching-widget",
+                "navigation",
+                "maps",
+                "activity-log",
+                "alert",
+                "map-controller",
+                "s3-adapter",
+                "google-drive-adapter",
+                "offline-adapter",
+                "feedback",
+                "vote",
+                "welcome-message",
+                "floating-toolbar",
+                "bookmark",
+                "title-update-widget",
+                "share-widget",
+                "share-email-widget",
+                "background-upload-widget",
+                "file-reader-upload-widget",
+                "import-widget",
+                "toggle-class-widget",
+                "url-shortener-widget",
+                "save-widget",
+                "remote-export-widget",
+                "google-drive-open-widget",
+                "local-storage-open-widget",
+                "command-line-widget",
+                "freemind-import",
+                "tabular-export",
+                "bootstrap-wysiwyg",
+                "attachment-editor-widget",
+                "auto-save",
+                "auto-save-widget",
+                "file-system-map-source",
+                "retriable-map-source-decorator",
+                "score",
+                "extensions",
+                "map-status-widget",
+                "key-actions-widget",
+                "context-menu-widget",
+                "embed-map-widget",
+                "main"
+              ] %>,
+              success,
+              failure
+            );
+          },
           failure
         );
       },

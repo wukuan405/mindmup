@@ -26,13 +26,17 @@ MM.navigation = function (storage, mapController) {
 			setMapIdInHash(newMapId);
 			return true;
 		};
-	self.loadInitial = function () {
+	self.initialMapId = function () {
 		var initialMapId = getMapIdFromHash();
 		if (!initialMapId || initialMapId === unknownMapId) {
 			initialMapId = (storage && storage.getItem && storage.getItem('mostRecentMapLoaded'));
 		}
-		mapController.loadMap(initialMapId || 'new');
 		return initialMapId;
+	};
+	self.loadInitial = function () {
+		var mapId = self.initialMapId();
+		mapController.loadMap(mapId || 'new');
+		return mapId;
 	};
 	mapController.addEventListener('mapSaved mapLoaded', function (newMapId) {
 		changeMapId(newMapId);
@@ -45,10 +49,9 @@ MM.navigation = function (storage, mapController) {
 		if (!newMapId) {
 			changeMapId(mapController.currentMapId());
 			return false;
-		} else {
-			mapController.loadMap(newMapId);
-			return true;
 		}
+		mapController.loadMap(newMapId);
+		return true;
 	};
 	window.addEventListener('hashchange', self.hashChange);
 	return self;
