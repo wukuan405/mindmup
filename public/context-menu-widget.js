@@ -37,7 +37,7 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 		if (element.offset().left + (2 * element.outerWidth()) > jQuery(window).width() - 20) {
 			element.css('left', jQuery(window).width() - 20 - (2 * element.outerWidth()));
 		}
-		jQuery(document).on('click touch keydown', hide);
+		jQuery(document).on('mousedown touch keydown', hide);
 	});
 	return element;
 };
