@@ -6,8 +6,8 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 		hide = function () {
 			if (element.is(':visible')) {
 				element.hide();
-				jQuery(document).off('click touch keydown', hide);
 			}
+			jQuery(document).off('click touch keydown', hide);
 		},
 		topMenus = { },
 		getTopMenu = function (label) {
@@ -35,9 +35,19 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 			element.css('top', jQuery(window).height() - 20 - element.outerHeight());
 		}
 		if (element.offset().left + (2 * element.outerWidth()) > jQuery(window).width() - 20) {
-			element.css('left', jQuery(window).width() - 20 - (2 * element.outerWidth()));
+			element.css('left', jQuery(window).width() - 20 - (element.outerWidth()));
+			element.find('.dropdown-submenu').addClass('pull-left');
+		} else {
+			element.find('.dropdown-submenu').removeClass('pull-left');
 		}
-		jQuery(document).on('click touch keydown', hide);
+		jQuery(document).off('click', hide);
+		element.on('mouseenter', function () {
+			jQuery(document).off('click', hide);
+		});
+		element.on('mouseout', function () {
+			jQuery(document).on('click', hide);
+		});
+		jQuery(document).on('touch keydown', hide);
 	});
 	return element;
 };
