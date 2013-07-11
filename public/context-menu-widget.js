@@ -35,10 +35,12 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 			element.css('top', jQuery(window).height() - 20 - element.outerHeight());
 		}
 		if (element.offset().left + (2 * element.outerWidth()) > jQuery(window).width() - 20) {
-			element.css('left', jQuery(window).width() - 20 - (element.outerWidth()));
 			element.find('.dropdown-submenu').addClass('pull-left');
 		} else {
 			element.find('.dropdown-submenu').removeClass('pull-left');
+		}
+		if (element.offset().left + (element.outerWidth()) > jQuery(window).width() - 20) {
+			element.css('left', jQuery(window).width() - 20 - (element.outerWidth()));
 		}
 		jQuery(document).off('click', hide);
 		element.on('mouseenter', function () {
