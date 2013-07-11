@@ -1930,28 +1930,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				return screenToStageCoordinates(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 			}
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
-		},
-		shapeIdsWhereDragDisabled = [];
-
-	mapModel.addEventListener('inputEnabledChanged', function (enabled) {
-		if (enabled) {
-			_.each(shapeIdsWhereDragDisabled, function (shapeId) {
-				var node = stage.get('#' + shapeId)[0];
-				if (node && node.setDraggable) {
-					node.setDraggable(true);
-				}
-			});
-			shapeIdsWhereDragDisabled = [];
-		}
-		else {
-			_.each(stage.getLayers()[0].getChildren(), function (node) {
-				if (node && node.getDraggable && node.setDraggable && node.getId && node.getDraggable()) {
-					shapeIdsWhereDragDisabled = shapeIdsWhereDragDisabled.concat(node.getId());
-					node.setDraggable(false);
-				}
-			});
-		}
-	});
+		};
 
 	mapModel.addEventListener('nodeCreated', function (n) {
 		var node = findNodeOnStage(n.id);
@@ -3325,7 +3304,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 		stage.setY(0.5 * stage.getHeight());
 		jQuery(window).bind('orientationchange resize', setStageDimensions);
 		$(document).on('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); return false; });
-		element.click(function (e) {
+		element.on('mousedown touch', function (e) {
 			window.focus();
 			if (document.activeElement !== e.target) {
 				document.activeElement.blur();
