@@ -1285,7 +1285,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		return isInputEnabled;
 	};
 	this.selectNode = function (id) {
-		if (isInputEnabled && id !== currentlySelectedIdeaId) {
+		if (isInputEnabled && (id !== currentlySelectedIdeaId || !self.isActivated(id))) {
 			if (currentlySelectedIdeaId) {
 				self.dispatchEvent('nodeSelectionChanged', currentlySelectedIdeaId, false);
 			}
@@ -2511,6 +2511,11 @@ Kinetic.Idea.prototype.setupShadows = function () {
 			opacity: 1
 		},
 		shadow = isSelected ? selectedShadow : normalShadow;
+
+	if (this.oldShadow && this.oldShadow.selected === isSelected && this.oldShadow.scale === scale && this.oldShadow.offset === offset) {
+		return;
+	}
+	this.oldShadow = {selected: isSelected, scale: scale, offset: offset};
 	_.each([this.rect, this.rectbg1, this.rectbg2], function (r) {
 		r.setShadowColor(shadow.color);
 		r.setShadowBlur(shadow.blur);
@@ -2633,7 +2638,7 @@ Kinetic.Idea.prototype.setIsActivated = function (isActivated) {
 	'use strict';
 	this.isActivated = isActivated;
 	this.setStyle();
-	this.getLayer().draw();
+//	this.getLayer().draw();
 };
 
 Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
@@ -3083,6 +3088,7 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		};
 		_.each(activatedNodes, setActivated.bind(undefined, true));
 		_.each(deactivatedNodes, setActivated.bind(undefined, false));
+		stage.draw();
 	});
 	(function () {
 		var x, y;
