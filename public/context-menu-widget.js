@@ -28,7 +28,7 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 			element.append(menuItem);
 		}
 	});
-	mapModel.addEventListener('mapMoveRequested mapScaleChanged nodeSelectionChanged', hide);
+	mapModel.addEventListener('mapMoveRequested mapScaleChanged nodeSelectionChanged nodeEditRequested', hide);
 	mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
 		element.css('left', x).css('top', y - 10).css('display', 'block').show();
 		if (element.offset().top + element.outerHeight() > jQuery(window).height() - 20) {
