@@ -258,14 +258,14 @@ MM.Extensions.googleCollaboration = function () {
 					xpos = node[0].getWidth() - kineticImg.getWidth() / 2;
 					ypos = node[0].getHeight() - kineticImg.getHeight() / 2;
 					opacity = (followingSessionId === sessionId) ? 1 : 0.6;
-					if (kineticImg.getParent() === node[0] && xpos === kineticImg.attrs.x && ypos === kineticImg.attrs.y && opacity === kineticImg.attrs.opacity) {
+					if (kineticImg.getParent() === node[0] && xpos === kineticImg.getX() && ypos === kineticImg.getY() && opacity === kineticImg.getOpacity()) {
 						return;
 					}
 					kineticImg.remove();
 					node[0].add(kineticImg);
-					kineticImg.attrs.x = xpos;
-					kineticImg.attrs.y = ypos;
-					kineticImg.attrs.opacity = opacity;
+					kineticImg.setX(xpos);
+					kineticImg.setY(ypos);
+					kineticImg.setOpacity(opacity);
 					node[0].getLayer().draw();
 					if (sessionId === followingSessionId) {
 						mapModel.selectNode(focusNodes.get(sessionId));

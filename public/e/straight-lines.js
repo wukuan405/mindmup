@@ -8,7 +8,7 @@ Kinetic.Connector.prototype.drawFunc = function (canvas) {
 		return;
 	}
 	context.beginPath();
-	context.moveTo(shapeFrom.attrs.x + shapeFrom.getWidth() / 2, shapeFrom.attrs.y + shapeFrom.getHeight() / 2);
-	context.lineTo(shapeTo.attrs.x + shapeTo.getWidth() / 2, shapeTo.attrs.y + shapeTo.getHeight() / 2);
+	context.moveTo(shapeFrom.getX() + shapeFrom.getWidth() / 2, shapeFrom.getY() + shapeFrom.getHeight() / 2);
+	context.lineTo(shapeTo.getX() + shapeTo.getWidth() / 2, shapeTo.getY() + shapeTo.getHeight() / 2);
 	canvas.stroke(this);
 };
