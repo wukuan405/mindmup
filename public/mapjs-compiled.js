@@ -1921,8 +1921,8 @@ MAPJS.dragdrop = function (mapModel, stage) {
 		},
 		screenToStageCoordinates = function (x, y) {
 			return {
-				x: (x - stage.attrs.x) / (stage.getScale().x || 1),
-				y: (y - stage.attrs.y) / (stage.getScale().y || 1)
+				x: (x - stage.getX()) / (stage.getScale().x || 1),
+				y: (y - stage.getY()) / (stage.getScale().y || 1)
 			};
 		},
 		getInteractionPoint = function (evt) {
@@ -1988,8 +1988,8 @@ MAPJS.dragdrop = function (mapModel, stage) {
 		};
 	};
 	calculateConnector = function (parent, child) {
-		return calculateConnectorInner(parent.attrs.x, parent.attrs.y, parent.getWidth(), parent.getHeight(),
-			child.attrs.x, child.attrs.y, child.getWidth(), child.getHeight());
+		return calculateConnectorInner(parent.getX(), parent.getY(), parent.getWidth(), parent.getHeight(),
+			child.getX(), child.getY(), child.getWidth(), child.getHeight());
 	};
 	calculateConnectorInner = _.memoize(function (parentX, parentY, parentWidth, parentHeight,
 			childX, childY, childWidth, childHeight) {
@@ -2119,8 +2119,8 @@ MAPJS.dragdrop = function (mapModel, stage) {
 		}
 	),
 		calculateConnector = function (parent, child) {
-			return calculateConnectorInner(parent.attrs.x, parent.attrs.y, parent.getWidth(), parent.getHeight(),
-				child.attrs.x, child.attrs.y, child.getWidth(), child.getHeight());
+			return calculateConnectorInner(parent.getX(), parent.getY(), parent.getWidth(), parent.getHeight(),
+				child.getX(), child.getY(), child.getWidth(), child.getHeight());
 		};
 	Kinetic.Link.prototype = {
 		drawHitFunc: function (canvas) {
@@ -2253,8 +2253,8 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 			},
 			rect = new Kinetic.Rect(rectProps),
 			rect2 = new Kinetic.Rect(rectProps);
-		rect2.attrs.x = 7;
-		rect2.attrs.y = -7;
+		rect2.setX(7);
+		rect2.setY(-7);
 		link.add(rect);
 		link.add(rect2);
 		link.setActive = function (isActive) {
@@ -2356,7 +2356,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		};
 		this.isVisible = function (offset) {
 			var stage = self.getStage();
-			return stage && stage.isRectVisible(new MAPJS.Rectangle(self.attrs.x, self.attrs.y, self.getWidth(), self.getHeight()), offset);
+			return stage && stage.isRectVisible(new MAPJS.Rectangle(self.getX(), self.getY(), self.getWidth(), self.getHeight()), offset);
 		};
 		this.editNode = function (shouldSelectAll, deleteOnCancel) {
 			self.fire(':editing');
@@ -2535,9 +2535,9 @@ Kinetic.Idea.prototype.setStyle = function () {
 	this.clip.setVisible(isClipVisible);
 	this.attrs.width = this.text.getWidth() + 2 * padding;
 	this.attrs.height = this.text.getHeight() + 2 * padding + clipMargin;
-	this.text.attrs.x = padding;
+	this.text.setX(padding);
 	this.text.setY(padding + clipMargin);
-	this.link.attrs.x = this.text.getWidth() + 10;
+	this.link.setX(this.text.getWidth() + 10);
 	this.link.setY(this.text.getHeight() + 5 + clipMargin);
 	_.each([this.rect, this.rectbg2, this.rectbg1], function (r) {
 		r.attrs.width = self.text.getWidth() + 2 * padding;
@@ -2674,10 +2674,10 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 		},
 		nodeImageDrawFunc;
 	idea.disableAnimations = true;
-	container.attrs.x = idea.attrs.x;
-	container.attrs.y = idea.attrs.y;
-	idea.attrs.x = 0;
-	idea.attrs.y = 0;
+	container.setX(idea.getX());
+	container.setY(idea.getY());
+	idea.setX(0);
+	idea.setY(0);
 	_.each(idea.activeWidgets, function (widget) { widget.remove(); });
 	nodeimage = new Kinetic.Image({
 		x: -1,
@@ -2696,10 +2696,10 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 		return idea.attrs;
 	};
 	container.isVisible = function (offset) {
-		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.attrs.x, container.attrs.y, container.getWidth(), container.getHeight()), offset);
+		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.getX(), container.getY(), container.getWidth(), container.getHeight()), offset);
 	};
 	idea.isVisible = function (offset) {
-		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.attrs.x, container.attrs.y, container.getWidth(), container.getHeight()), offset);
+		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.getX(), container.getY(), container.getWidth(), container.getHeight()), offset);
 	};
 	idea.getLayer = function () {
 		return layer;
@@ -2783,10 +2783,10 @@ Kinetic.Stage.prototype.isRectVisible = function (rect, offset) {
 	var scale = this.getScale().x || 1;
 	rect = rect.xscale(scale).xtranslate(offset.x, offset.y).xinset(offset.margin);
 	return !(
-		rect.x + this.attrs.x > this.getWidth() ||
-		rect.x + rect.width + this.attrs.x < 0  ||
-		rect.y + this.attrs.y > this.getHeight() ||
-		rect.y + rect.height + this.attrs.y < 0
+		rect.x + this.getX() > this.getWidth() ||
+		rect.x + rect.width + this.getX() < 0  ||
+		rect.y + this.getY() > this.getHeight() ||
+		rect.y + rect.height + this.getY() < 0
 	);
 };
 
@@ -2852,8 +2852,8 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			}
 			new Kinetic.Tween({
 				node: stage,
-				x: stage.attrs.x + move.x,
-				y: stage.attrs.y + move.y,
+				x: stage.getX() + move.x,
+				y: stage.getY() + move.y,
 				duration: 0.4,
 				easing: Kinetic.Easings.EaseInOut
 			}).play();
@@ -3040,8 +3040,8 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		zoomPoint = zoomPoint || {x:  0.5 * stage.getWidth(), y: 0.5 * stage.getHeight()};
 		new Kinetic.Tween({
 			node: stage,
-			x: zoomPoint.x + (stage.attrs.x - zoomPoint.x) * targetScale / currentScale,
-			y: zoomPoint.y + (stage.attrs.y - zoomPoint.y) * targetScale / currentScale,
+			x: zoomPoint.x + (stage.getX() - zoomPoint.x) * targetScale / currentScale,
+			y: zoomPoint.y + (stage.getY() - zoomPoint.y) * targetScale / currentScale,
 			scaleX: targetScale,
 			scaleY: targetScale,
 			easing: Kinetic.Easings.EaseInOut,
@@ -3072,15 +3072,15 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	(function () {
 		var x, y;
 		stage.on('dragmove', function () {
-			var deltaX = x - stage.attrs.x,
-				deltaY = y - stage.attrs.y,
+			var deltaX = x - stage.getX(),
+				deltaY = y - stage.getY(),
 				visibleAfterMove = atLeastOneVisible(nodeByIdeaId, 0, 0) || atLeastOneVisible(connectorByFromIdeaIdToIdeaId, 0, 0),
 				shouldMoveBack = !visibleAfterMove && !(atLeastOneVisible(nodeByIdeaId, deltaX, deltaY) || atLeastOneVisible(connectorByFromIdeaIdToIdeaId, deltaX, deltaY));
 			if (shouldMoveBack) {
 				moveStage(deltaX, deltaY);
 			} else {
-				x = stage.attrs.x;
-				y = stage.attrs.y;
+				x = stage.getX();
+				y = stage.getY();
 			}
 		});
 	}());
