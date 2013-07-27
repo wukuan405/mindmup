@@ -1819,7 +1819,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		};
 	}());
 };
-/*global MAPJS, _*/
+/*global MAPJS*/
 MAPJS.dragdrop = function (mapModel, stage) {
 	'use strict';
 	var currentDroppable,
@@ -1937,7 +1937,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 		node.on('dragstart', function () {
 			node.moveToTop();
 			node.setShadowOffset(8);
-			node.attrs.opacity = 0.3;
+			node.setOpacity(0.3);
 		});
 		node.on('dragmove', function (evt) {
 			var stagePoint = getInteractionPoint(evt);
@@ -1950,7 +1950,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 		node.on('dragend', function (evt) {
 			var stagePoint = getInteractionPoint(evt);
 			node.setShadowOffset(4);
-			node.attrs.opacity = 1;
+			node.setOpacity(1);
 			nodeDragEnd(
 				n.id,
 				stagePoint.x,
@@ -2128,15 +2128,15 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
-				strokeWidth = this.attrs.strokeWidth;
-			this.attrs.strokeWidth = this.attrs.strokeWidth * 9;
+				strokeWidth = this.getStrokeWidth();
+			this.setStrokeWidth(strokeWidth * 9);
 			conn = calculateConnector(shapeFrom, shapeTo);
-			context.fillStyle = this.attrs.stroke;
+			context.fillStyle = this.getStroke();
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
 			canvas.stroke(this);
-			this.attrs.strokeWidth = strokeWidth;
+			this.setStrokeWidth(strokeWidth);
 		},
 		drawFunc: function (canvas) {
 			var context = canvas.getContext(),
@@ -2145,7 +2145,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				conn,
 				n = Math.tan(Math.PI / 9);
 			conn = calculateConnector(shapeFrom, shapeTo);
-			context.fillStyle = this.attrs.stroke;
+			context.fillStyle = this.getStroke();
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
@@ -2182,14 +2182,14 @@ MAPJS.dragdrop = function (mapModel, stage) {
 }());
 Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 	'use strict';
-	var style = newMMAttr && newMMAttr.style;
-	this.attrs.stroke = style && style.color || 'red';
-	this.attrs.dashArray = {
-		solid: [],
-		dashed: [8, 8]
-	}[style && style.lineStyle || 'dashed'];
+	var style = newMMAttr && newMMAttr.style,
+		dashTypes = {
+			solid: [],
+			dashed: [8, 8]
+		};
+	this.setStroke(style && style.color || 'red');
+	this.setDashArray(dashTypes[style && style.lineStyle || 'dashed']);
 	this.attrs.arrow = style && style.arrow || false;
-//	this.getLayer().draw();
 };
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
@@ -2258,7 +2258,8 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		link.add(rect);
 		link.add(rect2);
 		link.setActive = function (isActive) {
-			rect.attrs.stroke = rect2.attrs.stroke = (isActive ? 'black' : '#555555');
+			rect2.setStroke(isActive ? 'black' : '#555555');
+			rect.setStroke(rect2.getStroke());
 			link.getLayer().draw();
 		};
 		return link;
@@ -2273,11 +2274,11 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		clip = new Kinetic.Clip(_.extend({stroke: 'skyblue', x: 0, y: 0}, props));
 		group.add(clip);
 		group.on('mouseover', function () {
-			clip.attrs.stroke = 'black';
+			clip.setStroke('black');
 			group.getLayer().draw();
 		});
 		group.on('mouseout', function () {
-			clip.attrs.stroke = 'skyblue';
+			clip.setStroke('skyblue');
 			group.getLayer().draw();
 		});
 		return group;
@@ -2399,13 +2400,13 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 					width: (6 + self.getWidth()) * scale,
 					height: (6 + self.getHeight()) * scale,
 					'padding': 3 * scale + 'px',
-					'font-size': self.text.attrs.fontSize * scale + 'px',
+					'font-size': self.text.getFontSize() * scale + 'px',
 					'line-height': '150%',
 					'background-color': self.getBackground(),
 					'margin': -3 * scale,
-					'border-radius': self.rect.attrs.cornerRadius * scale + 'px',
+					'border-radius': self.rect.getCornerRadius() * scale + 'px',
 					'border': self.rectAttrs.strokeWidth * (2 * scale) + 'px dashed ' + self.rectAttrs.stroke,
-					'color': self.text.attrs.fill
+					'color': self.text.getFill()
 				})
 				.val(unformattedText)
 				.appendTo('body')
@@ -2467,7 +2468,7 @@ Kinetic.Idea.prototype.setShadowOffset = function (offset) {
 Kinetic.Idea.prototype.getMMScale = function () {
 	'use strict';
 	var stage = this.getStage(),
-		scale = (stage && stage.attrs && stage.attrs.scale && stage.attrs.scale.x) || (this.attrs && this.attrs.scale && this.attrs.scale.x) || 1;
+		scale = (stage && stage.getScaleX()) || this.getScaleX() || 1;
 	return {x: scale, y: scale};
 };
 
@@ -2533,38 +2534,38 @@ Kinetic.Idea.prototype.setStyle = function () {
 		rectOffset = clipMargin,
 		rectIncrement = 4;
 	this.clip.setVisible(isClipVisible);
-	this.attrs.width = this.text.getWidth() + 2 * padding;
-	this.attrs.height = this.text.getHeight() + 2 * padding + clipMargin;
+	this.setWidth(this.text.getWidth() + 2 * padding);
+	this.setHeight(this.text.getHeight() + 2 * padding + clipMargin);
 	this.text.setX(padding);
 	this.text.setY(padding + clipMargin);
 	this.link.setX(this.text.getWidth() + 10);
 	this.link.setY(this.text.getHeight() + 5 + clipMargin);
 	_.each([this.rect, this.rectbg2, this.rectbg1], function (r) {
-		r.attrs.width = self.text.getWidth() + 2 * padding;
-		r.attrs.height = self.text.getHeight() + 2 * padding;
+		r.setWidth(self.text.getWidth() + 2 * padding);
+		r.setHeight(self.text.getHeight() + 2 * padding);
 		r.setY(rectOffset);
 		rectOffset += rectIncrement;
 		if (isDroppable) {
-			r.attrs.stroke = '#9F4F4F';
-			r.attrs.fill = '#EF6F6F';
+			r.setStroke('#9F4F4F');
+			r.setFill('#EF6F6F');
 		} else if (isSelected) {
-			r.attrs.fill = background;
+			r.setFill(background);
 		} else {
-			r.attrs.stroke = self.rectAttrs.stroke;
-			r.attrs.fill = background;
+			r.setStroke(self.rectAttrs.stroke);
+			r.setFill(background);
 		}
 	});
 	if (isActivated) {
-		this.rect.attrs.stroke = '#2E9AFE';
+		this.rect.setStroke('#2E9AFE');
 		var dashes = [[5, 3, 0, 0], [4, 3, 1, 0], [3, 3, 2, 0], [2, 3, 3, 0], [1, 3, 4, 0], [0, 3, 5, 0], [0, 2, 5, 1], [0, 1, 5, 2]];
 		if (true || this.disableAnimations) {
-			self.rect.attrs.dashArray = dashes[0];
+			self.rect.setDashArray(dashes[0]);
 		} else {
 			if (!this.activeAnimation) {
 				this.activeAnimation = new Kinetic.Animation(
 			        function (frame) {
 						var da = dashes[Math.floor(frame.time / 30) % 8];
-						self.rect.attrs.dashArray = da;
+						self.rect.setDashArray(da);
 			        },
 			        self.getLayer()
 			    );
@@ -2575,15 +2576,15 @@ Kinetic.Idea.prototype.setStyle = function () {
 		if (this.activeAnimation) {
 			this.activeAnimation.stop();
 		}
-		this.rect.attrs.dashArray = [];
+		this.rect.setDashArray([]);
 	}
-	this.rect.attrs.dashArray = this.isActivated ? [5, 3] : [];
-	this.rect.attrs.strokeWidth = this.isActivated ? 3 : self.rectAttrs.strokeWidth;
+	this.rect.setDashArray(this.isActivated ? [5, 3] : []);
+	this.rect.setStrokeWidth(this.isActivated ? 3 : self.rectAttrs.strokeWidth);
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
 	this.clip.setX(this.text.getWidth() + padding);
 	this.setupShadows();
-	this.text.attrs.fill = MAPJS.contrastForeground(tintedBackground);
+	this.text.setFill(MAPJS.contrastForeground(tintedBackground));
 };
 
 Kinetic.Idea.prototype.setMMAttr = function (newMMAttr) {
@@ -2633,7 +2634,7 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 	var nodeimage,
 		emptyImage,
 		imageRendered,
-		container = new Kinetic.Group({opacity: 1, draggable: true, id: idea.attrs.id}),
+		container = new Kinetic.Group({opacity: 1, draggable: true, id: idea.getId()}),
 		removeImage = function () {
 			nodeimage.setImage(emptyImage);
 			imageRendered = false;
@@ -2662,8 +2663,8 @@ Kinetic.IdeaProxy = function (idea, stage, layer) {
 				height: height,
 				callback: function (img) {
 					nodeimage.setImage(img);
-					nodeimage.attrs.width = unscaledWidth;
-					nodeimage.attrs.height = unscaledHeight;
+					nodeimage.setWidth(unscaledWidth);
+					nodeimage.setHeight(unscaledHeight);
 					layer.draw();
 				}
 			});
