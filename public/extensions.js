@@ -120,6 +120,17 @@ MM.Extensions.config = {
 			'use strict';
 			return (/^h/).test(mapId);
 		}
+	},
+	'dropbox' : {
+		name: 'Dropbox',
+		script: '/e/dropbox.js',
+		icon: 'icon-dropbox',
+		doc: 'http://www.dropbox.com',
+		desc: 'Store your maps on Dropbox',
+		providesMapId: function (mapId) {
+			'use strict';
+			return (/^d1/).test(mapId);
+		}
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
