@@ -1,9 +1,10 @@
 /*global MM, window, jQuery, $, Dropbox */
-MM.Extensions.DropBox = function () {
+MM.Extensions.Dropbox = function () {
 	'use strict';
 	var mapController = MM.Extensions.components.mapController,
-		DropBoxFileSystem = function (appKey) {
+		DropboxFileSystem = function (appKey) {
 			var self = this,
+				properties = {},
 				client,
 				popupWindowLoginLauncher = function () {
 					var context = {},
@@ -64,22 +65,44 @@ MM.Extensions.DropBox = function () {
 						}
 					}
 					return result.promise();
+				},
+				toDropboxPath = function (mapId) {
+					if ((/^d1/).test(mapId)) {
+						return mapId.slice(2);
+					}
+					return false;
+				},
+				toMapId = function (dropboxFileStat) {
+					return 'd1' + dropboxFileStat.path;
 				};
 			self.loadMap = function () {
 				return jQuery.Deferred().reject('not implemented').promise();
 			};
 			self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
-				var result = jQuery.Deferred();
-				makeReady(showAuthenticationDialogs).then(result.resolve, result.reject, result.notify);
+				var result = jQuery.Deferred(),
+					sendCallback = function (dropboxApiError, dropboxFileStat) {
+						if (dropboxApiError) {
+							console.log(dropboxApiError);
+							result.reject(); /* error code handling */
+						} else if (dropboxFileStat) {
+							result.resolve(toMapId(dropboxFileStat), properties);
+						} else {
+							result.reject('network-error');
+						}
+					},
+					sendToDropbox = function () {
+						client.writeFile(toDropboxPath(mapId) || fileName, contentToSave, {}, sendCallback);
+					};
+				makeReady(showAuthenticationDialogs).then(sendToDropbox(), result.reject, result.notify);
 				return result.promise();
 			};
 			self.recognises = function (mapId) {
-				return mapId && (/^d/).test(mapId);
+				return mapId === self.prefix || toDropboxPath(mapId);
 			};
 			self.prefix = 'd';
-			self.description = 'DropBox';
+			self.description = 'Dropbox';
 		},
-		fileSystem = new DropBoxFileSystem(MM.Extensions.mmConfig.dropboxAppKey),
+		fileSystem = new DropboxFileSystem(MM.Extensions.mmConfig.dropboxAppKey),
 		loadUI = function (html) {
 			var dom = $(html);
 			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
@@ -94,5 +117,5 @@ MM.Extensions.DropBox = function () {
 	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.css" />').appendTo($('body'));
 };
 if (!window.jasmine) {
-	MM.Extensions.DropBox();
+	MM.Extensions.Dropbox();
 }
