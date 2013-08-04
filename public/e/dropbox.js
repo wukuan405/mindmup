@@ -68,22 +68,40 @@ MM.Extensions.Dropbox = function () {
 				},
 				toDropboxPath = function (mapId) {
 					if ((/^d1/).test(mapId)) {
-						return mapId.slice(2);
+						return decodeURIComponent(mapId.slice(2));
 					}
 					return false;
 				},
 				toMapId = function (dropboxFileStat) {
-					return 'd1' + dropboxFileStat.path;
+					return 'd1' + encodeURIComponent(dropboxFileStat.path);
+				},
+				toMindMupError = function (dropboxApiError) {
+					console.log(dropboxApiError);
+					return '';
 				};
-			self.loadMap = function () {
-				return jQuery.Deferred().reject('not implemented').promise();
+			self.loadMap = function (mapId, showAuthenticationDialogs) {
+				var result = jQuery.Deferred(),
+					loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
+						if (dropboxApiError) {
+							result.reject(toMindMupError(dropboxApiError));
+						} else if (dropboxFileContent && dropboxFileStat) {
+							result.resolve(dropboxFileContent, mapId, dropboxFileStat.mimeType, properties, dropboxFileStat.name);
+						} else {
+							result.reject('network-error');
+						}
+					},
+					loadFromDropbox = function () {
+						client.readFile(toDropboxPath(mapId), {}, loadCallback);
+					};
+				makeReady(showAuthenticationDialogs).then(loadFromDropbox(), result.reject, result.notify);
+				return result.promise();
+
 			};
 			self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
 				var result = jQuery.Deferred(),
 					sendCallback = function (dropboxApiError, dropboxFileStat) {
 						if (dropboxApiError) {
-							console.log(dropboxApiError);
-							result.reject(); /* error code handling */
+							result.reject(toMindMupError(dropboxApiError));
 						} else if (dropboxFileStat) {
 							result.resolve(toMapId(dropboxFileStat), properties);
 						} else {
