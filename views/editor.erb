@@ -122,7 +122,8 @@
               scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
               networkTimeoutMillis: <%= settings.network_timeout_millis %>,
           userCohort: '<%= user_cohort %>',
-          cachePreventionKey: '<%= settings.cache_prevention_key %>'
+          cachePreventionKey: '<%= settings.cache_prevention_key %>',
+          dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>'
         });
       },
       function (err) {

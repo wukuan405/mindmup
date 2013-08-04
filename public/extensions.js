@@ -33,7 +33,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		var optional = this.requiredExtension(optionalMapId),
 			loading = optional ? _.union(active, optional) : active,
 			scriptArray = getScriptsForExtensions(loading);
-		return _.map(scriptArray, function (script) { return '/' + config.cachePreventionKey + script; });
+		return _.map(scriptArray, function (script) { if ((/^http[s]?:/).test(script)) { return script; } return '/' + config.cachePreventionKey + script; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -123,7 +123,7 @@ MM.Extensions.config = {
 	},
 	'dropbox' : {
 		name: 'Dropbox',
-		script: '/e/dropbox.js',
+		script: 'https://www.dropbox.com/static/api/1/dropbox-datastores-0.1.0-b3.js /e/dropbox.js',
 		icon: 'icon-dropbox',
 		doc: 'http://www.dropbox.com',
 		desc: 'Store your maps on Dropbox',

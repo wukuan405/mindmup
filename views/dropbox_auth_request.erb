@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script src="https://www.dropbox.com/static/api/1/dropbox-datastores-0.1.0-b3.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <script>
+      var authCallback = function (dropboxError, client) {
+        if (dropboxError) {
+          window.opener.MMDropboxCallBack({drobox_error: dropboxError});    
+          window.close();
+        } else if (!client.isAuthenticated()) {
+            client.authenticate({interactive: true});
+        } else {
+          window.opener.MMDropboxCallBack({drobox_credentials: client.credentials()});    
+          window.close();
+        }
+      };
+      window.onload = function () {
+        var client = new Dropbox.Client({ key: "<%=ENV['DROPBOX_APP_KEY']%>"});
+        client.authenticate({interactive:false}, authCallback);
+      }
+    </script>
+  </body>
+</html>
