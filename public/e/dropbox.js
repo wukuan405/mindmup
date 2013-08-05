@@ -14,16 +14,25 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 		error = function (errorStatus) {
 			showAlert(errorStatus, 'error');
 		},
-		fileRetrieval = function (interactive, path) {
+		fileRetrieval = function (interactive, path, parentPath) {
 			var loaded = function (fileList) {
+					var added,
+						sorted = _.sortBy(fileList, function (file) {
+							return file && !file.mapId && file.modifiedAt;
+						}).reverse();
 					statusDiv.empty();
-					var sorted = _.sortBy(fileList, function (file) {
-						return file && file.modifiedAt;
-					}).reverse();
+					if (parentPath) {
+						added = template.filter("[data-mm-type=dir]").clone().appendTo(parent);
+						added.find('a[data-mm-role=dir-link]')
+							.text('..')
+							.click(function () {
+								fileRetrieval(false, parentPath);
+							});
+					}
 					_.each(sorted, function (file) {
-						var added;
+
 						if (file.mapId) {
-							added = template.clone().appendTo(parent);
+							added = template.filter("[data-mm-type=file]").clone().appendTo(parent);
 							added.find('a[data-mm-role=file-link]')
 								.text(file.name)
 								.click(function () {
@@ -31,6 +40,13 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 									mapController.loadMap(file.mapId);
 								});
 							added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedAt).toLocaleString());
+						} else {
+							added = template.filter("[data-mm-type=dir]").clone().appendTo(parent);
+							added.find('a[data-mm-role=dir-link]')
+								.text(file.name)
+								.click(function () {
+									fileRetrieval(false, file.path, path);
+								});
 						}
 					});
 				},
@@ -53,7 +69,7 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 			parent.empty();
 			dropboxFileSystem.listFiles(interactive, path).then(loaded, loadError, loadNotify);
 		};
-	modal.on('show', fileRetrieval(false, '/'));
+	modal.on('show', function () { fileRetrieval(false, '/'); });
 	return modal;
 };
 MM.Extensions.Dropbox = function () {
@@ -115,6 +131,7 @@ MM.Extensions.Dropbox = function () {
 							popupWindowLoginLauncher().then(
 								function (credentials) {
 									client.setCredentials(credentials);
+									result.resolve();
 								},
 								result.reject,
 								result.notify
@@ -140,7 +157,7 @@ MM.Extensions.Dropbox = function () {
 					return '';
 				},
 				fileMapper = function (fileStat) {
-					var result = _.pick(fileStat, 'modifiedAt', 'name');
+					var result = _.pick(fileStat, 'modifiedAt', 'name', 'path');
 					result.mapId = toMapId(fileStat);
 					return result;
 				};
@@ -156,6 +173,7 @@ MM.Extensions.Dropbox = function () {
 						}
 					},
 					list = function () {
+						result.notify('Loading files from DropBox');
 						client.readdir(path, {}, listCallback);
 					};
 				makeReady(interactive).then(list(), result.reject, result.notify);
@@ -167,7 +185,7 @@ MM.Extensions.Dropbox = function () {
 						if (dropboxApiError) {
 							result.reject(toMindMupError(dropboxApiError));
 						} else if (dropboxFileContent && dropboxFileStat) {
-							result.resolve(dropboxFileContent, mapId, dropboxFileStat.mimeType, properties, dropboxFileStat.name);
+							result.resolve(dropboxFileContent, mapId, undefined, properties, dropboxFileStat.name);
 						} else {
 							result.reject('network-error');
 						}

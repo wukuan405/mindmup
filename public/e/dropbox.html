@@ -20,7 +20,7 @@
 	  </div>
 	  <div class='modal-body'>
 		  <div data-mm-role="status"></div>
-		<small>For security reasons, MindMup can only access files stored in your <span data-mm-role="db-folder-name"></span> folder on Dropbox. To see a mind map 
+		  <small>For security reasons, MindMup can only access files stored in your <b>Apps/MindMup</b> folder on Dropbox. To see a mind map 
 			in this list, move your files there. </small>
 		  <table class="table table-striped table-condensed">
 		<thead>
@@ -30,9 +30,12 @@
 		</tr>
 	</thead>
 	<tbody>
-		<tr data-mm-role='template'>
-		<td ><a href="#" data-mm-role='file-link'></a></td>
-		<td data-mm-role='modification-status'></td>
+		<tr data-mm-role="template" data-mm-type="file">
+			<td><i class="icon-file-alt"></i>&nbsp;<a href="#" data-mm-role='file-link'></a></td>
+			<td data-mm-role='modification-status'></td>
+		</tr>
+		<tr data-mm-role="template" data-mm-type="dir">
+			<td colspan="2"><i class="icon-folder-open-alt"></i>&nbsp;<a href="#" data-mm-role="dir-link"></a></td>
 		</tr>
 	  </tbody>
 		</table>
