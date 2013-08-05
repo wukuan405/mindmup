@@ -1,4 +1,61 @@
-/*global MM, window, jQuery, $, Dropbox */
+/*global MM, window, jQuery, $, Dropbox, _ */
+$.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
+	'use strict';
+	var modal = this,
+		template = modal.find('[data-mm-role=template]'),
+		parent = template.parent(),
+		statusDiv = modal.find('[data-mm-role=status]'),
+		showAlert = function (message, type) {
+			type = type || 'block';
+			statusDiv.html('<div class="alert fade-in alert-' + type + '">' +
+					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
+					'<strong>' + message + '</strong>' + '</div>');
+		},
+		error = function (errorStatus) {
+			showAlert(errorStatus, 'error');
+		},
+		fileRetrieval = function (interactive, path) {
+			var loaded = function (fileList) {
+					statusDiv.empty();
+					var sorted = _.sortBy(fileList, function (file) {
+						return file && file.modifiedAt;
+					}).reverse();
+					_.each(sorted, function (file) {
+						var added;
+						if (file.mapId) {
+							added = template.clone().appendTo(parent);
+							added.find('a[data-mm-role=file-link]')
+								.text(file.name)
+								.click(function () {
+									modal.modal('hide');
+									mapController.loadMap(file.mapId);
+								});
+							added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedAt).toLocaleString());
+						}
+					});
+				},
+				loadNotify = function (message) {
+					statusDiv.html('<i class="icon-spinner icon-spin"/> ' + message);
+				},
+				loadError = function (reason) {
+					if (reason === 'failed-authentication') {
+						error('Authentication failed, we were not able to access your Dropbox');
+					} else if (reason === 'not-authenticated') {
+						showAlert('<h4>Authorisation required</h4>' +
+							'<p>This action requires authorisation to access your Dropbox. <br/><a href="#">Click here to authorise</a></p>');
+						statusDiv.find('a').click(function () {
+							fileRetrieval(true, path);
+						});
+					} else {
+						error('There was a network error, please try again later');
+					}
+				};
+			parent.empty();
+			dropboxFileSystem.listFiles(interactive, path).then(loaded, loadError, loadNotify);
+		};
+	modal.on('show', fileRetrieval(false, '/'));
+	return modal;
+};
 MM.Extensions.Dropbox = function () {
 	'use strict';
 	var mapController = MM.Extensions.components.mapController,
@@ -31,7 +88,7 @@ MM.Extensions.Dropbox = function () {
 					window.MMDropboxCallBack = onMessage;
 					return deferred.promise();
 				},
-				makeReady = function (showAuthenticationDialogs) {
+				makeReady = function (interactive) {
 					var result = jQuery.Deferred();
 					if (!client) {
 						if (Dropbox && Dropbox.Client) {
@@ -46,7 +103,7 @@ MM.Extensions.Dropbox = function () {
 					} else {
 						client.reset();
 						result.notify('Authenticating with Dropbox');
-						if (!showAuthenticationDialogs) {
+						if (!interactive) {
 							client.authenticate({interactive: false}, function (dropboxError) {
 								if (dropboxError || !client.isAuthenticated()) {
 									result.reject('not-authenticated');
@@ -73,13 +130,38 @@ MM.Extensions.Dropbox = function () {
 					return false;
 				},
 				toMapId = function (dropboxFileStat) {
-					return 'd1' + encodeURIComponent(dropboxFileStat.path);
+					if (dropboxFileStat.isFile) {
+						return 'd1' + encodeURIComponent(dropboxFileStat.path);
+					}
+					return false;
 				},
 				toMindMupError = function (dropboxApiError) {
 					console.log(dropboxApiError);
 					return '';
+				},
+				fileMapper = function (fileStat) {
+					var result = _.pick(fileStat, 'modifiedAt', 'name');
+					result.mapId = toMapId(fileStat);
+					return result;
 				};
-			self.loadMap = function (mapId, showAuthenticationDialogs) {
+			self.listFiles = function (interactive, path) {
+				var result = jQuery.Deferred(),
+					listCallback = function (dropboxApiError, entryNames, folderStat, folderContentStats) {
+						if (dropboxApiError) {
+							result.reject(toMindMupError(dropboxApiError));
+						} else if (folderContentStats) {
+							result.resolve(_.map(folderContentStats, fileMapper));
+						} else {
+							result.reject('network-error');
+						}
+					},
+					list = function () {
+						client.readdir(path, {}, listCallback);
+					};
+				makeReady(interactive).then(list(), result.reject, result.notify);
+				return result.promise();
+			};
+			self.loadMap = function (mapId, interactive) {
 				var result = jQuery.Deferred(),
 					loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
 						if (dropboxApiError) {
@@ -93,11 +175,11 @@ MM.Extensions.Dropbox = function () {
 					loadFromDropbox = function () {
 						client.readFile(toDropboxPath(mapId), {}, loadCallback);
 					};
-				makeReady(showAuthenticationDialogs).then(loadFromDropbox(), result.reject, result.notify);
+				makeReady(interactive).then(loadFromDropbox(), result.reject, result.notify);
 				return result.promise();
 
 			};
-			self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialogs) {
+			self.saveMap = function (contentToSave, mapId, fileName, interactive) {
 				var result = jQuery.Deferred(),
 					sendCallback = function (dropboxApiError, dropboxFileStat) {
 						if (dropboxApiError) {
@@ -111,7 +193,7 @@ MM.Extensions.Dropbox = function () {
 					sendToDropbox = function () {
 						client.writeFile(toDropboxPath(mapId) || fileName, contentToSave, {}, sendCallback);
 					};
-				makeReady(showAuthenticationDialogs).then(sendToDropbox(), result.reject, result.notify);
+				makeReady(interactive).then(sendToDropbox(), result.reject, result.notify);
 				return result.promise();
 			};
 			self.recognises = function (mapId) {
@@ -128,6 +210,7 @@ MM.Extensions.Dropbox = function () {
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
 			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
+			dom.find('#modalDropboxOpen').detach().appendTo('body').dropboxOpenWidget(mapController, fileSystem);
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
