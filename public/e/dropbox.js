@@ -149,7 +149,7 @@ MM.Extensions.Dropbox = {
 				return false;
 			},
 			toMapId = function (dropboxFileStat) {
-				if (dropboxFileStat.isFile) {
+				if (dropboxFileStat.isFile && dropboxFileStat.path) {
 					return 'd1' + encodeURIComponent(dropboxFileStat.path);
 				}
 				return false;
@@ -186,7 +186,7 @@ MM.Extensions.Dropbox = {
 				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
 					if (dropboxApiError) {
 						result.reject(toMindMupError(dropboxApiError));
-					} else if (dropboxFileContent && dropboxFileStat) {
+					} else if (dropboxFileContent && dropboxFileStat && dropboxFileStat.name) {
 						result.resolve(dropboxFileContent, mapId, undefined, properties, dropboxFileStat.name);
 					} else {
 						result.reject('network-error');
@@ -203,7 +203,7 @@ MM.Extensions.Dropbox = {
 				sendCallback = function (dropboxApiError, dropboxFileStat) {
 					if (dropboxApiError) {
 						result.reject(toMindMupError(dropboxApiError));
-					} else if (dropboxFileStat) {
+					} else if (dropboxFileStat && toMapId(dropboxFileStat)) {
 						result.resolve(toMapId(dropboxFileStat), properties);
 					} else {
 						result.reject('network-error');

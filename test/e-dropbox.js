@@ -139,6 +139,62 @@ describe('Dropbox integration', function () {
 					underTest.loadMap(mapId, false).then(success, fail, notify);
 					expect(success).toHaveBeenCalledWith(contents, mapId, undefined, {}, name);
 				});
+				it('rejects with network error when response is invalid', function () {
+					var mapId = 'd1folder%2Ffile%20name.txt',
+						contents = 'file contents',
+						name = 'file name';
+					fakeDropboxApi.readFile.andCallFake(function (path, options, callback) {
+						callback(undefined, contents, {});
+					});
+					underTest.loadMap(mapId, false).then(success, fail, notify);
+					expect(success).not.toHaveBeenCalled();
+				});
+			});
+			describe('saveMap', function () {
+				var contents = 'contents',
+					fileName = 'file name.txt';
+				it('creates a new file from the file name if mapId is not defined', function () {
+					underTest.saveMap(contents, undefined, fileName, false);
+					expect(fakeDropboxApi.writeFile).toHaveBeenCalled();
+					expect(fakeDropboxApi.writeFile.calls[0].args[0]).toBe('file name.txt');
+				});
+				it('creates a new file from the file name if mapId is not recognised by the dropbox api', function () {
+					underTest.saveMap(contents, 'a1kuahsfuhsd', fileName, false);
+					expect(fakeDropboxApi.writeFile).toHaveBeenCalled();
+					expect(fakeDropboxApi.writeFile.calls[0].args[0]).toBe('file name.txt');
+				});
+				it('creates a new file from the file name if mapId is incomplete (new-d scenario)', function () {
+					underTest.saveMap(contents, 'd', fileName, false);
+					expect(fakeDropboxApi.writeFile).toHaveBeenCalled();
+					expect(fakeDropboxApi.writeFile.calls[0].args[0]).toBe('file name.txt');
+				});
+				it('saves the file under the path urldecoded from the given mapId (without starting d1) if it is recognised by the dropbox api, regardless of the file name', function () {
+					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false);
+					expect(fakeDropboxApi.writeFile).toHaveBeenCalled();
+					expect(fakeDropboxApi.writeFile.calls[0].args[0]).toBe('folder/newfile.mup');
+				});
+				it('propagates API errors', function () {
+					fakeDropboxApi.writeFile.andCallFake(function (path, content, options, callback) {
+						callback('error');
+					});
+					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
+					expect(fail).toHaveBeenCalledWith('');
+				});
+				it('resolves using the generated file path, regardless of the original map id', function () {
+					fakeDropboxApi.writeFile.andCallFake(function (path, content, options, callback) {
+						callback(undefined, {path: '/abc/def ghi.jkl', isFile: true});
+					});
+					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
+					expect(success).toHaveBeenCalledWith('d1%2Fabc%2Fdef%20ghi.jkl', {});
+				});
+				it('rejects with a network error when response is invalid', function () {
+					fakeDropboxApi.writeFile.andCallFake(function (path, content, options, callback) {
+						callback(undefined, {path: '', isFile: true});
+					});
+					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
+					expect(fail).toHaveBeenCalledWith('network-error');
+					expect(success).not.toHaveBeenCalled();
+				});
 			});
 		});
 	});
