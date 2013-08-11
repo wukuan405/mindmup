@@ -9,10 +9,15 @@ describe("MM.Extensions", function () {
 		MM.Extensions.config = oldConfig;
 	});
 	describe("scriptsToLoad", function () {
-		it("includes scripts from config that are set in the storage key and appends the cache prevention key as version", function () {
+		it("includes scripts from config that are set in the storage key and prepends the cache prevention key as version", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js' }, 'def': {script: '/def.js'}};
 			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
 			expect(ext.scriptsToLoad()).toEqual(['/cacheKey/abc.js', '/cacheKey/def.js']);
+		});
+		it("does not touch external URLs", function () {
+			MM.Extensions.config = { 'abc': { script: 'https://x/abc.js' }, 'def': {script: 'http://y/def.js'}};
+			var ext = new MM.Extensions({'extkey': 'abc def'}, 'extkey', {cachePreventionKey: 'cacheKey'});
+			expect(ext.scriptsToLoad()).toEqual(['https://x/abc.js', 'http://y/def.js']);
 		});
 		it("supports multiple scripts for an extension", function () {
 			MM.Extensions.config = { 'abc': { script: '/abc.js /def.js' }};
