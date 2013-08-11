@@ -72,169 +72,174 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 	modal.on('show', function () { fileRetrieval(false, '/'); });
 	return modal;
 };
-MM.Extensions.Dropbox = function () {
-	'use strict';
-	var mapController = MM.Extensions.components.mapController,
-		DropboxFileSystem = function (appKey) {
-			var self = this,
-				properties = {},
-				client,
-				popupWindowLoginLauncher = function () {
-					var context = {},
-						deferred = jQuery.Deferred(),
-						popupFrame = window.open('/dropbox', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
-						onMessage = function (message) {
-							if (message && message.dropbox_credentials) {
-								deferred.resolve(message.dropbox_credentials);
-							} else if (message && message.dropbox_error) {
-								deferred.reject('failed-authentication', message.dropbox_error);
-							}
-						},
-						checkClosed = function () {
-							if (popupFrame.closed) {
-								deferred.reject('user-cancel');
-							}
-						},
-						interval = window.setInterval(checkClosed, 200);
-					deferred.always(function () {
-						window.MMDropboxCallBack = undefined;
-						window.clearInterval(interval);
-					});
-					/* don't do window.addListener here as it's not deterministic if that or window.close will get to us first */
-					window.MMDropboxCallBack = onMessage;
-					return deferred.promise();
-				},
-				makeReady = function (interactive) {
-					var result = jQuery.Deferred();
-					if (!client) {
-						if (Dropbox && Dropbox.Client) {
-							result.notify('Initializing Dropbox');
-							client = new Dropbox.Client({key: appKey});
-						} else {
-							result.reject('Dropbox API not loaded');
-						}
-					}
-					if (client.isAuthenticated()) {
-						result.resolve();
-					} else {
-						client.reset();
-						result.notify('Authenticating with Dropbox');
-						if (!interactive) {
-							client.authenticate({interactive: false}, function (dropboxError) {
-								if (dropboxError || !client.isAuthenticated()) {
-									result.reject('not-authenticated');
-								} else {
-									result.resolve();
-								}
-							});
-						} else {
-							popupWindowLoginLauncher().then(
-								function (credentials) {
-									client.setCredentials(credentials);
-									result.resolve();
-								},
-								result.reject,
-								result.notify
-							);
-						}
-					}
-					return result.promise();
-				},
-				toDropboxPath = function (mapId) {
-					if ((/^d1/).test(mapId)) {
-						return decodeURIComponent(mapId.slice(2));
-					}
-					return false;
-				},
-				toMapId = function (dropboxFileStat) {
-					if (dropboxFileStat.isFile) {
-						return 'd1' + encodeURIComponent(dropboxFileStat.path);
-					}
-					return false;
-				},
-				toMindMupError = function (dropboxApiError) {
-					console.log(dropboxApiError);
-					return '';
-				},
-				fileMapper = function (fileStat) {
-					var result = _.pick(fileStat, 'modifiedAt', 'name', 'path');
-					result.mapId = toMapId(fileStat);
-					return result;
-				};
-			self.listFiles = function (interactive, path) {
-				var result = jQuery.Deferred(),
-					listCallback = function (dropboxApiError, entryNames, folderStat, folderContentStats) {
-						if (dropboxApiError) {
-							result.reject(toMindMupError(dropboxApiError));
-						} else if (folderContentStats) {
-							result.resolve(_.map(folderContentStats, fileMapper));
-						} else {
-							result.reject('network-error');
-						}
-					},
-					list = function () {
-						result.notify('Loading files from DropBox');
-						client.readdir(path, {}, listCallback);
-					};
-				makeReady(interactive).then(list(), result.reject, result.notify);
-				return result.promise();
-			};
-			self.loadMap = function (mapId, interactive) {
-				var result = jQuery.Deferred(),
-					loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
-						if (dropboxApiError) {
-							result.reject(toMindMupError(dropboxApiError));
-						} else if (dropboxFileContent && dropboxFileStat) {
-							result.resolve(dropboxFileContent, mapId, undefined, properties, dropboxFileStat.name);
-						} else {
-							result.reject('network-error');
-						}
-					},
-					loadFromDropbox = function () {
-						client.readFile(toDropboxPath(mapId), {}, loadCallback);
-					};
-				makeReady(interactive).then(loadFromDropbox(), result.reject, result.notify);
-				return result.promise();
+MM.Extensions.Dropbox = {
+	popupLogin: function () {
+		'use strict';
+		var context = {},
+			deferred = jQuery.Deferred(),
+			popupFrame = window.open('/dropbox', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
+			onMessage = function (message) {
+				if (message && message.dropbox_credentials) {
+					deferred.resolve(message.dropbox_credentials);
+				} else if (message && message.dropbox_error) {
+					deferred.reject('failed-authentication', message.dropbox_error);
+				}
+			},
+			checkClosed = function () {
+				if (popupFrame.closed) {
+					deferred.reject('user-cancel');
+				}
+			},
+			interval = window.setInterval(checkClosed, 200);
+		deferred.always(function () {
+			window.MMDropboxCallBack = undefined;
+			window.clearInterval(interval);
+		});
+		/* don't do window.addListener here as it's not deterministic if that or window.close will get to us first */
+		window.MMDropboxCallBack = onMessage;
+		return deferred.promise();
+	},
+	DropboxFileSystem: function (appKey) {
+		'use strict';
+		var self = this,
+			properties = {},
+			client,
+			makeReady = function (interactive) {
+				var result = jQuery.Deferred();
 
-			};
-			self.saveMap = function (contentToSave, mapId, fileName, interactive) {
-				var result = jQuery.Deferred(),
-					sendCallback = function (dropboxApiError, dropboxFileStat) {
-						if (dropboxApiError) {
-							result.reject(toMindMupError(dropboxApiError));
-						} else if (dropboxFileStat) {
-							result.resolve(toMapId(dropboxFileStat), properties);
-						} else {
-							result.reject('network-error');
-						}
-					},
-					sendToDropbox = function () {
-						client.writeFile(toDropboxPath(mapId) || fileName, contentToSave, {}, sendCallback);
-					};
-				makeReady(interactive).then(sendToDropbox(), result.reject, result.notify);
+				if (!client) {
+					if (window.Dropbox && window.Dropbox.Client) {
+						result.notify('Initializing Dropbox');
+						client = new Dropbox.Client({key: appKey});
+					} else {
+						result.reject('Dropbox API not loaded');
+						return result.promise();
+					}
+				}
+				if (client.isAuthenticated()) {
+					result.resolve();
+				} else {
+					result.notify('Authenticating with Dropbox');
+					if (!interactive) {
+						client.reset();
+						client.authenticate({interactive: false}, function (dropboxError) {
+							if (dropboxError || !client.isAuthenticated()) {
+								result.reject('not-authenticated');
+							} else {
+								result.resolve();
+							}
+						});
+					} else {
+						MM.Extensions.Dropbox.popupLogin().then(
+							function (credentials) {
+								client.setCredentials(credentials);
+								result.resolve();
+							},
+							result.reject,
+							result.notify
+						);
+					}
+				}
 				return result.promise();
+			},
+			toDropboxPath = function (mapId) {
+				if ((/^d1/).test(mapId)) {
+					return decodeURIComponent(mapId.slice(2));
+				}
+				return false;
+			},
+			toMapId = function (dropboxFileStat) {
+				if (dropboxFileStat.isFile) {
+					return 'd1' + encodeURIComponent(dropboxFileStat.path);
+				}
+				return false;
+			},
+			toMindMupError = function (dropboxApiError) {
+				console.log(dropboxApiError);
+				return '';
+			},
+			fileMapper = function (fileStat) {
+				var result = _.pick(fileStat, 'modifiedAt', 'name', 'path');
+				result.mapId = toMapId(fileStat);
+				return result;
 			};
-			self.recognises = function (mapId) {
-				return mapId === self.prefix || toDropboxPath(mapId);
-			};
-			self.prefix = 'd';
-			self.description = 'Dropbox';
-		},
-		fileSystem = new DropboxFileSystem(MM.Extensions.mmConfig.dropboxAppKey),
-		loadUI = function (html) {
-			var dom = $(html);
-			$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
-			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
-			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
-			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
-			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
-			dom.find('#modalDropboxOpen').detach().appendTo('body').dropboxOpenWidget(mapController, fileSystem);
-			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
+		self.listFiles = function (interactive, path) {
+			var result = jQuery.Deferred(),
+				listCallback = function (dropboxApiError, entryNames, folderStat, folderContentStats) {
+					if (dropboxApiError) {
+						result.reject(toMindMupError(dropboxApiError));
+					} else if (folderContentStats) {
+						result.resolve(_.map(folderContentStats, fileMapper));
+					} else {
+						result.reject('network-error');
+					}
+				},
+				list = function () {
+					result.notify('Loading files from DropBox');
+					client.readdir(path, {}, listCallback);
+				};
+			makeReady(interactive).then(list, result.reject, result.notify);
+			return result.promise();
 		};
-	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
-	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.html', loadUI);
-	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.css" />').appendTo($('body'));
+		self.loadMap = function (mapId, interactive) {
+			var result = jQuery.Deferred(),
+				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
+					if (dropboxApiError) {
+						result.reject(toMindMupError(dropboxApiError));
+					} else if (dropboxFileContent && dropboxFileStat) {
+						result.resolve(dropboxFileContent, mapId, undefined, properties, dropboxFileStat.name);
+					} else {
+						result.reject('network-error');
+					}
+				},
+				loadFromDropbox = function () {
+					client.readFile(toDropboxPath(mapId), {}, loadCallback);
+				};
+			makeReady(interactive).then(loadFromDropbox, result.reject, result.notify);
+			return result.promise();
+		};
+		self.saveMap = function (contentToSave, mapId, fileName, interactive) {
+			var result = jQuery.Deferred(),
+				sendCallback = function (dropboxApiError, dropboxFileStat) {
+					if (dropboxApiError) {
+						result.reject(toMindMupError(dropboxApiError));
+					} else if (dropboxFileStat) {
+						result.resolve(toMapId(dropboxFileStat), properties);
+					} else {
+						result.reject('network-error');
+					}
+				},
+				sendToDropbox = function () {
+					client.writeFile(toDropboxPath(mapId) || fileName, contentToSave, {}, sendCallback);
+				};
+			makeReady(interactive).then(sendToDropbox, result.reject, result.notify);
+			return result.promise();
+		};
+		self.recognises = function (mapId) {
+			return mapId === self.prefix || toDropboxPath(mapId);
+		};
+		self.prefix = 'd';
+		self.description = 'Dropbox';
+	},
+	load: function () {
+		'use strict';
+		var mapController = MM.Extensions.components.mapController,
+			fileSystem = new MM.Extensions.Dropbox.DropboxFileSystem(MM.Extensions.mmConfig.dropboxAppKey),
+			loadUI = function (html) {
+				var dom = $(html);
+				$('[data-mm-role=save] ul').append(dom.find('[data-mm-role=save-link]').clone());
+				$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
+				$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
+				$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
+				$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
+				dom.find('#modalDropboxOpen').detach().appendTo('body').dropboxOpenWidget(mapController, fileSystem);
+				mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
+			};
+		mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
+		$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.html', loadUI);
+		$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.css" />').appendTo($('body'));
+	}
 };
 if (!window.jasmine) {
-	MM.Extensions.Dropbox();
+	MM.Extensions.Dropbox.load();
 }
