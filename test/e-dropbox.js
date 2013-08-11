@@ -29,7 +29,6 @@ describe('Dropbox integration', function () {
 			window.Dropbox = fakeDropboxApi;
 		});
 		describe('initialization and authentication', function () {
-
 			var methods = {
 				loadMap: {
 					exec: function (interactive) { underTest.loadMap('mapId', interactive).then(success, fail, notify); },
@@ -61,13 +60,17 @@ describe('Dropbox integration', function () {
 						expect(fail).not.toHaveBeenCalled();
 					});
 					it('rejects with not-authenticated if not interactive and immediate auth fails', function () {
+						fakeDropboxApi.authenticate.andCallFake(function (interactive, callback) {
+							callback('dropbox error');
+						});
 						testMethods.exec();
-						fakeDropboxApi.authenticate.calls[0].args[1]('dropbox error');
 						expect(fail).toHaveBeenCalledWith('not-authenticated');
 					});
 					it('rejects with not-authenticated if not interactive and immediate auth completes without the client being authenticated', function () {
+						fakeDropboxApi.authenticate.andCallFake(function (interactive, callback) {
+							callback();
+						});
 						testMethods.exec();
-						fakeDropboxApi.authenticate.calls[0].args[1]();
 						expect(fail).toHaveBeenCalledWith('not-authenticated');
 					});
 					it('launches the popup login if interactive and not authenticated, propagating failures', function () {
@@ -86,11 +89,12 @@ describe('Dropbox integration', function () {
 						expect(fakeDropboxApi[testMethods.api]).toHaveBeenCalled();
 					});
 					it('propagates to the appropriate API call if client exists and is not authenticated, but authenticates immediately if non interactive', function () {
+						fakeDropboxApi.authenticate.andCallFake(function (interactive, callback) {
+							fakeDropboxApi.isAuthenticated.reset();
+							fakeDropboxApi.isAuthenticated.andReturn(true);
+							callback();
+						});
 						testMethods.exec();
-						fakeDropboxApi.isAuthenticated.reset();
-						fakeDropboxApi.isAuthenticated.andReturn(true);
-						fakeDropboxApi.authenticate.calls[0].args[1]();
-
 						expect(fail).not.toHaveBeenCalled();
 						expect(success).not.toHaveBeenCalled();
 						expect(fakeDropboxApi[testMethods.api]).toHaveBeenCalled();
@@ -105,6 +109,35 @@ describe('Dropbox integration', function () {
 						expect(fail).not.toHaveBeenCalled();
 						expect(success).not.toHaveBeenCalled();
 					});
+				});
+			});
+		});
+		describe('authenticated operations', function () {
+			beforeEach(function () {
+				fakeDropboxApi.isAuthenticated.andReturn(true);
+			});
+			describe('loadMap', function () {
+				it('converts a map ID into a dropbox path by stripping d1 and urldecoding (to allow for spaces and slashes)', function () {
+					underTest.loadMap('d1folder%2Ffile%20name.txt', false);
+					expect(fakeDropboxApi.readFile).toHaveBeenCalled();
+					expect(fakeDropboxApi.readFile.calls[0].args[0]).toBe('folder/file name.txt');
+				});
+				it('propagates API errors', function () {
+					fakeDropboxApi.readFile.andCallFake(function (path, options, callback) {
+						callback('error');
+					});
+					underTest.loadMap('d1folder%2Ffile%20name.txt', false).then(success, fail, notify);
+					expect(fail).toHaveBeenCalledWith('');
+				});
+				it('resolves using content and file name from the API callback if no error - leaves mimetype undefined because dropbox does not guess right', function () {
+					var mapId = 'd1folder%2Ffile%20name.txt',
+						contents = 'file contents',
+						name = 'file name';
+					fakeDropboxApi.readFile.andCallFake(function (path, options, callback) {
+						callback(undefined, contents, {name: name});
+					});
+					underTest.loadMap(mapId, false).then(success, fail, notify);
+					expect(success).toHaveBeenCalledWith(contents, mapId, undefined, {}, name);
 				});
 			});
 		});
