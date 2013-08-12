@@ -122,12 +122,27 @@ describe('Dropbox integration', function () {
 					expect(fakeDropboxApi.readFile).toHaveBeenCalled();
 					expect(fakeDropboxApi.readFile.calls[0].args[0]).toBe('folder/file name.txt');
 				});
-				it('propagates API errors', function () {
+				describe('API errors', [
+					['401 is not authenticated', 401, 'not-authenticated'],
+					['403 is not authenticated', 403, 'not-authenticated'],
+					['404 is not found', 404, 'not-found'],
+					['429 is network error', 409, 'network-error'],
+					['507 is quota error', 507, 'file-too-large'],
+					['5xx, apart from 507 is network error', 503, 'network-error'],
+					['undefined code is a network error', false, 'network-error']
+				], function (dropboxCode, mindmupReason) {
 					fakeDropboxApi.readFile.andCallFake(function (path, options, callback) {
-						callback('error');
+						callback({status: dropboxCode});
 					});
 					underTest.loadMap('d1folder%2Ffile%20name.txt', false).then(success, fail, notify);
-					expect(fail).toHaveBeenCalledWith('');
+					expect(fail).toHaveBeenCalledWith(mindmupReason);
+				});
+				it('propagates error label if supplied', function () {
+					fakeDropboxApi.readFile.andCallFake(function (path, options, callback) {
+						callback({status: 404, response: {error: 'File not found'}});
+					});
+					underTest.loadMap('d1folder%2Ffile%20name.txt', false).then(success, fail, notify);
+					expect(fail).toHaveBeenCalledWith('not-found', 'File not found');
 				});
 				it('resolves using content and file name from the API callback if no error - leaves mimetype undefined because dropbox does not guess right', function () {
 					var mapId = 'd1folder%2Ffile%20name.txt',
@@ -178,7 +193,7 @@ describe('Dropbox integration', function () {
 						callback('error');
 					});
 					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
-					expect(fail).toHaveBeenCalledWith('');
+					expect(fail).toHaveBeenCalled();
 				});
 				it('resolves using the generated file path, regardless of the original map id', function () {
 					fakeDropboxApi.writeFile.andCallFake(function (path, content, options, callback) {
@@ -207,7 +222,7 @@ describe('Dropbox integration', function () {
 						callback('api-error');
 					});
 					underTest.listFiles(false, '/some/path').then(success, fail, notify);
-					expect(fail).toHaveBeenCalledWith('');
+					expect(fail).toHaveBeenCalled();
 				});
 				it('rejects invalid responses as network errors', function () {
 					fakeDropboxApi.readdir.andCallFake(function (path, options, callback) {

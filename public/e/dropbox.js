@@ -155,8 +155,16 @@ MM.Extensions.Dropbox = {
 				return false;
 			},
 			toMindMupError = function (dropboxApiError) {
-				console.log(dropboxApiError);
-				return '';
+				var errorMap = {
+					401: 'not-authenticated',
+					403: 'not-authenticated',
+					404: 'not-found',
+					507: 'file-too-large'
+				};
+				if (dropboxApiError.status && errorMap[dropboxApiError.status]) {
+					return errorMap[dropboxApiError.status];
+				}
+				return 'network-error';
 			},
 			fileMapper = function (fileStat) {
 				var result = _.pick(fileStat, 'modifiedAt', 'name', 'path');
@@ -185,7 +193,12 @@ MM.Extensions.Dropbox = {
 			var result = jQuery.Deferred(),
 				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
 					if (dropboxApiError) {
-						result.reject(toMindMupError(dropboxApiError));
+						var mmError = toMindMupError(dropboxApiError);
+						if (dropboxApiError.response && dropboxApiError.response.error) {
+							result.reject(mmError, dropboxApiError.response.error);
+						} else {
+							result.reject(mmError);
+						}
 					} else if (dropboxFileContent && dropboxFileStat && dropboxFileStat.name) {
 						result.resolve(dropboxFileContent, mapId, undefined, properties, dropboxFileStat.name);
 					} else {
