@@ -196,6 +196,34 @@ describe('Dropbox integration', function () {
 					expect(success).not.toHaveBeenCalled();
 				});
 			});
+			describe('listFiles', function () {
+				it('sends the path to the api readdir method', function () {
+					underTest.listFiles(false, '/some/path');
+					expect(fakeDropboxApi.readdir).toHaveBeenCalled();
+					expect(fakeDropboxApi.readdir.calls[0].args[0]).toBe('/some/path');
+				});
+				it('propagates back API errors', function () {
+					fakeDropboxApi.readdir.andCallFake(function (path, options, callback) {
+						callback('api-error');
+					});
+					underTest.listFiles(false, '/some/path').then(success, fail, notify);
+					expect(fail).toHaveBeenCalledWith('');
+				});
+				it('rejects invalid responses as network errors', function () {
+					fakeDropboxApi.readdir.andCallFake(function (path, options, callback) {
+						callback();
+					});
+					underTest.listFiles(false, '/some/path').then(success, fail, notify);
+					expect(fail).toHaveBeenCalledWith('network-error');
+				});
+				it('resolves with folder contents, adding mapId for files (not for dirs) and keeping modifiedAt, name and path', function () {
+					fakeDropboxApi.readdir.andCallFake(function (path, options, callback) {
+						callback(undefined, '', '', [{modifiedAt: 1, name: '2', path: '3', isFile: false}, {modifiedAt: 2, name: '4', path: '/5/6', isFile: true}]);
+					});
+					underTest.listFiles(false, '/some/path').then(success, fail, notify);
+					expect(success).toHaveBeenCalledWith([{modifiedAt: 1, name: '2', path: '3', mapId: false}, {modifiedAt: 2, name: '4', path: '/5/6', mapId: 'd1%2F5%2F6'}]);
+				});
+			});
 		});
 	});
 });
