@@ -2,12 +2,13 @@
 MM.Extensions = function (storage, storageKey, config, components) {
 	'use strict';
 	var active = [],
-		loadScriptsAsynchronously = function (d, s, urls, callback) {
+		loadScriptsAsynchronously = function (d, s, urls, callback, errorcallback) {
 			urls.forEach(function (url) {
 				var js, fjs = d.getElementsByTagName(s)[0];
 				js = d.createElement(s);
 				js.src = (document.location.protocol === 'file:' ? 'http:' : '') + url;
 				js.onload = callback;
+				js.onerror = errorcallback;
 				fjs.parentNode.insertBefore(js, fjs);
 			});
 		},
@@ -60,6 +61,11 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		MM.Extensions.pendingScripts = _.invert(scripts);
 		loadScriptsAsynchronously(document, 'script', scripts, function () {
 			delete MM.Extensions.pendingScripts[jQuery(this).attr('src')];
+		}, function () {
+			components.alert.hide(alertId);
+			window.clearInterval(intervalId);
+			components.alert.show('A required extension failed to load due to a network error.', 'You may continue to use the site but some features may not be available. Please reload the page when you reconnect to the Internet to activate all the features. If the error persists, please contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a>', 'error');
+			deferred.resolve();
 		});
 
 		if (!_.isEmpty(MM.Extensions.pendingScripts)) {

@@ -108,18 +108,20 @@ describe('MM.retry', function () {
 		};
 	};
 	it('should retry until task succeeds then resolve', function () {
-		var retryCount = 0;
+		var retryCount = 0,
+			rejected = jasmine.createSpy();
 
-		MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) { retryCount = r; });
+		MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) { retryCount = r; }, rejected);
 
 		expect(retryCount).toBe(4);
+		expect(rejected).not.toHaveBeenCalled();
 	});
 	it('should reject once the task retries exceeded', function () {
-		var retryCount = 0;
+		var rejected = jasmine.createSpy();
 
-		MM.retry(buildTaskToFailTimes(5), MM.retryTimes(4)).fail(function (r) {retryCount = r; });
+		MM.retry(buildTaskToFailTimes(5), MM.retryTimes(4)).fail(rejected);
 
-		expect(retryCount).toBe(5);
+		expect(rejected).toHaveBeenCalledWith('network-error');
 	});
 	it('should setTimeout if backoff supplied', function () {
 		var retryCount = 0,

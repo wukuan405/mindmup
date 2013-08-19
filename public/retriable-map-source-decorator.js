@@ -14,7 +14,7 @@ MM.retry = function (task, shouldRetry, backoff) {
 							attemptTask();
 						}
 					} else {
-						deferred.reject.apply(deferred, arguments);
+						deferred.reject('network-error');
 					}
 				},
 				deferred.notify
