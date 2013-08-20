@@ -53,7 +53,9 @@ end
 get '/' do
   show_map
 end
-
+get '/legal/privacy' do
+  erb :privacy
+end
 get '/gd' do
 
   begin
