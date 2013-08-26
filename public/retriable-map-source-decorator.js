@@ -5,7 +5,7 @@ MM.retry = function (task, shouldRetry, backoff) {
 		attemptTask = function () {
 			task().then(
 				deferred.resolve,
-				function () {
+				function (reason) {
 					if (!shouldRetry || shouldRetry.apply(undefined, arguments)) {
 						deferred.notify('Network problem... Will retry shortly');
 						if (backoff) {
@@ -14,7 +14,7 @@ MM.retry = function (task, shouldRetry, backoff) {
 							attemptTask();
 						}
 					} else {
-						deferred.reject('network-error');
+						deferred.reject(reason);
 					}
 				},
 				deferred.notify

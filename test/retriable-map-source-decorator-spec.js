@@ -59,14 +59,15 @@ describe("MM.RetriableMapSourceDecorator", function () {
 
 			expect(MM.retry).toHaveBeenCalled();
 		});
-		it('should not retry if not network-error ', function () {
-			var callCount = 0;
+		it('should not retry if not network-error but propagate error reason', function () {
+			var callCount = 0, failed = jasmine.createSpy();
 			decorated.saveMap = function () {
 				callCount++;
 				return jQuery.Deferred().reject('errorMsg').promise();
 			};
 
-			underTest.saveMap();
+			underTest.saveMap().fail(failed);
+			expect(failed).toHaveBeenCalledWith('errorMsg');
 
 			expect(callCount).toBe(1);
 		});
@@ -121,7 +122,7 @@ describe('MM.retry', function () {
 
 		MM.retry(buildTaskToFailTimes(5), MM.retryTimes(4)).fail(rejected);
 
-		expect(rejected).toHaveBeenCalledWith('network-error');
+		expect(rejected).toHaveBeenCalled();
 	});
 	it('should setTimeout if backoff supplied', function () {
 		var retryCount = 0,
