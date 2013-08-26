@@ -11,7 +11,7 @@
         } else if (!client.isAuthenticated()) {
             client.authenticate({interactive: true});
         } else {
-          window.location.replace(window.location.origin+"/dropbox-complete#"+escape(client.credentials())
+          window.location.replace(window.location.origin+"/dropbox-complete#"+escape(JSON.stringify(client.credentials()))
         }
       };
       window.onload = function () {
