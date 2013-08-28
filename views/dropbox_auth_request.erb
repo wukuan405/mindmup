@@ -4,16 +4,15 @@
   </head>
   <body>
     <script>
-      var authCallback = function (dropboxError, client) {
-        if (dropboxError) {
-          window.opener.MMDropboxCallBack({drobox_error: dropboxError});    
-          window.close();
-        } else if (!client.isAuthenticated()) {
-            client.authenticate({interactive: true});
-        } else {
-            var httpsite = window.location.origin.replace(/^https:/,'http:')
-            window.location.replace(httpsite+"/dropbox-complete#"+escape(JSON.stringify(client.credentials())));
-        }
+		var httpsite = window.location.origin.replace(/^https:/,'http:'),
+			authCallback = function (dropboxError, client) {
+			if (dropboxError) {
+				window.location.replace(httpsite+"/dropbox-error#"+escape(JSON.stringify(dropboxError)));
+			} else if (!client.isAuthenticated()) {
+				client.authenticate({interactive: true});
+			} else {
+				window.location.replace(httpsite+"/dropbox-complete#"+escape(JSON.stringify(client.credentials())));
+			}
       };
       window.onload = function () {
         var client = new Dropbox.Client({ key: "<%=ENV['DROPBOX_APP_KEY']%>"});
