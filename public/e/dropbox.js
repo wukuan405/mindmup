@@ -77,7 +77,8 @@ MM.Extensions.Dropbox = {
 		'use strict';
 		var context = {},
 			deferred = jQuery.Deferred(),
-			popupFrame = window.open('/dropbox', '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
+            https = window.location.origin.replace(/^http:/, 'https:'),
+			popupFrame = window.open(https + '/dropbox', '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 			onMessage = function (message) {
 				if (message && message.dropbox_credentials) {
 					deferred.resolve(message.dropbox_credentials);
