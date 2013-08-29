@@ -131,7 +131,7 @@ MM.Extensions.config = {
 		name: 'Dropbox',
 		script: 'https://www.dropbox.com/static/api/1/dropbox-datastores-0.1.0-b3.js /e/dropbox.js',
 		icon: 'icon-dropbox',
-		doc: 'http://www.dropbox.com',
+		doc: 'http://blog.mindmup.com/p/working-with-dropbox.html',
 		desc: 'Store your maps on Dropbox',
 		providesMapId: function (mapId) {
 			'use strict';
