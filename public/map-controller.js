@@ -196,20 +196,12 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 		activityLog.log('Map', 'networkError', JSON.stringify(reason));
 	});
 };
-MM.MapController.alerts = function (mapController, alert) {
+MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	'use strict';
 	var alertId,
-		showAlertWithCallBack = function (message, prompt, type, callback) {
+		showAlertWithCallBack = function (message, prompt, callback) {
 			alert.hide(alertId);
-			alertId = alert.show(
-				message,
-				'<a href="#" data-mm-role="auth">' + prompt + '</a>',
-				type
-			);
-			jQuery('[data-mm-role=auth]').click(function () {
-				alert.hide(alertId);
-				callback();
-			});
+			modalConfirmation.showModalToConfirm('Please confirm', message, prompt, callback);
 		},
 		showErrorAlert = function (title, message) {
 			alert.hide(alertId);
@@ -218,9 +210,8 @@ MM.MapController.alerts = function (mapController, alert) {
 
 	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
 		showAlertWithCallBack(
-			'There are unsaved changes in the loaded map.',
-			'Click here to continue',
-			'warning',
+			'There are unsaved changes in the current map. Please confirm that you would like to load a different map.',
+			'Load anyway',
 			function () {
 				mapController.loadMap(newMapId, true);
 			}
@@ -236,9 +227,10 @@ MM.MapController.alerts = function (mapController, alert) {
 	});
 	mapController.addEventListener('authRequired', function (providerName, authCallback) {
 		showAlertWithCallBack(
-			'This operation requires authentication through ' + providerName + ' !',
-			'Click here to authenticate',
-			'warning',
+			'This operation requires authentication through ' + providerName + ', an external storage provider. ' +
+				'Please click on Authenticate below to go to the external provider and allow MindMup to access your account. ' +
+				'You can learn more about authentication requirements on our <a href="http://blog.mindmup.com/p/storage-options.html" target="_blank">Storage Options</a> page.',
+			'Authenticate',
 			authCallback
 		);
 	});
@@ -248,8 +240,7 @@ MM.MapController.alerts = function (mapController, alert) {
 	mapController.addEventListener('authorisationFailed', function (providerName, authCallback) {
 		showAlertWithCallBack(
 			'We were unable to authenticate with ' + providerName,
-			'Click here to try again',
-			'warning',
+			'Try again',
 			authCallback
 		);
 	});
@@ -259,8 +250,7 @@ MM.MapController.alerts = function (mapController, alert) {
 	mapController.addEventListener('mapSavingUnAuthorized', function (callback) {
 		showAlertWithCallBack(
 			'You do not have the right to edit this map',
-			'Click here to save a copy',
-			'error',
+			'Save a copy',
 			callback
 		);
 	});
@@ -277,7 +267,7 @@ MM.MapController.alerts = function (mapController, alert) {
 		},
 			message = messages[reason] || ['Unfortunately, there was a problem saving the map.', 'Please try again later. We have sent an error report and we will look into this as soon as possible'];
 		if (callback) {
-			showAlertWithCallBack(message[0], message[1], 'warning', callback);
+			showAlertWithCallBack(message[0], message[1], callback);
 		} else {
 			showErrorAlert(message[0], message[1]);
 		}

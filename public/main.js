@@ -38,6 +38,7 @@ MM.main = function (config) {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
 			alert = new MM.Alert(),
+			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
@@ -119,7 +120,7 @@ MM.main = function (config) {
 		setupTracking(activityLog, jotForm, mapModel);
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		MM.MapController.activityTracking(mapController, activityLog);
-		MM.MapController.alerts(mapController, alert);
+		MM.MapController.alerts(mapController, alert, modalConfirm);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});
