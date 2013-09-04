@@ -8,7 +8,6 @@ $.fn.modalConfirmWidget = function () {
 		currentCallback = null;
 	self.modal({keyboard: true, show: false});
 	confirmElement.click(function () {
-		console.log('cc', currentCallback);
 		if (currentCallback) {
 			currentCallback();
 		}
