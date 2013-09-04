@@ -1,11 +1,11 @@
-/*global MM, MAPJS, jQuery*/
+/*global MM, jQuery*/
 MM.retry = function (task, shouldRetry, backoff) {
 	'use strict';
 	var deferred = jQuery.Deferred(),
 		attemptTask = function () {
 			task().then(
 				deferred.resolve,
-				function (reason) {
+				function () {
 					if (!shouldRetry || shouldRetry.apply(undefined, arguments)) {
 						deferred.notify('Network problem... Will retry shortly');
 						if (backoff) {
@@ -14,7 +14,7 @@ MM.retry = function (task, shouldRetry, backoff) {
 							attemptTask();
 						}
 					} else {
-						deferred.reject(reason);
+						deferred.reject.apply(undefined, arguments);
 					}
 				},
 				deferred.notify

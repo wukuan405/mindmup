@@ -63,11 +63,11 @@ describe("MM.RetriableMapSourceDecorator", function () {
 			var callCount = 0, failed = jasmine.createSpy();
 			decorated.saveMap = function () {
 				callCount++;
-				return jQuery.Deferred().reject('errorMsg').promise();
+				return jQuery.Deferred().reject('errorMsg', 'foo').promise();
 			};
 
 			underTest.saveMap().fail(failed);
-			expect(failed).toHaveBeenCalledWith('errorMsg');
+			expect(failed).toHaveBeenCalledWith('errorMsg', 'foo');
 
 			expect(callCount).toBe(1);
 		});
