@@ -9,7 +9,6 @@ describe("MM.FileSystemMapSource", function () {
 			saveMap: function (content, mapId, fileName) {
 				return jQuery.Deferred().resolve(mapId);
 			},
-			notSharable: true,
 			description: 'fake FS',
 			recognises: function (mapid) {
 				return mapid === 'fake';

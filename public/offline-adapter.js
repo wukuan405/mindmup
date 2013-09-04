@@ -3,7 +3,6 @@ MM.OfflineAdapter = function (storage) {
 	'use strict';
 	var properties = {editable: true};
 	this.description = 'OFFLINE';
-	this.notSharable = true;
 	this.recognises = function (mapId) {
 		return mapId && mapId[0] === 'o';
 	};

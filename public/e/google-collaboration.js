@@ -2,7 +2,7 @@
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
 	var nextSessionName,
-		properties = {autoSave: true, sharable: true, editable: true, reloadOnSave: true},
+		properties = {autoSave: true, editable: true, reloadOnSave: true},
 		self = observable(this),
 		makeRealtimeReady = function (showAuth) {
 			var deferred = jQuery.Deferred(),

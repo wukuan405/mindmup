@@ -112,9 +112,6 @@ div.topbar-color-picker {
 .map-unchanged .visible-map-changed {
   display: none !important;
 }
-.map-not-sharable .hidden-map-not-sharable {
-  display: none;
-}
 #toolbarEdit .btn-group { margin-left:0px; }
 #toolbarEdit button { margin-top:5px; width: 40px; height:32px; }
 #toolbarEdit button.two {width:80px; }

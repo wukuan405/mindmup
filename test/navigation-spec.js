@@ -5,7 +5,6 @@ describe('MM.navigation', function () {
 	beforeEach(function () {
 		localStorage.clear();
 		mapController = observable({
-			isMapSharable: function () {},
 			currentMapId: function () {},
 			loadMap: function () {}
 		});
