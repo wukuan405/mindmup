@@ -1,4 +1,4 @@
-/*global _, jQuery, MM, window, gapi, google, DocsViewMode */
+/*global _, jQuery, MM, window, gapi, google */
 MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var properties = {},
@@ -252,8 +252,9 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			});
 		}
 	};
-	this.showPicker = function (contentTypes, title) {
+	this.showPicker = function (contentTypes, title, showDialogs) {
 		var deferred = jQuery.Deferred(),
+			defaultContentTypes = 'application/octet-stream,application/vnd.mindmup.collab,application/vnd-freemind,application/json,application/vnd.google.drive.ext-type.mup,application/x-freemind,application/vnd.google.drive.ext-type.mm',	
 			showPicker = function () {
 				var picker, view;
 				view = new google.picker.DocsView(google.picker.ViewId.DOCS);
@@ -274,15 +275,20 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					})
 					.setTitle(title)
 					.setSelectableMimeTypes(contentTypes)
-					.build();
-				picker.setVisible(true);
+					.build()
+					.setVisible(true);
 			};
+		contentTypes = contentTypes || defaultContentTypes;
 		if (window.google && window.google.picker) {
 			showPicker();
 		} else {
-			this.ready(!isAuthorised()).then(function () {
-				gapi.load('picker', showPicker);
-			});
+			this.ready(showDialogs).then(
+				function () {
+					gapi.load('picker', showPicker);
+				},
+				deferred.reject,
+				deferred.notify
+			);
 		}
 		return deferred.promise();
 	};

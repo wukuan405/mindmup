@@ -174,7 +174,7 @@ MM.Extensions.googleCollaboration = function () {
 					return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
 				},
 				makeImage = function (sessionKey) {
-					var deferred = jQuery.Deferred(), domImg, kineticImg, collaborator;
+					var deferred = jQuery.Deferred(), domImg, collaborator;
 					if (sessionImages[sessionKey]) {
 						return deferred.resolve(sessionImages[sessionKey]).promise();
 					}
@@ -187,7 +187,7 @@ MM.Extensions.googleCollaboration = function () {
 							width: 32,
 							height: 32
 						});
-						sessionImages[sessionKey].on("click tap", function () {
+						sessionImages[sessionKey].on('click tap', function () {
 							self.toggleFollow(sessionKey);
 						});
 						deferred.resolve(sessionImages[sessionKey]);
@@ -207,7 +207,7 @@ MM.Extensions.googleCollaboration = function () {
 				onCollaboratorLeft = function (event) {
 					var profileImg = sessionImages[event.collaborator.sessionId],
 						layer;
-					alert.show("Collaborator left!", event.collaborator.displayName + " left this session", "flash");
+					alert.show('Collaborator left!', event.collaborator.displayName + ' left this session', 'flash');
 					if (profileImg) {
 						layer = profileImg.getLayer();
 						profileImg.remove();
@@ -215,7 +215,7 @@ MM.Extensions.googleCollaboration = function () {
 					}
 				},
 				onCollaboratorJoined = function (event) {
-					alert.show("Collaborator joined!", event.collaborator.displayName + " joined this session", "flash");
+					alert.show('Collaborator joined!', event.collaborator.displayName + ' joined this session', 'flash');
 				},
 				onSelectionChanged = function (id, isSelected) {
 					if (isSelected) {
@@ -232,10 +232,10 @@ MM.Extensions.googleCollaboration = function () {
 				var old = followingSessionId;
 				if (followingSessionId !== sessionId) {
 					followingSessionId = sessionId;
-					alert.show("Following "  + getCollaboratorBySession(sessionId).displayName, "", "flash");
+					alert.show('Following '  + getCollaboratorBySession(sessionId).displayName, '', 'flash');
 				} else {
 					followingSessionId = undefined;
-					alert.show("No longer following " + getCollaboratorBySession(sessionId).displayName, "", "flash");
+					alert.show('No longer following ' + getCollaboratorBySession(sessionId).displayName, '', 'flash');
 				}
 				if (old !== sessionId) {
 					self.showFocus(old);
@@ -333,11 +333,6 @@ MM.Extensions.googleCollaboration = function () {
 				}
 			});
 			$('[data-mm-role=sharelinks]').append(menu.find('[data-mm-role=invite]').parent('li').clone(true).addClass('visible-map-source-c'));
-			menu.find('[data-mm-role=join]').click(function () {
-				googleDriveAdapter.showPicker('application/vnd.mindmup.collab', 'Choose a realtime session').done(function (id) {
-					mapController.loadMap('c' + id);
-				});
-			});
 			menu.find('[data-mm-role=leave]').click(function () {
 				mapController.loadMap('new-g');
 			});
@@ -352,7 +347,7 @@ MM.Extensions.googleCollaboration = function () {
 				list.empty();
 				_.each(kineticSessions.getCollaborators(), function (c) {
 					var item = collabLinkTemplate.clone().appendTo(list).show();
-					item.find('[data-mm-role=collaborator-name]').text(c.isAnonymous ? "Anonymous" : c.displayName);
+					item.find('[data-mm-role=collaborator-name]').text(c.isAnonymous ? 'Anonymous' : c.displayName);
 					item.find('[data-mm-role=collaborator-photo]').attr('src', c.photoUrl);
 					if (!c.isMe) {
 						if (c.sessionId === kineticSessions.getFollow()) {
@@ -369,7 +364,7 @@ MM.Extensions.googleCollaboration = function () {
 				});
 				collabModal.modal('show');
 			});
-			realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId) {
+			realtimeMapSource.addEventListener('realtimeDocumentLoaded', function (doc) {
 				doc.addEventListener(gapi.drive.realtime.EventType.DOCUMENT_SAVE_STATE_CHANGED, function (docState) {
 					if (docState.isPending || docState.isSaving) {
 						if (!$('i[class="icon-spinner icon-spin"]', saveButton).length) {
@@ -382,7 +377,7 @@ MM.Extensions.googleCollaboration = function () {
 			});
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
-	realtimeMapSource.addEventListener("realtimeDocumentLoaded", function (doc, googleSessionId, mindMupId) {
+	realtimeMapSource.addEventListener('realtimeDocumentLoaded', function (doc, googleSessionId, mindMupId) {
 		kineticSessions = new KineticSessionManager(doc, googleSessionId);
 		kineticSessions.mapId = mindMupId;
 	});
@@ -392,12 +387,12 @@ MM.Extensions.googleCollaboration = function () {
 			kineticSessions = undefined;
 		}
 	});
-	realtimeMapSource.addEventListener("realtimeDocumentUpdated", function (googleSessionId) {
+	realtimeMapSource.addEventListener('realtimeDocumentUpdated', function (googleSessionId) {
 		if (kineticSessions) {
 			kineticSessions.showFocus(googleSessionId);
 		}
 	});
-	realtimeMapSource.addEventListener("realtimeError", function (errorMessage, isFatal) {
+	realtimeMapSource.addEventListener('realtimeError', function (errorMessage, isFatal) {
 		if (isFatal) {
 			alert.show('Network error: ' + errorMessage + '!', 'Please refresh the page before changing the map any further, your updates might not be saved', 'error');
 		} else {
