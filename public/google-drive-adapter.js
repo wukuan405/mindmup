@@ -191,28 +191,6 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 
 	this.recognises = recognises;
 
-	this.retrieveAllFiles = function (searchCriteria) {
-		var deferred = jQuery.Deferred(),
-			retrievePageOfFiles = function (request, result) {
-				request.execute(function (resp) {
-					result = result.concat(resp.items);
-					var nextPageToken = resp.nextPageToken;
-					if (nextPageToken) {
-						request = gapi.client.drive.files.list({
-							'pageToken': nextPageToken,
-							q: searchCriteria
-						});
-						retrievePageOfFiles(request, result);
-					} else {
-						deferred.resolve(result);
-					}
-				});
-			};
-		searchCriteria = searchCriteria || 'mimeType = \'' + defaultContentType + '\' and not trashed';
-		retrievePageOfFiles(gapi.client.drive.files.list({ 'q': searchCriteria }), []);
-		return deferred.promise();
-	};
-
 	this.loadMap = function (mapId, showAuthenticationDialogs) {
 		var deferred = jQuery.Deferred(),
 			googleId = toGoogleFileId(mapId),
