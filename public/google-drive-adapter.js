@@ -1,4 +1,4 @@
-/*global _, jQuery, MM, window, gapi, google */
+/*global _, jQuery, MM, window, gapi, google, DocsViewMode */
 MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
 	'use strict';
 	var properties = {},
@@ -256,8 +256,9 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		var deferred = jQuery.Deferred(),
 			showPicker = function () {
 				var picker, view;
-				view = new google.picker.View(google.picker.ViewId.DOCS);
+				view = new google.picker.DocsView(google.picker.ViewId.DOCS);
 				view.setMimeTypes(contentTypes);
+				view.setMode(DocsViewMode.LIST);
 				picker = new google.picker.PickerBuilder()
 					.enableFeature(google.picker.Feature.NAV_HIDDEN)
 					.setAppId(appId)
