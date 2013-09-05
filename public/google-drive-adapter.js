@@ -258,7 +258,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 				var picker, view;
 				view = new google.picker.DocsView(google.picker.ViewId.DOCS);
 				view.setMimeTypes(contentTypes);
-				view.setMode(DocsViewMode.LIST);
+				view.setMode(google.picker.DocsViewMode.LIST);
 				picker = new google.picker.PickerBuilder()
 					.enableFeature(google.picker.Feature.NAV_HIDDEN)
 					.setAppId(appId)
