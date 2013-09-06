@@ -85,11 +85,6 @@ get "/s3/:mapid" do
   redirect "/#m:#{params[:mapid]}"
 end
 
-get "/s3proxy/:mapid" do
-  content_type 'application/json'
-  settings.s3_bucket.objects[map_key(params[:mapid])].read
-end
-
 post "/echo" do
   attachment params[:title]
   contents = params[:map]

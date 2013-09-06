@@ -87,7 +87,8 @@
               mapId:'<%=@mapid%>'
             },
             activityLog = console,
-            s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
+			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
+            s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
             mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
             mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);          
           jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, config.renderImages);
