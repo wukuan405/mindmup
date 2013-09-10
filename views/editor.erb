@@ -137,17 +137,18 @@ SOFTWARE.
               googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
               s3Url: 'http://<%= settings.s3_website %>/',
               s3Folder: '<%= settings.s3_upload_folder %>/',
+              s3GoldUrl: 'http://<%= ENV['S3_GOLD_WEBSITE'] %>/',
               googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
-          googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
-          googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
+              googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
+              googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
               publishingConfigUrl: '<%= settings.publishing_config_url %>',
               baseUrl: '<%= settings.base_url%>',
               proxyLoadUrl: '<%= settings.proxy_load_url %>',
               scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
               networkTimeoutMillis: <%= settings.network_timeout_millis %>,
-          userCohort: '<%= user_cohort %>',
-          cachePreventionKey: '<%= settings.cache_prevention_key %>',
-          dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>'
+              userCohort: '<%= user_cohort %>',
+              cachePreventionKey: '<%= settings.cache_prevention_key %>',
+              dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>'
         });
       },
       function (err) {

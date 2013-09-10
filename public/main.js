@@ -42,12 +42,15 @@ MM.main = function (config) {
 			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
+			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(objectStorage),
 			s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
+			s3GoldAdapter = new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'S3_GOLD'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
 			mapController = new MM.MapController([
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
+				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3GoldAdapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
