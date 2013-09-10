@@ -487,3 +487,7 @@ input.noglow {
   margin-right: 2px !important;
   cursor: pointer;
 }
+#modalGoldLicense textarea {
+	width: 95%;
+	height: 200px;
+}

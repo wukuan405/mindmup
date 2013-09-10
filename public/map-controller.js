@@ -239,8 +239,8 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	});
 	mapController.addEventListener('authorisationFailed', function (providerName, authCallback) {
 		showAlertWithCallBack(
-			'We were unable to authenticate with ' + providerName,
-			'Try again',
+			'The operation was rejected by ' + providerName + ' storage. Click on Reauthenticate to try using different credentials or license.',
+			'Reauthenticate',
 			authCallback
 		);
 	});
