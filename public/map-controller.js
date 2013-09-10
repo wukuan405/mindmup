@@ -125,6 +125,8 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('authorisationFailed', label, retryWithDialog);
 				} else if (reason === 'not-authenticated') {
 					dispatchEvent('authRequired', label, retryWithDialog);
+				} else if (reason === 'file-too-large') {
+					dispatchEvent('mapSavingTooLarge', activeMapSource.description);
 				} else if (reason === 'user-cancel') {
 					dispatchEvent('mapSavingCancelled');
 				} else {
@@ -260,9 +262,17 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	mapController.addEventListener('mapSavingCancelled', function () {
 		alert.hide(alertId);
 	});
+	mapController.addEventListener('mapSavingTooLarge', function (mapSourceDescription) {
+		if (mapSourceDescription === 'S3_CORS') {
+			showAlertWithCallBack('The map is too large for anonymous MindMup storage. Maps larger than 100 KB can only be stored to MindMup Gold, or a third-party cloud storage. (<a href="http://blog.mindmup.com/p/storage-options.html" target="_blank">more info on storage options</a>)', 'Save to MindMup Gold', function () {
+				mapController.publishMap('b');
+			});
+		} else {
+			showErrorAlert('Unfortunately, the file is too large for the selected storage.', 'Please select a different storage provider from the save dropdown menu');
+		}
+	});
 	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {
-			'file-too-large': ['Unfortunately, the file is too large for the selected storage provider.', 'Please select a different storage provider from the save dropdown menu'],
 			'network-error': ['There was a network problem communicating with the server.', 'Please try again later. Don\'t worry, you have an auto-saved version in this browser profile that will be loaded the next time you open the map']
 		},
 			message = messages[reason] || ['Unfortunately, there was a problem saving the map.', 'Please try again later. We have sent an error report and we will look into this as soon as possible'];
