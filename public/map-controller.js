@@ -210,8 +210,8 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 
 	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
 		showAlertWithCallBack(
-			'There are unsaved changes in the current map. Please confirm that you would like to load a different map.',
-			'Load anyway',
+			'There are unsaved changes in the current map. Please confirm that you would like to ' + (newMapId === 'new' ? 'create a new map' : 'load a different map.'),
+			(newMapId === 'new' ? 'Create New' : 'Load anyway'),
 			function () {
 				mapController.loadMap(newMapId, true);
 			}
