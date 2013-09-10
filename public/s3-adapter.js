@@ -98,11 +98,38 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager) {
 	});
 	return self;
 };
-MM.GoldPublishingConfigGenerator = function (licenseManager) {
+MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) {
 	'use strict';
-
+	var self = this;
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
+			checkForDuplicate = function (config) {
+				if (mapId && mapId[0] === idPrefix) {
+					return deferred.resolve(config);
+				}
+				var mapUrl = 'http://' + config.s3BucketName + '.s3.amazonaws.com/' +  config.key;
+				jQuery.ajax({
+					url: mapUrl,
+					type: 'GET'
+				}).then(
+					function () {
+						modalConfirmation.showModalToConfirm('Confirm saving',
+							'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
+							'Overwrite',
+							function () {
+								deferred.resolve(config);
+							});
+					},
+					function (err) {
+						if (err.status === 404) {
+							deferred.resolve(config);
+						} else {
+							deferred.reject('network-error');
+						}
+					}
+				);
+//				deferred.resolve(config);
+			},
 			generateConfig = function (licenseKey) {
 				var buildFileName = function (prefix, mapId, fileName) {
 						var mapIdComponents = mapId && mapId.split('/');
@@ -115,13 +142,13 @@ MM.GoldPublishingConfigGenerator = function (licenseManager) {
 					config = {
 						's3UploadIdentifier': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName),
 						'key': licenseKey.account + '/' + fileName,
-						's3BucketName' : 'mindmup-gold',
+						's3BucketName' : licenseKey.accountType,
 						'Content-Type': 'text/plain',
 						'AWSAccessKeyId' : licenseKey.id,
 						'policy': licenseKey.policy,
 						'signature': licenseKey.signature
 					};
-				deferred.resolve(config);
+				checkForDuplicate(config);
 			};
 		licenseManager.retrieveLicense(showAuthentication).then(generateConfig, deferred.reject);
 		return deferred.promise();
@@ -190,7 +217,7 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 					deferred.reject(errorReasonMap[errorReason] || errorReason, errorLabel);
 				});
 			};
-		publishingConfigGenerator.generate(mapId, fileName, prefix, showAuthenticationDialog).then(
+		publishingConfigGenerator.generate(mapId, fileName, prefix, showAuthenticationDialog, s3Url).then(
 			submitS3Form,
 			deferred.reject
 		);
