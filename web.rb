@@ -101,8 +101,8 @@ post "/echo" do
     contents
   end
 end
-get "/embedded/:mapid" do
-  @mapid = params[:mapid]
+get %r{/embedded/(.*)} do |mapid|
+  @mapid = mapid
   erb :embedded
 end
 get %r{/map/(.*)} do |mapid|
