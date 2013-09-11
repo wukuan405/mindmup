@@ -203,7 +203,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	var alertId,
 		showAlertWithCallBack = function (message, prompt, callback) {
 			alert.hide(alertId);
-			modalConfirmation.showModalToConfirm('Please confirm', message, prompt, callback);
+			modalConfirmation.showModalToConfirm('Please confirm', message, prompt).then(callback);
 		},
 		showErrorAlert = function (title, message) {
 			alert.hide(alertId);

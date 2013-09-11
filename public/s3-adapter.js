@@ -100,7 +100,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager) {
 };
 MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) {
 	'use strict';
-	var self = this;
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
 			checkForDuplicate = function (config) {
@@ -113,22 +112,23 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 					type: 'GET'
 				}).then(
 					function () {
-						modalConfirmation.showModalToConfirm('Confirm saving',
+						modalConfirmation.showModalToConfirm(
+							'Confirm saving',
 							'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
-							'Overwrite',
-							function () {
-								deferred.resolve(config);
-							});
+							'Overwrite')
+						.then(
+							deferred.resolve.bind(deferred, config),
+							deferred.reject.bind(deferred, 'user-cancel')
+							);
 					},
 					function (err) {
-						if (err.status === 404) {
+						if (err.status === 404 || err.status === 403) {
 							deferred.resolve(config);
 						} else {
 							deferred.reject('network-error');
 						}
 					}
 				);
-//				deferred.resolve(config);
 			},
 			generateConfig = function (licenseKey) {
 				var buildFileName = function (prefix, mapId, fileName) {
