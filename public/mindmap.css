@@ -191,8 +191,7 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_16.png');
 }
 .repo-b {
-	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_16.png');
-	background-color: red; 
+	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_gold_16.png');
 }
 .repo-g {
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/google_drive.png');
