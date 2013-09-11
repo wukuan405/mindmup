@@ -44,7 +44,7 @@ MM.main = function (config) {
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
 			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm),
-			s3GoldAdapter = new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold'),
+			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold')),
 			s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
@@ -100,6 +100,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
 				jQuery('#modalGoogleOpen').googleDriveOpenWidget(googleDriveAdapter, mapController);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
+				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(s3GoldAdapter, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);

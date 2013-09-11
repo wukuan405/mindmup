@@ -3,6 +3,7 @@ require 'sinatra'
 require 'uuid'
 require 'aws-sdk'
 require 'base64'
+require 'json'
 
 require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
@@ -26,6 +27,7 @@ configure do
   set :s3_key_id, ENV['S3_KEY_ID']
   set :s3_form_expiry, (60*60*24*30)
   set :s3_bucket_name, ENV['S3_BUCKET_NAME']
+  set :s3_gold_bucket_name, ENV['S3_GOLD_BUCKET_NAME']
   set :s3_secret_key, ENV['S3_SECRET_KEY']
   set :s3_upload_folder, ENV['S3_UPLOAD_FOLDER']
   set :default_map, ENV['DEFAULT_MAP']|| "map/default"
@@ -41,6 +43,7 @@ configure do
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
+  set :s3_gold_bucket, s3.buckets[settings.s3_gold_bucket_name]
   set :root, File.dirname(__FILE__)
   set :cache_prevention_key, settings.key_id_generator.generate(:compact)
   set :static, true
@@ -124,6 +127,15 @@ end
 get %r{/browserok/?(.*)} do |mapid|
   session['browserok']=true
   redirect "/#m:#{mapid}"
+end
+
+get %r{/gold/(.*)} do |foldername|
+  content_type :json
+  items = []
+  settings.s3_gold_bucket.objects.with_prefix(foldername + '/') .each(:limit => 100) do |item|
+    items.push([item.key[foldername.length + 1..-1], item.last_modified])
+  end
+  {:items => items}.to_json
 end
 
 post '/import' do

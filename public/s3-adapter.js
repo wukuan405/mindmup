@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, observable */
+/*global FormData, jQuery, MM, observable, _*/
 MM.AjaxPublishingConfigGenerator = function (publishingConfigUrl, folder) {
 	'use strict';
 	this.generate = function () {
@@ -51,6 +51,7 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		}
 	};
 };
+
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager) {
 	'use strict';
 	var self = this,
@@ -157,6 +158,37 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 		return mapId.substr(idPrefix.length + 1);
 	};
 };
+MM.GoldStorageAdapter = function (storageAdapter) {
+	'use strict';
+	storageAdapter.list = function (/* searchText */) {
+		var deferred = jQuery.Deferred();
+		jQuery.ajax({
+			url: '/goldlist/gojko',
+			type: 'GET',
+			dataType: 'json',
+			contentType: 'application/json'
+		}).then(
+			function (result) {
+				var list = [];
+				_.each(result.items, function (element) {
+					list.push({
+						id: 'b/gojko/' + element[0],
+						modifiedDate: element[1],
+						title: decodeURIComponent(element[0])
+					});
+				});
+				console.log(result);
+				deferred.resolve(list);
+			},
+			deferred.reject
+		);
+		return deferred.promise();
+	};
+	storageAdapter.remove = function (/* mapId */) {
+		return jQuery.Deferred.resolve().promise();
+	};
+	return storageAdapter;
+};
 MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) {
 	'use strict';
 	var properties = {editable: true};
@@ -223,4 +255,5 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 		);
 		return deferred.promise();
 	};
+
 };
