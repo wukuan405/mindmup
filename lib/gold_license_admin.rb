@@ -1,12 +1,24 @@
-def generate_user 
+def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket_name 
   require 'aws-sdk'
-  iam = AWS::IAM.new(:access_key_id=>'', :secret_access_key=> '')
-  group = iam.groups['mindmup-gold']
-  user = iam.users.create('dave-from-irb')
-  group.users.add(user)
-  key = user.access_keys.create
-  puts key[:secret_access_key]
-  puts key[:access_key_id]
+  mm_account = 'mindmup-' + account_name
+  iam = AWS::IAM.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
+  user = iam.users.create(mm_account)
+  policy = %Q!{
+    "Version": "2012-10-17",
+    "Statement": [
+      { 
+        "Effect": "Allow",
+        "Action": "s3:*",
+        "Resource":["arn:aws:s3:::#{mm_account}","arn:aws:s3:::#{mm_account}/*"]
+      }
+    ]
+  }!
+  user.policies['s3-bucket-access']= policy
+  s3 = AWS::S3.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
+  bucket = s3.buckets.create(mm_account)
+  bucket.cors=s3.buckets[template_bucket_name].cors
+  
+  user.access_keys.create
 end
 def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb
   expiry_in_secs = expiry_in_days * (60*60*24) 
@@ -29,6 +41,7 @@ module MindMup::GoldLicenseAdmin
   end
   post '/gold_license_admin' do
     content_type 'text/plain'
-    generate_license params[:aws_key], params[:aws_secret], params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i
+    user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name
+    generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i
   end
 end
