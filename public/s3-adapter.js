@@ -1,6 +1,6 @@
 /*jslint forin: true*/
 /*global FormData, jQuery, MM, observable, _*/
-MM.AjaxPublishingConfigGenerator = function (publishingConfigUrl, folder) {
+MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder) {
 	'use strict';
 	this.generate = function () {
 		var deferred = jQuery.Deferred();
@@ -8,13 +8,17 @@ MM.AjaxPublishingConfigGenerator = function (publishingConfigUrl, folder) {
 			publishingConfigUrl,
 			{ dataType: 'json', cache: false }
 		).then(
-			deferred.resolve,
+			function (jsonConfig) {
+				jsonConfig.s3Url = s3Url;
+				jsonConfig.mapId = jsonConfig.s3UploadIdentifier;
+				deferred.resolve(jsonConfig);
+			},
 			deferred.reject.bind(deferred, 'network-error')
 		);
 		return deferred.promise();
 	};
 	this.mapUrl = function (mapId) {
-		return folder + mapId + '.json';
+		return s3Url + folder + mapId + '.json';
 	};
 };
 MM.GoldLicenseManager = function (storage, storageKey) {
@@ -95,13 +99,14 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 					},
 					fileName = buildFileName(idPrefix, mapId, defaultFileName),
 					config = {
-						's3UploadIdentifier': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName),
-						'key': licenseKey.account + '/' + fileName,
-						's3BucketName' : licenseKey.accountType,
+						'mapId': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName), //mapId
+						'key': fileName,
+						's3BucketName' : 'mindmup-' + licenseKey.account,
 						'Content-Type': 'text/plain',
 						'AWSAccessKeyId' : licenseKey.id,
 						'policy': licenseKey.policy,
-						'signature': licenseKey.signature
+						'signature': licenseKey.signature,
+						's3Url': 'http://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
 					};
 				checkForDuplicate(config);
 			};
@@ -109,7 +114,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 		return deferred.promise();
 	};
 	this.mapUrl = function (mapId, idPrefix) {
-		return mapId.substr(idPrefix.length + 1);
+		return 'http://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/');
 	};
 };
 MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
@@ -117,7 +122,7 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 	storageAdapter.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			ajaxS3List = function (license) {
-				var url = 'http://' + license.accountType + '.s3.amazonaws.com/?prefix=' + license.account + '&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
+				var url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
 				jQuery.ajax({
 					url: url,
 					type: 'GET'
@@ -128,9 +133,9 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 						parsed.find('Contents').each(function () {
 							var element = jQuery(this);
 							list.push({
-								id: storageAdapter.prefix + '/' + element.children('Key').text(),
+								id: storageAdapter.prefix + '/' + license.account + '/' + encodeURIComponent(element.children('Key').text()),
 								modifiedDate: element.children('LastModified').text(),
-								title:  decodeURIComponent(element.children('Key').text().substr(license.account.length + 1))
+								title:  decodeURIComponent(element.children('Key').text())
 							});
 						});
 						deferred.resolve(list);
@@ -152,7 +157,7 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 	};
 	return storageAdapter;
 };
-MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) {
+MM.S3Adapter = function (publishingConfigGenerator, prefix, description) {
 	'use strict';
 	var properties = {editable: true};
 	this.description = description;
@@ -166,10 +171,10 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 			onMapLoaded = function (result) {
 				deferred.resolve(result, mapId, 'application/json', properties);
 			},
-			mapUrl = s3Url + publishingConfigGenerator.mapUrl(mapId, prefix);
+			mapUrl = publishingConfigGenerator.mapUrl(mapId, prefix);
 		jQuery.ajax(
 			mapUrl,
-			{ dataType: 'json', success: onMapLoaded, error: deferred.reject }
+			{ dataType: 'json', cache: false, success: onMapLoaded, error: deferred.reject }
 		);
 		return deferred.promise();
 	};
@@ -184,13 +189,13 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 				formData.append('Content-Type', 'text/plain');
 				formData.append('file', contentToSave);
 				jQuery.ajax({
-					url: s3Url,
+					url: publishingConfig.s3Url,
 					type: 'POST',
 					processData: false,
 					contentType: false,
 					data: formData
 				}).done(function () {
-					deferred.resolve(publishingConfig.s3UploadIdentifier, properties);
+					deferred.resolve(publishingConfig.mapId, properties);
 				}).fail(function (evt) {
 					var errorReason = 'network-error',
 						errorLabel = (evt && evt.responseText) || 'network-error',
@@ -212,7 +217,7 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 					deferred.reject(errorReasonMap[errorReason] || errorReason, errorLabel);
 				});
 			};
-		publishingConfigGenerator.generate(mapId, fileName, prefix, showAuthenticationDialog, s3Url).then(
+		publishingConfigGenerator.generate(mapId, fileName, prefix, showAuthenticationDialog).then(
 			submitS3Form,
 			deferred.reject
 		);
