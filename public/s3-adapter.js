@@ -135,7 +135,7 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 					},
 					function (err) {
 						var reason = 'network-error';
-						if (err.status === 403) {
+						if (err.status === 404 || err.status === 403) {
 							reason = 'not-authorised';
 						}
 						deferred.reject(reason);
