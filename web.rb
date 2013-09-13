@@ -8,6 +8,7 @@ require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
 require File.dirname(__FILE__)+'/lib/github_routes.rb'
 require File.dirname(__FILE__)+'/lib/dropbox_routes.rb'
+require File.dirname(__FILE__)+'/lib/gold_license_admin.rb'
 require 'net/http'
 
 
@@ -26,6 +27,7 @@ configure do
   set :s3_key_id, ENV['S3_KEY_ID']
   set :s3_form_expiry, (60*60*24*30)
   set :s3_bucket_name, ENV['S3_BUCKET_NAME']
+  set :s3_gold_bucket_name, ENV['S3_GOLD_BUCKET_NAME'] || 'mindmup-gold'
   set :s3_secret_key, ENV['S3_SECRET_KEY']
   set :s3_upload_folder, ENV['S3_UPLOAD_FOLDER']
   set :default_map, ENV['DEFAULT_MAP']|| "map/default"
@@ -85,11 +87,6 @@ get "/s3/:mapid" do
   redirect "/#m:#{params[:mapid]}"
 end
 
-get "/s3proxy/:mapid" do
-  content_type 'application/json'
-  settings.s3_bucket.objects[map_key(params[:mapid])].read
-end
-
 post "/echo" do
   attachment params[:title]
   contents = params[:map]
@@ -106,8 +103,8 @@ post "/echo" do
     contents
   end
 end
-get "/embedded/:mapid" do
-  @mapid = params[:mapid]
+get %r{/embedded/(.*)} do |mapid|
+  @mapid = mapid
   erb :embedded
 end
 get %r{/map/(.*)} do |mapid|
@@ -130,6 +127,7 @@ get %r{/browserok/?(.*)} do |mapid|
   session['browserok']=true
   redirect "/#m:#{mapid}"
 end
+
 
 post '/import' do
   file = params['file']
@@ -161,6 +159,8 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
+
+include MindMup::GoldLicenseAdmin
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
 include Sinatra::UserAgentHelpers

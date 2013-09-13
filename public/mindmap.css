@@ -190,6 +190,9 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 .repo-a {
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_16.png');
 }
+.repo-b {
+	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_gold_16.png');
+}
 .repo-g {
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/google_drive.png');
 }
@@ -209,7 +212,7 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 a.repo, a.repo, a.repo {
 	margin-left: 5px;
 }
-span.repo-g, span.repo-a, span.repo-o {
+span.repo-g, span.repo-a, span.repo-o, span.repo-b {
 	padding-left:16px;
 }
 .dropdown-menu li a {
@@ -378,11 +381,14 @@ input.noglow {
 }
 
 
-.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n {
+.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n, .visible-map-source-b {
 	display: none;
 }
 
 .map-source-a .visible-map-source-a {
+	display: inherit;
+}
+.map-source-b .visible-map-source-b {
 	display: inherit;
 }
 .map-source-g .visible-map-source-g {
@@ -479,4 +485,8 @@ input.noglow {
   padding-right: 2px !important;
   margin-right: 2px !important;
   cursor: pointer;
+}
+#modalGoldLicense textarea {
+	width: 95%;
+	height: 200px;
 }

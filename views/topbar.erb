@@ -14,14 +14,17 @@
 			<a href="#"><i class="icon-cloud-upload"></i>&nbsp;Open/Import</a>
 			<ul data-mm-role="open-sources" class="dropdown-menu" role="menu">
 				<li  class="hidden-touch">
-					<a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-upload"></i>&nbsp;From a local drive</a>
+					<a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;From a local drive</a>
 				</li>
 				<li>
-					<a data-event-type="Open from Google" data-category="Top Bar" data-mm-role="google-drive-open"><i class="icon-cloud-upload"></i>&nbsp;From Google Drive</a>
+					<a data-event-type="Open from Google" data-category="Top Bar" data-mm-role="google-drive-open"><span class="repo repo-g"></span>&nbsp;From Google Drive</a>
 				</li>
 				<li>
-					<a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;From Browser Storage</a>
+					<a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><span class="repo repo-o"></span>&nbsp;From Browser Storage</a>
 				</li>
+        <li>
+          <a data-event-type="Open from Mindmup Gold Storage" data-category="Top Bar" data-target="#modalGoldStorageOpen" data-toggle="modal"><span class="repo repo-b"></span>&nbsp;From Mindmup Gold Storage</a>
+        </li>
 			</ul>
 			</li>
             <li class="divider hidden-touch"></li>
@@ -35,6 +38,7 @@
               <a href="#"><i class="icon-save"></i>&nbsp;Save As</a>
               <ul data-mm-role="save" class="dropdown-menu" role="menu">
 				<li><a data-mm-repository='a' href="#" data-category="Top Bar" data-event-type="Save to MindMup">MindMup</a></li>
+				<li><a data-mm-repository='b' href="#" data-category="Top Bar" data-event-type="Save to MindMup Gold">MindMup&nbsp;Gold</a></li>
 				<li><a data-mm-repository='g' href="#" data-category="Top Bar" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
 				<li><a data-mm-repository='o' href="#" data-category="Top Bar" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
 			  </ul>
@@ -58,6 +62,13 @@
                 <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
                 <li class="visible-map-source-a hidden-map-changed" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
                 <li class="visible-map-source-a visible-map-changed disabled"><a>Save this map first to share it</a></li>
+
+                <li class="visible-map-source-b"><a data-target="#modalEmbedMap" data-toggle="modal" data-category='Top Bar' data-event-type='Embed this map'><i class="icon-code"></i>&nbsp;Embed this map</a></li>
+                <li class="visible-map-source-b"><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
+                <li class="visible-map-source-b"><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
+                <li class="visible-map-source-b"><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
+                <li class="visible-map-source-b" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
+
                 <li class="visible-map-source-g"><a class="repo repo-g" href="#" data-mm-role="share-google" data-category="Top Bar" data-event-type="Share Google">Share via Google Drive</a></li>
                 <li class="visible-map-source-g" data-mm-role="save"><a data-mm-repository="a">Move this map to MindMup to embed it</a></li>
                 <li class="visible-map-source-o" data-mm-role="save"><a data-mm-repository="a">Move this map online to share or embed it</a></li>
@@ -137,6 +148,7 @@
           <button class="btn dropdown-toggle" data-toggle='dropdown'><span data-mm-role='currentrepo' class='repo repo-a'>&nbsp;</span><b class="caret"></b></button>
           <ul class="dropdown-menu">
             <li><a data-mm-repository='a' rel="nofollow" href="#" data-category="Top Bar" data-event-type="Save to MindMup">MindMup</a></li>
+			<li><a data-mm-repository='b' rel="nofollow" href="#" data-category="Top Bar" data-event-type="Save to MindMup Gold">MindMup&nbsp;Gold</a></li>
             <li><a data-mm-repository='g' rel="nofollow" href="#" data-category="Top Bar" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
             <li><a data-mm-repository='o' rel="nofollow" href="#" data-category="Top Bar" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
           </ul>
@@ -146,6 +158,7 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="About" data-event-type="Open"><i class="icon-info-sign"></i></a>
           <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             <li> <a href="#" class="menuAbout" data-target="#modalAbout" data-toggle="modal" data-category="About" data-event-type="What is MindMup"><i class="icon-info"></i>&nbsp;What is MindMup</a> </li>
+            <li> <a href="#" class="menuAbout" data-target="#modalGoldLicense" data-toggle="modal" data-category="About" data-event-type="MindMup Gold License"><i class="icon-key"></i>&nbsp;MindMup Gold</a> </li>
             <li> <a target="_blank" data-category="About" href="http://mindmup.uservoice.com/" data-event-type="Vote on features"><i class="icon-bullhorn"></i>&nbsp;Vote on features</a> </li>
             <li> <a href="#" class="menuterms" data-target="#modalTerms" data-toggle="modal" data-category="About" data-event-type="Legal info"><i class="icon-legal"></i>&nbsp;Terms of use</a> </li>
             <li> <a href="/legal/privacy" class="menuterms" target="_blank" data-category="About" data-event-type="Privacy Policy"><i class="icon-lock"></i>&nbsp;Privacy Policy</a> </li>

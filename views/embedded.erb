@@ -80,6 +80,7 @@
         var config = {
               s3Url: 'http://<%= settings.s3_website %>/',
               s3Folder: '<%= settings.s3_upload_folder %>/',
+              s3GoldUrl: 'http://<%= ENV['S3_GOLD_WEBSITE'] %>/',
               publishingConfigUrl: '',
               baseUrl: '<%= settings.base_url%>',
               proxyLoadUrl: '<%= settings.proxy_load_url %>',
@@ -87,8 +88,17 @@
               mapId:'<%=@mapid%>'
             },
             activityLog = console,
-            s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
-            mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
+			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
+            s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
+			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(),
+			s3GoldAdapter = new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold'),
+			mapSource = function (mapId) {
+				if (s3GoldAdapter.recognises(mapId)) {
+					return s3GoldAdapter;
+				}
+				return s3Adapter;
+			},
+            mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(mapSource(config.mapId))),
             mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);          
           jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, config.renderImages);
           jQuery('.close.attachment').click(function () {

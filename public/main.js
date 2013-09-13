@@ -41,12 +41,17 @@ MM.main = function (config) {
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
-			s3Adapter = new MM.S3Adapter(config.s3Url, config.s3Folder, activityLog, config.publishingConfigUrl, config.baseUrl + config.proxyLoadUrl),
+			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
+			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
+			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm),
+			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold'), goldLicenseManager),
+			s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
 			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
 			mapController = new MM.MapController([
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
+				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3GoldAdapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
@@ -95,6 +100,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
+				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(s3GoldAdapter, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);
@@ -113,6 +119,7 @@ MM.main = function (config) {
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
 			};
 		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
