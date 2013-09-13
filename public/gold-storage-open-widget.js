@@ -21,19 +21,6 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 				callback();
 			});
 		},
-		restoreMap = function (mapId, map) {
-			goldMapStorageAdapter.saveMap(map, mapId, mapId, false).then(fileRetrieval);
-		},
-		deleteMap = function (mapId, title) {
-			goldMapStorageAdapter.loadMap(mapId).then(
-				function (map) {
-					goldMapStorageAdapter.remove(mapId).then(
-						function () {
-							fileRetrieval();
-							showAlert('Map "' + title + '" removed.', 'info', 'Undo', restoreMap.bind(undefined, mapId, map));
-						});
-				});
-		},
 		loaded = function (files) {
 			statusDiv.empty();
 			var sorted = [];
@@ -52,7 +39,6 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 								mapController.loadMap(file.id);
 							});
 						added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedDate).toLocaleString());
-						added.find('[data-mm-role=map-delete]').click(deleteMap.bind(undefined, file.id, file.title));
 					}
 				});
 			} else {
@@ -60,9 +46,29 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 			}
 		},
 		fileRetrieval = function () {
+			var networkError = function () {
+				showAlert('Unable to retrieve files from Mindmup Gold due to a network error. Please try again later. If the problem persists, please <a href="mailto:contact@mindmup.com">contact us</a>.', 'error');
+			};
 			parent.empty();
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
-			goldMapStorageAdapter.list().then(loaded, function () { showAlert('Unable to retrieve files from Mindmup Gold', 'error'); });
+			goldMapStorageAdapter.list(false).then(loaded,
+				function (reason) {
+					if (reason === 'not-authorised') {
+						goldMapStorageAdapter.list(true).then(loaded,
+							function (reason) {
+								if (reason === 'user-cancel') {
+									modal.modal('hide');
+								} else if (reason === 'not-authorised') {
+									showAlert('The license key is invalid. To obtain or renew a MindMup Gold License, please send us an e-mail at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a>', 'error');
+								} else {
+									networkError();
+
+								}
+							});
+					} else {
+						networkError();
+					}
+				});
 		};
 	template.detach();
 	modal.on('show', function () {

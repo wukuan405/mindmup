@@ -51,54 +51,6 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		}
 	};
 };
-
-jQuery.fn.goldLicenseEntryWidget = function (licenseManager) {
-	'use strict';
-	var self = this,
-		input = self.find('textarea'),
-		controlGroup = self.find('.control-group'),
-		commit = self.find('[data-mm-role=commit]'),
-		remove = self.find('[data-mm-role=remove]');
-	self.on('show', function () {
-		controlGroup.removeClass('error');
-		input.val('');
-	});
-	self.on('shown', function () {
-		var existing = licenseManager.getLicense();
-		input.val(existing && JSON.stringify(existing));
-		input.focus();
-	});
-	self.on('hidden', function () {
-		licenseManager.cancelLicenseEntry();
-		remove.show();
-	});
-	self.find('form').submit(function () {
-		commit.click();
-		return false;
-	});
-	remove.click(function () {
-		licenseManager.removeLicense();
-	});
-	commit.click(function () {
-		var licenseText = input.val();
-		if (!licenseText) {
-			controlGroup.addClass('error');
-			return false;
-		}
-		try {
-			licenseManager.storeLicense(JSON.parse(licenseText));
-		} catch (e) {
-			controlGroup.addClass('error');
-			return false;
-		}
-		self.modal('hide');
-	});
-	licenseManager.addEventListener('license-entry-required', function () {
-		remove.hide();
-		self.modal('show');
-	});
-	return self;
-};
 MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) {
 	'use strict';
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
@@ -116,11 +68,11 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 						modalConfirmation.showModalToConfirm(
 							'Confirm saving',
 							'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
-							'Overwrite')
-						.then(
+							'Overwrite'
+						).then(
 							deferred.resolve.bind(deferred, config),
 							deferred.reject.bind(deferred, 'user-cancel')
-							);
+						);
 					},
 					function (err) {
 						if (err.status === 404 || err.status === 403) {
@@ -158,34 +110,43 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 		return mapId.substr(idPrefix.length + 1);
 	};
 };
-MM.GoldStorageAdapter = function (storageAdapter) {
+MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 	'use strict';
-	storageAdapter.list = function (/* searchText */) {
-		var deferred = jQuery.Deferred();
-		jQuery.ajax({
-			url: '/goldlist/gojko',
-			type: 'GET',
-			dataType: 'json',
-			contentType: 'application/json'
-		}).then(
-			function (result) {
-				var list = [];
-				_.each(result.items, function (element) {
-					list.push({
-						id: 'b/gojko/' + element[0],
-						modifiedDate: element[1],
-						title: decodeURIComponent(element[0])
-					});
-				});
-				console.log(result);
-				deferred.resolve(list);
-			},
+	storageAdapter.list = function (showLicenseDialog) {
+		var deferred = jQuery.Deferred(),
+			ajaxS3List = function (license) {
+				var url = 'http://' + license.accountType + '.s3.amazonaws.com/?prefix=' + license.account + '&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
+				jQuery.ajax({
+					url: url,
+					type: 'GET'
+				}).then(
+					function (result) {
+						var parsed = jQuery(result),
+							list = [];
+						parsed.find('Contents').each(function () {
+							var element = jQuery(this);
+							list.push({
+								id: storageAdapter.prefix + '/' + element.children('Key').text(),
+								modifiedDate: element.children('LastModified').text(),
+								title:  decodeURIComponent(element.children('Key').text().substr(license.account.length + 1))
+							});
+						});
+						deferred.resolve(list);
+					},
+					function (err) {
+						var reason = 'network-error';
+						if (err.status === 403) {
+							reason = 'not-authorised';
+						}
+						deferred.reject(reason);
+					}
+				);
+			};
+		licenseManager.retrieveLicense(showLicenseDialog).then(
+			ajaxS3List,
 			deferred.reject
 		);
 		return deferred.promise();
-	};
-	storageAdapter.remove = function (/* mapId */) {
-		return jQuery.Deferred.resolve().promise();
 	};
 	return storageAdapter;
 };
@@ -193,7 +154,7 @@ MM.S3Adapter = function (s3Url, publishingConfigGenerator, prefix, description) 
 	'use strict';
 	var properties = {editable: true};
 	this.description = description;
-
+	this.prefix = prefix;
 	this.recognises = function (mapId) {
 		return mapId && mapId[0] === prefix;
 	};

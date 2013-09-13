@@ -44,7 +44,7 @@ MM.main = function (config) {
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
 			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm),
-			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold')),
+			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(config.s3GoldUrl, goldPublishingConfigGenerator, 'b', 'MindMup Gold'), goldLicenseManager),
 			s3Adapter = new MM.S3Adapter(config.s3Url, ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
@@ -119,7 +119,7 @@ MM.main = function (config) {
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
-				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager);
+				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
 			};
 		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);

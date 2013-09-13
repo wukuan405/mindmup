@@ -43,7 +43,6 @@ configure do
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
-  set :s3_gold_bucket, s3.buckets[settings.s3_gold_bucket_name]
   set :root, File.dirname(__FILE__)
   set :cache_prevention_key, settings.key_id_generator.generate(:compact)
   set :static, true
@@ -129,14 +128,6 @@ get %r{/browserok/?(.*)} do |mapid|
   redirect "/#m:#{mapid}"
 end
 
-get %r{/gold/(.*)} do |foldername|
-  content_type :json
-  items = []
-  settings.s3_gold_bucket.objects.with_prefix(foldername + '/') .each(:limit => 100) do |item|
-    items.push([item.key[foldername.length + 1..-1], item.last_modified])
-  end
-  {:items => items}.to_json
-end
 
 post '/import' do
   file = params['file']
