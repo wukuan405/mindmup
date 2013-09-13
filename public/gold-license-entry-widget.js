@@ -2,6 +2,7 @@
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 	'use strict';
 	var self = this,
+		closeReason,
 		input = self.find('textarea'),
 		controlGroup = self.find('.control-group'),
 		commit = self.find('[data-mm-role=commit]'),
@@ -10,6 +11,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 		activityLog.log('Gold', 'license-show');
 		controlGroup.removeClass('error');
 		input.val('');
+		closeReason = undefined;
 	});
 	self.on('shown', function () {
 		var existing = licenseManager.getLicense();
@@ -17,7 +19,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 		input.focus();
 	});
 	self.on('hidden', function () {
-		licenseManager.cancelLicenseEntry();
+		if (closeReason === 'removeLicense') {
+			licenseManager.removeLicense();
+		} else if (!closeReason) {
+			licenseManager.cancelLicenseEntry();
+		} else {
+			licenseManager.storeLicense(closeReason);
+		}
 		remove.show();
 	});
 	self.find('form').submit(function () {
@@ -25,21 +33,22 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 		return false;
 	});
 	remove.click(function () {
-		licenseManager.removeLicense();
+		closeReason = 'removeLicense';
 	});
 	commit.click(function () {
 		activityLog.log('Gold', 'license-set');
-		var licenseText = input.val();
+		var licenseText = input.val(), license;
 		if (!licenseText) {
 			controlGroup.addClass('error');
 			return false;
 		}
 		try {
-			licenseManager.storeLicense(JSON.parse(licenseText));
+			license = JSON.parse(licenseText);
 		} catch (e) {
 			controlGroup.addClass('error');
 			return false;
 		}
+		closeReason = license;
 		self.modal('hide');
 	});
 	licenseManager.addEventListener('license-entry-required', function () {
