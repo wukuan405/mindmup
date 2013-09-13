@@ -65,6 +65,8 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 
 								}
 							});
+					} else if (reason === 'user-cancel') {
+						modal.modal('hide');
 					} else {
 						networkError();
 					}
