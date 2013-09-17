@@ -226,6 +226,7 @@ jQuery.fn.tableEditWidget = function (contentRefreshCallBack) {
 	modal.find('[data-mm-role=append]').click(function () {
 		var newItem = template.clone().attr('data-mm-role', template.attr('data-mm-new-role')).appendTo(modal.find('[data-mm-role=status-list]'));
 		rebind(newItem);
+		newItem.find('[data-mm-default-edit]').click();
 	});
 	return modal;
 };
