@@ -2168,8 +2168,9 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
 		};
 	mapModel.addEventListener('nodeCreated', function (n) {
-		var node = findNodeOnStage(n.id);
-		node.on('dragstart', function () {
+		var node = findNodeOnStage(n.id), shouldPositionAbsolutely;
+		node.on('dragstart', function (evt) {
+			shouldPositionAbsolutely = evt.shiftKey;
 			node.moveToTop();
 			node.setShadowOffset(8);
 			node.setOpacity(0.3);
@@ -2183,7 +2184,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				node.getX(),
 				node.getY(),
 				evt.shiftKey,
-				evt.shiftKey
+				shouldPositionAbsolutely
 			);
 		});
 		node.on('dragend', function (evt) {
@@ -2197,7 +2198,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				node.getX(),
 				node.getY(),
 				evt.shiftKey,
-				evt.shiftKey
+				shouldPositionAbsolutely
 			);
 		});
 	});
@@ -2779,9 +2780,6 @@ Kinetic.Idea.prototype.setStyle = function () {
 		getDash = function () {
 			if (!self.isActivated) {
 				return [];
-			}
-			if (self.mmAttr && self.mmAttr.position) {
-				return [5, 6];
 			}
 			return [5, 3];
 		};
