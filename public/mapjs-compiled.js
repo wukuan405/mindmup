@@ -266,6 +266,11 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		if (siblingsAfter.length === 0) { return false; }
 		return parentIdea.ideas[_.min(siblingsAfter, Math.abs)].id;
 	};
+	contentAggregate.sameSideSiblingIds = function (subIdeaId) {
+		var parentIdea = contentAggregate.findParent(subIdeaId),
+			currentRank = parentIdea.findChildRankById(subIdeaId);
+		return _.without(_.map(_.pick(parentIdea.ideas, sameSideSiblingRanks(parentIdea, currentRank)), function (i) { return i.id; }), subIdeaId);
+	};
 	contentAggregate.getAttrById = function (ideaId, attrName) {
 		var idea = findIdeaById(ideaId);
 		return idea && idea.getAttr(attrName);
@@ -411,7 +416,8 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				return result;
 			},
 			newIdea,
-			newRank;
+			newRank,
+			oldPosition;
 		if (initialId) {
 			cachedId = parseInt(initialId, 10) - 1;
 		}
@@ -423,6 +429,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		if (initialId) {
 			invalidateIdCache();
 		}
+		updateAttr(newIdea, 'position');
 		logChange('paste', [parentIdeaId, jsonToPaste, newIdea.id], function () {
 			delete pasteParent.ideas[newRank];
 		}, originSession);
@@ -538,7 +545,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('changeParent', arguments);
 	};
 	commandProcessors.changeParent = function (originSession, ideaId, newParentId) {
-		var oldParent, oldRank, newRank, idea, parent = findIdeaById(newParentId);
+		var oldParent, oldRank, newRank, idea, parent = findIdeaById(newParentId), oldPosition;
 		if (ideaId == newParentId) {
 			return false;
 		}
@@ -561,8 +568,11 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 		oldRank = oldParent.findChildRankById(ideaId);
 		newRank = appendSubIdea(parent, idea);
+		oldPosition = idea.getAttr('position');
+		updateAttr(idea, 'position');
 		delete oldParent.ideas[oldRank];
 		logChange('changeParent', [ideaId, newParentId], function () {
+			updateAttr(idea, 'position', oldPosition);
 			oldParent.ideas[oldRank] = idea;
 			delete parent.ideas[newRank];
 		}, originSession);
@@ -822,154 +832,349 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 };
 /*jslint nomen: true*/
 /*global _, Color, MAPJS*/
-(function () {
+MAPJS.defaultStyles = {
+	root: {background: '#22AAE0'},
+	nonRoot: {background: '#E0E0E0'}
+};
+MAPJS.layoutLinks = function (idea, visibleNodes) {
 	'use strict';
-	MAPJS.calculateDimensions = function calculateDimensions(idea, dimensionProvider, margin) {
-		var dimensions = dimensionProvider(idea.title),
-			result = _.extend(_.pick(idea, ['id', 'title', 'attr']), {
-				width: dimensions.width + 2 * margin,
-				height: dimensions.height + 2 * margin
-			}),
-			leftOrRight,
-			subIdeaWidths = [0, 0],
-			subIdeaHeights = [0, 0],
-			subIdeaRank,
-			subIdea,
-			subIdeaDimensions;
-		if (idea.ideas && !idea.getAttr('collapsed')) {
-			result.ideas = {};
-			for (subIdeaRank in idea.ideas) {
-				subIdea = idea.ideas[subIdeaRank];
-				subIdeaDimensions = calculateDimensions(subIdea, dimensionProvider, margin);
-				result.ideas[subIdeaRank] = subIdeaDimensions;
-				leftOrRight = subIdeaRank > 0 ? 1 : 0;
-				subIdeaWidths[leftOrRight] = Math.max(subIdeaWidths[leftOrRight], subIdeaDimensions.Width);
-				subIdeaHeights[leftOrRight] += subIdeaDimensions.Height;
-			}
+	var result = {};
+	_.each(idea.links, function (link) {
+		if (visibleNodes[link.ideaIdFrom] && visibleNodes[link.ideaIdTo]) {
+			result[link.ideaIdFrom + '_' + link.ideaIdTo] = {
+				ideaIdFrom: link.ideaIdFrom,
+				ideaIdTo: link.ideaIdTo,
+				attr: _.clone(link.attr)
+			};
+			//todo - clone
 		}
-		result.WidthLeft = subIdeaWidths[0] || 0;
-		result.Width = result.width + subIdeaWidths[0] + subIdeaWidths[1];
-		result.Height = Math.max(result.height, subIdeaHeights[0], subIdeaHeights[1]);
-		return result;
+	});
+	return result;
+};
+MAPJS.calculateFrame = function (nodes, margin) {
+	'use strict';
+	margin = margin || 0;
+	var result = {
+		top: _.min(nodes, function (node) {return node.y; }).y - margin,
+		left: _.min(nodes, function (node) {return node.x; }).x - margin
 	};
-	MAPJS.calculatePositions = function calculatePositions(idea, dimensionProvider, margin, x0, y0, result, isLeftSubtree) {
-		var ranks,
-			subIdeaRank,
-			i,
-			subIdeaDimensions,
-			leftOrRight,
-			totalHeights = [0, 0],
-			subIdeaCurrentY0 = [y0, y0];
-		result = result || MAPJS.calculateDimensions(idea, dimensionProvider, margin);
-		x0 += result.WidthLeft;
-		result.x = x0 + margin;
-		result.y = y0 + 0.5 * (result.Height - result.height) + margin;
-		if (result.ideas) {
-			ranks = [];
-			for (subIdeaRank in result.ideas) {
-				ranks.push(parseFloat(subIdeaRank));
-				subIdeaDimensions = result.ideas[subIdeaRank];
-				if (isLeftSubtree) {
-					subIdeaRank = -subIdeaRank;
-				}
-				totalHeights[subIdeaRank < 0 ? 0 : 1] += subIdeaDimensions.Height;
-			}
-			subIdeaCurrentY0[0] += 0.5 * (result.Height - totalHeights[0]);
-			subIdeaCurrentY0[1] += 0.5 * (result.Height - totalHeights[1]);
-			ranks.sort(function ascending(firstRank, secondRank) {
-				if (firstRank >= 0 && secondRank >= 0) {
-					return secondRank - firstRank;
-				}
-				if (firstRank < 0 && secondRank < 0) {
-					return firstRank - secondRank;
-				}
-				return secondRank - firstRank;
-			});
-			for (i = ranks.length - 1; i >= 0; i -= 1) {
-				subIdeaRank = ranks[i];
-				subIdeaDimensions = result.ideas[subIdeaRank];
-				if (isLeftSubtree) {
-					subIdeaRank = -subIdeaRank;
-				}
-				leftOrRight = subIdeaRank > 0 ? 1 : 0;
-				calculatePositions(undefined, dimensionProvider, margin, x0 + (leftOrRight ? result.width : -subIdeaDimensions.width), subIdeaCurrentY0[leftOrRight], subIdeaDimensions, isLeftSubtree || leftOrRight === 0);
-				subIdeaCurrentY0[leftOrRight] += subIdeaDimensions.Height;
+	result.width = margin + _.max(_.map(nodes, function (node) { return node.x + node.width; })) - result.left;
+	result.height = margin + _.max(_.map(nodes, function (node) { return node.y + node.height; })) - result.top;
+	return result;
+};
+MAPJS.contrastForeground = function (background) {
+	'use strict';
+	/*jslint newcap:true*/
+	var luminosity = Color(background).luminosity();
+	if (luminosity < 0.5) {
+		return '#EEEEEE';
+	}
+	if (luminosity < 0.9) {
+		return '#4F4F4F';
+	}
+	return '#000000';
+};
+MAPJS.Outline = function (topBorder, bottomBorder) {
+	'use strict';
+	var shiftBorder = function (border, deltaH) {
+		return _.map(border, function (segment) {
+			return {
+				l: segment.l,
+				h: segment.h + deltaH
+			};
+		});
+	};
+	this.initialHeight = function () {
+		return this.bottom[0].h - this.top[0].h;
+	};
+	this.borders = function () {
+		return _.pick(this, 'top', 'bottom');
+	};
+	this.spacingAbove = function (outline) {
+		var i = 0, j = 0, result = 0, li = 0, lj = 0;
+		while (i < this.bottom.length && j < outline.top.length) {
+			result = Math.max(result, this.bottom[i].h - outline.top[j].h);
+			if (li + this.bottom[i].l < lj + outline.top[j].l) {
+				li += this.bottom[i].l;
+				i += 1;
+			} else if (li + this.bottom[i].l === lj + outline.top[j].l) {
+				li += this.bottom[i].l;
+				i += 1;
+				lj += outline.top[j].l;
+				j += 1;
+			} else {
+				lj += outline.top[j].l;
+				j += 1;
 			}
 		}
 		return result;
 	};
-	MAPJS.defaultStyles = {
-		root: {background: '#22AAE0'},
-		nonRoot: {background: '#E0E0E0'}
+	this.indent = function (horizontalIndent, margin) {
+		if (!horizontalIndent) {
+			return this;
+		}
+		var top = this.top.slice(),
+			bottom = this.bottom.slice(),
+			vertCenter = (bottom[0].h + top[0].h) / 2;
+		top.unshift({h: vertCenter - margin / 2, l: horizontalIndent});
+		bottom.unshift({h: vertCenter + margin / 2, l: horizontalIndent});
+		return new MAPJS.Outline(top, bottom);
 	};
-
-	MAPJS.calculateLayout = function (idea, dimensionProvider, margin) {
-		margin = margin || 10;
+	this.stackBelow = function (outline, margin) {
+		var spacing = outline.spacingAbove(this),
+			top = MAPJS.Outline.extendBorder(outline.top, shiftBorder(this.top, spacing + margin)),
+			bottom = MAPJS.Outline.extendBorder(shiftBorder(this.bottom, spacing + margin), outline.bottom);
+		return new MAPJS.Outline(
+			top,
+			bottom
+		);
+	};
+	this.expand = function (initialTopHeight, initialBottomHeight) {
+		var topAlignment = initialTopHeight - this.top[0].h,
+			bottomAlignment = initialBottomHeight - this.bottom[0].h,
+			top = shiftBorder(this.top, topAlignment),
+			bottom = shiftBorder(this.bottom, bottomAlignment);
+		return new MAPJS.Outline(
+			top,
+			bottom
+		);
+	};
+	this.insertAtStart = function (dimensions, margin) {
+		var suboutlineHeight = this.initialHeight(),
+			alignment = 0, //-1 * this.top[0].h - suboutlineHeight * 0.5,
+			topBorder = shiftBorder(this.top, alignment),
+			bottomBorder = shiftBorder(this.bottom, alignment),
+			easeIn = function (border) {
+				border[0].l *= 0.5;
+				border[1].l += border[0].l;
+			};
+		topBorder[0].l += margin;
+		bottomBorder[0].l += margin;
+		topBorder.unshift({h: -0.5 * dimensions.height, l: dimensions.width});
+		bottomBorder.unshift({h: 0.5 * dimensions.height, l: dimensions.width});
+		if (topBorder[0].h > topBorder[1].h) {
+			easeIn(topBorder);
+		}
+		if (bottomBorder[0].h < bottomBorder[1].h) {
+			easeIn(bottomBorder);
+		}
+		return new MAPJS.Outline(topBorder, bottomBorder);
+	};
+	this.top = topBorder.slice();
+	this.bottom = bottomBorder.slice();
+};
+MAPJS.Outline.borderLength = function (border) {
+	'use strict';
+	return _.reduce(border, function (seed, el) {
+		return seed + el.l;
+	}, 0);
+};
+MAPJS.Outline.borderSegmentIndexAt = function (border, length) {
+	'use strict';
+	var l = 0, i = -1;
+	while (l <= length) {
+		i += 1;
+		if (i >= border.length) {
+			return -1;
+		}
+		l += border[i].l;
+	}
+	return i;
+};
+MAPJS.Outline.extendBorder = function (originalBorder, extension) {
+	'use strict';
+	var result = originalBorder.slice(),
+		origLength = MAPJS.Outline.borderLength(originalBorder),
+		i = MAPJS.Outline.borderSegmentIndexAt(extension, origLength),
+		lengthToCut;
+	if (i >= 0) {
+		lengthToCut = MAPJS.Outline.borderLength(extension.slice(0, i + 1));
+		result.push({h: extension[i].h, l: lengthToCut - origLength});
+		result = result.concat(extension.slice(i + 1));
+	}
+	return result;
+};
+MAPJS.Tree = function (options) {
+	'use strict';
+	_.extend(this, options);
+	this.toLayout = function (level, x, y, parentId) {
+		x = x || 0;
+		y = y || 0;
 		var result = {
 			nodes: {},
-			connectors: {},
-			links: {}
-		},
-			root = MAPJS.calculatePositions(idea, dimensionProvider, margin, 0, 0),
-			calculateLayoutInner = function (positions, level) {
-				var subIdeaRank, from, to, isRoot = level === 1,
-					defaultStyle = MAPJS.defaultStyles[isRoot ? 'root' : 'nonRoot'],
-					node = _.extend(_.pick(positions, ['id', 'width', 'height', 'title', 'attr']), {
-						x: positions.x - root.x - 0.5 * root.width + margin,
-						y: positions.y - root.y - 0.5 * root.height + margin,
-						level: level
-					});
-				node.attr = node.attr || {};
-				node.attr.style = _.extend({}, defaultStyle, node.attr.style);
-				result.nodes[positions.id] = node;
-				if (positions.ideas) {
-					for (subIdeaRank in positions.ideas) {
-						calculateLayoutInner(positions.ideas[subIdeaRank], level + 1);
-						from = positions.id;
-						to = positions.ideas[subIdeaRank].id;
-						result.connectors[to] = {
-							from: from,
-							to: to
-						};
+			connectors: {}
+		}, self;
+		self = _.pick(this, 'id', 'title', 'attr', 'width', 'height');
+		self.level = level || 1;
+		if (self.level === 1) {
+			self.x = -0.5 * this.width;
+			self.y = -0.5 * this.height;
+		} else {
+			self.x = x + this.deltaX || 0;
+			self.y = y + this.deltaY || 0;
+		}
+		result.nodes[this.id] = self;
+		if (parentId !== undefined) {
+			result.connectors[self.id] = {
+				from: parentId,
+				to: self.id
+			};
+		}
+		if (this.subtrees) {
+			this.subtrees.forEach(function (t) {
+				var subLayout = t.toLayout(self.level + 1, self.x, self.y, self.id);
+				_.extend(result.nodes, subLayout.nodes);
+				_.extend(result.connectors, subLayout.connectors);
+			});
+		}
+		return result;
+	};
+};
+MAPJS.Outline.fromDimensions = function (dimensions) {
+	'use strict';
+	return new MAPJS.Outline([{
+		h: -0.5 * dimensions.height,
+		l: dimensions.width
+	}], [{
+		h: 0.5 * dimensions.height,
+		l: dimensions.width
+	}]);
+};
+MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParentPredicate) {
+	'use strict';
+	var options = {
+		id: content.id,
+		title: content.title,
+		attr: content.attr,
+		deltaY: 0,
+		deltaX: 0
+	},
+		setVerticalSpacing = function (treeArray,  dy) {
+			var i,
+				tree,
+				oldSpacing,
+				newSpacing,
+				oldPositions = _.map(treeArray, function (t) { return _.pick(t, 'deltaX', 'deltaY'); }),
+				referenceTree,
+				alignment;
+			for (i = 0; i < treeArray.length; i += 1) {
+				tree = treeArray[i];
+				if (tree.attr && tree.attr.position) {
+					tree.deltaY = tree.attr.position[1];
+					if (referenceTree === undefined || tree.attr.position[2] > treeArray[referenceTree].attr.position[2]) {
+						referenceTree = i;
+					}
+				} else {
+					tree.deltaY += dy;
+				}
+				if (i > 0) {
+					oldSpacing = oldPositions[i].deltaY - oldPositions[i - 1].deltaY;
+					newSpacing = treeArray[i].deltaY - treeArray[i - 1].deltaY;
+					if (newSpacing < oldSpacing) {
+						tree.deltaY += oldSpacing - newSpacing;
 					}
 				}
-			};
-		MAPJS.LayoutCompressor.compress(root);
-		calculateLayoutInner(root, 1);
-		_.each(idea.links, function (link) {
-			if (result.nodes[link.ideaIdFrom] && result.nodes[link.ideaIdTo]) {
-				result.links[link.ideaIdFrom + '_' + link.ideaIdTo] = {
-					ideaIdFrom: link.ideaIdFrom,
-					ideaIdTo: link.ideaIdTo,
-					attr: _.clone(link.attr)
-				};
-				//todo - clone
 			}
-		});
-		return result;
-	};
-	MAPJS.calculateFrame = function (nodes, margin) {
-		margin = margin || 0;
-		var result = {
-			top: _.min(nodes, function (node) {return node.y; }).y - margin,
-			left: _.min(nodes, function (node) {return node.x; }).x - margin
+			alignment =  referenceTree && (treeArray[referenceTree].attr.position[1] - treeArray[referenceTree].deltaY);
+			if (alignment) {
+				for (i = 0; i < treeArray.length; i += 1) {
+					treeArray[i].deltaY += alignment;
+				}
+			}
+		},
+		shouldIncludeSubIdeas = function () {
+			return !(_.isEmpty(content.ideas) || (content.attr && content.attr.collapsed));
+		},
+		includedSubIdeaKeys = function () {
+			var allRanks = _.map(_.keys(content.ideas), parseFloat),
+				includedRanks = rankAndParentPredicate ? _.filter(allRanks, function (rank) { return rankAndParentPredicate(rank, content.id); }) : allRanks;
+			return _.sortBy(includedRanks, Math.abs);
+		},
+		includedSubIdeas = function () {
+			var result = [];
+			_.each(includedSubIdeaKeys(), function (key) {
+				result.push(content.ideas[key]);
+			});
+			return result;
+		},
+		nodeDimensions = dimensionProvider(content),
+		appendSubtrees = function (subtrees) {
+			var suboutline, deltaHeight, subtreePosition, horizontal, treeOutline;
+			_.each(subtrees, function (subtree) {
+				subtree.deltaX = nodeDimensions.width + margin;
+				subtreePosition = subtree.attr && subtree.attr.position && subtree.attr.position[0];
+				if (subtreePosition && subtreePosition > subtree.deltaX) {
+					horizontal = subtreePosition - subtree.deltaX;
+					subtree.deltaX = subtreePosition;
+				} else {
+					horizontal = 0;
+				}
+				if (!suboutline) {
+					suboutline = subtree.outline.indent(horizontal, margin);
+				} else {
+					treeOutline = subtree.outline.indent(horizontal, margin);
+					deltaHeight = treeOutline.initialHeight();
+					suboutline = treeOutline.stackBelow(suboutline, margin);
+					subtree.deltaY = suboutline.initialHeight() - deltaHeight / 2 - subtree.height / 2;
+				}
+			});
+			if (subtrees && subtrees.length) {
+				setVerticalSpacing(subtrees, 0.5 * (nodeDimensions.height  - suboutline.initialHeight()));
+				suboutline = suboutline.expand(
+					subtrees[0].deltaY - nodeDimensions.height * 0.5,
+					subtrees[subtrees.length - 1].deltaY + subtrees[subtrees.length - 1].height - nodeDimensions.height * 0.5
+				);
+			}
+			options.outline = suboutline.insertAtStart(nodeDimensions, margin);
+		},
+		positionFixedSubtrees = function (subtrees) {
+			_.each(subtrees, function (subtree) {
+				subtree.deltaX = subtree.attr.position[0] + nodeDimensions.width * 0.5 - subtree.width * 0.5;
+				subtree.deltaY = subtree.attr.position[1] + nodeDimensions.height * 0.5 - subtree.height * 0.5;
+			});
 		};
-		result.width = margin + _.max(_.map(nodes, function (node) { return node.x + node.width; })) - result.left;
-		result.height = margin + _.max(_.map(nodes, function (node) { return node.y + node.height; })) - result.top;
-		return result;
-	};
-	MAPJS.contrastForeground = function (background) {
-		/*jslint newcap:true*/
-		var luminosity = Color(background).luminosity();
-		if (luminosity < 0.5) {
-			return '#EEEEEE';
+	_.extend(options, nodeDimensions);
+	options.outline = new MAPJS.Outline.fromDimensions(nodeDimensions);
+	if (shouldIncludeSubIdeas()) {
+		options.subtrees = _.map(includedSubIdeas(), function (i) {
+			return MAPJS.calculateTree(i, dimensionProvider, margin, rankAndParentPredicate);
+		});
+		if (!_.isEmpty(options.subtrees)) {
+			appendSubtrees(options.subtrees);
 		}
-		if (luminosity < 0.9) {
-			return '#4F4F4F';
-		}
-		return '#000000';
-	};
-}());
+	}
+	return new MAPJS.Tree(options);
+};
+
+MAPJS.calculateLayout = function (idea, dimensionProvider, margin) {
+	'use strict';
+	var positiveTree, negativeTree, layout, negativeLayout,
+		setDefaultStyles = function (nodes) {
+			_.each(nodes, function (node) {
+				node.attr = node.attr || {};
+				node.attr.style = _.extend({}, MAPJS.defaultStyles[(node.level === 1) ? 'root' : 'nonRoot'], node.attr.style);
+			});
+		},
+		positive = function (rank, parentId) { return parentId !== idea.id || rank > 0; },
+		negative = function (rank, parentId) { return parentId !== idea.id || rank < 0; },
+		titleDimensionProvider = function (idea) {
+			return dimensionProvider(idea.title);
+		};
+	margin = margin || 20;
+	positiveTree = MAPJS.calculateTree(idea, titleDimensionProvider, margin, positive);
+	negativeTree = MAPJS.calculateTree(idea, titleDimensionProvider, margin, negative);
+	layout = positiveTree.toLayout();
+	negativeLayout = negativeTree.toLayout();
+	_.each(negativeLayout.nodes, function (n) {
+		n.x = -1 * n.x - n.width;
+	});
+	_.extend(negativeLayout.nodes, layout.nodes);
+	_.extend(negativeLayout.connectors, layout.connectors);
+	setDefaultStyles(negativeLayout.nodes);
+	negativeLayout.links = MAPJS.layoutLinks(idea, negativeLayout.nodes);
+	return negativeLayout;
+};
+
 /*jslint forin: true, nomen: true*/
 /*global MAPJS, _*/
 MAPJS.LayoutCompressor = {};
@@ -1124,20 +1329,17 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		},
 		horizontalSelectionThreshold = 300,
 		moveNodes = function (nodes, deltaX, deltaY) {
-			_.each(nodes, function (node) {
-				node.x += deltaX;
-				node.y += deltaY;
-			});
+			if (deltaX || deltaY) {
+				_.each(nodes, function (node) {
+					node.x += deltaX;
+					node.y += deltaY;
+					self.dispatchEvent('nodeMoved', node);
+				});
+			}
 		},
 		isAddLinkMode,
-		updateCurrentLayout = function (newLayout, contextNodeId) {
+		updateCurrentLayout = function (newLayout) {
 			var nodeId, newNode, oldNode, newConnector, oldConnector, linkId, newLink, oldLink;
-			if (contextNodeId && currentLayout.nodes && currentLayout.nodes[contextNodeId] && newLayout.nodes[contextNodeId]) {
-				moveNodes(newLayout.nodes,
-					currentLayout.nodes[contextNodeId].x - newLayout.nodes[contextNodeId].x,
-					currentLayout.nodes[contextNodeId].y - newLayout.nodes[contextNodeId].y
-					);
-			}
 			for (nodeId in currentLayout.connectors) {
 				newConnector = newLayout.connectors[nodeId];
 				oldConnector = currentLayout.connectors[nodeId];
@@ -1220,11 +1422,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			return currentlySelectedIdeaId || idea.id;
 		},
 		onIdeaChanged = function (command, args, originSession) {
-			var localCommand = (!originSession) || originSession === idea.getSessionKey(),
-				contextNodeId = ((command && command === 'updateAttr') || (!localCommand))  && getCurrentlySelectedIdeaId();
+			var localCommand = (!originSession) || originSession === idea.getSessionKey();
 			revertSelectionForUndo = false;
-			updateCurrentLayout(self.reactivate(layoutCalculator(idea)), contextNodeId);
-
+			updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
 			if (!localCommand) {
 				return;
 			}
@@ -1342,6 +1542,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	this.collapse = function (source, doCollapse) {
 		analytic('collapse:' + doCollapse, source);
+		var contextNodeId = getCurrentlySelectedIdeaId(),
+			contextNode = function () {
+				return contextNodeId && currentLayout && currentLayout.nodes && currentLayout.nodes[contextNodeId];
+			},
+			oldContext, newContext;
+		oldContext = contextNode();
 		if (isInputEnabled) {
 			self.applyToActivated(function (id) {
 				var node = self.findIdeaById(id);
@@ -1350,6 +1556,15 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				}
 			});
 		}
+		newContext = contextNode();
+		if (oldContext && newContext) {
+			moveNodes(
+				currentLayout.nodes,
+				oldContext.x - newContext.x,
+				oldContext.y - newContext.y
+			);
+		}
+		self.dispatchEvent('layoutChangeComplete');
 	};
 	this.updateStyle = function (source, prop, value) {
 		/*jslint eqeq:true */
@@ -1819,7 +2034,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		};
 	}());
 };
-/*global MAPJS*/
+/*global _, MAPJS*/
 MAPJS.dragdrop = function (mapModel, stage) {
 	'use strict';
 	var currentDroppable,
@@ -1845,14 +2060,15 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			/*jslint eqeq: true*/
 			return x >= node.x &&
 				y >= node.y &&
-				x <= node.x + node.width - 2 * 10 &&
-				y <= node.y + node.height - 2 * 10;
+				x <= node.x + node.width &&
+				y <= node.y + node.height;
 		},
 		canDropOnNode = function (id, x, y, node) {
 			/*jslint eqeq: true*/
 			return id != node.id && isPointOverNode(x, y, node);
 		},
 		tryFlip = function (rootNode, nodeBeingDragged, nodeDragEndX) {
+
 			var flipRightToLeft = rootNode.x < nodeBeingDragged.x && nodeDragEndX < rootNode.x,
 				flipLeftToRight = rootNode.x > nodeBeingDragged.x && rootNode.x < nodeDragEndX;
 			if (flipRightToLeft || flipLeftToRight) {
@@ -1860,13 +2076,11 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			return false;
 		},
-		nodeDragMove = function (id, x, y) {
+		nodeDragMove = function (id, x, y, nodeX, nodeY, shouldCopy, shouldPositionAbsolutely) {
 			var nodeId, node;
-
 			if (!mapModel.isEditingEnabled()) {
 				return;
 			}
-
 			for (nodeId in mapModel.getCurrentLayout().nodes) {
 				node = mapModel.getCurrentLayout().nodes[nodeId];
 				if (canDropOnNode(id, x, y, node)) {
@@ -1876,13 +2090,24 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			updateCurrentDroppable(undefined);
 		},
-		nodeDragEnd = function (id, x, y, shouldCopy) {
+		nodeDragEnd = function (id, x, y, nodeX, nodeY, shouldCopy, shouldPositionAbsolutely) {
 			var nodeBeingDragged = mapModel.getCurrentLayout().nodes[id],
 				nodeId,
 				node,
 				rootNode = mapModel.getCurrentLayout().nodes[mapModel.getIdea().id],
-				verticallyClosestNode = { id: null, y: Infinity },
-				clone;
+				verticallyClosestNode = {
+					id: null,
+					y: Infinity
+				},
+				clone,
+				idea = mapModel.getIdea(),
+				parentIdea = idea.findParent(id),
+				parentNode = mapModel.getCurrentLayout().nodes[parentIdea.id],
+				maxSequence = 1,
+				validReposition = function () {
+					return nodeBeingDragged.level === 2 ||
+						((nodeBeingDragged.x - parentNode.x) * (x - parentNode.x) > 0);
+				};
 			if (!mapModel.isEditingEnabled()) {
 				mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
 				return;
@@ -1901,23 +2126,34 @@ MAPJS.dragdrop = function (mapModel, stage) {
 					} else if (!mapModel.getIdea().changeParent(id, nodeId)) {
 						mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
 						mapModel.analytic('nodeDragParentFailed');
+						idea.updateAttr(id, 'position');
 					}
 					return;
 				}
-				if ((nodeBeingDragged.x === node.x || nodeBeingDragged.x + nodeBeingDragged.width === node.x + node.width) && y < node.y) {
-					if (!verticallyClosestNode || node.y < verticallyClosestNode.y) {
-						verticallyClosestNode = node;
-					}
+
+			}
+			idea.startBatch();
+			if (nodeBeingDragged.level === 2) {
+				tryFlip(rootNode, nodeBeingDragged, x);
+			}
+			_.each(idea.sameSideSiblingIds(id), function (nodeId) {
+				node = mapModel.getCurrentLayout().nodes[nodeId];
+				if (y < node.y && node.y < verticallyClosestNode.y) {
+					verticallyClosestNode = node;
 				}
+			});
+			idea.positionBefore(id, verticallyClosestNode.id);
+			if (shouldPositionAbsolutely && validReposition()) {
+				mapModel.analytic('nodeManuallyPositioned');
+				mapModel.selectNode(id);
+				maxSequence = _.max(_.map(parentIdea.ideas, function (i) { return (i.id !== id && i.attr && i.attr.position && i.attr.position[2]) || 0; }));
+				idea.updateAttr(
+					id,
+					'position',
+					[Math.abs(nodeX - parentNode.x), nodeY - parentNode.y, maxSequence + 1]
+				);
 			}
-			if (tryFlip(rootNode, nodeBeingDragged, x)) {
-				return;
-			}
-			if (mapModel.getIdea().positionBefore(id, verticallyClosestNode.id)) {
-				return;
-			}
-			mapModel.dispatchEvent('nodeMoved', nodeBeingDragged, 'failed');
-			mapModel.analytic('nodeDragFailed');
+			idea.endBatch();
 		},
 		screenToStageCoordinates = function (x, y) {
 			return {
@@ -1931,7 +2167,6 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
 		};
-
 	mapModel.addEventListener('nodeCreated', function (n) {
 		var node = findNodeOnStage(n.id);
 		node.on('dragstart', function () {
@@ -1944,7 +2179,11 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			nodeDragMove(
 				n.id,
 				stagePoint.x,
-				stagePoint.y
+				stagePoint.y,
+				node.getX(),
+				node.getY(),
+				evt.shiftKey,
+				evt.shiftKey
 			);
 		});
 		node.on('dragend', function (evt) {
@@ -1955,11 +2194,15 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				n.id,
 				stagePoint.x,
 				stagePoint.y,
+				node.getX(),
+				node.getY(),
+				evt.shiftKey,
 				evt.shiftKey
 			);
 		});
 	});
-};/*global _, Kinetic, MAPJS*/
+};
+/*global _, Kinetic, MAPJS*/
 /*jslint nomen: true*/
 (function () {
 	'use strict';
@@ -2532,7 +2775,16 @@ Kinetic.Idea.prototype.setStyle = function () {
 		padding = 8,
 		clipMargin = isClipVisible ? this.clip.getClipMargin() : 0,
 		rectOffset = clipMargin,
-		rectIncrement = 4;
+		rectIncrement = 4,
+		getDash = function () {
+			if (!self.isActivated) {
+				return [];
+			}
+			if (self.mmAttr && self.mmAttr.position) {
+				return [5, 6];
+			}
+			return [5, 3];
+		};
 	this.clip.setVisible(isClipVisible);
 	this.setWidth(this.text.getWidth() + 2 * padding);
 	this.setHeight(this.text.getHeight() + 2 * padding + clipMargin);
@@ -2578,7 +2830,7 @@ Kinetic.Idea.prototype.setStyle = function () {
 		}
 		this.rect.setDashArray([]);
 	}
-	this.rect.setDashArray(this.isActivated ? [5, 3] : []);
+	this.rect.setDashArray(getDash());
 	this.rect.setStrokeWidth(this.isActivated ? 3 : self.rectAttrs.strokeWidth);
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
@@ -2970,10 +3222,10 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 	mapModel.addEventListener('nodeTitleChanged', function (n) {
 		var node = nodeByIdeaId[n.id];
 		node.setText(n.title);
-//		layer.draw();
 	});
 	mapModel.addEventListener('connectorCreated', function (n) {
 		var connector = new Kinetic.Connector({
+			id: 'connector_' + n.to,
 			shapeFrom: nodeByIdeaId[n.from],
 			shapeTo: nodeByIdeaId[n.to],
 			stroke: '#888',
