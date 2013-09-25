@@ -24,15 +24,16 @@ $.fn.googleDriveOpenWidget = function (googleDriveRepository, mapController, mod
 					'This operation requires authentication through Google Drive, an external storage provider. ' +
 						'Please click on Authenticate below to go to the external provider and allow MindMup to access your account. ' +
 						'You can learn more about authentication requirements on our <a href="http://blog.mindmup.com/p/storage-options.html" target="_blank">Storage Options</a> page.',
-					'Authenticate',
-					function () {
-						googleDriveRepository.showPicker(contentTypes, title, true).then(
-							loadMap,
-							showFailure,
-							showAlert
-						);
-					}
-				);
+					'Authenticate')
+					.then(
+						function () {
+							googleDriveRepository.showPicker(contentTypes, title, true).then(
+								loadMap,
+								showFailure,
+								showAlert
+							);
+						}
+					);
 			};
 		googleDriveRepository.showPicker(contentTypes, title, false).then(
 			loadMap,
