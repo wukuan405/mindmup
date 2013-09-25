@@ -2780,9 +2780,6 @@ Kinetic.Idea.prototype.setStyle = function () {
 			if (!self.isActivated) {
 				return [];
 			}
-			if (self.mmAttr && self.mmAttr.position) {
-				return [5, 6];
-			}
 			return [5, 3];
 		};
 	this.clip.setVisible(isClipVisible);
