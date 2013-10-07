@@ -201,7 +201,6 @@ helpers do
 
     target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js"
     if (!File.exists? target_file) then
-      puts 'attempting to cache scripts'
       script_url_array.each do |input_file|
         infile = "#{settings.public_folder}/#{input_file}.js"
         if !File.exists? infile then
@@ -216,7 +215,6 @@ helpers do
         end
       end
     end
-    puts 'using cached scripts'
     return [settings.cache_prevention_key]
   end
   def load_prefix
