@@ -421,7 +421,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		if (initialId) {
 			cachedId = parseInt(initialId, 10) - 1;
 		}
-		newIdea =  jsonToPaste && jsonToPaste.title && init(cleanUp(jsonToPaste), sessionFromId(initialId));
+		newIdea =  jsonToPaste && (jsonToPaste.title || jsonToPaste.attr) && init(cleanUp(jsonToPaste), sessionFromId(initialId));
 		if (!pasteParent || !newIdea) {
 			return false;
 		}
@@ -433,7 +433,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		logChange('paste', [parentIdeaId, jsonToPaste, newIdea.id], function () {
 			delete pasteParent.ideas[newRank];
 		}, originSession);
-		return true;
+		return newIdea.id;
 	};
 	contentAggregate.flip = function (ideaId) {
 		return contentAggregate.execCommand('flip', arguments);
@@ -539,7 +539,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		logChange('insertIntermediate', [inFrontOfIdeaId, title, newIdea.id], function () {
 			parentIdea.ideas[childRank] = oldIdea;
 		}, originSession);
-		return true;
+		return newIdea.id;
 	};
 	contentAggregate.changeParent = function (ideaId, newParentId) {
 		return contentAggregate.execCommand('changeParent', arguments);
@@ -1156,13 +1156,10 @@ MAPJS.calculateLayout = function (idea, dimensionProvider, margin) {
 			});
 		},
 		positive = function (rank, parentId) { return parentId !== idea.id || rank > 0; },
-		negative = function (rank, parentId) { return parentId !== idea.id || rank < 0; },
-		titleDimensionProvider = function (idea) {
-			return dimensionProvider(idea.title);
-		};
+		negative = function (rank, parentId) { return parentId !== idea.id || rank < 0; };
 	margin = margin || 20;
-	positiveTree = MAPJS.calculateTree(idea, titleDimensionProvider, margin, positive);
-	negativeTree = MAPJS.calculateTree(idea, titleDimensionProvider, margin, negative);
+	positiveTree = MAPJS.calculateTree(idea, dimensionProvider, margin, positive);
+	negativeTree = MAPJS.calculateTree(idea, dimensionProvider, margin, negative);
 	layout = positiveTree.toLayout();
 	negativeLayout = negativeTree.toLayout();
 	_.each(negativeLayout.nodes, function (n) {
@@ -1175,139 +1172,6 @@ MAPJS.calculateLayout = function (idea, dimensionProvider, margin) {
 	return negativeLayout;
 };
 
-/*jslint forin: true, nomen: true*/
-/*global MAPJS, _*/
-MAPJS.LayoutCompressor = {};
-MAPJS.LayoutCompressor.getVerticalDistanceBetweenNodes = function (firstNode, secondNode) {
-	'use strict';
-	var isFirstSecond, isSecondFirst, result = Infinity;
-	isFirstSecond = firstNode.x + firstNode.width <= secondNode.x;
-	isSecondFirst = secondNode.x + secondNode.width <= firstNode.x;
-	if (!(isFirstSecond || isSecondFirst)) {
-		result = firstNode.y < secondNode.y ? secondNode.y - (firstNode.y + firstNode.height) : firstNode.y - (secondNode.y + secondNode.height);
-	}
-	return result;
-};
-MAPJS.LayoutCompressor.getVerticalDistanceBetweenNodeLists = function (firstNodeList, secondNodeList) {
-	'use strict';
-	var result = Infinity, i, j;
-	for (i = firstNodeList.length - 1; i >= 0; i -= 1) {
-		for (j = secondNodeList.length - 1; j >= 0; j -= 1) {
-			result = Math.min(result, MAPJS.LayoutCompressor.getVerticalDistanceBetweenNodes(firstNodeList[i], secondNodeList[j]));
-		}
-	}
-	return result;
-};
-MAPJS.LayoutCompressor.nodeAndConnectorCollisionBox = function (node, parent) {
-	'use strict';
-	return {
-		x: Math.min(node.x, parent.x + 0.5 * parent.width),
-		y: node.y,
-		width: node.width + 0.5 * parent.width,
-		height: node.height
-	};
-};
-MAPJS.LayoutCompressor.getSubTreeNodeList = function getSubTreeNodeList(positions, result, parent) {
-	'use strict';
-	var subIdeaRank;
-	result = result || [];
-	result.push(_.pick(positions, 'x', 'y', 'width', 'height'));
-	if (parent) {
-		result.push(MAPJS.LayoutCompressor.nodeAndConnectorCollisionBox(positions, parent));
-	}
-	for (subIdeaRank in positions.ideas) {
-		getSubTreeNodeList(positions.ideas[subIdeaRank], result, positions);
-	}
-	return result;
-};
-MAPJS.LayoutCompressor.moveSubTreeVertically = function moveSubTreeVertically(positions, delta) {
-	'use strict';
-	var subIdeaRank;
-	positions.y += delta;
-	for (subIdeaRank in positions.ideas) {
-		moveSubTreeVertically(positions.ideas[subIdeaRank], delta);
-	}
-};
-MAPJS.LayoutCompressor.centerSubTrees = function (positions) {
-	'use strict';
-	var subIdeaRank, ranksInOrder = [], i, allLowerNodes = [], lowerSubtree, upperSubtree, verticalDistance;
-	for (subIdeaRank in positions.ideas) {
-		subIdeaRank = parseFloat(subIdeaRank);
-		if (subIdeaRank > 0) {
-			ranksInOrder.push(subIdeaRank);
-		}
-	}
-	if (ranksInOrder.length > 2) {
-		ranksInOrder.sort(function ascending(first, second) {
-			return second - first;
-		});
-		for (i = 1; i < ranksInOrder.length - 1; i += 1) {
-			lowerSubtree = positions.ideas[ranksInOrder[i - 1]];
-			upperSubtree = positions.ideas[ranksInOrder[i]];
-			allLowerNodes = allLowerNodes.concat(MAPJS.LayoutCompressor.getSubTreeNodeList(lowerSubtree));
-			verticalDistance = MAPJS.LayoutCompressor.getVerticalDistanceBetweenNodeLists(
-				allLowerNodes,
-				MAPJS.LayoutCompressor.getSubTreeNodeList(upperSubtree)
-			);
-			if (verticalDistance > 0 && verticalDistance < Infinity) {
-				MAPJS.LayoutCompressor.moveSubTreeVertically(upperSubtree, 0.5 * verticalDistance);
-			}
-		}
-	}
-};
-MAPJS.LayoutCompressor.compress = function compress(positions) {
-	'use strict';
-	var subIdeaRank,
-		ranksInOrder = [],
-		negativeRanksInOrder = [],
-		middle,
-		delta,
-		compressOneSide = function (ranks) {
-			var i,
-				upperSubtree,
-				lowerSubtree,
-				verticalDistance,
-				allUpperNodes = [];
-			for (i = 0; i < ranks.length - 1; i += 1) {
-				upperSubtree = positions.ideas[ranks[i]];
-				lowerSubtree = positions.ideas[ranks[i + 1]];
-				allUpperNodes = allUpperNodes.concat(MAPJS.LayoutCompressor.getSubTreeNodeList(upperSubtree));
-				verticalDistance = MAPJS.LayoutCompressor.getVerticalDistanceBetweenNodeLists(
-					allUpperNodes,
-					MAPJS.LayoutCompressor.getSubTreeNodeList(lowerSubtree)
-				);
-				if (verticalDistance < Infinity) {
-					MAPJS.LayoutCompressor.moveSubTreeVertically(lowerSubtree, -verticalDistance);
-				}
-			}
-		};
-	for (subIdeaRank in positions.ideas) {
-		subIdeaRank = parseFloat(subIdeaRank);
-		compress(positions.ideas[subIdeaRank]);
-		(subIdeaRank >= 0 ? ranksInOrder : negativeRanksInOrder).push(subIdeaRank);
-	}
-	ranksInOrder.sort(function ascending(first, second) {
-		return first - second;
-	});
-	negativeRanksInOrder.sort(function descending(first, second) {
-		return second - first;
-	});
-	compressOneSide(ranksInOrder);
-	compressOneSide(negativeRanksInOrder);
-	if (ranksInOrder.length) {
-		middle = 0.5 * (positions.ideas[ranksInOrder[0]].y + positions.ideas[ranksInOrder[ranksInOrder.length - 1]].y + positions.ideas[ranksInOrder[ranksInOrder.length - 1]].height);
-		positions.y = middle - 0.5 * positions.height;
-	}
-	if (negativeRanksInOrder.length) {
-		middle = 0.5 * (positions.ideas[negativeRanksInOrder[0]].y + positions.ideas[negativeRanksInOrder[negativeRanksInOrder.length - 1]].y + positions.ideas[negativeRanksInOrder[negativeRanksInOrder.length - 1]].height);
-		delta = positions.y - middle + 0.5 * positions.height;
-		negativeRanksInOrder.forEach(function (rank) {
-			MAPJS.LayoutCompressor.moveSubTreeVertically(positions.ideas[rank], delta);
-		});
-	}
-	MAPJS.LayoutCompressor.centerSubTrees(positions);
-	return positions;
-};
 /*jslint forin: true, nomen: true*/
 /*global _, MAPJS, observable*/
 MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, intermediaryTitlesToRandomlyChooseFrom) {
@@ -1406,17 +1270,16 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		revertSelectionForUndo,
 		checkDefaultUIActions = function (command, args) {
 			var newIdeaId;
-			if (command === 'addSubIdea' || command === 'insertIntermediate') {
-				newIdeaId = args[2];
-				revertSelectionForUndo = currentlySelectedIdeaId;
-				self.selectNode(newIdeaId);
-				self.editNode(false, true, true);
-			}
 			if (command === 'paste') {
 				newIdeaId = args[2];
 				self.selectNode(newIdeaId);
 			}
 
+		},
+		editNewIdea = function (newIdeaId) {
+			revertSelectionForUndo = currentlySelectedIdeaId;
+			self.selectNode(newIdeaId);
+			self.editNode(false, true, true);
 		},
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
@@ -1601,14 +1464,18 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		if (!isEditingEnabled) {
 			return false;
 		}
-		var target = parentId || currentlySelectedIdeaId;
+		var target = parentId || currentlySelectedIdeaId, newId;
 		analytic('addSubIdea', source);
 		if (isInputEnabled) {
 			idea.batch(function () {
 				ensureNodeIsExpanded(source, target);
-				idea.addSubIdea(target, getRandomTitle(titlesToRandomlyChooseFrom));
+				newId = idea.addSubIdea(target, getRandomTitle(titlesToRandomlyChooseFrom));
 			});
+			if (newId) {
+				editNewIdea(newId);
+			}
 		}
+
 	};
 	this.insertIntermediate = function (source) {
 		if (!isEditingEnabled) {
@@ -1617,8 +1484,11 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		if (!isInputEnabled || currentlySelectedIdeaId === idea.id) {
 			return false;
 		}
-		idea.insertIntermediate(currentlySelectedIdeaId, getRandomTitle(intermediaryTitlesToRandomlyChooseFrom));
 		analytic('insertIntermediate', source);
+		var newId = idea.insertIntermediate(currentlySelectedIdeaId, getRandomTitle(intermediaryTitlesToRandomlyChooseFrom));
+		if (newId) {
+			editNewIdea(newId);
+		}
 	};
 	this.addSiblingIdea = function (source) {
 		if (!isEditingEnabled) {
@@ -2034,7 +1904,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		};
 	}());
 };
-/*global _, MAPJS*/
+/*global _, MAPJS, jQuery*/
 MAPJS.dragdrop = function (mapModel, stage) {
 	'use strict';
 	var currentDroppable,
@@ -2090,11 +1960,14 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			updateCurrentDroppable(undefined);
 		},
+		getRootNode = function () {
+			return mapModel.getCurrentLayout().nodes[mapModel.getIdea().id];
+		},
 		nodeDragEnd = function (id, x, y, nodeX, nodeY, shouldCopy, shouldPositionAbsolutely) {
 			var nodeBeingDragged = mapModel.getCurrentLayout().nodes[id],
 				nodeId,
 				node,
-				rootNode = mapModel.getCurrentLayout().nodes[mapModel.getIdea().id],
+				rootNode = getRootNode(),
 				verticallyClosestNode = {
 					id: null,
 					y: Infinity
@@ -2167,6 +2040,35 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
 		};
+	jQuery(stage.getContainer()).imageDropWidget(function (dataUrl, imgWidth, imgHeight, evt) {
+		var node,
+			nodeId,
+			content = mapModel.getIdea(),
+			point = getInteractionPoint(evt),
+			dropOn = function (ideaId, position) {
+				var scaleX = Math.min(imgWidth, 300) / imgWidth,
+					scaleY = Math.min(imgHeight, 300) / imgHeight,
+					scale = Math.min(scaleX, scaleY);
+				content.updateAttr(ideaId, 'icon', {
+					url: dataUrl,
+					width: imgWidth * scale,
+					height: imgHeight * scale,
+					position: position
+				});
+			},
+			addNew = function () {
+				content.startBatch();
+				dropOn(content.addSubIdea(content.id), 'center');
+				content.endBatch();
+			};
+		for (nodeId in mapModel.getCurrentLayout().nodes) {
+			node = mapModel.getCurrentLayout().nodes[nodeId];
+			if (isPointOverNode(point.x, point.y, node)) {
+				return dropOn(nodeId, 'left');
+			}
+		}
+		addNew();
+	});
 	mapModel.addEventListener('nodeCreated', function (n) {
 		var node = findNodeOnStage(n.id), shouldPositionAbsolutely;
 		node.on('dragstart', function (evt) {
@@ -2508,6 +2410,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		};
 		return link;
 	}
+
 	function createClip() {
 		var group, clip, props = {width: 5, height: 25, radius: 3, rotation: 0.1, strokeWidth: 2, clipTo: 10};
 		group = new Kinetic.Group();
@@ -2527,6 +2430,54 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		});
 		return group;
 	}
+	function createIcon() {
+		var	icon = new Kinetic.Image({
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0
+		});
+		icon.oldDrawScene = icon.drawScene;
+		icon.updateMapjsAttribs = function (iconHash) {
+			var safeIconProp = function (name) {
+					return iconHash && iconHash[name];
+				},
+				imgUrl = safeIconProp('url'),
+				imgWidth = safeIconProp('width'),
+				imgHeight = safeIconProp('height');
+			if (imgUrl && this.getAttr('image') && this.getAttr('image').src !== imgUrl) {
+				this.getAttr('image').src = imgUrl;
+			}
+			this.setAttr('mapjs-image-url', imgUrl);
+			if (this.getAttr('width') !== imgWidth) {
+				this.setAttr('width', imgWidth);
+			}
+			if (this.getAttr('height') !== imgHeight) {
+				this.setAttr('height', imgHeight);
+			}
+			this.setVisible(imgUrl);
+		};
+		icon.initMapjsImage = function () {
+			var self = this,
+				imageSrc = this.getAttr('mapjs-image-url');
+			if (!imageSrc) {
+				return;
+			}
+			if (!this.getAttr('image')) {
+				this.setAttr('image', new Image());
+				this.getAttr('image').onload = function loadImage() {
+					self.getLayer().draw();
+				};
+				this.getAttr('image').src = imageSrc;
+			}
+		};
+		icon.drawScene = function () {
+			this.initMapjsImage();
+			this.oldDrawScene.apply(this, arguments);
+		};
+		return icon;
+	}
+
 	Kinetic.Idea = function (config) {
 		var ENTER_KEY_CODE = 13,
 			ESC_KEY_CODE = 27,
@@ -2579,13 +2530,14 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		this.clip.on('click tap', function () {
 			self.fire(':request', {type: 'openAttachment', source: 'mouse'});
 		});
+		this.icon = createIcon();
 		this.add(this.rectbg1);
 		this.add(this.rectbg2);
 		this.add(this.rect);
+		this.add(this.icon);
 		this.add(this.text);
 		this.add(this.link);
 		this.add(this.clip);
-		this.activeWidgets = [this.link, this.clip];
 		this.setText = function (text) {
 			var replacement = breakWords(MAPJS.URLHelper.stripLink(text)) ||
 					(text.length < COLUMN_WORD_WRAP_LIMIT ? text : (text.substring(0, COLUMN_WORD_WRAP_LIMIT) + '...'));
@@ -2763,6 +2715,7 @@ Kinetic.Idea.prototype.getBackground = function () {
 	return validColor(this.mmAttr && this.mmAttr.style && this.mmAttr.style.background, defaultBg);
 };
 
+
 Kinetic.Idea.prototype.setStyle = function () {
 	'use strict';
 	/*jslint newcap: true*/
@@ -2772,27 +2725,92 @@ Kinetic.Idea.prototype.setStyle = function () {
 		isActivated = this.isActivated,
 		background = this.getBackground(),
 		tintedBackground = Color(background).mix(Color('#EEEEEE')).hexString(),
-		isClipVisible = this.mmAttr && this.mmAttr.attachment || false,
-		padding = 8,
-		clipMargin = isClipVisible ? this.clip.getClipMargin() : 0,
-		rectOffset = clipMargin,
+		rectOffset,
 		rectIncrement = 4,
+		padding = 8,
+		isClipVisible = self.mmAttr && self.mmAttr.attachment,
+		clipMargin = isClipVisible ? self.clip.getClipMargin() : 0,
 		getDash = function () {
 			if (!self.isActivated) {
 				return [];
 			}
 			return [5, 3];
+		},
+		textSize = {
+			width: this.text.getWidth(),
+			height: this.text.getHeight()
+		},
+		calculatedSize,
+		pad = function (box) {
+			return {
+				width: box.width + 2 * padding,
+				height: box.height + 2 * padding
+			};
+		},
+		positionTextAndIcon = function () {
+			var iconPos = self.mmAttr && self.mmAttr.icon && self.mmAttr.icon.position;
+			if (!iconPos || iconPos === 'center') {
+				self.text.setX((calculatedSize.width - self.text.getWidth()) / 2);
+				self.text.setY((calculatedSize.height - self.text.getHeight()) / 2 + clipMargin);
+				self.icon.setY((calculatedSize.height - self.icon.getHeight()) / 2 + clipMargin);
+				self.icon.setX((calculatedSize.width - self.icon.getWidth()) / 2);
+			} else if (iconPos === 'bottom') {
+				self.text.setX((calculatedSize.width - self.text.getWidth()) / 2);
+				self.text.setY(clipMargin + padding);
+				self.icon.setY(clipMargin + calculatedSize.height - self.icon.getHeight() - padding);
+				self.icon.setX((calculatedSize.width - self.icon.getWidth()) / 2);
+			} else if (iconPos === 'top') {
+				self.text.setX((calculatedSize.width - self.text.getWidth()) / 2);
+				self.icon.setY(clipMargin + padding);
+				self.text.setY(clipMargin + calculatedSize.height - self.text.getHeight() - padding);
+				self.icon.setX((calculatedSize.width - self.icon.getWidth()) / 2);
+			} else if (iconPos === 'left') {
+				self.text.setX(calculatedSize.width - self.text.getWidth() - padding);
+				self.text.setY((calculatedSize.height - self.text.getHeight()) / 2 + clipMargin);
+				self.icon.setY((calculatedSize.height - self.icon.getHeight()) / 2 + clipMargin);
+				self.icon.setX(padding);
+			} else if (iconPos === 'right') {
+				self.text.setY((calculatedSize.height - self.text.getHeight()) / 2 + clipMargin);
+				self.text.setX(padding);
+				self.icon.setY((calculatedSize.height - self.icon.getHeight()) / 2 + clipMargin);
+				self.icon.setX(calculatedSize.width - self.icon.getWidth() - padding);
+			}
+		},
+		calculateMergedBoxSize = function (box1, box2) {
+			if (box2.position === 'bottom' || box2.position === 'top') {
+				return {
+					width: Math.max(box1.width, box2.width) + 2 * padding,
+					height: box1.height + box2.height + 3 * padding
+				};
+			}
+			if (box2.position === 'left' || box2.position === 'right') {
+				return {
+					width: box1.width + box2.width + 3 * padding,
+					height: Math.max(box1.height, box2.height) + 2 * padding
+				};
+			}
+			return pad({
+				width: Math.max(box1.width, box2.width),
+				height: Math.max(box1.height, box2.height)
+			});
 		};
-	this.clip.setVisible(isClipVisible);
-	this.setWidth(this.text.getWidth() + 2 * padding);
-	this.setHeight(this.text.getHeight() + 2 * padding + clipMargin);
-	this.text.setX(padding);
-	this.text.setY(padding + clipMargin);
-	this.link.setX(this.text.getWidth() + 10);
-	this.link.setY(this.text.getHeight() + 5 + clipMargin);
+	if (this.mmAttr && this.mmAttr.icon && this.mmAttr.icon.url) {
+		calculatedSize = calculateMergedBoxSize(textSize, this.mmAttr.icon);
+	} else {
+		calculatedSize = pad(textSize);
+	}
+	this.icon.updateMapjsAttribs(self.mmAttr && self.mmAttr.icon);
+
+	this.clip.setVisible(clipMargin);
+	this.setWidth(calculatedSize.width);
+	this.setHeight(calculatedSize.height + clipMargin);
+	this.link.setX(calculatedSize.width - 2 * padding + 10);
+	this.link.setY(calculatedSize.height - 2 * padding + 5 + clipMargin);
+	positionTextAndIcon();
+	rectOffset = clipMargin;
 	_.each([this.rect, this.rectbg2, this.rectbg1], function (r) {
-		r.setWidth(self.text.getWidth() + 2 * padding);
-		r.setHeight(self.text.getHeight() + 2 * padding);
+		r.setWidth(calculatedSize.width);
+		r.setHeight(calculatedSize.height);
 		r.setY(rectOffset);
 		rectOffset += rectIncrement;
 		if (isDroppable) {
@@ -2832,7 +2850,7 @@ Kinetic.Idea.prototype.setStyle = function () {
 	this.rect.setStrokeWidth(this.isActivated ? 3 : self.rectAttrs.strokeWidth);
 	this.rectbg1.setVisible(this.isCollapsed());
 	this.rectbg2.setVisible(this.isCollapsed());
-	this.clip.setX(this.text.getWidth() + padding);
+	this.clip.setX(calculatedSize.width - padding);
 	this.setupShadows();
 	this.text.setFill(MAPJS.contrastForeground(tintedBackground));
 };
@@ -2878,110 +2896,6 @@ Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
 };
 
 Kinetic.Util.extend(Kinetic.Idea, Kinetic.Group);
-/*global _, Kinetic, MAPJS */
-Kinetic.IdeaProxy = function (idea, stage, layer) {
-	'use strict';
-	var nodeimage,
-		emptyImage,
-		imageRendered,
-		container = new Kinetic.Group({opacity: 1, draggable: true, id: idea.getId()}),
-		removeImage = function () {
-			nodeimage.setImage(emptyImage);
-			imageRendered = false;
-		},
-		cacheImage = function () {
-			if (!idea.isVisible()) {
-				removeImage();
-				return;
-			}
-			if (imageRendered) {
-				return;
-			}
-			imageRendered = true;
-			var imageScale = 1,
-				scale = stage.getScale().x, x = -(scale * imageScale), y = -(scale * imageScale),
-				unscaledWidth = idea.getWidth() + 20,
-				unscaledHeight = idea.getHeight() + 20,
-				width = (unscaledWidth * scale * imageScale),
-				height = (unscaledHeight * scale * imageScale);
-
-			idea.setScale({x: scale * imageScale, y: scale * imageScale});
-			idea.toImage({
-				x: x,
-				y: y,
-				width: width,
-				height: height,
-				callback: function (img) {
-					nodeimage.setImage(img);
-					nodeimage.setWidth(unscaledWidth);
-					nodeimage.setHeight(unscaledHeight);
-					layer.draw();
-				}
-			});
-		},
-		reRender = function () {
-			imageRendered = false;
-			cacheImage();
-		},
-		nodeImageDrawFunc;
-	idea.disableAnimations = true;
-	container.setX(idea.getX());
-	container.setY(idea.getY());
-	idea.setX(0);
-	idea.setY(0);
-	_.each(idea.activeWidgets, function (widget) { widget.remove(); });
-	nodeimage = new Kinetic.Image({
-		x: -1,
-		y: -1,
-		width: idea.getWidth() + 20,
-		height: idea.getHeight() + 20
-	});
-	nodeImageDrawFunc = nodeimage.getDrawFunc().bind(nodeimage);
-	nodeimage.setDrawFunc(function (canvas) {
-		cacheImage();
-		nodeImageDrawFunc(canvas);
-	});
-	container.add(nodeimage);
-	_.each(idea.activeWidgets, function (widget) { container.add(widget); });
-	container.getNodeAttrs = function () {
-		return idea.attrs;
-	};
-	container.isVisible = function (offset) {
-		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.getX(), container.getY(), container.getWidth(), container.getHeight()), offset);
-	};
-	idea.isVisible = function (offset) {
-		return stage && stage.isRectVisible(new MAPJS.Rectangle(container.getX(), container.getY(), container.getWidth(), container.getHeight()), offset);
-	};
-	idea.getLayer = function () {
-		return layer;
-	};
-	idea.getStage = function () {
-		return stage;
-	};
-	idea.getAbsolutePosition =  function () {
-		return container.getAbsolutePosition();
-	};
-	_.each(['getHeight', 'getWidth', 'getIsSelected', 'getLayer'], function (fname) {
-		container[fname] = function () {
-			return idea && idea[fname] && idea[fname].apply(idea, arguments);
-		};
-	});
-	_.each([':textChanged', ':editing', ':request'], function (fname) {
-		idea.on(fname, function (event) {
-			container.fire(fname, event);
-			reRender();
-		});
-	});
-	_.each(['setMMAttr', 'setIsSelected', 'setText', 'setIsDroppable', 'editNode', 'setupShadows', 'setShadowOffset', 'setIsActivated'], function (fname) {
-		container[fname] = function () {
-			var result = idea && idea[fname] && idea[fname].apply(idea, arguments);
-			reRender();
-			return result;
-		};
-	});
-	return container;
-};
-
 /*global _, Kinetic, MAPJS*/
 if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
@@ -3041,7 +2955,7 @@ Kinetic.Stage.prototype.isRectVisible = function (rect, offset) {
 	);
 };
 
-MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
+MAPJS.KineticMediator = function (mapModel, stage) {
 	'use strict';
 	window.stage = stage;
 	var layer = new Kinetic.Layer(),
@@ -3143,9 +3057,6 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 			id: 'node_' + n.id,
 			activated: n.activated
 		});
-		if (imageRendering) {
-			node = Kinetic.IdeaProxy(node, stage, layer);
-		}
 		node.on('click tap', function (evt) { mapModel.clickNode(n.id, evt); });
 		node.on('dblclick dbltap', function () {
 			if (!mapModel.getEditingEnabled()) {
@@ -3334,16 +3245,44 @@ MAPJS.KineticMediator = function (mapModel, stage, imageRendering) {
 		});
 	}());
 };
-MAPJS.KineticMediator.dimensionProvider = _.memoize(function (title) {
+MAPJS.calculateMergedBoxSize = function (box1, box2) {
 	'use strict';
-	var text = new Kinetic.Idea({
-		text: title
-	});
+	if (box2.position === 'bottom' || box2.position === 'top') {
+		return {
+			width: Math.max(box1.width, box2.width),
+			height: box1.height + box2.height
+		};
+	}
+	if (box2.position === 'left' || box2.position === 'right') {
+		return {
+			width: box1.width + box2.width,
+			height: Math.max(box1.height, box2.height)
+		};
+	}
 	return {
-		width: text.getWidth(),
-		height: text.getHeight()
+		width: Math.max(box1.width, box2.width),
+		height: Math.max(box1.height, box2.height)
 	};
-});
+};
+MAPJS.KineticMediator.dimensionProvider = _.memoize(
+	function (content) {
+		'use strict';
+		var shape = new Kinetic.Idea({
+			text: content.title,
+			mmAttr: content.attr
+		});
+		return {
+			width: shape.getWidth(),
+			height: shape.getHeight()
+		};
+	},
+	function (content) {
+		'use strict';
+		var iconSize = (content.attr && content.attr.icon && (':' + content.attr.icon.width + 'x' + content.attr.icon.height + 'x' + content.attr.icon.position)) || ':0x0x0';
+		return content.title + iconSize;
+	}
+);
+
 MAPJS.KineticMediator.layoutCalculator = function (idea) {
 	'use strict';
 	return MAPJS.calculateLayout(idea, MAPJS.KineticMediator.dimensionProvider);
@@ -3504,6 +3443,8 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'a': 'openAttachment'
 			},
 			onScroll = function (event, delta, deltaX, deltaY) {
+				deltaX = deltaX || 0; /*chromebook scroll fix*/
+				deltaY = deltaY || 0;
 				if (event.target === jQuery(stage.getContainer()).find('canvas')[0]) {
 					if (Math.abs(deltaX) < 5) {
 						deltaX = deltaX * 5;
@@ -3622,3 +3563,45 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 		element.mouseleave(element.hide.bind(element));
 	});
 };
+/*global $, FileReader, Image */
+$.fn.imageDropWidget = function (callback) {
+	'use strict';
+	var readFileIntoDataUrl = function (fileInfo) {
+			var loader = $.Deferred(),
+				fReader = new FileReader();
+			fReader.onload = function (e) {
+				loader.resolve(e.target.result);
+			};
+			fReader.onerror = loader.reject;
+			fReader.onprogress = loader.notify;
+			fReader.readAsDataURL(fileInfo);
+			return loader.promise();
+		},
+		domImg,
+		insertFiles = function (files, evt) {
+			$.each(files, function (idx, fileInfo) {
+				if (/^image\//.test(fileInfo.type)) {
+					$.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
+						domImg = new Image();
+						domImg.onload = function () {
+							callback(dataUrl, domImg.width, domImg.height, evt);
+						};
+						domImg.src = dataUrl;
+					});
+				}
+			});
+		};
+	this.on('dragenter dragover', function (e) {
+		if (e.originalEvent.dataTransfer) {
+			return false;
+		}
+	}).on('drop', function (e) {
+		var dataTransfer = e.originalEvent.dataTransfer;
+		e.stopPropagation();
+		e.preventDefault();
+		if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
+			insertFiles(dataTransfer.files, e.originalEvent);
+		}
+	});
+};
+
