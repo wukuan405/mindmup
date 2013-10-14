@@ -120,6 +120,7 @@ MM.main = function (config) {
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
+				jQuery('#modalIconEdit').iconEditorWidget(mapModel);
 			};
 		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);

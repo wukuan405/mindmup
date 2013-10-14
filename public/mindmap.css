@@ -490,3 +490,15 @@ input.noglow {
 	width: 95%;
 	height: 200px;
 }
+#modalIconEdit .file-drop-zone {
+	width: 150px;
+	height: 150px;
+	border: 1px dashed black;
+	color: gray;
+	font-size: 7px;
+	text-align: center;
+}
+#modalIconEdit .file-drop-zone img {
+	max-width: 150px;
+	max-height: 150px;
+}

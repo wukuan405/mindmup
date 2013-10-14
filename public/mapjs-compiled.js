@@ -1409,7 +1409,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			contextNode = function () {
 				return contextNodeId && currentLayout && currentLayout.nodes && currentLayout.nodes[contextNodeId];
 			},
-			oldContext, newContext;
+			oldContext,
+			newContext;
 		oldContext = contextNode();
 		if (isInputEnabled) {
 			self.applyToActivated(function (id) {
@@ -1696,6 +1697,36 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			});
 		}
 	};
+	self.getIcon = function (nodeId) {
+		var node = currentLayout.nodes[nodeId || currentlySelectedIdeaId];
+		if (!node) {
+			return false;
+		}
+		return node.attr && node.attr.icon;
+	};
+	self.setIcon = function (source, url, imgWidth, imgHeight, position, nodeId) {
+		if (!isEditingEnabled) {
+			return false;
+		}
+		analytic('setIcon', source);
+		nodeId = nodeId || currentlySelectedIdeaId;
+		var nodeIdea = self.findIdeaById(nodeId);
+		if (!nodeIdea) {
+			return false;
+		}
+		if (url) {
+			idea.updateAttr(nodeId, 'icon', {
+				url: url,
+				width: imgWidth,
+				height: imgHeight,
+				position: position
+			});
+		} else if (nodeIdea.title || nodeId === idea.id) {
+			idea.updateAttr(nodeId, 'icon', false);
+		} else {
+			idea.removeSubIdea(nodeId);
+		}
+	};
 	self.moveUp = function (source) { self.moveRelative(source, -1); };
 	self.moveDown = function (source) { self.moveRelative(source, 1); };
 
@@ -1905,6 +1936,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	}());
 };
 /*global _, MAPJS, jQuery*/
+/*jslint forin:true*/
 MAPJS.dragdrop = function (mapModel, stage) {
 	'use strict';
 	var currentDroppable,
@@ -1947,6 +1979,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			return false;
 		},
 		nodeDragMove = function (id, x, y, nodeX, nodeY, shouldCopy, shouldPositionAbsolutely) {
+
 			var nodeId, node;
 			if (!mapModel.isEditingEnabled()) {
 				return;
@@ -2049,12 +2082,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				var scaleX = Math.min(imgWidth, 300) / imgWidth,
 					scaleY = Math.min(imgHeight, 300) / imgHeight,
 					scale = Math.min(scaleX, scaleY);
-				content.updateAttr(ideaId, 'icon', {
-					url: dataUrl,
-					width: imgWidth * scale,
-					height: imgHeight * scale,
-					position: position
-				});
+				mapModel.setIcon('drag and drop', dataUrl, Math.round(imgWidth * scale), Math.round(imgHeight * scale), position, ideaId);
 			},
 			addNew = function () {
 				content.startBatch();
@@ -2445,8 +2473,8 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 				imgUrl = safeIconProp('url'),
 				imgWidth = safeIconProp('width'),
 				imgHeight = safeIconProp('height');
-			if (imgUrl && this.getAttr('image') && this.getAttr('image').src !== imgUrl) {
-				this.getAttr('image').src = imgUrl;
+			if (this.getAttr('image') && this.getAttr('image').src !== imgUrl) {
+				this.getAttr('image').src = imgUrl || '';
 			}
 			this.setAttr('mapjs-image-url', imgUrl);
 			if (this.getAttr('width') !== imgWidth) {
@@ -2472,8 +2500,12 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 			}
 		};
 		icon.drawScene = function () {
-			this.initMapjsImage();
-			this.oldDrawScene.apply(this, arguments);
+			if (!this.getAttr('image')) {
+				this.initMapjsImage();
+			}
+			if (this.getAttr('mapjs-image-url')) {
+				this.oldDrawScene.apply(this, arguments);
+			}
 		};
 		return icon;
 	}
