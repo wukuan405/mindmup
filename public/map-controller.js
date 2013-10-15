@@ -201,9 +201,9 @@ MM.MapController.activityTracking = function (mapController, activityLog) {
 MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	'use strict';
 	var alertId,
-		showAlertWithCallBack = function (message, prompt, callback) {
+		showAlertWithCallBack = function (message, prompt, callback, cancel) {
 			alert.hide(alertId);
-			modalConfirmation.showModalToConfirm('Please confirm', message, prompt).then(callback);
+			modalConfirmation.showModalToConfirm('Please confirm', message, prompt).then(callback, cancel);
 		},
 		showErrorAlert = function (title, message) {
 			alert.hide(alertId);
@@ -266,6 +266,8 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		if (mapSourceDescription === 'S3_CORS') {
 			showAlertWithCallBack('The map is too large for anonymous MindMup storage. Maps larger than 100 KB can only be stored to MindMup Gold, or a third-party cloud storage. (<a href="http://blog.mindmup.com/p/storage-options.html" target="_blank">more info on storage options</a>)', 'Save to MindMup Gold', function () {
 				mapController.publishMap('b');
+			}, function () {
+				mapController.dispatchEvent('mapSavingCancelled');
 			});
 		} else {
 			showErrorAlert('Unfortunately, the file is too large for the selected storage.', 'Please select a different storage provider from the save dropdown menu');
