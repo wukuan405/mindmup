@@ -24,6 +24,7 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 			if (!icon) {
 				imgPreview.hide();
 				self.find('[data-mm-role=attribs]').hide();
+				clearButton.hide();
 			} else {
 				imgPreview.show();
 				imgPreview.attr('src', icon.url);
@@ -32,6 +33,7 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 				widthBox.val(icon.width);
 				heightBox.val(icon.height);
 				fileUpload.val('');
+				clearButton.show();
 			}
 		},
 		insertController = new MAPJS.ImageInsertController(
