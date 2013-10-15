@@ -2073,7 +2073,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
 		};
-	jQuery(stage.getContainer()).imageDropWidget(function (dataUrl, imgWidth, imgHeight, evt) {
+	jQuery(stage.getContainer()).imageDropWidget(new MAPJS.ImageInsertController(function (dataUrl, imgWidth, imgHeight, evt) {
 		var node,
 			nodeId,
 			content = mapModel.getIdea(),
@@ -2096,7 +2096,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 		}
 		addNew();
-	});
+	}));
 	mapModel.addEventListener('nodeCreated', function (n) {
 		var node = findNodeOnStage(n.id), shouldPositionAbsolutely;
 		node.on('dragstart', function (evt) {
@@ -3595,10 +3595,11 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 		element.mouseleave(element.hide.bind(element));
 	});
 };
-/*global $, FileReader, Image */
-$.fn.imageDropWidget = function (callback) {
+/*global $, FileReader, Image, MAPJS */
+MAPJS.ImageInsertController = function (callback) {
 	'use strict';
-	var readFileIntoDataUrl = function (fileInfo) {
+	var self = this,
+		readFileIntoDataUrl = function (fileInfo) {
 			var loader = $.Deferred(),
 				fReader = new FileReader();
 			fReader.onload = function (e) {
@@ -3609,20 +3610,23 @@ $.fn.imageDropWidget = function (callback) {
 			fReader.readAsDataURL(fileInfo);
 			return loader.promise();
 		},
-		domImg,
-		insertFiles = function (files, evt) {
-			$.each(files, function (idx, fileInfo) {
-				if (/^image\//.test(fileInfo.type)) {
-					$.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
-						domImg = new Image();
-						domImg.onload = function () {
-							callback(dataUrl, domImg.width, domImg.height, evt);
-						};
-						domImg.src = dataUrl;
-					});
-				}
-			});
-		};
+		domImg;
+	self.insertFiles = function (files, evt) {
+		$.each(files, function (idx, fileInfo) {
+			if (/^image\//.test(fileInfo.type)) {
+				$.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
+					domImg = new Image();
+					domImg.onload = function () {
+						callback(dataUrl, domImg.width, domImg.height, evt);
+					};
+					domImg.src = dataUrl;
+				});
+			}
+		});
+	};
+};
+$.fn.imageDropWidget = function (imageInsertController) {
+	'use strict';
 	this.on('dragenter dragover', function (e) {
 		if (e.originalEvent.dataTransfer) {
 			return false;
@@ -3632,8 +3636,9 @@ $.fn.imageDropWidget = function (callback) {
 		e.stopPropagation();
 		e.preventDefault();
 		if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
-			insertFiles(dataTransfer.files, e.originalEvent);
+			imageInsertController.insertFiles(dataTransfer.files, e.originalEvent);
 		}
 	});
+	return this;
 };
 

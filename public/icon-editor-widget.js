@@ -1,4 +1,4 @@
-/*global jQuery */
+/*global jQuery, MAPJS */
 jQuery.fn.iconEditorWidget = function (mapModel) {
 	'use strict';
 	var self = this,
@@ -11,6 +11,8 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 		widthBox = self.find('input[name=width]'),
 		heightBox = self.find('input[name=height]'),
 		ratioBox = self.find('input[name=keepratio]'),
+		fileUpload = self.find('input[name=selectfile]'),
+		dropZone = self.find('[data-mm-role=drop-zone]'),
 		doConfirm = function () {
 			mapModel.setIcon('icon-editor', imgPreview.attr('src'), Math.round(widthBox.val()), Math.round(heightBox.val()), positionSelect.val());
 		},
@@ -29,15 +31,19 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 				positionSelect.val(icon.position);
 				widthBox.val(icon.width);
 				heightBox.val(icon.height);
+				fileUpload.val('');
 			}
-		};
-	self.find('[data-mm-role=drop-zone]').imageDropWidget(function (dataUrl, imgWidth, imgHeight, evt) {
-		imgPreview.attr('src', dataUrl);
-		widthBox.val(imgWidth);
-		heightBox.val(imgHeight);
-		self.find('[data-mm-role=attribs]').show();
-		imgPreview.show();
-	});
+		},
+		insertController = new MAPJS.ImageInsertController(
+			function (dataUrl, imgWidth, imgHeight, evt) {
+				imgPreview.attr('src', dataUrl);
+				widthBox.val(imgWidth);
+				heightBox.val(imgHeight);
+				self.find('[data-mm-role=attribs]').show();
+				imgPreview.show();
+			}
+		);
+	dropZone.imageDropWidget(insertController);
 	widthBox.on('change', function () {
 		if (ratioBox[0].checked) {
 			heightBox.val(Math.round(imgPreview.height() * parseInt(widthBox.val(), 10) / imgPreview.width()));
@@ -47,6 +53,9 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 		if (ratioBox[0].checked) {
 			widthBox.val(Math.round(imgPreview.width() * parseInt(heightBox.val(), 10) / imgPreview.height()));
 		}
+	});
+	fileUpload.on('change', function (e) {
+		insertController.insertFiles(this.files, e);
 	});
 	self.modal({keyboard: true, show: false});
 	confirmElement.click(function () {
@@ -69,10 +78,13 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 		}
 	});
 	this.on('show', function () {
+		fileUpload.css('opacity', 0);
 		loadForm();
 	});
 	this.on('shown', function () {
 		confirmElement.focus();
+		fileUpload.css('opacity', 0).css('position', 'absolute')
+			.offset(dropZone.offset()).width(dropZone.outerWidth()).height(dropZone.outerHeight());
 	});
 	return this;
 }
