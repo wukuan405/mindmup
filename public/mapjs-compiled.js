@@ -1544,6 +1544,18 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 		self.dispatchEvent('nodeEditRequested', currentlySelectedIdeaId, shouldSelectAll, !!editingNew);
 	};
+	this.editIcon = function (source) {
+		if (!isEditingEnabled) {
+			return false;
+		}
+		if (source) {
+			analytic('editIcon', source);
+		}
+		if (!isInputEnabled) {
+			return false;
+		}
+		self.dispatchEvent('nodeIconEditRequested', currentlySelectedIdeaId);
+	};
 	this.scaleUp = function (source) {
 		self.scale(source, 1.25);
 	};
@@ -3472,7 +3484,8 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				'='	: 'activateSiblingNodes',
 				'.'	: 'activateSelectedNode',
 				'/' : 'toggleCollapse',
-				'a': 'openAttachment'
+				'a' : 'openAttachment',
+				'i' : 'editIcon'
 			},
 			onScroll = function (event, delta, deltaX, deltaY) {
 				deltaX = deltaX || 0; /*chromebook scroll fix*/

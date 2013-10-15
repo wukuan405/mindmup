@@ -86,5 +86,8 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 		fileUpload.css('opacity', 0).css('position', 'absolute')
 			.offset(dropZone.offset()).width(dropZone.outerWidth()).height(dropZone.outerHeight());
 	});
+	mapModel.addEventListener('nodeIconEditRequested', function () {
+		self.modal('show');
+	});
 	return this;
 }
