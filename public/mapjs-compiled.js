@@ -2381,11 +2381,11 @@ MAPJS.dragdrop = function (mapModel, stage) {
 					a2x = conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
 					a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
 				}
-				context.moveTo(a1x, a1y);
-				context.lineTo(conn.to.x, conn.to.y);
-				context.lineTo(a2x, a2y);
-				context.lineTo(a1x, a1y);
-				context.fill();
+				canvas.moveTo(a1x, a1y);
+				canvas.lineTo(conn.to.x, conn.to.y);
+				canvas.lineTo(a2x, a2y);
+				canvas.lineTo(a1x, a1y);
+				canvas.fill();
 			}
 		}
 	};
