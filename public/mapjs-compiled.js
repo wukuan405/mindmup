@@ -2239,8 +2239,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			return stage && stage.isRectVisible(rect, offset);
 		},
 		drawFunc: function (canvas) {
-			var context = canvas.getContext(),
-				shapeFrom = this.shapeFrom,
+			var shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				offset,
@@ -2252,12 +2251,12 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			if (!conn) {
 				return;
 			}
-			context.beginPath();
-			context.moveTo(conn.from.x, conn.from.y);
+			canvas.beginPath();
+			canvas.moveTo(conn.from.x, conn.from.y);
 			offset = conn.controlPointOffset * (conn.from.y - conn.to.y);
 			maxOffset = Math.min(shapeTo.getHeight(), shapeFrom.getHeight()) * 1.5;
 			offset = Math.max(-maxOffset, Math.min(maxOffset, offset));
-			context.quadraticCurveTo(conn.from.x, conn.to.y - offset, conn.to.x, conn.to.y);
+			canvas.quadraticCurveTo(conn.from.x, conn.to.y - offset, conn.to.x, conn.to.y);
 			canvas.stroke(this);
 		}
 	};
@@ -2408,26 +2407,24 @@ Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
 	'use strict';
-	this.createAttrs();
 	Kinetic.Shape.call(this, config);
 	this.shapeType = 'Clip';
 	this._setDrawFuncs();
 };
 Kinetic.Clip.prototype.drawFunc = function (canvas) {
 	'use strict';
-	var context = canvas.getContext(),
-		xClip = this.getWidth() * 2 - this.getRadius() * 2;
-	context.beginPath();
-	context.moveTo(0, this.getClipTo());
-	context.arcTo(0, 0, this.getWidth() * 2, 0,  this.getWidth());
-	context.arcTo(this.getWidth() * 2, 0, this.getWidth() * 2, this.getHeight(),  this.getWidth());
-	context.arcTo(this.getWidth() * 2, this.getHeight(), 0, this.getHeight(), this.getRadius());
-	context.arcTo(xClip, this.getHeight(), xClip, 0, this.getRadius());
-	context.lineTo(xClip, this.getClipTo() * 0.5);
-	canvas.fillStroke(this);
+	var xClip = this.getWidth() * 2 - this.getRadius() * 2;
+	canvas.beginPath();
+	canvas.moveTo(0, this.getClipTo());
+	canvas._context.arcTo(0, 0, this.getWidth() * 2, 0,  this.getWidth());
+	canvas._context.arcTo(this.getWidth() * 2, 0, this.getWidth() * 2, this.getHeight(),  this.getWidth());
+	canvas._context.arcTo(this.getWidth() * 2, this.getHeight(), 0, this.getHeight(), this.getRadius());
+	canvas._context.arcTo(xClip, this.getHeight(), xClip, 0, this.getRadius());
+	canvas.lineTo(xClip, this.getClipTo() * 0.5);
+	canvas.fillStrokeShape(this);
 };
-Kinetic.Node.addGetterSetter(Kinetic.Clip, 'clipTo', 0);
-Kinetic.Node.addGetterSetter(Kinetic.Clip, 'radius', 0);
+Kinetic.Factory.addGetterSetter(Kinetic.Clip, 'clipTo', 0);
+Kinetic.Factory.addGetterSetter(Kinetic.Clip, 'radius', 0);
 Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 /*global MAPJS, Color, _, jQuery, Kinetic*/
 /*jslint nomen: true, newcap: true, browser: true*/
@@ -2629,7 +2626,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		};
 		this.editNode = function (shouldSelectAll, deleteOnCancel) {
 			self.fire(':editing');
-			var canvasPosition = jQuery(self.getLayer().getCanvas().getElement()).offset(),
+			var canvasPosition = jQuery(self.getStage().getContainer()).offset(),
 				ideaInput,
 				onStageMoved = _.throttle(function () {
 					ideaInput.css({
