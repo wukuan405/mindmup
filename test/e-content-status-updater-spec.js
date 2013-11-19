@@ -29,6 +29,19 @@ describe('MM.ContentStatusUpdater', function () {
 						style: {
 							background: '#ff0000'
 						}
+					},
+					'questionable': {
+						style: {
+							background: '#ff0000'
+						},
+						icon: {
+							url: 'http://icon1'
+						}
+					},
+					'doomed': {
+						icon: {
+							url: 'http://icon2'
+						}
 					}
 
 				},
@@ -52,6 +65,21 @@ describe('MM.ContentStatusUpdater', function () {
 						},
 						2: {
 							id: 112
+						}
+					}
+				},
+				2: {
+					id: 2,
+					ideas: {
+						1: {
+							id: 21,
+							style: {
+								background: '#888888'
+							}
+						},
+						2: {
+							id: 22,
+							attr: { icon: { url: 'http://old' } }
 						}
 					}
 				}
@@ -85,6 +113,20 @@ describe('MM.ContentStatusUpdater', function () {
 		it('should change the style of non root ideas', function () {
 			underTest.updateStatus(11, 'passing');
 			expect(content.getAttrById(11, 'style')).toEqual({background: '#ffffff'});
+		});
+		it('should update icon if only icon is given', function () {
+			underTest.updateStatus(21, 'doomed');
+			expect(content.getAttrById(21, 'icon')).toEqual({ url: 'http://icon2' });
+			expect(content.getAttrById(21, 'style')).toEqual({background: '#888888'});
+		});
+		it('should update both icon and style if both are given', function () {
+			underTest.updateStatus(21, 'questionable');
+			expect(content.getAttrById(21, 'icon')).toEqual({ url: 'http://icon1' });
+			expect(content.getAttrById(21, 'style')).toEqual({background: '#ff0000'});
+		});
+		it('should not touch icon if only style is given', function () {
+			underTest.updateStatus(22, 'passing');
+			expect(content.getAttrById(22, 'icon')).toEqual({ url: 'http://old' });
 		});
 	});
 	describe('persists the status', function () {
@@ -144,11 +186,15 @@ describe('MM.ContentStatusUpdater', function () {
 				ideas: {
 					1: {
 						id: 11,
-						attr: { status: 'no', style: { background: 'yellow' } },
+						attr: { status: 'no', style: { background: 'yellow' }, icon: {url: 'http://xx'} },
 						ideas: {
 							1: {
 								id: 111,
 								attr: { style: { background: 'yellow' } },
+							},
+							2: {
+								id: 112,
+								attr: { icon: { url: 'http://old' } },
 							}
 						}
 					}
@@ -162,11 +208,14 @@ describe('MM.ContentStatusUpdater', function () {
 			expect(content.getAttr('style')).toBeFalsy();
 			expect(content.findSubIdeaById(11).getAttr('status')).toBeFalsy();
 			expect(content.findSubIdeaById(11).getAttr('style')).toBeFalsy();
+			expect(content.findSubIdeaById(11).getAttr('icon')).toBeFalsy();
 		});
 		it('does not drop styling of non-status elements', function () {
 			underTest.clear();
 			expect(content.findSubIdeaById(111).getAttr('style')).toEqual({background: 'yellow'});
+			expect(content.findSubIdeaById(112).getAttr('icon')).toEqual({url: 'http://old'});
 		});
+		//TODO: improve by removing only backgrounds and icons that are actually included in the status (eg don't clear color if status did not define color
 	});
 	describe("setStatusConfig", function () {
 		var content, underTest,
@@ -236,6 +285,7 @@ describe("progressStatusUpdateWidget", function () {
 		'					<div data-mm-role="status-color" class="progress-color">&nbsp;</div>&nbsp;' +
 		'					<span data-mm-role="status-name"></span>' +
 		'					<span data-mm-role="status-key"></span>' +
+        '					<span data-mm-role="status-icon"><img class="progress-icon" data-mm-role="icon-image-placeholder"/></span>' +
 		'					<span data-mm-role="status-priority"></span>' +
 		'				</a>' +
 		'			</li>' +
@@ -261,7 +311,7 @@ describe("progressStatusUpdateWidget", function () {
 		},
 		singleConfig = { passed: {style: {background: '#FF0000' }}},
 		doubleConfig = { passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
-						failed: {description: 'Failed desc', priority: 1, style: {background: 'rgb(255, 0, 0)'}}};
+						failed: {description: 'Failed desc', priority: 1, icon: {url: 'http://failedurl' }, style: {background: 'rgb(255, 0, 0)'}}};
 
 	beforeEach(function () {
 		mapModel = observable({});
@@ -295,10 +345,23 @@ describe("progressStatusUpdateWidget", function () {
 			expect(statuses.first().attr('data-mm-progress-key')).toBe('failed');
 			expect(statuses.first().find('[data-mm-role=status-priority]').text()).toBe('1');
 			expect(statuses.first().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(255, 0, 0)');
+			expect(statuses.first().find('[data-mm-role=status-icon]').data('icon')).toEqual({url: 'http://failedurl'});
+			expect(statuses.last().find('[data-mm-role=status-icon]').data('icon')).toBeFalsy();
 			expect(statuses.last().find('[data-mm-role=status-name]').text()).toBe('Passed desc');
 			expect(statuses.last().find('[data-mm-role=status-color]').css('background-color')).toBe('rgb(0, 0, 255)');
 			expect(statuses.last().attr('data-mm-progress-key')).toBe('passed');
 			expect(statuses.last().find('[data-mm-role=status-priority]').text()).toBe('');
+		});
+		it('hides the icon image placeholder if icon is not provided in the status', function () {
+			updater.dispatchEvent('configChanged', doubleConfig);
+			var statuses = domElement.find('[data-mm-role=progress]');
+			expect(statuses.last().find('[data-mm-role=icon-image-placeholder]').css('display')).toBe('none');
+		});
+		it('shows the icon image placeholder and sets src to appropriate url if icon is provided in the status', function () {
+			updater.dispatchEvent('configChanged', doubleConfig);
+			var statuses = domElement.find('[data-mm-role=progress]');
+			expect(statuses.first().find('[data-mm-role=icon-image-placeholder]').attr('src')).toEqual('http://failedurl');
+			expect(statuses.first().find('[data-mm-role=icon-image-placeholder]').css('display')).toBe('inline');
 		});
 		it("orders by priority, highest priority first, then items without priority in alphabetic order", function () {
 			var numericOrderConfig = {
@@ -376,9 +439,11 @@ describe("progressStatusUpdateWidget", function () {
 				+ '<input data-mm-role="status-color" value="#FFFFFF"/>'
 				+ '<span data-mm-role="status-name">No Priority</span>'
 				+ '<span data-mm-role="status-priority"></span>'
+				+ '<span id="secondIcon" data-mm-role="status-icon"></span>'
 				+ '</li>';
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
+			domElement.find('#secondIcon').data('icon', {url: 'xxx'});
 			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
@@ -389,7 +454,8 @@ describe("progressStatusUpdateWidget", function () {
 				},
 				'Key 2': {
 					description: 'No Priority',
-					style: { background: '#FFFFFF' }
+					style: { background: '#FFFFFF' },
+					icon: {url: 'xxx'}
 				}
 			});
 		});

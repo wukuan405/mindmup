@@ -32,3 +32,8 @@
 #progressEditModal .colorPicker-picker {
 	width:20px; height:20px;
 }
+.progress-icon {
+	max-width: 16px;
+	max-height: 16px;
+	vertical-align: middle;
+}

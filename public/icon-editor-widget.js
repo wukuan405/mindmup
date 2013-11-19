@@ -1,5 +1,35 @@
-/*global jQuery, MAPJS */
-jQuery.fn.iconEditorWidget = function (mapModel) {
+/*global jQuery, MAPJS, MM, observable */
+
+MM.iconEditor = function (mapModel) {
+	'use strict';
+	observable(this);
+	var currentDeferred,
+		self = this;
+	this.editIcon = function (icon) {
+		currentDeferred = jQuery.Deferred();
+		this.dispatchEvent('iconEditRequested', icon);
+		return currentDeferred.promise();
+	};
+	this.save = function (icon) {
+		currentDeferred.resolve(icon);
+	};
+	this.cancel = function () {
+		currentDeferred.reject();
+	};
+
+	mapModel.addEventListener('nodeIconEditRequested', function () {
+		var icon = mapModel.getIcon();
+		self.editIcon(icon).then(function (result) {
+			if (result) {
+				mapModel.setIcon('icon-editor', result.url, result.width, result.height, result.position);
+			} else {
+				mapModel.setIcon(false);
+			}
+		});
+	});
+
+};
+jQuery.fn.iconEditorWidget = function (iconEditor) {
 	'use strict';
 	var self = this,
 		confirmElement = self.find('[data-mm-role=confirm]'),
@@ -14,13 +44,17 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 		fileUpload = self.find('input[name=selectfile]'),
 		dropZone = self.find('[data-mm-role=drop-zone]'),
 		doConfirm = function () {
-			mapModel.setIcon('icon-editor', imgPreview.attr('src'), Math.round(widthBox.val()), Math.round(heightBox.val()), positionSelect.val());
+			iconEditor.save({
+				url: imgPreview.attr('src'),
+				width: Math.round(widthBox.val()),
+				height: Math.round(heightBox.val()),
+				position: positionSelect.val()
+			});
 		},
 		doClear = function () {
-			mapModel.setIcon(false);
+			iconEditor.save(false);
 		},
-		loadForm = function () {
-			var icon = mapModel.getIcon();
+		loadForm = function (icon) {
 			if (!icon) {
 				imgPreview.hide();
 				self.find('[data-mm-role=attribs]').hide();
@@ -81,15 +115,15 @@ jQuery.fn.iconEditorWidget = function (mapModel) {
 	});
 	this.on('show', function () {
 		fileUpload.css('opacity', 0);
-		loadForm();
 	});
 	this.on('shown', function () {
 		confirmElement.focus();
 		fileUpload.css('opacity', 0).css('position', 'absolute')
 			.offset(dropZone.offset()).width(dropZone.outerWidth()).height(dropZone.outerHeight());
 	});
-	mapModel.addEventListener('nodeIconEditRequested', function () {
+	iconEditor.addEventListener('iconEditRequested', function (icon) {
+		loadForm(icon);
 		self.modal('show');
 	});
 	return this;
-}
+};

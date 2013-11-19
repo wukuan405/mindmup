@@ -1,4 +1,5 @@
 /*global MM, _, observable, jQuery, $, window*/
+
 MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {
 	'use strict';
 	var self = observable(this),
@@ -41,8 +42,15 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				if (!status) {
 					return false;
 				}
-				merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
-				return content.updateAttr(id, 'style', merged) && content.updateAttr(id, statusAttributeName, statusName);
+				if (status.style) {
+					merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
+					content.updateAttr(id, 'style', merged);
+				}
+
+				if (status.icon) {
+					content.updateAttr(id, 'icon', status.icon);
+				}
+				return content.updateAttr(id, statusAttributeName, statusName);
 			},
 			shouldPropagate = function (parent) {
 				var childStatusNames = _.uniq(_.map(parent.ideas, function (child) {
@@ -72,6 +80,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		if (idea.getAttr(statusAttributeName)) {
 			content.updateAttr(idea.id, 'style', false);
 			content.updateAttr(idea.id, statusAttributeName, false);
+			content.updateAttr(idea.id, 'icon', false);
 		}
 		_.each(idea.ideas, self.clear);
 	};
@@ -97,7 +106,9 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			_.each(sortedConfig, function (status) {
 				var newItem = template.clone().prependTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
-				newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
+				if (status.style && status.style.background) {
+					newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
+				}
 				newItem.find('[data-mm-role=status-name]').text(status.description);
 				newItem.attr('data-mm-progress-key', status.key);
 				newItem.find('[data-mm-role=status-priority]').text(status.priority);
@@ -106,6 +117,8 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 						updater.updateStatus(id, status.key);
 					});
 				});
+				MM.Extensions.progress.updateIcon(newItem.find('[data-mm-role=status-icon]'), status.icon);
+
 			});
 		},
 		updateUI = function (config) {
@@ -151,10 +164,17 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 					var status = jQuery(this),
 						statusConfig = {
 							description: status.find('[data-mm-role=status-name]').text(),
-							style: {background: status.find('[data-mm-role=status-color]').val()}
 						},
+						backgroundColor = status.find('[data-mm-role=status-color]').val(),
+						icon = status.find('[data-mm-role=status-icon]').data('icon'),
 						priority = status.find('[data-mm-role=status-priority]').text(),
 						key = status.attr('data-mm-progress-key');
+					if (backgroundColor) {
+						statusConfig.style = {background: backgroundColor };
+					}
+					if (icon) {
+						statusConfig.icon = icon;
+					}
 					if (!key) {
 						key = autoKey++;
 					}
@@ -204,7 +224,7 @@ jQuery.fn.tableCellInPlaceEditorWidget = function () {
 	this.css('cursor', 'pointer');
 	return this;
 };
-jQuery.fn.tableEditWidget = function (contentRefreshCallBack) {
+jQuery.fn.tableEditWidget = function (contentRefreshCallBack, iconEditor) {
 	'use strict';
 	var modal = this,
 		template = modal.find('[data-mm-role=status-template]').clone().removeAttr('data-mm-role'),
@@ -216,6 +236,12 @@ jQuery.fn.tableEditWidget = function (contentRefreshCallBack) {
 					jQuery(this).remove();
 				});
 			}).removeAttr('data-mm-role');
+			container.find('[data-mm-role=status-icon]').click(function () {
+				var statusIconDom = $(this);
+				iconEditor.editIcon(statusIconDom.data('icon')).then(function (newIcon) {
+					MM.Extensions.progress.updateIcon(statusIconDom, newIcon);
+				});
+			});
 		};
 	modal.on('show', function () {
 		if (contentRefreshCallBack()) {
@@ -237,6 +263,7 @@ MM.Extensions.progress = function () {
 		statusAttributeName = 'progress',
 		mapController = MM.Extensions.components.mapController,
 		mapModel = MM.Extensions.components.mapModel,
+		iconEditor = MM.Extensions.components.iconEditor,
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
@@ -247,13 +274,23 @@ MM.Extensions.progress = function () {
 			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
-			modal.tableEditWidget(updater.refresh.bind(updater)).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
+			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig);
 
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
 };
-
+MM.Extensions.progress.updateIcon = function (selector, icon) {
+	'use strict';
+	selector.data('icon', icon);
+	if (icon) {
+		selector.find('[data-mm-role=icon-image-placeholder]').attr('src', icon.url).show();
+		selector.find('[data-mm-role=icon-no-image]').hide();
+	} else {
+		selector.find('[data-mm-role=icon-image-placeholder]').hide();
+		selector.find('[data-mm-role=icon-no-image]').show();
+	}
+};
 MM.Extensions.progress.statusConfig = {};
 MM.Extensions.progress.statusConfig.testing = {
 	'': {

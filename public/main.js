@@ -58,6 +58,7 @@ MM.main = function (config) {
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
+			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
@@ -66,7 +67,8 @@ MM.main = function (config) {
 				'mapController': mapController,
 				'activityLog': activityLog,
 				'mapModel': mapModel,
-				'container': jQuery('#container')
+				'container': jQuery('#container'),
+				'iconEditor': iconEditor
 			}),
 			loadWidgets = function () {
 				if (!config.isTouch) {
@@ -120,7 +122,7 @@ MM.main = function (config) {
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
-				jQuery('#modalIconEdit').iconEditorWidget(mapModel);
+				jQuery('#modalIconEdit').iconEditorWidget(iconEditor);
 			};
 		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);

@@ -502,3 +502,6 @@ input.noglow {
 	max-width: 150px;
 	max-height: 150px;
 }
+#modalIconEdit {
+	z-index: 9999;
+}
