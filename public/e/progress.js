@@ -169,7 +169,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 						icon = status.find('[data-mm-role=status-icon]').data('icon'),
 						priority = status.find('[data-mm-role=status-priority]').text(),
 						key = status.attr('data-mm-progress-key');
-					if (backgroundColor) {
+					if (backgroundColor && backgroundColor !== 'transparent' && backgroundColor !== 'false') {
 						statusConfig.style = {background: backgroundColor };
 					}
 					if (icon) {

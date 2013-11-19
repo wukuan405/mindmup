@@ -459,6 +459,46 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
+		it("ignores transparent color when reading background", function () {
+			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
+				+ '<input data-mm-role="status-color" value="transparent"/>'
+				+ '<span data-mm-role="status-name">Name 1</span>'
+				+ '<span data-mm-role="status-priority">1</span>'
+				+ '<span id="firstIcon" data-mm-role="status-icon"></span>'
+				+ '</li>';
+			domElement.find('[data-mm-role=progress]').remove();
+			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
+			domElement.find('#firstIcon').data('icon', {url: 'xxx'});
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-role=save]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith({
+				'Key 1': {
+					description: 'Name 1',
+					priority: '1',
+					icon: {url: 'xxx'}
+				}
+			});
+		});
+		it("ignores false as string color when reading background", function () {
+			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
+				+ '<input data-mm-role="status-color" value="false"/>'
+				+ '<span data-mm-role="status-name">Name 1</span>'
+				+ '<span data-mm-role="status-priority">1</span>'
+				+ '<span id="firstIcon" data-mm-role="status-icon"></span>'
+				+ '</li>';
+			domElement.find('[data-mm-role=progress]').remove();
+			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
+			domElement.find('#firstIcon').data('icon', {url: 'xxx'});
+			updater.setStatusConfig = jasmine.createSpy();
+			domElement.find('[data-mm-role=save]').click();
+			expect(updater.setStatusConfig).toHaveBeenCalledWith({
+				'Key 1': {
+					description: 'Name 1',
+					priority: '1',
+					icon: {url: 'xxx'}
+				}
+			});
+		});
 		it("autogenerates keys for statuses without a key, numerically skipping any existing values", function () {
 			var newStatusHtml = '<li data-mm-role="progress" >'
 				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
