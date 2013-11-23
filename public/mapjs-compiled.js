@@ -2337,9 +2337,8 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				child.getX(), child.getY(), child.getWidth(), child.getHeight());
 		};
 	Kinetic.Link.prototype = {
-		drawHitFunc: function (canvas) {
-			var context = canvas.getContext(),
-				shapeFrom = this.shapeFrom,
+		drawHitFunc: function (context) {
+			var shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				strokeWidth = this.getStrokeWidth();
@@ -2349,12 +2348,11 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
-			canvas.stroke(this);
+			context.fillStrokeShape(this);
 			this.setStrokeWidth(strokeWidth);
 		},
-		drawFunc: function (canvas) {
-			var context = canvas.getContext(),
-				shapeFrom = this.shapeFrom,
+		drawFunc: function (context) {
+			var shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				n = Math.tan(Math.PI / 9);
@@ -2363,7 +2361,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
-			canvas.stroke(this);
+			context.fillStrokeShape(this);
 			if (this.attrs.arrow) {
 				var a1x, a1y, a2x, a2y, len = 14, iy, m,
 					dx = conn.to.x - conn.from.x,
@@ -2388,7 +2386,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				context.lineTo(conn.to.x, conn.to.y);
 				context.lineTo(a2x, a2y);
 				context.lineTo(a1x, a1y);
-				context.fill();
+				context.fillStrokeShape(this);
 			}
 		}
 	};
@@ -2402,6 +2400,7 @@ Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 			dashed: [8, 8]
 		};
 	this.setStroke(style && style.color || 'red');
+	this.setFill(style.color || 'red');
 	this.setDashArray(dashTypes[style && style.lineStyle || 'dashed']);
 	this.attrs.arrow = style && style.arrow || false;
 };
@@ -3363,7 +3362,7 @@ MAPJS.KineticMediator.layoutCalculator = function (idea) {
 jQuery.fn.mapToolbarWidget = function (mapModel) {
 	'use strict';
 	var clickMethodNames = ['insertIntermediate', 'scaleUp', 'scaleDown', 'addSubIdea', 'editNode', 'removeSubIdea', 'toggleCollapse', 'addSiblingIdea', 'undo', 'redo',
-			'copy', 'cut', 'paste', 'resetView', 'openAttachment', 'toggleAddLinkMode', 'activateChildren', 'activateNodeAndChildren', 'activateSiblingNodes'],
+			'copy', 'cut', 'paste', 'resetView', 'openAttachment', 'toggleAddLinkMode', 'activateChildren', 'activateNodeAndChildren', 'activateSiblingNodes', 'editIcon'],
 		changeMethodNames = ['updateStyle'];
 	return this.each(function () {
 		var element = jQuery(this);
