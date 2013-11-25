@@ -2239,7 +2239,8 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			return stage && stage.isRectVisible(rect, offset);
 		},
 		drawFunc: function (canvas) {
-			var shapeFrom = this.shapeFrom,
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				offset,
@@ -2251,12 +2252,12 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			if (!conn) {
 				return;
 			}
-			canvas.beginPath();
-			canvas.moveTo(conn.from.x, conn.from.y);
+			context.beginPath();
+			context.moveTo(conn.from.x, conn.from.y);
 			offset = conn.controlPointOffset * (conn.from.y - conn.to.y);
 			maxOffset = Math.min(shapeTo.getHeight(), shapeFrom.getHeight()) * 1.5;
 			offset = Math.max(-maxOffset, Math.min(maxOffset, offset));
-			canvas.quadraticCurveTo(conn.from.x, conn.to.y - offset, conn.to.x, conn.to.y);
+			context.quadraticCurveTo(conn.from.x, conn.to.y - offset, conn.to.x, conn.to.y);
 			canvas.stroke(this);
 		}
 	};
@@ -2336,8 +2337,9 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				child.getX(), child.getY(), child.getWidth(), child.getHeight());
 		};
 	Kinetic.Link.prototype = {
-		drawHitFunc: function (context) {
-			var shapeFrom = this.shapeFrom,
+		drawHitFunc: function (canvas) {
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				strokeWidth = this.getStrokeWidth();
@@ -2347,11 +2349,12 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
-			context.fillStrokeShape(this);
+			canvas.stroke(this);
 			this.setStrokeWidth(strokeWidth);
 		},
-		drawFunc: function (context) {
-			var shapeFrom = this.shapeFrom,
+		drawFunc: function (canvas) {
+			var context = canvas.getContext(),
+				shapeFrom = this.shapeFrom,
 				shapeTo = this.shapeTo,
 				conn,
 				n = Math.tan(Math.PI / 9);
@@ -2360,7 +2363,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			context.beginPath();
 			context.moveTo(conn.from.x, conn.from.y);
 			context.lineTo(conn.to.x, conn.to.y);
-			context.fillStrokeShape(this);
+			canvas.stroke(this);
 			if (this.attrs.arrow) {
 				var a1x, a1y, a2x, a2y, len = 14, iy, m,
 					dx = conn.to.x - conn.from.x,
@@ -2385,7 +2388,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				context.lineTo(conn.to.x, conn.to.y);
 				context.lineTo(a2x, a2y);
 				context.lineTo(a1x, a1y);
-				context.fillStrokeShape(this);
+				context.fill();
 			}
 		}
 	};
@@ -2399,31 +2402,32 @@ Kinetic.Link.prototype.setMMAttr = function (newMMAttr) {
 			dashed: [8, 8]
 		};
 	this.setStroke(style && style.color || 'red');
-	this.setFill(style.color || 'red');
 	this.setDashArray(dashTypes[style && style.lineStyle || 'dashed']);
 	this.attrs.arrow = style && style.arrow || false;
 };
 /*global Kinetic*/
 Kinetic.Clip = function (config) {
 	'use strict';
+	this.createAttrs();
 	Kinetic.Shape.call(this, config);
 	this.shapeType = 'Clip';
 	this._setDrawFuncs();
 };
 Kinetic.Clip.prototype.drawFunc = function (canvas) {
 	'use strict';
-	var xClip = this.getWidth() * 2 - this.getRadius() * 2;
-	canvas.beginPath();
-	canvas.moveTo(0, this.getClipTo());
-	canvas._context.arcTo(0, 0, this.getWidth() * 2, 0,  this.getWidth());
-	canvas._context.arcTo(this.getWidth() * 2, 0, this.getWidth() * 2, this.getHeight(),  this.getWidth());
-	canvas._context.arcTo(this.getWidth() * 2, this.getHeight(), 0, this.getHeight(), this.getRadius());
-	canvas._context.arcTo(xClip, this.getHeight(), xClip, 0, this.getRadius());
-	canvas.lineTo(xClip, this.getClipTo() * 0.5);
-	canvas.fillStrokeShape(this);
+	var context = canvas.getContext(),
+		xClip = this.getWidth() * 2 - this.getRadius() * 2;
+	context.beginPath();
+	context.moveTo(0, this.getClipTo());
+	context.arcTo(0, 0, this.getWidth() * 2, 0,  this.getWidth());
+	context.arcTo(this.getWidth() * 2, 0, this.getWidth() * 2, this.getHeight(),  this.getWidth());
+	context.arcTo(this.getWidth() * 2, this.getHeight(), 0, this.getHeight(), this.getRadius());
+	context.arcTo(xClip, this.getHeight(), xClip, 0, this.getRadius());
+	context.lineTo(xClip, this.getClipTo() * 0.5);
+	canvas.fillStroke(this);
 };
-Kinetic.Factory.addGetterSetter(Kinetic.Clip, 'clipTo', 0);
-Kinetic.Factory.addGetterSetter(Kinetic.Clip, 'radius', 0);
+Kinetic.Node.addGetterSetter(Kinetic.Clip, 'clipTo', 0);
+Kinetic.Node.addGetterSetter(Kinetic.Clip, 'radius', 0);
 Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 /*global MAPJS, Color, _, jQuery, Kinetic*/
 /*jslint nomen: true, newcap: true, browser: true*/
@@ -2625,7 +2629,7 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 		};
 		this.editNode = function (shouldSelectAll, deleteOnCancel) {
 			self.fire(':editing');
-			var canvasPosition = jQuery(self.getStage().getContainer()).offset(),
+			var canvasPosition = jQuery(self.getLayer().getCanvas().getElement()).offset(),
 				ideaInput,
 				onStageMoved = _.throttle(function () {
 					ideaInput.css({
