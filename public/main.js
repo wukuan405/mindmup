@@ -31,11 +31,11 @@ MM.main = function (config) {
 		};
 	window._gaq = window._gaq || [];
 
-	window._gaq.concat([['_setAccount', config.googleAnalyticsAccount],
+	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
 		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
 		['_setCustomVar', 2, 'Active Extensions', browserStorage['active-extensions'], 1],
 		['_trackPageview']
-			]);
+			];
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
