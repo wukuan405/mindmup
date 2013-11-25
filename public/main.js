@@ -35,7 +35,7 @@ MM.main = function (config) {
 		['_setCustomVar', 1, 'User Cohort', config.userCohort, 1],
 		['_setCustomVar', 2, 'Active Extensions', browserStorage['active-extensions'], 1],
 		['_trackPageview']
-			];
+			].concat(window._gaq);
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
