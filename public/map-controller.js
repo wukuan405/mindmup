@@ -270,7 +270,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 				mapController.dispatchEvent('mapSavingCancelled');
 			});
 		} else {
-			showErrorAlert('Unfortunately, the file is too large for the selected storage.', 'Please select a different storage provider from the save dropdown menu');
+			showErrorAlert('Unfortunately, the file is too large for the selected storage.', 'Please select a different storage provider from File -&gt; Save As menu');
 		}
 	});
 	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {

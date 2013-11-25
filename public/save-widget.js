@@ -50,7 +50,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			.removeClass('btn-primary');
 		element.find('.dropdown-toggle').attr('disabled', true);
 	});
-	mapController.addEventListener('mapSavingFailed mapSavingUnAuthorized authorisationFailed authRequired mapSavingCancelled', resetSaveButton);
+	mapController.addEventListener('mapSavingFailed mapSavingUnAuthorized authorisationFailed authRequired mapSavingCancelled mapSavingTooLarge', resetSaveButton);
 
 	mapController.addEventListener('mapLoaded mapSaved', function (mapId, idea, properties) {
 		setDefaultRepo(mapId);
