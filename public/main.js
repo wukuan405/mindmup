@@ -147,7 +147,13 @@ MM.main = function (config) {
 			activityLog.log('Warning', 'Local storage not available');
 		}
 		jQuery('#topbar').alertWidget(alert);
+		if (window.mmtimestamp) {
+			window.mmtimestamp.log('mm initialized');
+		}
 		extensions.load(navigation.initialMapId()).then(function () {
+			if (window.mmtimestamp) {
+				window.mmtimestamp.log('extensions loaded');
+			}
 			jQuery('[data-mm-clone]').each(function () {
 				var element = jQuery(this),
 					toClone = jQuery(element.data('mm-clone'));
@@ -155,6 +161,9 @@ MM.main = function (config) {
 				element.attr('data-mm-role', toClone.attr('data-mm-role'));
 			});
 			loadWidgets();
+			if (window.mmtimestamp) {
+				window.mmtimestamp.log('ui loaded');
+			}
 			if (!navigation.loadInitial()) {
 				jQuery('#logo-img').click();
 			}
