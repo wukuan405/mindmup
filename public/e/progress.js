@@ -398,8 +398,9 @@ MM.Extensions.progress.statusConfig.tasks = {
 	}
 };
 MM.Extensions.progress.statusConfig.testingWithIcons = 'progress-testing-with-flat-icons.json';
-MM.Extensions.progress.statusConfig.testingWith3DIcons = 'progress-testing-with-3d-icons.json'; 
-MM.Extensions.progress.statusConfig.tasksWith3DIcons = 'progress-tasks-with-3d-icons.json'; 
+MM.Extensions.progress.statusConfig.testingWith3DIcons = 'progress-testing-with-3d-icons.json';
+MM.Extensions.progress.statusConfig.tasksWith3DIcons = 'progress-tasks-with-3d-icons.json';
+MM.Extensions.progress.statusConfig.tasksWithIcons = 'progress-tasks-with-flat-icons.json';
 if (!window.jasmine) {
 	MM.Extensions.progress();
 }
