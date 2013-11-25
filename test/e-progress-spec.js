@@ -43,7 +43,6 @@ describe('MM.ContentStatusUpdater', function () {
 							url: 'http://icon2'
 						}
 					}
-
 				},
 				style: {
 					background: '#000000',
@@ -82,12 +81,40 @@ describe('MM.ContentStatusUpdater', function () {
 							attr: { icon: { url: 'http://old' } }
 						}
 					}
-				}
+				},
+				3: {
+					id: 3,
+					ideas: {
+						1: {
+							id: 31,
+							attr: {
+								style: { background: '#ff0000' },
+								icon: { url: 'http://old' },
+								'test-status': 'in-progress' // -> doomed should clear the background because in progress defined it
+													  // -> failure should not clear the icon because in progress did not define it
+							}
+						},
+						2: {
+							id: 32,
+							attr: {
+								style: { background: '#ff0000' },
+								icon: { url: 'http://old' },
+								'test-status': 'doomed' // -> in-progress should clear icon because doomed defines it
+							}
+						}
+					}
+				},
+
 			}
 		});
 		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', mapControllerStub(content));
 	});
-	describe('updates the node style:', function () {
+	it('propagation keeps child status - regression bug check', function () {
+		underTest.updateStatus(1111, 'questionable');
+		expect(content.getAttrById(1111, 'test-status')).toBe('questionable');
+		expect(content.getAttrById(111, 'test-status')).toBe('questionable');
+	});
+	describe('updateStatus', function () {
 		it('should change the node to be the color associated with the status', function () {
 			underTest.updateStatus(1, 'passing');
 
@@ -127,6 +154,18 @@ describe('MM.ContentStatusUpdater', function () {
 		it('should not touch icon if only style is given', function () {
 			underTest.updateStatus(22, 'passing');
 			expect(content.getAttrById(22, 'icon')).toEqual({ url: 'http://old' });
+		});
+		it('should clear background if defined by the previous status', function () {
+			underTest.updateStatus(31, 'doomed');
+			expect(content.getAttrById(31, 'style').background).toBeFalsy();
+		});
+		it('should not clear icon if not defined by the previous status', function () {
+			underTest.updateStatus(31, 'failure');
+			expect(content.getAttrById(31, 'icon')).toBeTruthy();
+		});
+		it('should clear icon if defined by the previous status', function () {
+			underTest.updateStatus(32, 'in-progress');
+			expect(content.getAttrById(32, 'icon')).toBeFalsy();
 		});
 	});
 	describe('persists the status', function () {
@@ -182,11 +221,35 @@ describe('MM.ContentStatusUpdater', function () {
 		beforeEach(function () {
 			content = MAPJS.content({
 				id: 1,
-				attr: { status: 'yes', style: { background: 'green' } },
+				attr: {
+					'test-statuses': {
+						'onlybg': {
+							style: {
+								background: '#ffffff'
+							}
+						},
+						'both': {
+							style: {
+								background: '#ff0000'
+							},
+							icon: {
+								url: 'http://icon1'
+							}
+						},
+						'onlyicon': {
+							icon: {
+								url: 'http://icon2'
+							}
+						}
+					},
+					status: 'onlybg',
+					style: { background: '#ffffff' },
+					icon: {url: 'http://icon2'}
+				},
 				ideas: {
 					1: {
 						id: 11,
-						attr: { status: 'no', style: { background: 'yellow' }, icon: {url: 'http://xx'} },
+						attr: { status: 'both', style: { other: 'something', background: '#ff0000' }, icon: {url: 'http://icon1'} },
 						ideas: {
 							1: {
 								id: 111,
@@ -195,6 +258,10 @@ describe('MM.ContentStatusUpdater', function () {
 							2: {
 								id: 112,
 								attr: { icon: { url: 'http://old' } },
+							},
+							3: {
+								id: 113,
+								attr: { status: 'onlyicon', style: { background: '#ff0000' }, icon: {url: 'http://icon2'} },
 							}
 						}
 					}
@@ -202,6 +269,29 @@ describe('MM.ContentStatusUpdater', function () {
 			});
 			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
 		});
+		it('drops status attributes from cleared nodes', function () {
+			underTest.clear();
+			expect(content.getAttrById(1, 'status')).toBeFalsy();
+			expect(content.getAttrById(11, 'status')).toBeFalsy();
+			expect(content.getAttrById(113, 'status')).toBeFalsy();
+		});
+		it('drops icon attributes from cleared nodes only if status defined an icon', function () {
+			underTest.clear();
+			expect(content.getAttrById(1, 'icon')).toBeTruthy();
+			expect(content.getAttrById(11, 'icon')).toBeFalsy();
+			expect(content.getAttrById(113, 'icon')).toBeFalsy();
+		});
+		it('drops from cleared nodes any styling attributes defined by status', function () {
+			underTest.clear();
+			expect(content.getAttrById(1, 'style')).toBeFalsy();
+			expect(content.getAttrById(11, 'style').background).toBeFalsy();
+			expect(content.getAttrById(11, 'style').other).toEqual('something');
+			expect(content.getAttrById(113, 'style').background).toBeTruthy();
+
+		});
+		it('clears the status for a single node if given a node id', function () {
+		});
+		/*
 		it('deletes all status attributes and drops styling for any elements with status', function () {
 			underTest.clear();
 			expect(content.getAttr('status')).toBeFalsy();
@@ -215,6 +305,7 @@ describe('MM.ContentStatusUpdater', function () {
 			expect(content.findSubIdeaById(111).getAttr('style')).toEqual({background: 'yellow'});
 			expect(content.findSubIdeaById(112).getAttr('icon')).toEqual({url: 'http://old'});
 		});
+		*/
 		//TODO: improve by removing only backgrounds and icons that are actually included in the status (eg don't clear color if status did not define color
 	});
 	describe("setStatusConfig", function () {

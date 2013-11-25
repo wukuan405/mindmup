@@ -19,6 +19,25 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 					self.dispatchEvent('configChanged', attrs[2]);
 				}
 			});
+		},
+		clearStatus = function (ideaId) {
+			var statusName = content.getAttrById(ideaId, statusAttributeName),
+				status = statusName && findStatus(statusName),
+				currentStyle;
+			if (status) {
+				if (status.icon) {
+					content.updateAttr(ideaId, 'icon', false);
+				}
+				if (status.style) {
+					currentStyle = content.getAttrById(ideaId, 'style');
+					content.updateAttr(ideaId, 'style', _.omit(currentStyle, _.keys(status.style)));
+				}
+			}
+			content.updateAttr(ideaId, statusAttributeName, false);
+		},
+		recursiveClear = function (idea) {
+			clearStatus(idea.id);
+			_.each(idea.ideas, recursiveClear);
 		};
 	self.setStatusConfig = function (statusConfig) {
 		if (!statusConfig) {
@@ -34,6 +53,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		});
 		content.updateAttr(content.id, statusConfigurationAttributeName, validatedConfig);
 	};
+
 	self.updateStatus = function (ideaId, newStatusName) {
 		var result = false,
 			changeStatus = function (id, statusName) {
@@ -42,11 +62,11 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				if (!status) {
 					return false;
 				}
+				clearStatus(id);
 				if (status.style) {
 					merged = _.extend({}, content.getAttrById(id, 'style'), status.style);
 					content.updateAttr(id, 'style', merged);
 				}
-
 				if (status.icon) {
 					content.updateAttr(id, 'icon', status.icon);
 				}
@@ -75,14 +95,8 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		}
 		return result;
 	};
-	self.clear = function (idea) {
-		idea = idea || content;
-		if (idea.getAttr(statusAttributeName)) {
-			content.updateAttr(idea.id, 'style', false);
-			content.updateAttr(idea.id, statusAttributeName, false);
-			content.updateAttr(idea.id, 'icon', false);
-		}
-		_.each(idea.ideas, self.clear);
+	self.clear = function () {
+		recursiveClear(content);
 	};
 	self.refresh = function () {
 		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
