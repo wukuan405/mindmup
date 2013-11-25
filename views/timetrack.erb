@@ -1,0 +1,17 @@
+<script type="text/javascript">
+	if (!window.mmtimestamp) {
+		window.mmtimestamp = {
+			head: Date.now(),
+			previous: Date.now(),
+			previousLabel: 'orig',
+			log: function (type) {
+				var now = Date.now();
+				_gaq.push(['_trackEvent', 'Timings Total', type, '', now - window.mmtimestamp.head]);
+				var toPush = ['_trackEvent', 'Timings Last', window.mmtimestamp.previousLabel + " -> " + type, '', now - window.mmtimestamp.previous]
+				_gaq.push(toPush);
+				window.mmtimestamp.previous = now; 
+				window.mmtimestamp.previousLabel = type;
+			}
+		};
+	}
+</script>
