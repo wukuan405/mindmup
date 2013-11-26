@@ -1,24 +1,39 @@
-def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket_name 
+def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket_name, renew
   require 'aws-sdk'
+  require 'pp'
   mm_account = 'mindmup-' + account_name
+
   iam = AWS::IAM.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
-  user = iam.users.create(mm_account)
-  policy = %Q!{
-    "Version": "2012-10-17",
-    "Statement": [
-      { 
-        "Effect": "Allow",
-        "Action": "s3:*",
-        "Resource":["arn:aws:s3:::#{mm_account}","arn:aws:s3:::#{mm_account}/*"]
-      }
-    ]
-  }!
-  user.policies['s3-bucket-access']= policy
-  s3 = AWS::S3.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
-  bucket = s3.buckets.create(mm_account)
-  bucket.cors=s3.buckets[template_bucket_name].cors
   
-  user.access_keys.create
+  if renew != "yes" then
+    begin
+      user = iam.users.create(mm_account)
+      policy = %Q!{
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource":["arn:aws:s3:::#{mm_account}","arn:aws:s3:::#{mm_account}/*"]
+          }
+        ]
+      }!
+      user.policies['s3-bucket-access']= policy
+      s3 = AWS::S3.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
+      bucket = s3.buckets.create(mm_account)
+      bucket.cors=s3.buckets[template_bucket_name].cors
+    rescue Exception => e
+      halt 'error creating user:' + e.message
+    end
+  else 
+      user = iam.users[mm_account]
+  end
+  halt 'user does not exist' unless user.exists?
+  begin
+    user.access_keys.create
+  rescue Exception => e
+    halt 'error creating an user access key:' + e.message
+  end
 end
 def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb
   expiry_in_secs = expiry_in_days * (60*60*24) 
@@ -41,7 +56,7 @@ module MindMup::GoldLicenseAdmin
   end
   post '/gold_license_admin' do
     content_type 'text/plain'
-    user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name
+    user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name, params[:renew_flag] 
     generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i
   end
 end

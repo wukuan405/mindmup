@@ -1,11 +1,12 @@
 <html>
   <body>
       <form method='post'>
+        Renew: <input type="checkbox" name="renew_flag" value="yes" /><br/>
         <input type="text" name="aws_key" placeholder="AWS KEY" /><br/>
         <input type="text" name="aws_secret" placeholder="AWS SECRET" /><br/>
         <input type="text" name="account_name" placeholder="ACCOUNT NAME" /><br/>
-        <input type="text" name="expiry_days" placeholder="Expiry in days" /><br/>
-        <input type="text" name="max_size" placeholder="Max Size in MB" /><br/>
+        <input type="text" name="expiry_days" placeholder="Expiry in days" value="365"/><br/>
+        <input type="text" name="max_size" placeholder="Max Size in MB" value="1024"/><br/>
         <input type="submit" />
       </form>
   </body>
