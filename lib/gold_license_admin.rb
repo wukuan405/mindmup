@@ -1,6 +1,5 @@
 def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket_name, renew
   require 'aws-sdk'
-  require 'pp'
   mm_account = 'mindmup-' + account_name
 
   iam = AWS::IAM.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
@@ -30,12 +29,15 @@ def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket
   end
   halt 'user does not exist' unless user.exists?
   begin
+    if user.access_keys.count > 1
+      user.access_keys.first.delete
+    end
     user.access_keys.create
   rescue Exception => e
     halt 'error creating an user access key:' + e.message
   end
 end
-def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb
+def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb, mm_aws_secret
   expiry_in_secs = expiry_in_days * (60*60*24) 
   signer = S3PolicySigner.new
   list = signer.signed_get aws_secret, 'mindmup-' + account_name, "/", expiry_in_secs
@@ -47,7 +49,8 @@ def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_s
     signature: post[:signature],
     account: account_name,
     list: list[:signature],
-    expiry: list[:expires]
+    expiry: list[:expires],
+    key: signer.encode_secret_key(mm_aws_secret, aws_secret)
   }.to_json
 end
 module MindMup::GoldLicenseAdmin
@@ -57,6 +60,6 @@ module MindMup::GoldLicenseAdmin
   post '/gold_license_admin' do
     content_type 'text/plain'
     user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name, params[:renew_flag] 
-    generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i
+    generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i, params[:aws_secret]
   end
 end

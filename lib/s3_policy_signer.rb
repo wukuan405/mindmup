@@ -41,4 +41,16 @@ class S3PolicySigner
 		).gsub("\n","")).gsub("+","%2B")
     {signature: signature, expires: expiration}
   end
+  def decode_xor_key xor_key, aws_secret
+    xor4 aws_secret, Base64.decode64(xor_key)
+  end
+  def encode_secret_key user_secret, mm_aws_secret
+    xor_key = xor4 mm_aws_secret, user_secret
+    Base64.encode64(xor_key).gsub("\n","")
+  end
+  def xor4(first, second)
+    s = []
+    first.unpack('C*').zip(second.unpack('C*')) {|a,b| s.push( (a||0) ^ (b||0) ) }
+    s.pack('C*')
+  end
 end
