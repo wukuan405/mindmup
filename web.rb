@@ -118,7 +118,7 @@ get "/publishingConfig" do
   @s3_key=settings.s3_upload_folder+"/" + @s3_upload_identifier + ".json"
   @s3_content_type="text/plain"
   signer=S3PolicySigner.new
-  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, settings.s3_bucket_name, @s3_key, settings.s3_max_upload_size*1024, @s3_content_type, settings.s3_form_expiry
+  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, settings.s3_bucket_name, @s3_key, settings.s3_max_upload_size*1024, @s3_content_type, settings.s3_form_expiry, "public-read"
   erb :s3UploadConfig
 end
 
@@ -160,6 +160,7 @@ get '/cache_news' do
 end
 
 include MindMup::GoldLicenseAdmin
+include MindMup::GoldPrivateRoutes
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
 include Sinatra::UserAgentHelpers

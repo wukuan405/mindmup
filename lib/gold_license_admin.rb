@@ -40,16 +40,17 @@ end
 def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb, mm_aws_secret
   expiry_in_secs = expiry_in_days * (60*60*24) 
   signer = S3PolicySigner.new
-  list = signer.signed_get aws_secret, 'mindmup-' + account_name, "/", expiry_in_secs
-  post = signer.signed_policy aws_secret, aws_key_id, 'mindmup-' + account_name, "", max_size_in_mb * 1024 * 1024 , 'text/plain', expiry_in_secs
+  expiration = signer.expiration expiry_in_secs
+  list = signer.signed_request "GET", aws_secret, "mindmup-" + account_name, "/", expiration
+  post = signer.signed_policy aws_secret, aws_key_id, "mindmup-" + account_name, "", max_size_in_mb * 1024 * 1024 , 'text/plain', expiry_in_secs, ""
   {
     accountType: 'mindmup-gold',
     id: aws_key_id,
     policy: post[:policy] ,
     signature: post[:signature],
     account: account_name,
-    list: list[:signature],
-    expiry: list[:expires],
+    list: list,
+    expiry: expiration,
     key: signer.encode_secret_key(mm_aws_secret, aws_secret)
   }.to_json
 end
@@ -62,4 +63,20 @@ module MindMup::GoldLicenseAdmin
     user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name, params[:renew_flag] 
     generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i, params[:aws_secret]
   end
+end
+module MindMup::GoldPrivateRoutes
+  get "/gold/signature" do
+    # eg ?key=D3EbG0AHAgJhC3wUIw5wB08idhh9bCJCDzMgBi8XNzsWeAMeHWIxfQ==&filename=foo.mup&id=AKIAIT74E4XNDZCOHR3A&account=damjan
+    signer=S3PolicySigner.new
+    aws_secret = signer.decode_xor_key params[:key], settings.s3_secret_key
+    expiry_in_secs = 365 * 60 * 60 * 24
+    expiration = signer.expiration expiry_in_secs
+    put = signer.signed_request 'PUT', aws_secret, 'mindmup-' + params[:account], "/" + params[:filename], expiration
+    get = signer.signed_request 'GET', aws_secret, 'mindmup-' + params[:account], "/" + params[:filename], expiration
+    {
+      get: get,
+      put: put,
+      expiry: expiration,
+    }.to_json
+  end  
 end
