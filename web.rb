@@ -50,6 +50,7 @@ configure do
   set :protection, :except => :frame_options
   set :last_news_id, ""
   set :last_news_title, ""
+  set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
   cache_last_news
 end
 get '/' do

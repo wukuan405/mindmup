@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, observable, _*/
+/*global FormData, jQuery, MM, observable*/
 MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder) {
 	'use strict';
 	this.generate = function () {
@@ -17,11 +17,11 @@ MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder)
 		);
 		return deferred.promise();
 	};
-	this.mapUrl = function (mapId) {
-		return s3Url + folder + mapId + '.json';
+	this.buildMapUrl = function (mapId) {
+		return jQuery.Deferred().resolve(s3Url + folder + mapId + '.json').promise();
 	};
 };
-MM.GoldLicenseManager = function (storage, storageKey) {
+MM.GoldLicenseManager = function (storage, storageKey, signatureUrl) {
 	'use strict';
 	var self = this,
 		currentDeferred;
@@ -37,6 +37,17 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		currentDeferred = jQuery.Deferred();
 		self.dispatchEvent('license-entry-required');
 		return currentDeferred.promise();
+	};
+	this.retieveFileSignature = function (s3Key, license, acl) {
+		var deferred = jQuery.Deferred();
+		jQuery.ajax(
+			signatureUrl + '?key=' + license.key + '&filename=' + s3Key + '&id=' + license.id + '&account=' + license.account + '&acl=' + acl,
+			{ dataType: 'json', cache: false }
+		).then(
+			deferred.resolve,
+			deferred.reject.bind(deferred, 'network-error')
+		);
+		return deferred.promise();
 	};
 	this.storeLicense = function (license) {
 		var deferred = currentDeferred;
@@ -57,7 +68,15 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		}
 	};
 };
-MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) {
+MM.mapIdToS3Key = function (prefix, mapId, defaultFileName, account) {
+	'use strict';
+	var mapIdComponents = mapId && mapId.split('/');
+	if (!mapIdComponents || mapIdComponents.length < 2 || mapIdComponents[0] !== prefix || mapIdComponents[1] !== account) {
+		return defaultFileName;
+	}
+	return decodeURIComponent(mapIdComponents[2]);
+};
+MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate) {
 	'use strict';
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
@@ -90,14 +109,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 				);
 			},
 			generateConfig = function (licenseKey) {
-				var buildFileName = function (prefix, mapId, fileName) {
-						var mapIdComponents = mapId && mapId.split('/');
-						if (!mapIdComponents || mapIdComponents.length < 2 || mapIdComponents[0] !== prefix || mapIdComponents[1] !== licenseKey.account) {
-							return fileName;
-						}
-						return decodeURIComponent(mapIdComponents[2]);
-					},
-					fileName = buildFileName(idPrefix, mapId, defaultFileName),
+				var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, licenseKey.account),
 					config = {
 						'mapId': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName), //mapId
 						'key': fileName,
@@ -113,12 +125,32 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation) 
 		licenseManager.retrieveLicense(showAuthentication).then(generateConfig, deferred.reject);
 		return deferred.promise();
 	};
-	this.mapUrl = function (mapId, idPrefix) {
-		return 'http://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/');
+	this.buildMapUrl = function (mapId, idPrefix, showAuthentication) {
+		var deferred =  jQuery.Deferred(),
+		retrieveSignature = function (license) {
+			var s3key = MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account);
+			licenseManager.retieveFileSignature(s3key, license).then(
+				function (signatures) {
+					var url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/' + s3key +  '?&AWSAccessKeyId=' + license.id + '&Signature=' + signatures.get + '&Expires=' + signatures.expiry;
+					deferred.resolve(url);
+				},
+				deferred.reject
+			);
+		};
+		if (isPrivate) {
+			licenseManager.retrieveLicense(showAuthentication).then(
+				retrieveSignature,
+				deferred.reject
+			);
+		} else {
+			deferred.resolve('http://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/'));
+		}
+		return deferred.promise();
 	};
 };
-MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
+MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo) {
 	'use strict';
+	var originaLoadMap = storageAdapter.loadMap;
 	storageAdapter.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			ajaxS3List = function (license) {
@@ -155,26 +187,45 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager) {
 		);
 		return deferred.promise();
 	};
+	storageAdapter.loadMap = function (mapId, showAuthentication) {
+		var deferred = jQuery.Deferred();
+		originaLoadMap(mapId, showAuthentication).then(
+			deferred.resolve,
+			function (evt) {
+				if (evt.status === 403 && redirectTo) {
+					deferred.reject('map-load-redirect', redirectTo + mapId.slice(1));
+				} else  {
+					deferred.reject(evt);
+				}
+			}
+		);
+		return deferred.promise();
+	};
 	return storageAdapter;
 };
-MM.S3Adapter = function (publishingConfigGenerator, prefix, description) {
+MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPrivate) {
 	'use strict';
-	var properties = {editable: true};
+
+	var properties = {editable: true},
+		savePolicy = isPrivate ? 'bucket-owner-read' : 'public-read';
 	this.description = description;
 	this.prefix = prefix;
 	this.recognises = function (mapId) {
 		return mapId && mapId[0] === prefix;
 	};
-
-	this.loadMap = function (mapId) {
+	this.loadMap = function (mapId, showAuthentication) {
 		var deferred = jQuery.Deferred(),
 			onMapLoaded = function (result) {
 				deferred.resolve(result, mapId, 'application/json', properties);
+			};
+		publishingConfigGenerator.buildMapUrl(mapId, prefix, showAuthentication).then(
+			function (mapUrl) {
+				jQuery.ajax(
+					mapUrl,
+					{ dataType: 'json', cache: false, success: onMapLoaded, error: deferred.reject }
+				);
 			},
-			mapUrl = publishingConfigGenerator.mapUrl(mapId, prefix);
-		jQuery.ajax(
-			mapUrl,
-			{ dataType: 'json', cache: false, success: onMapLoaded, error: deferred.reject }
+			deferred.reject
 		);
 		return deferred.promise();
 	};
@@ -185,7 +236,7 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description) {
 				['key', 'AWSAccessKeyId', 'policy', 'signature'].forEach(function (parameter) {
 					formData.append(parameter, publishingConfig[parameter]);
 				});
-				formData.append('acl', 'public-read');
+				formData.append('acl', savePolicy);
 				formData.append('Content-Type', 'text/plain');
 				formData.append('file', contentToSave);
 				jQuery.ajax({

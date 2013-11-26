@@ -193,6 +193,9 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 .repo-b {
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_gold_16.png');
 }
+.repo-p {
+	background-image: url('//mindmup.s3.amazonaws.com/lib/img/logo_gold_16.png');
+}
 .repo-g {
 	background-image: url('//mindmup.s3.amazonaws.com/lib/img/google_drive.png');
 }
@@ -381,7 +384,7 @@ input.noglow {
 }
 
 
-.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n, .visible-map-source-b {
+.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n, .visible-map-source-b, .visible-map-source-p  {
 	display: none;
 }
 
@@ -389,6 +392,9 @@ input.noglow {
 	display: inherit;
 }
 .map-source-b .visible-map-source-b {
+	display: inherit;
+}
+.map-source-p .visible-map-source-p {
 	display: inherit;
 }
 .map-source-g .visible-map-source-g {

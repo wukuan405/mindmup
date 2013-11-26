@@ -44,9 +44,9 @@ MM.main = function (config) {
 			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
-			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
-			goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm),
-			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(goldPublishingConfigGenerator, 'b', 'MindMup Gold'), goldLicenseManager),
+			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey', config.goldSignatureUrl),
+			s3PrivateGoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true), 'p', 'MindMup Gold Private', true), goldLicenseManager),
+			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p'),
 			s3Adapter = new MM.S3Adapter(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
@@ -54,6 +54,7 @@ MM.main = function (config) {
 			mapController = new MM.MapController([
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3GoldAdapter)),
+				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3PrivateGoldAdapter)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter)),
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
