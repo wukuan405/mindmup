@@ -86,37 +86,36 @@ MM.mapIdToS3Key = function (prefix, mapId, defaultFileName, account) {
 	}
 	return decodeURIComponent(mapIdComponents[2]);
 };
-MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate) {
+MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate, couldRedirectFrom) {
 	'use strict';
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
-			checkForDuplicate = function (config) {
-				if (mapId && mapId[0] === idPrefix) {
+			checkForDuplicate = function (config, licenseKey) {
+				if (mapId && (mapId[0] === idPrefix)) {
 					return deferred.resolve(config);
 				}
-				var mapUrl = 'http://' + config.s3BucketName + '.s3.amazonaws.com/' +  config.key;
-				jQuery.ajax({
-					url: mapUrl,
-					type: 'GET'
-				}).then(
-					function () {
-						modalConfirmation.showModalToConfirm(
-							'Confirm saving',
-							'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
-							'Overwrite'
-						).then(
-							deferred.resolve.bind(deferred, config),
-							deferred.reject.bind(deferred, 'user-cancel')
-						);
-					},
-					function (err) {
-						if (err.status === 404 || err.status === 403) {
-							deferred.resolve(config);
+				MM.ajaxS3List(licenseKey, idPrefix, config.key).then(
+					function (list) {
+						if (list && list.length) {
+							modalConfirmation.showModalToConfirm(
+								'Confirm saving',
+								'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
+								'Overwrite'
+							).then(
+								deferred.resolve.bind(deferred, config),
+								deferred.reject.bind(deferred, 'user-cancel')
+							);
 						} else {
-							deferred.reject('network-error');
+							deferred.resolve(config);
 						}
-					}
+					},
+					deferred.reject
 				);
+			},
+			handleRedirectMapId = function () {
+				if (mapId && mapId[0] === couldRedirectFrom) {
+					mapId = idPrefix + mapId.slice(1);
+				}
 			},
 			generateConfig = function (licenseKey) {
 				var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, licenseKey.account),
@@ -130,8 +129,9 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 						'signature': licenseKey.signature,
 						's3Url': 'http://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
 					};
-				checkForDuplicate(config);
+				checkForDuplicate(config, licenseKey);
 			};
+		handleRedirectMapId();
 		licenseManager.retrieveLicense(showAuthentication).then(generateConfig, deferred.reject);
 		return deferred.promise();
 	};
@@ -158,41 +158,49 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 		return deferred.promise();
 	};
 };
+MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
+	'use strict';
+	var deferred = jQuery.Deferred(),
+		url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
+	if (searchPrefix) {
+		url = url + '&prefix=' + encodeURIComponent(searchPrefix);
+	}
+	jQuery.ajax({
+		url: url,
+		type: 'GET'
+	}).then(
+		function (result) {
+			var parsed = jQuery(result),
+				list = [];
+			parsed.find('Contents').each(function () {
+				var element = jQuery(this);
+				list.push({
+					id: idPrefix + '/' + license.account + '/' + encodeURIComponent(element.children('Key').text()),
+					modifiedDate: element.children('LastModified').text(),
+					title:  decodeURIComponent(element.children('Key').text())
+				});
+			});
+			deferred.resolve(list);
+		},
+		function (err) {
+			var reason = 'network-error';
+			if (err.status === 404 || err.status === 403) {
+				reason = 'not-authorised';
+			}
+			deferred.reject(reason);
+		}
+	);
+	return deferred.promise();
+};
 MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo) {
 	'use strict';
 	var originaLoadMap = storageAdapter.loadMap;
 	storageAdapter.list = function (showLicenseDialog) {
-		var deferred = jQuery.Deferred(),
-			ajaxS3List = function (license) {
-				var url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
-				jQuery.ajax({
-					url: url,
-					type: 'GET'
-				}).then(
-					function (result) {
-						var parsed = jQuery(result),
-							list = [];
-						parsed.find('Contents').each(function () {
-							var element = jQuery(this);
-							list.push({
-								id: storageAdapter.prefix + '/' + license.account + '/' + encodeURIComponent(element.children('Key').text()),
-								modifiedDate: element.children('LastModified').text(),
-								title:  decodeURIComponent(element.children('Key').text())
-							});
-						});
-						deferred.resolve(list);
-					},
-					function (err) {
-						var reason = 'network-error';
-						if (err.status === 404 || err.status === 403) {
-							reason = 'not-authorised';
-						}
-						deferred.reject(reason);
-					}
-				);
-			};
+		var deferred = jQuery.Deferred();
 		licenseManager.retrieveLicense(showLicenseDialog).then(
-			ajaxS3List,
+			function (license) {
+				MM.ajaxS3List(license, storageAdapter.prefix).then(deferred.resolve, deferred.reject);
+			},
 			deferred.reject
 		);
 		return deferred.promise();
