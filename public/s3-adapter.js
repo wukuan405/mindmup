@@ -38,12 +38,22 @@ MM.GoldLicenseManager = function (storage, storageKey, signatureUrl) {
 		self.dispatchEvent('license-entry-required');
 		return currentDeferred.promise();
 	};
-	this.retieveFileSignature = function (s3Key, license, acl) {
-		var deferred = jQuery.Deferred();
-		jQuery.ajax(
-			signatureUrl + '?key=' + license.key + '&filename=' + s3Key + '&id=' + license.id + '&account=' + license.account + '&acl=' + acl,
-			{ dataType: 'json', cache: false }
-		).then(
+	this.retieveFileSignature = function (s3Key, license) {
+		var deferred = jQuery.Deferred(),
+			formData = new FormData();
+		formData.append('key', license.key);
+		formData.append('filename', s3Key);
+		formData.append('id', license.id);
+		formData.append('account', license.account);
+
+		jQuery.ajax({
+			url: signatureUrl,
+			dataType: 'json',
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST'
+		}).then(
 			deferred.resolve,
 			deferred.reject.bind(deferred, 'network-error')
 		);
@@ -128,7 +138,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 	this.buildMapUrl = function (mapId, idPrefix, showAuthentication) {
 		var deferred =  jQuery.Deferred(),
 		retrieveSignature = function (license) {
-			var s3key = MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account);
+			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
 			licenseManager.retieveFileSignature(s3key, license).then(
 				function (signatures) {
 					var url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/' + s3key +  '?&AWSAccessKeyId=' + license.id + '&Signature=' + signatures.get + '&Expires=' + signatures.expiry;

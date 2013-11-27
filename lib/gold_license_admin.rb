@@ -65,7 +65,7 @@ module MindMup::GoldLicenseAdmin
   end
 end
 module MindMup::GoldPrivateRoutes
-  get "/gold/signature" do
+  post "/gold/signature" do
     # eg ?key=D3EbG0AHAgJhC3wUIw5wB08idhh9bCJCDzMgBi8XNzsWeAMeHWIxfQ==&filename=foo.mup&id=AKIAIT74E4XNDZCOHR3A&account=damjan
     signer=S3PolicySigner.new
     aws_secret = signer.decode_xor_key params[:key], settings.s3_secret_key
