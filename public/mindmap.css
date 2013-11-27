@@ -215,7 +215,7 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 a.repo, a.repo, a.repo {
 	margin-left: 5px;
 }
-span.repo-g, span.repo-a, span.repo-o, span.repo-b {
+span.repo-g, span.repo-a, span.repo-o, span.repo-b, span.repo-p {
 	padding-left:16px;
 }
 .dropdown-menu li a {
