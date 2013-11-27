@@ -74,14 +74,12 @@ module MindMup::GoldPrivateRoutes
     # eg ?key=D3EbG0AHAgJhC3wUIw5wB08idhh9bCJCDzMgBi8XNzsWeAMeHWIxfQ==&filename=foo.mup&id=AKIAIT74E4XNDZCOHR3A&account=damjan
     signer=S3PolicySigner.new
     aws_secret = signer.decode_xor_key params[:key], settings.s3_secret_key
-    expiry_in_secs = 365 * 60 * 60 * 24
+    expiry_in_secs = 10 * 60
     expiration = signer.expiration expiry_in_secs
-    put = signer.signed_request 'PUT', aws_secret, 'mindmup-' + params[:account], "/" + params[:filename], expiration
     get = signer.signed_request 'GET', aws_secret, 'mindmup-' + params[:account], "/" + params[:filename], expiration
     {
       get: get,
-      put: put,
-      expiry: expiration,
+      expiry: expiration
     }.to_json
   end  
 end
