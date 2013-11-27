@@ -74,6 +74,7 @@ MM.MapController = function (initialMapSources) {
 			};
 
 		if (mapId === this.currentMapId() && !force) {
+			dispatchEvent('mapLoadingCancelled', mapId);
 			return;
 		}
 		if (!force && mapLoadingConfirmationRequired) {
@@ -259,7 +260,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	mapController.addEventListener('mapLoadingFailed', function (mapId, reason, label) {
 		showErrorAlert('Unfortunately, there was a problem loading the map.', label || 'An automated error report was sent and we will look into this as soon as possible');
 	});
-	mapController.addEventListener('mapSavingCancelled', function () {
+	mapController.addEventListener('mapSavingCancelled mapLoadingCancelled', function () {
 		alert.hide(alertId);
 	});
 	mapController.addEventListener('mapSavingTooLarge', function (mapSourceDescription) {

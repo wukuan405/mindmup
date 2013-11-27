@@ -135,6 +135,16 @@ describe('Map Controller', function () {
 
 			expect(listener).not.toHaveBeenCalled();
 		});
+		it('should dispatch mapLoadingCancelled event if the same map is loaded twice', function () {
+			var listener = jasmine.createSpy();
+
+			underTest.loadMap('foo');
+			underTest.addEventListener('mapLoadingCancelled', listener);
+
+			underTest.loadMap('foo');
+
+			expect(listener).toHaveBeenCalledWith('foo');
+		});
 		it('should dispatch mapLoaded if the same map is loaded twice if forced', function () {
 
 			var listener = jasmine.createSpy();

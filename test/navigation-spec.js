@@ -59,6 +59,11 @@ describe('MM.navigation', function () {
 			expect(localStorage.getItem('mostRecentMapLoaded')).toBe('newLoaded');
 			expect(window.location.hash).toBe('#prefix,m:newLoaded,def');
 		});
+		it('replaces map ID in a hash that contains map ID when map load cancelled', function () {
+			window.location.hash = 'm:xyz';
+			mapController.dispatchEvent('mapLoadingCancelled', 'newLoaded');
+			expect(window.location.hash).toBe('#m:newLoaded');
+		});
 	});
 	describe('hash change listener', function () {
 		beforeEach(function () {

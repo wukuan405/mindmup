@@ -38,7 +38,7 @@ MM.navigation = function (storage, mapController) {
 		mapController.loadMap(mapId || 'new');
 		return mapId;
 	};
-	mapController.addEventListener('mapSaved mapLoaded', function (newMapId) {
+	mapController.addEventListener('mapSaved mapLoaded mapLoadingCancelled', function (newMapId) {
 		changeMapId(newMapId);
 	});
 	self.hashChange = function () {
