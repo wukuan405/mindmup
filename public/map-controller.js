@@ -67,6 +67,8 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('authRequired', activeMapSource.description, retryWithDialog);
 				} else if (reason === 'map-load-redirect') {
 					self.loadMap(label, force);
+				} else if (reason === 'user-cancel') {
+					dispatchEvent('mapLoadingCancelled');
 				} else {
 					label = label ? label + mapSourceName : mapSourceName;
 					dispatchEvent('mapLoadingFailed', mapId, reason, label);

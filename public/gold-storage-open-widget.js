@@ -53,12 +53,12 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 			statusDiv.html('<i class="icon-spinner icon-spin"/> Retrieving files...');
 			goldMapStorageAdapter.list(false).then(loaded,
 				function (reason) {
-					if (reason === 'not-authorised') {
+					if (reason === 'not-authenticated') {
 						goldMapStorageAdapter.list(true).then(loaded,
 							function (reason) {
 								if (reason === 'user-cancel') {
 									modal.modal('hide');
-								} else if (reason === 'not-authorised') {
+								} else if (reason === 'not-authenticated') {
 									showAlert('The license key is invalid. To obtain or renew a MindMup Gold License, please send us an e-mail at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a>', 'error');
 								} else {
 									networkError();

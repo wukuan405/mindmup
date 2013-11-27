@@ -27,6 +27,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 			licenseManager.storeLicense(closeReason);
 		}
 		remove.show();
+		self.find('[data-mm-role=invalid-license]').hide();
+		self.find('[data-mm-role=no-license]').show();
 	});
 	self.find('form').submit(function () {
 		commit.click();
@@ -52,9 +54,15 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, activityLog) {
 		self.modal('hide');
 	});
 	licenseManager.addEventListener('license-entry-required', function () {
+		var existing = licenseManager.getLicense();
+		if (existing) {
+			self.find('[data-mm-role=invalid-license]').show();
+			self.find('[data-mm-role=no-license]').hide();
+		}
 		remove.hide();
 		self.modal('show');
 	});
+	self.find('[data-mm-role=invalid-license]').hide();
 	return self;
 };
 

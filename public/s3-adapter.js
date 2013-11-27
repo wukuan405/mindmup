@@ -118,6 +118,10 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 				}
 			},
 			generateConfig = function (licenseKey) {
+				if (isPrivate && !licenseKey.key) {
+					deferred.reject('not-authenticated');
+					return;
+				}
 				var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, licenseKey.account),
 					config = {
 						'mapId': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName), //mapId
@@ -183,15 +187,20 @@ MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
 			deferred.resolve(list);
 		},
 		function (err) {
-			var reason = 'network-error';
-			if (err.status === 404 || err.status === 403) {
-				reason = 'not-authorised';
-			}
-			deferred.reject(reason);
+			deferred.reject(MM.s3AjaxErrorReason(err, true));
 		}
 	);
 	return deferred.promise();
 };
+MM.s3AjaxErrorReason = function (err, isAuthenticated) {
+	'use strict';
+	var reason = 'network-error';
+	if (err.status === 404 || err.status === 403) {
+		reason = isAuthenticated ? 'not-authenticated' :'map-not-found';
+	}
+	return reason;
+};
+
 MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo) {
 	'use strict';
 	var originaLoadMap = storageAdapter.loadMap;
@@ -239,9 +248,11 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 		publishingConfigGenerator.buildMapUrl(mapId, prefix, showAuthentication).then(
 			function (mapUrl) {
 				jQuery.ajax(
-					mapUrl,
-					{ dataType: 'json', cache: false, success: onMapLoaded, error: deferred.reject }
-				);
+					mapUrl, { dataType: 'json', cache: false}).then(
+					onMapLoaded,
+					function (err) {
+						deferred.reject(MM.s3AjaxErrorReason(err, isPrivate));
+					});
 			},
 			deferred.reject
 		);

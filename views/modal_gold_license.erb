@@ -1,20 +1,26 @@
   <div class="modal hide fade" id='modalGoldLicense'>
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h3>MindMup Gold License</h3>
+      <h3 data-mm-role="no-license">MindMup Gold License</h3>
+      <h3 data-mm-role="invalid-license">Invalid Gold License</h3>
     </div>
     <div class="modal-body">
-	  <p>MindMup Gold License allows you to store larger files on our storage and for a longer period of time. To obtain a MindMup Gold License, 
-	  send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a>. For more information on MindMup Gold, <a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">click here</a>. 
+	  <p data-mm-role="no-license">MindMup Gold License allows you to store larger files on our storage and for a longer period of time. To obtain a MindMup Gold License, 
+    send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a>. For more information on MindMup Gold, <a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">click here</a>.
+    </p>
+    <div data-mm-role="invalid-license">
+      <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might 
+        have expired, or the file you are trying to access might have been saved using a different license.<br/><br/>To obtain a new license, or to report a problem, 
+        please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+    </div>
       <form class="form-vertical">
       <div class="control-group">
-        <label class="control-label">Enter your MindMup Gold License Key: </label>
+        <label class="control-label"><span data-mm-role="no-license">Enter</span><span data-mm-role="invalid-license">Change</span> your MindMup Gold License Key: </label>
         <div class="controls">
           <textarea tabstop="1"></textarea>
         </div>
       </div>
       </form>
-
     </div>
     <div class="modal-footer">
       <button data-mm-role="commit" class="btn btn-primary" tabstop="2">Save License</button>
