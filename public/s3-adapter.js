@@ -131,7 +131,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 						'AWSAccessKeyId' : licenseKey.id,
 						'policy': licenseKey.policy,
 						'signature': licenseKey.signature,
-						's3Url': 'http://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
+						's3Url': 'https://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
 					};
 				checkForDuplicate(config, licenseKey);
 			};
@@ -145,7 +145,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
 			licenseManager.retieveFileSignature(s3key, license).then(
 				function (signatures) {
-					var url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/' + s3key +  '?&AWSAccessKeyId=' + license.id + '&Signature=' + signatures.get + '&Expires=' + signatures.expiry;
+					var url = 'https://mindmup-' + license.account + '.s3.amazonaws.com/' + s3key +  '?&AWSAccessKeyId=' + license.id + '&Signature=' + signatures.get + '&Expires=' + signatures.expiry;
 					deferred.resolve(url);
 				},
 				deferred.reject
@@ -157,7 +157,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 				deferred.reject
 			);
 		} else {
-			deferred.resolve('http://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/'));
+			deferred.resolve('https://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/'));
 		}
 		return deferred.promise();
 	};
@@ -165,7 +165,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
 	'use strict';
 	var deferred = jQuery.Deferred(),
-		url = 'http://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
+		url = 'https://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
 	if (searchPrefix) {
 		url = url + '&prefix=' + encodeURIComponent(searchPrefix);
 	}
@@ -218,11 +218,11 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo) {
 		var deferred = jQuery.Deferred();
 		originaLoadMap(mapId, showAuthentication).then(
 			deferred.resolve,
-			function (evt) {
-				if (evt.status === 403 && redirectTo) {
+			function (reason) {
+				if (reason === 'map-not-found' && redirectTo) {
 					deferred.reject('map-load-redirect', redirectTo + mapId.slice(1));
 				} else  {
-					deferred.reject(evt);
+					deferred.reject(reason);
 				}
 			}
 		);
