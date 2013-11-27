@@ -115,6 +115,22 @@ describe('Map Controller', function () {
 			expect(listener).not.toHaveBeenCalled();
 			expect(authListener).toHaveBeenCalledWith('foo', 'no-access-allowed');
 		});
+		it('should dispatch mapLoadingCancelled event if loadmap fails with reason user-cancel', function () {
+			var listener = jasmine.createSpy(),
+				cancelledListener = jasmine.createSpy();
+			underTest.addEventListener('mapLoadingFailed', listener);
+			underTest.addEventListener('mapLoadingCancelled', cancelledListener);
+			adapter1.loadMap = function () {
+				var deferred = jQuery.Deferred();
+				deferred.reject('user-cancel');
+				return deferred.promise();
+			};
+
+			underTest.loadMap('foo');
+
+			expect(listener).not.toHaveBeenCalled();
+			expect(cancelledListener).toHaveBeenCalled();
+		});
 		it('should dispatch mapLoaded event if loadMap succeeds', function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapLoaded', listener);
@@ -287,7 +303,7 @@ describe('Map Controller', function () {
 
 			expect(listener).toHaveBeenCalledWith('loadedMapId', map, {editable: true});
 		});
-		describe("reloadOnSave", function () {
+		describe('reloadOnSave', function () {
 			beforeEach(function () {
 				adapter1.recognises = function (mapId) { return mapId === '1foo'; };
 				adapter2.recognises = function (mapId) { return mapId === '2foo'; };
