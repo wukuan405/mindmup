@@ -47,7 +47,7 @@ configure do
   set :static, true
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
-  set :protection, :except => :frame_options
+  set :protection, :except => [:frame_options, :http_origin], :origin_whitelist => [ENV['SITE_URL']]
   set :last_news_id, ""
   set :last_news_title, ""
   set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
