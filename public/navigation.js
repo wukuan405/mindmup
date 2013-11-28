@@ -1,9 +1,20 @@
 /*global MM, window*/
+MM.navigationDelimiters = ',;#';
+
+MM.navigationEscape = function (toEscape, escapeChar) {
+	'use strict';
+	var regExString = '[' + MM.navigationDelimiters + ']+',
+		regEx = new RegExp(regExString, 'g');
+	escapeChar = escapeChar || '_';
+	return toEscape.replace(regEx, escapeChar);
+};
+
 MM.navigation = function (storage, mapController) {
 	'use strict';
 	var self = this,
 		unknownMapId = 'nil',
-		mapIdRegEx = /[Mm]:([^,;#]*)/,
+		mapIdRegExString = '[Mm]:([^' + MM.navigationDelimiters + ']*)',
+		mapIdRegEx = new RegExp(mapIdRegExString),
 		getMapIdFromHash = function () {
 			var windowHash = window && window.location && window.location.hash,
 				found = windowHash && mapIdRegEx.exec(windowHash);
