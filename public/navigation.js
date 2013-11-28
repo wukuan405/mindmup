@@ -3,6 +3,9 @@ MM.navigationDelimiters = ',;#';
 
 MM.navigationEscape = function (toEscape, escapeChar) {
 	'use strict';
+	if (!toEscape) {
+		return toEscape;
+	}
 	var regExString = '[' + MM.navigationDelimiters + ']+',
 		regEx = new RegExp(regExString, 'g');
 	escapeChar = escapeChar || '_';
