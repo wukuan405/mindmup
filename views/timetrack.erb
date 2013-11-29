@@ -6,9 +6,7 @@
 			previousLabel: 'orig',
 			log: function (type) {
 				var now = Date.now();
-				_gaq.push(['_trackEvent', 'Timings Total', type, '', now - window.mmtimestamp.head]);
-				var toPush = ['_trackEvent', 'Timings Delta', window.mmtimestamp.previousLabel + " -> " + type, '', now - window.mmtimestamp.previous]
-				_gaq.push(toPush);
+				_gaq.push(['_trackEvent', 'CDN Timings Total', type, '', now - window.mmtimestamp.head]);
 				window.mmtimestamp.previous = now; 
 				window.mmtimestamp.previousLabel = type;
 			}

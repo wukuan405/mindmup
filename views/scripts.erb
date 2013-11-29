@@ -1,8 +1,6 @@
 <script>
   <%= erb :require_js %>
-  <% cdngroup = rand(15)
-  if cdngroup > 3 then cdngroup = 3 end
-   %>
+  <% cdngroup = rand(4) %>
   function loadScripts(success, failure) {
 
     window._gaq.push(['_setCustomVar', 3, 'CDN Test Group', '<%=cdngroup%>', 3]);
