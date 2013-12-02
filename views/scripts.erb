@@ -3,7 +3,7 @@
   <% cdngroup = rand(4) %>
   function loadScripts(success, failure) {
 
-    window._gaq.push(['_setCustomVar', 3, 'CDN Test Group', '<%=cdngroup%>', 3]);
+    window._gaq.push(['_setCustomVar', 3, 'CDN New Test Group', '<%=cdngroup%>', 3]);
     
     requirejs.config({
       shim: {

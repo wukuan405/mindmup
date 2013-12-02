@@ -260,7 +260,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		);
 	});
 	mapController.addEventListener('mapLoadingFailed', function (mapId, reason, label) {
-		showErrorAlert('Unfortunately, there was a problem loading the map.', label || 'An automated error report was sent and we will look into this as soon as possible');
+		showErrorAlert('Unfortunately, there was a problem loading the map.' + label, 'If you are not experiencing network problems, <a href="http://blog.mindmup.com/p/how-to-resolve-common-networking.html" target="blank">click here for some common ways to fix this</a>');
 	});
 	mapController.addEventListener('mapSavingCancelled mapLoadingCancelled', function () {
 		alert.hide(alertId);
@@ -278,7 +278,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 	});
 	mapController.addEventListener('mapSavingFailed', function (reason, label, callback) {
 		var messages = {
-			'network-error': ['There was a network problem communicating with the server.', 'Please try again later. Don\'t worry, you have an auto-saved version in this browser profile that will be loaded the next time you open the map']
+			'network-error': ['There was a network problem communicating with the server.', 'If you are not experiencing network problems, <a href="http://blog.mindmup.com/p/how-to-resolve-common-networking.html" target="blank">click here for some common ways to fix this</a>. Don\'t worry, you have an auto-saved version in this browser profile that will be loaded the next time you open the map']
 		},
 			message = messages[reason] || ['Unfortunately, there was a problem saving the map.', 'Please try again later. We have sent an error report and we will look into this as soon as possible'];
 		if (callback) {
