@@ -21,6 +21,7 @@ def cache_last_news
   end
 end
 configure do
+  set :static_host, ENV['STATIC_HOST'] || '//mindmup.s3.amazonaws.com/lib'
   set :google_analytics_account, ENV["GOOGLE_ANALYTICS_ACCOUNT"]
   set :s3_website,ENV['S3_WEBSITE']
   set :base_url, ENV['SITE_URL'] || "/"
