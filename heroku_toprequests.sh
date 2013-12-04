@@ -1,0 +1,1 @@
+heroku logs -n 1500 --source heroku --remote production |  gawk '//{match ($0, /path=([^[:space:]?]*).*service=([0-9]*)/, a); r[a[1]]++; s[a[1]]+=a[2]; } END { for (p in r) { print r[p] "\t" s[p] "\t" p; } } '| sort -nr | head -50
