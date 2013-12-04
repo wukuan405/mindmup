@@ -1,5 +1,5 @@
 <script>
-
+  var MM = MM || {};
   <%= erb :require_js %>
   function loadScripts(success, failure) {
     requirejs.config({
@@ -13,7 +13,7 @@
     <% end %>
     });
     requirejs(
-          ["external", "mm"],
+          ["external"],
           function () {
             window.mmtimestamp.log('remote scripts loaded');
             requirejs(
