@@ -5,7 +5,7 @@
     <title>MindMup: Zero-Friction Free Online Mind Mapping</title>
     <meta name="keywords" content="mind mapping, mind map, mindmap, mindmapping, free online mindmapping, free online mind mapping, mindmup" />
     <meta name="description" content="Zero-friction, free online mind mapping. Opensource mindmapping software. The most productive online mind map canvas on the Web. Supports Freemind mindmap import/export." />
-    <link rel="shortcut icon" href="//<%=settings.s3_website%>/lib/img/favicon.ico" >
+    <link rel="shortcut icon" href="<%=settings.static_image_host%>/favicon.ico" >
     <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
     <style>
@@ -32,7 +32,7 @@
 
 	  }
 	  .button {
-		  background: url('http://mindmup.s3.amazonaws.com/lib/img/embed_buttons.png');
+		  background: url('<%=settings.static_image_host%>/embed_buttons.png');
 		  background-repeat:no-repeat;
 		  width: 32px !important;
 		  height: 32px !important;
@@ -72,7 +72,7 @@
   <%= erb :embedded_scripts %>
   <script id="main">
 
-    var MM = MM || {},
+
         _gaq = _gaq || [];
     _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
 	window.mmtimestamp.log('script init');

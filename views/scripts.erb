@@ -1,61 +1,19 @@
 <script>
+  var MM = MM || {};
   <%= erb :require_js %>
-  <% cdngroup = rand(4) %>
   function loadScripts(success, failure) {
-
-    window._gaq.push(['_setCustomVar', 3, 'CDN New Test Group', '<%=cdngroup%>', 3]);
-    
     requirejs.config({
-      shim: {
-          'bootstrap': ['jquery'],
-          'jquery-ui': ['jquery'],
-          'jquery.mousewheel': ['jquery'],
-          'jquery.colorPicker': ['jquery'],
-          'jquery.hammer': ['jquery'],
-          'jquery.hotkeys': ['jquery']
-      },
       baseUrl: "/",
-
       paths: {
-      <% if cdngroup == 0 then %> /* google + cloudfront */
-        "jquery": ['//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-2.0.2.min" %>'],
-        "kinetic": ['//d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.5.4.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.5.4.min" %>'],
-        "bootstrap": ['//d2c5utp5fpfikz.cloudfront.net/2_3_1/js/bootstrap.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min" %>'],
-        "underscore": ['//dzupduoksghyh.cloudfront.net/ajax/lib/underscore-min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/underscore-1.4.4.min" %>'],
-      <% elsif cdngroup == 1 then%> /* cloudflare */
-        "jquery": ['//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.2/jquery.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-2.0.2.min" %>'],
-        "kinetic": ['//d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.5.4.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.5.4.min" %>'],
-        "bootstrap": ['//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/js/bootstrap.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min" %>'],
-        "underscore": ['//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min','<%= external_script_path "//mindmup.s3.amazonaws.com/lib/underscore-1.4.4.min" %>'],
-      <% elsif cdngroup == 2 then%> /* jsdelivr */
-        "jquery": ['//cdn.jsdelivr.net/jquery/2.0.3/jquery-2.0.3.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-2.0.2.min" %>'],
-        "kinetic": ['//cdn.jsdelivr.net/kineticjs/4.5.4/kinetic.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.5.4.min" %>'],
-        "bootstrap": ['//cdn.jsdelivr.net/bootstrap/2.3.1/js/bootstrap.min', '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min" %>'],
-        "underscore": ['//cdn.jsdelivr.net/underscorejs/1.4.4/underscore-min','<%= external_script_path "//mindmup.s3.amazonaws.com/lib/underscore-1.4.4.min" %>'],
-      <% else %>
-        "jquery": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-2.0.2.min" %>',
-        "kinetic": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/kinetic-v4.5.4.min" %>',
-        "bootstrap": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/bootstrap-2.3.1.min" %>',
-        "underscore": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/underscore-1.4.4.min" %>',
-      <% end %>
-        "jquery-ui": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery-ui-1.10.0.custom.min" %>',
-        "jquery.mousewheel": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.mousewheel-3.1.3" %>',
-        "color": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/color-0.4.1.min" %>',
-        "jquery.colorPicker": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.colorPicker.min" %>',
-        "jquery.hammer": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hammer.min" %>',
-        "jquery.hotkeys": '<%= external_script_path "//mindmup.s3.amazonaws.com/lib/jquery.hotkeys" %>'
+        "external": '<%=settings.static_host%>/external',
       },
-      
+      enforceDefine: false,
       waitSeconds: 60 <% if development? then %> ,
       urlArgs: "version=" + (new Date()).getTime()
     <% end %>
     });
     requirejs(
-      ["jquery", "underscore"],
-      function () {
-        window.mmtimestamp.log('basic scripts loaded');
-        requirejs(
-          ["bootstrap", "jquery-ui", "jquery.mousewheel", "color", "jquery.colorPicker", "kinetic", "jquery.hammer", "jquery.hotkeys", "mm"],
+          ["external"],
           function () {
             window.mmtimestamp.log('remote scripts loaded');
             requirejs(
@@ -114,8 +72,5 @@
           },
           failure
         );
-      },
-      failure
-    );
   }
 </script>
