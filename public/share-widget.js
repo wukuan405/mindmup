@@ -23,7 +23,7 @@ $.fn.shareWidget = function () {
 					'link=' + url + '&' +
 					'name=' + title + '&' +
 					'caption=' + encodeURIComponent('Mind map from mindmup.com') + '&' +
-					'picture=' + encodeURIComponent('http://mindmup.s3.amazonaws.com/lib/img/logo_256.png') + '&' +
+					'picture=' + encodeURIComponent('http://static.mindmup.com/img/logo_256.png') + '&' +
 					'description=' + title + '&' +
 					'redirect_uri=' + encodeURIComponent('http://www.mindmup.com/fb'));
 				return true;

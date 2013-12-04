@@ -1,40 +1,19 @@
 <script>
+
   <%= erb :require_js %>
   function loadScripts(success, failure) {
     requirejs.config({
-      shim: {
-          'bootstrap': ['jquery'],
-          'jquery-ui': ['jquery'],
-          'jquery.mousewheel': ['jquery'],
-          'jquery.colorPicker': ['jquery'],
-          'jquery.hammer': ['jquery'],
-          'jquery.hotkeys': ['jquery']
-      },
       baseUrl: "/",
-
       paths: {
-        "jquery": '<%=  "#{settings.static_host}/jquery-2.0.2.min" %>',
-        "kinetic": '<%=  "#{settings.static_host}/kinetic-v4.5.4.min" %>',
-        "bootstrap": '<%=  "#{settings.static_host}/bootstrap-2.3.1.min" %>',
-        "underscore": '<%=  "#{settings.static_host}/underscore-1.4.4.min" %>',
-        "jquery-ui": '<%=  "#{settings.static_host}/jquery-ui-1.10.0.custom.min" %>',
-        "jquery.mousewheel": '<%=  "#{settings.static_host}/jquery.mousewheel-3.1.3" %>',
-        "color": '<%=  "#{settings.static_host}/color-0.4.1.min" %>',
-        "jquery.colorPicker": '<%=  "#{settings.static_host}/jquery.colorPicker.min" %>',
-        "jquery.hammer": '<%=  "#{settings.static_host}/jquery.hammer.min" %>',
-        "jquery.hotkeys": '<%=  "#{settings.static_host}/jquery.hotkeys" %>'
+        "external": '<%=settings.static_host%>/external',
       },
-      
+      enforceDefine: false,
       waitSeconds: 60 <% if development? then %> ,
       urlArgs: "version=" + (new Date()).getTime()
     <% end %>
     });
     requirejs(
-      ["jquery", "underscore"],
-      function () {
-        window.mmtimestamp.log('basic scripts loaded');
-        requirejs(
-          ["bootstrap", "jquery-ui", "jquery.mousewheel", "color", "jquery.colorPicker", "kinetic", "jquery.hammer", "jquery.hotkeys", "mm"],
+          ["external", "mm"],
           function () {
             window.mmtimestamp.log('remote scripts loaded');
             requirejs(
@@ -93,8 +72,5 @@
           },
           failure
         );
-      },
-      failure
-    );
   }
 </script>
