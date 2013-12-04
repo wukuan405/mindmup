@@ -40,6 +40,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 				'mm' : toPromise(MM.freemindExport, 'text/xml'),
 				'html': MM.exportToHtmlDocument,
 				'png': MAPJS.pngExport,
+				'pdf': toPromise(MM.Extensions.components.layoutExporter.startExport, ''),
 				'txt': toPromise(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), 'text/plain')
 			},
 			format = $(this).data('mm-format'),

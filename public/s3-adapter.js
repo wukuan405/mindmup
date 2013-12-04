@@ -305,3 +305,40 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 	};
 
 };
+
+MM.S3FilePoller = function (bucket, prefix, postfix, sleepPeriod, timeoutPeriod) {
+	'use strict';
+	var bucketUrl = 'http://'+bucket+ '.s3.amazonaws.com/',
+		self = this;
+	this.poll = function (fileId) {
+		var sleepTimeoutId,
+			timeoutId, 
+			deferred=jQuery.Deferred(),			
+			execRequest = function () {
+				var setSleepTimeout = function () {
+					if (!deferred) return;
+					sleepTimeoutId = window.setTimeout(execRequest, sleepPeriod);
+				};
+				jQuery.ajax({
+					url: bucketUrl + '?prefix=' + encodeURIComponent(prefix+fileId+postfix) + '&max-keys=1',
+					method: 'GET'
+				}).then(function success(result) {
+					var key = jQuery(result).find('Contents Key').first().text();
+					if (deferred && key){
+						window.clearTimeout(timeoutId);
+						deferred.resolve(bucketUrl + key);
+					} else {
+						setSleepTimeout();
+					}
+				}, setSleepTimeout);
+			}, 
+			cancelRequest = function () {
+				window.clearTimeout(sleepTimeoutId);
+				deferred.reject();
+				deferred = undefined;
+			};
+		timeoutId = window.setTimeout(cancelRequest, timeoutPeriod);
+		execRequest();
+		return deferred.promise();
+	}
+};

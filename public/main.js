@@ -61,6 +61,7 @@ MM.main = function (config) {
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
+			layoutExportController = new MM.LayoutExportController(mapModel,s3Adapter, new MM.S3FilePoller('mindmup-pdf', 'out', '.pdf',2000, 4000)),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
@@ -71,6 +72,7 @@ MM.main = function (config) {
 				'activityLog': activityLog,
 				'mapModel': mapModel,
 				'container': jQuery('#container'),
+				'layoutExporter': layoutExportController,
 				'iconEditor': iconEditor
 			}),
 			loadWidgets = function () {
