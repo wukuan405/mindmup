@@ -26,7 +26,7 @@ class S3PolicySigner
 				OpenSSL::Digest::Digest.new('sha1'), 
 				aws_secret_key, policy)
 		).gsub("\n","")
-		{policy: policy, signature: signature}
+		{policy: policy, signature: signature, aws_id: key_id, upload_path:upload_path, bucket_name: bucket_name, content_type: content_type}
 	end
   # see http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
   def expiration expires_in_seconds

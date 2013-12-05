@@ -1,9 +1,8 @@
 /*global $, jQuery, MM, document, MAPJS, window, atob, ArrayBuffer, Uint8Array*/
 jQuery.fn.remoteExportWidget = function (mapController, alert) {
 	'use strict';
-	var self = this,
-		loadedIdea,
-		downloadLink = ("download" in document.createElement("a")) ? $('<a>').addClass('hide').appendTo('body') : undefined,
+	var loadedIdea,
+		downloadLink = ('download' in document.createElement('a')) ? $('<a>').addClass('hide').appendTo('body') : undefined,
 		joinLines = function (string) {
 			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
 		},
@@ -40,7 +39,6 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 				'mm' : toPromise(MM.freemindExport, 'text/xml'),
 				'html': MM.exportToHtmlDocument,
 				'png': MAPJS.pngExport,
-				'pdf': toPromise(MM.Extensions.components.layoutExporter.startExport, ''),
 				'txt': toPromise(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), 'text/plain')
 			},
 			format = $(this).data('mm-format'),
