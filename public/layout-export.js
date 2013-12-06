@@ -12,9 +12,9 @@ MM.LayoutExportController = function (mapModel, fileSystem, resultPoller) {
 
 jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmation, alert) {
 	'use strict';
+	var alertId;
 	this.click(function () {
-		var alertId,
-			exportComplete = function (url) {
+		var exportComplete = function (url) {
 				alert.hide(alertId);
 				alertId = alert.show('PDF export complete', '<a target="_blank" href="' + url + '">Click here to open</a>');
 			},
@@ -27,7 +27,8 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 				alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...');
 				layoutExportController.startExport().then(exportComplete, exportFailed);
 			};
-		modalConfirmation.showModalToConfirm('Please confirm', 'Your data will be sent to our server to export the pdf', 'Proceed').then(doExport);
+		alert.hide(alertId);
+		modalConfirmation.showModalToConfirm('Export to PDF (Beta)', 'Exporting maps to PDF is a work in progress at the moment. In this beta version, your map will be converted on our server and <strong>the generated PDF will be saved in a publicly accessible location</strong>. <br/><br/>Please cancel if you do not want the PDF of your map content to be publicly accessible.', 'Proceed').then(doExport);
 	});
 	//
 };
