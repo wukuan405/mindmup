@@ -42,12 +42,22 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 
 			alertId = alert.show('Unable to export ' + format + ': ', reasonDescription, 'error');
 		},
+		getExportType = function () {
+			var form = self.find('form'),
+				exportType = {};
+			form.find('button.active').add(form.find('select')).each(function () {
+				exportType[jQuery(this).attr('name')] = jQuery(this).val();
+			});
+			return exportType;
+		},
 		doExport = function () {
 			alert.hide(alertId);
 			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...');
-			layoutExportController.startExport({'export': {'page-size': 'A4', 'orientation': 'landscape'}}).then(exportComplete, exportFailed);
+			getExportType();
+			layoutExportController.startExport({'export': getExportType()}).then(exportComplete, exportFailed);
 			self.modal('hide');
 		};
+	self.find('form').submit(function () {return false; });
 	confirmElement.click(doExport).keydown('space', doExport);
 	self.modal({keyboard: true, show: false});
 	this.on('shown', function () {

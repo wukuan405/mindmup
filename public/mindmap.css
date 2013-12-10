@@ -251,7 +251,7 @@ span.repo-g, span.repo-a, span.repo-o, span.repo-b, span.repo-p {
 .topbar-autohide {
 	display: inline;
 }
-.hidden-topbar .topbar-autohide { 
+.hidden-topbar .topbar-autohide {
 	display: none;
 }
 span.topbar-fixed {
@@ -407,7 +407,7 @@ input.noglow {
 	display: inherit;
 }
 
-@media (max-width: 1200px) { 
+@media (max-width: 1200px) {
 	.hidden-narrow-screen {
 		display: none;
 	}
@@ -510,4 +510,15 @@ input.noglow {
 }
 #modalIconEdit {
 	z-index: 9999;
+}
+.btn .export {
+	max-width: 24px;
+}
+.btn .landscape {
+	transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+}
+#modalPDFExport form {
+	margin-top: 20px;
 }
