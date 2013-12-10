@@ -16,11 +16,17 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 	this.click(function () {
 		var exportComplete = function (url) {
 				alert.hide(alertId);
-				alertId = alert.show('PDF export complete', '<a target="_blank" href="' + url + '">Click here to open</a>');
+				alertId = alert.show('PDF export complete: ', '<a target="_blank" href="' + url + '">Click here to open</a> (This link will remain available for 24 hours)');
 			},
 			exportFailed = function (reason) {
+				var reasonMap = {
+					'file-too-large': 'Your map is too large',
+					'polling-timeout': 'The server is too busy. Please try again later, or if this error persists contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export">contact@mindmup.com</a>'
+				},
+				reasonDescription = reasonMap[reason] || reason;
 				alert.hide(alertId);
-				alertId = alert.show('PDF export failed', reason, 'error');
+
+				alertId = alert.show('Unable to export PDF: ', reasonDescription, 'error');
 			},
 			doExport = function () {
 				alert.hide(alertId);
@@ -28,7 +34,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 				layoutExportController.startExport().then(exportComplete, exportFailed);
 			};
 		alert.hide(alertId);
-		modalConfirmation.showModalToConfirm('Export to PDF (Beta)', 'Exporting maps to PDF is a work in progress at the moment. In this beta version, your map will be converted on our server and <strong>the generated PDF will be saved in a publicly accessible location</strong>. <br/><br/>Please cancel if you do not want the PDF of your map content to be publicly accessible.', 'Proceed').then(doExport);
+		modalConfirmation.showModalToConfirm('Export to PDF (Beta)', 'Exporting maps to PDF is a work in progress at the moment. In this beta version we only support exporting maps up to 100k and the generated PDF will be saved in a <strong>publicly accessible location</strong>.', 'Proceed').then(doExport);
 	});
 	//
 };

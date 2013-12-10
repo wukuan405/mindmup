@@ -34,18 +34,18 @@ describe('LayoutExport', function () {
 		it('resolves promise when the poller resolves', function () {
 			var resolved = jasmine.createSpy('resolved'),
 				url = 'http://www.google.com';
-			
+
 			underTest.startExport().then(resolved);
-			
+
 			resultPoller.deferred.resolve(url);
 			expect(resolved).toHaveBeenCalledWith(url);
 		});
 		it('rejects promise if the poller rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
-			
+
 			underTest.startExport().fail(fail);
-			
+
 			resultPoller.deferred.reject(reason);
 			expect(fail).toHaveBeenCalledWith(reason);
 		});
@@ -56,7 +56,7 @@ describe('LayoutExport', function () {
 			spyOn(resultPoller, 'poll').andCallThrough();
 
 			underTest.startExport().fail(fail);
-			
+
 			expect(fail).toHaveBeenCalledWith(reason);
 			expect(resultPoller.poll).not.toHaveBeenCalled();
 		});
@@ -124,7 +124,7 @@ describe('LayoutExport', function () {
 			var rejected = jasmine.createSpy('rejected');
 			underTest.poll('REQUEST').fail(rejected);
 			clock.tick(timeoutPeriod + 1);
-			expect(rejected).toHaveBeenCalled();
+			expect(rejected).toHaveBeenCalledWith('polling-timeout');
 		});
 		it('stops polling after it times out', function () {
 			underTest.poll('REQUEST');
