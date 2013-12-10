@@ -2,13 +2,15 @@
 describe('LayoutExport', function () {
 	'use strict';
 	describe('LayoutExportController', function () {
-		var fileSystem, mapModel, currentLayout, underTest, requestId, resultPoller;
+		var fileSystem, mapModel, currentLayout, underTest, requestId, resultPoller, activityLog;
 		beforeEach(function () {
 			fileSystem = {};
 			mapModel = {};
+			activityLog = {};
 			currentLayout = { 'a': 'b' };
 			requestId = 'AIUHDKUHGDKHUD';
 			fileSystem.saveMap = jasmine.createSpy('saveMap');
+			activityLog.log = jasmine.createSpy('log');
 			fileSystem.saveMap.andReturn(jQuery.Deferred().resolve(requestId).promise());
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
 			mapModel.getCurrentLayout.andReturn(currentLayout);
@@ -18,7 +20,7 @@ describe('LayoutExport', function () {
 					return resultPoller.deferred.promise();
 				}
 			};
-			underTest = new MM.LayoutExportController(mapModel, fileSystem, resultPoller);
+			underTest = new MM.LayoutExportController(mapModel, fileSystem, resultPoller, activityLog);
 
 		});
 		it('pulls out current map model layout, and publishes JSON version of that to an fileSystem', function () {

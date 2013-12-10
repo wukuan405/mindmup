@@ -1,11 +1,22 @@
 /*global jQuery, MM*/
-MM.LayoutExportController = function (mapModel, fileSystem, resultPoller) {
+MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, activityLog) {
 	'use strict';
+	var category = 'Map',
+		eventType = 'PDF Export';
 	this.startExport = function () {
-		var deferred = jQuery.Deferred();
+		var deferred = jQuery.Deferred(),
+			resolve = function () {
+				activityLog.log(category, eventType + ' completed');
+				deferred.resolve.apply(this, arguments);
+			},
+			reject = function (reason) {
+				activityLog.log(category, eventType + ' failed', reason);
+				deferred.reject.apply(this, arguments);
+			};
+		activityLog.log(category, eventType + ' started');
 		fileSystem.saveMap(JSON.stringify(mapModel.getCurrentLayout())).then(function (fileId) {
-			resultPoller.poll(fileId).then(deferred.resolve, deferred.reject);
-		}, deferred.reject);
+			resultPoller.poll(fileId).then(resolve, reject);
+		}, reject);
 		return deferred.promise();
 	};
 };
