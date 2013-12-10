@@ -27,6 +27,11 @@ describe('LayoutExport', function () {
 			underTest.startExport();
 			expect(fileSystem.saveMap).toHaveBeenCalledWith(JSON.stringify(currentLayout));
 		});
+		it('merges any object passed with the current map model layout, and publishes JSON version of that to an fileSystem, leaving current layout unchanged', function () {
+			underTest.startExport({'foo': 'bar'});
+			expect(fileSystem.saveMap).toHaveBeenCalledWith(JSON.stringify({'a': 'b', 'foo': 'bar'}));
+			expect(currentLayout).toEqual({'a': 'b'});
+		});
 		it('polls for result when the request is started', function () {
 			spyOn(resultPoller, 'poll').andCallThrough();
 			underTest.startExport();

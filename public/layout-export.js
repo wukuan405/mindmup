@@ -1,9 +1,9 @@
-/*global jQuery, MM*/
+/*global jQuery, MM, _ */
 MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, activityLog) {
 	'use strict';
 	var category = 'Map',
 		eventType = 'PDF Export';
-	this.startExport = function () {
+	this.startExport = function (exportProperties) {
 		var deferred = jQuery.Deferred(),
 			resolve = function () {
 				activityLog.log(category, eventType + ' completed');
@@ -12,9 +12,10 @@ MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, activi
 			reject = function (reason) {
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject.apply(this, arguments);
-			};
+			},
+			layout = _.extend({}, mapModel.getCurrentLayout(), exportProperties);
 		activityLog.log(category, eventType + ' started');
-		fileSystem.saveMap(JSON.stringify(mapModel.getCurrentLayout())).then(function (fileId) {
+		fileSystem.saveMap(JSON.stringify(layout)).then(function (fileId) {
 			resultPoller.poll(fileId).then(resolve, reject);
 		}, reject);
 		return deferred.promise();
@@ -42,7 +43,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 			doExport = function () {
 				alert.hide(alertId);
 				alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...');
-				layoutExportController.startExport().then(exportComplete, exportFailed);
+				layoutExportController.startExport({'export': {'page-size': 'A4', 'orientation': 'landscape'}}).then(exportComplete, exportFailed);
 			};
 		alert.hide(alertId);
 		modalConfirmation.showModalToConfirm('Export to PDF (Beta)', 'Exporting maps to PDF is a work in progress at the moment. In this beta version we only support exporting maps up to 100k and the generated PDF will be saved in a <strong>publicly accessible location</strong>.', 'Proceed').then(doExport);
