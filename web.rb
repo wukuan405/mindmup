@@ -53,6 +53,7 @@ configure do
   set :last_news_id, ""
   set :last_news_title, ""
   set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
+  set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
   cache_last_news
 end
 get '/' do
@@ -116,12 +117,28 @@ end
 get "/m" do
   show_map
 end
-get "/publishingConfig" do
-  @s3_upload_identifier = settings.current_map_data_version +  settings.key_id_generator.generate(:compact)
-  @s3_key=settings.s3_upload_folder+"/" + @s3_upload_identifier + ".json"
-  @s3_content_type="text/plain"
+get "/layoutPublishingConfig" do
+  #formats = {'pdf'=> {bucket: settings.export_bucket['pdf'], upload_folder:'in'} }
+  #format_settings = formats[params[:format]]
+  format_settings = settings.export_bucket[params[:format]]
+  json_fail("#{params[:format]} is not a supported format") unless format_settings
+
+  s3_upload_identifier = settings.key_id_generator.generate(:compact)
+  s3_key = 'in/' + s3_upload_identifier + ".json"
+  s3_content_type="text/plain"
   signer=S3PolicySigner.new
-  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, settings.s3_bucket_name, @s3_key, settings.s3_max_upload_size*1024, @s3_content_type, settings.s3_form_expiry, "public-read"
+  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, format_settings, s3_key, settings.s3_max_upload_size*1024, s3_content_type, settings.s3_form_expiry, "public-read"
+  @policy[:upload_identifier] = s3_upload_identifier
+
+  erb :s3UploadConfig
+end
+get "/publishingConfig" do
+  s3_upload_identifier = settings.current_map_data_version +  settings.key_id_generator.generate(:compact)
+  s3_key=settings.s3_upload_folder+"/" + s3_upload_identifier + ".json"
+  s3_content_type="text/plain"
+  signer=S3PolicySigner.new
+  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, settings.s3_bucket_name, s3_key, settings.s3_max_upload_size*1024, s3_content_type, settings.s3_form_expiry, "public-read"
+  @policy[:upload_identifier] = s3_upload_identifier
   erb :s3UploadConfig
 end
 

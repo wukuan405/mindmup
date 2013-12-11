@@ -1,9 +1,9 @@
 {
-	"s3UploadIdentifier":"<%=@s3_upload_identifier%>",
-	"key":"<%=@s3_key%>",
-	"AWSAccessKeyId" :"<%=settings.s3_key_id%>", 
-	"s3BucketName" :"<%=settings.s3_bucket_name%>", 
-	"Content-Type":"<%=@s3_content_type%>",
+	"s3UploadIdentifier":"<%=@policy[:upload_identifier]%>",
+	"key":"<%=@policy[:upload_path]%>",
+	"AWSAccessKeyId" :"<%=@policy[:aws_id]%>",
+	"s3BucketName" :"<%=@policy[:bucket_name]%>",
+	"Content-Type":"<%=@policy[:content_type]%>",
 	"policy":"<%=@policy[:policy]%>",
 	"signature":"<%=@policy[:signature]%>"
 }

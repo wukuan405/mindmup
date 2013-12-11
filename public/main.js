@@ -44,6 +44,7 @@ MM.main = function (config) {
 			objectStorage = MM.jsonStorage(browserStorage),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
+			pdfPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator('http://' + config.pdfBucket + '.s3.amazonaws.com/', 'layoutPublishingConfig?format=pdf'),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey', config.goldSignatureUrl),
 			s3PrivateGoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true, 'b'), 'p', 'MindMup Gold Private', true), goldLicenseManager),
 			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, false, 'p'), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p'),
@@ -61,6 +62,8 @@ MM.main = function (config) {
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
+			layoutS3Adapter = new MM.S3Adapter(pdfPublishingConfigGenerator, undefined, 'S3_LAYOUT_EXPORT'),
+			layoutExportController = new MM.LayoutExportController(mapModel, layoutS3Adapter, new MM.S3FilePoller(config.pdfBucket, 'out/', '.pdf', 2000, 20000), activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
@@ -103,6 +106,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
+				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController, modalConfirm, alert);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(s3GoldAdapter, mapController);

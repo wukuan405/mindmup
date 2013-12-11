@@ -1,0 +1,49 @@
+<div id="modalPDFExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="PDF">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Export to PDF (Beta)</h3>
+  </div>
+  <div class="modal-body">
+	   Exporting maps to PDF is a work in progress at the moment. In this beta version we only support exporting maps up to 100k and the generated PDF will be saved in a <strong>publicly accessible location</strong>.
+
+    <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label">Orientation:</label>
+        <div class="controls">
+          <div class="btn-group" data-toggle="buttons-radio">
+            <button name="orientation" type="button" class="btn active" value="landscape">
+              <img src="//static.mindmup.com/img/portrait.png" class="export landscape"/>
+            </button>
+            <button name="orientation" type="button" class="btn " value="portrait">
+              <img src="//static.mindmup.com/img/portrait.png" class="export"/>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Page Size:</label>
+        <div class="controls">
+          <select name="page-size">
+            <option>A0</option>
+            <option>A1</option>
+            <option>A2</option>
+            <option>A3</option>
+            <option selected>A4</option>
+            <option>A5</option>
+            <option value="LETTER">US Letter</option>
+            <option value="LEGAL">US Legal</option>
+            <option value="TABLOID">US Tabloid</option>
+          </select>
+        </div>
+      </div>
+
+    </form>
+
+
+  </div>
+  <div class="modal-footer">
+    <a tabstop="1" href="#" class="btn btn-primary" data-mm-role="export" data-dismiss="modal">Export</a>
+    <a tabstop="2" href="#" class="btn" data-dismiss="modal">Cancel</a>
+  </div>
+</div>
