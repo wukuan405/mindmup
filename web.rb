@@ -136,7 +136,7 @@ post "/layoutPublishingConfig" do
   s3_upload_identifier = settings.key_id_generator.generate(:compact)
   file_path = 'in/' + s3_upload_identifier + ".json"
   s3_content_type="text/plain"
-  @policy=signer.signed_policy aws_secret, s3_key_id, format_settings, file_path, max_upload_size, s3_content_type, settings.s3_form_expiry, "public-read"
+  @policy=signer.signed_policy aws_secret, s3_key_id, format_settings, file_path, max_upload_size, s3_content_type, settings.s3_form_expiry, "bucket-owner-read"
   @policy[:upload_identifier] = s3_upload_identifier
 
   erb :s3UploadConfig
