@@ -54,6 +54,7 @@ configure do
   set :last_news_title, ""
   set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
   set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
+  set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
   cache_last_news
 end
 get '/' do
@@ -120,14 +121,22 @@ end
 post "/layoutPublishingConfig" do
   #formats = {'pdf'=> {bucket: settings.export_bucket['pdf'], upload_folder:'in'} }
   #format_settings = formats[params[:format]]
+  s3_key_id = settings.s3_key_id
+  aws_secret = settings.s3_secret_key
+  max_upload_size = settings.s3_max_upload_size*1024
+  signer=S3PolicySigner.new
+  if (params[:id] && params[:key]) then
+    s3_key_id = params[:id]
+    aws_secret = signer.decode_xor_key params[:key], settings.s3_secret_key
+    max_upload_size = settings.gold_pdf_max_size
+  end
   format_settings = settings.export_bucket[params[:format]]
   json_fail("#{params[:format]} is not a supported format") unless format_settings
 
   s3_upload_identifier = settings.key_id_generator.generate(:compact)
-  s3_key = 'in/' + s3_upload_identifier + ".json"
+  file_path = 'in/' + s3_upload_identifier + ".json"
   s3_content_type="text/plain"
-  signer=S3PolicySigner.new
-  @policy=signer.signed_policy settings.s3_secret_key, settings.s3_key_id, format_settings, s3_key, settings.s3_max_upload_size*1024, s3_content_type, settings.s3_form_expiry, "public-read"
+  @policy=signer.signed_policy aws_secret, s3_key_id, format_settings, file_path, max_upload_size, s3_content_type, settings.s3_form_expiry, "public-read"
   @policy[:upload_identifier] = s3_upload_identifier
 
   erb :s3UploadConfig

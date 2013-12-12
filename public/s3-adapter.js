@@ -3,31 +3,26 @@
 MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder, additionalArgumentsGenerator) {
 	'use strict';
 	this.generate = function () {
-		var deferred = jQuery.Deferred();
-		additionalArgumentsGenerator = additionalArgumentsGenerator || function () { return jQuery.Deferred().resolve().promise(); };
-		additionalArgumentsGenerator().then(
-			function (generatorArgs) {
-				var options = {
-						url: publishingConfigUrl,
-						dataType: 'json',
-						type: 'POST',
-						processData: false,
-						contentType: false
-					};
-				if (generatorArgs) {
-					options.data =  new FormData();
-					_.each(generatorArgs, function (val, key) { options.data.append(key, val); });
-				}
-				jQuery.ajax(options).then(
-					function (jsonConfig) {
-						jsonConfig.s3Url = s3Url;
-						jsonConfig.mapId = jsonConfig.s3UploadIdentifier;
-						deferred.resolve(jsonConfig);
-					},
-					deferred.reject.bind(deferred, 'network-error')
-				);
+		var deferred = jQuery.Deferred(),
+			options = {
+				url: publishingConfigUrl,
+				dataType: 'json',
+				type: 'POST',
+				processData: false,
+				contentType: false
 			},
-			deferred.reject
+			generatorArgs = additionalArgumentsGenerator && additionalArgumentsGenerator();
+		if (generatorArgs) {
+			options.data =  new FormData();
+			_.each(generatorArgs, function (val, key) { options.data.append(key, val); });
+		}
+		jQuery.ajax(options).then(
+			function (jsonConfig) {
+				jsonConfig.s3Url = s3Url;
+				jsonConfig.mapId = jsonConfig.s3UploadIdentifier;
+				deferred.resolve(jsonConfig);
+			},
+			deferred.reject.bind(deferred, 'network-error')
 		);
 		return deferred.promise();
 	};
@@ -42,6 +37,14 @@ MM.GoldLicenseManager = function (storage, storageKey, signatureUrl) {
 	observable(this);
 	this.getLicense = function () {
 		return storage.getItem(storageKey);
+	};
+	this.goldLicenseIdentifiers = function () {
+		var license = self.getLicense(),
+			generated;
+		if (license && license.key && license.id) {
+			generated =  _.pick(license, 'id', 'key');
+		}
+		return generated;
 	};
 	this.retrieveLicense = function (showAuthentication) {
 		currentDeferred = undefined;

@@ -3,7 +3,7 @@ def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket
   mm_account = 'mindmup-' + account_name
 
   iam = AWS::IAM.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
-  
+
   if renew != "yes" then
     begin
       user = iam.users.create(mm_account)
@@ -17,14 +17,16 @@ def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket
           }
         ]
       }!
+      gold = iam.groups['mindmup-gold']
       user.policies['s3-bucket-access']= policy
+      user.groups.add gold
       s3 = AWS::S3.new(:access_key_id=> admin_aws_key, :secret_access_key=> admin_aws_secret)
       bucket = s3.buckets.create(mm_account)
       bucket.cors=s3.buckets[template_bucket_name].cors
     rescue Exception => e
       halt 'error creating user:' + e.message
     end
-  else 
+  else
       user = iam.users[mm_account]
   end
   halt 'user does not exist' unless user.exists?
@@ -38,7 +40,7 @@ def generate_user admin_aws_key, admin_aws_secret, account_name, template_bucket
   end
 end
 def generate_license aws_key_id, aws_secret, account_name, expiry_in_days, max_size_in_mb, mm_aws_secret
-  expiry_in_secs = expiry_in_days * (60*60*24) 
+  expiry_in_secs = expiry_in_days * (60*60*24)
   signer = S3PolicySigner.new
   expiration = signer.expiration expiry_in_secs
   list = signer.signed_request "GET", aws_secret, "mindmup-" + account_name, "/", expiration
@@ -60,7 +62,7 @@ module MindMup::GoldLicenseAdmin
   end
   post '/gold_license_admin' do
     content_type 'text/plain'
-    user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name, params[:renew_flag] 
+    user_key = generate_user params[:aws_key], params[:aws_secret], params[:account_name], settings.s3_bucket_name, params[:renew_flag]
     generate_license user_key.access_key_id, user_key.secret_access_key, params[:account_name], params[:expiry_days].to_i, params[:max_size].to_i, params[:aws_secret]
   end
 end
@@ -81,5 +83,5 @@ module MindMup::GoldPrivateRoutes
       get: get,
       expiry: expiration
     }.to_json
-  end  
+  end
 end
