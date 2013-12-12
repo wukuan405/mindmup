@@ -1,19 +1,33 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, observable, window */
-MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder) {
+/*global FormData, jQuery, MM, observable, window, _*/
+MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder, additionalArgumentsGenerator) {
 	'use strict';
 	this.generate = function () {
 		var deferred = jQuery.Deferred();
-		jQuery.ajax(
-			publishingConfigUrl,
-			{ dataType: 'json', cache: false }
-		).then(
-			function (jsonConfig) {
-				jsonConfig.s3Url = s3Url;
-				jsonConfig.mapId = jsonConfig.s3UploadIdentifier;
-				deferred.resolve(jsonConfig);
+		additionalArgumentsGenerator = additionalArgumentsGenerator || function () { return jQuery.Deferred().resolve().promise(); };
+		additionalArgumentsGenerator().then(
+			function (generatorArgs) {
+				var options = {
+						url: publishingConfigUrl,
+						dataType: 'json',
+						type: 'POST',
+						processData: false,
+						contentType: false
+					};
+				if (generatorArgs) {
+					options.data =  new FormData();
+					_.each(generatorArgs, function (val, key) { options.data.append(key, val); });
+				}
+				jQuery.ajax(options).then(
+					function (jsonConfig) {
+						jsonConfig.s3Url = s3Url;
+						jsonConfig.mapId = jsonConfig.s3UploadIdentifier;
+						deferred.resolve(jsonConfig);
+					},
+					deferred.reject.bind(deferred, 'network-error')
+				);
 			},
-			deferred.reject.bind(deferred, 'network-error')
+			deferred.reject
 		);
 		return deferred.promise();
 	};

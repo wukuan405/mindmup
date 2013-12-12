@@ -117,7 +117,7 @@ end
 get "/m" do
   show_map
 end
-get "/layoutPublishingConfig" do
+post "/layoutPublishingConfig" do
   #formats = {'pdf'=> {bucket: settings.export_bucket['pdf'], upload_folder:'in'} }
   #format_settings = formats[params[:format]]
   format_settings = settings.export_bucket[params[:format]]
@@ -132,7 +132,7 @@ get "/layoutPublishingConfig" do
 
   erb :s3UploadConfig
 end
-get "/publishingConfig" do
+post "/publishingConfig" do
   s3_upload_identifier = settings.current_map_data_version +  settings.key_id_generator.generate(:compact)
   s3_key=settings.s3_upload_folder+"/" + s3_upload_identifier + ".json"
   s3_content_type="text/plain"
