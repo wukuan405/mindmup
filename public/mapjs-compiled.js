@@ -1977,7 +1977,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 };
 /*global _, MAPJS, jQuery*/
 /*jslint forin:true*/
-MAPJS.dragdrop = function (mapModel, stage) {
+MAPJS.dragdrop = function (mapModel, stage, imageInsertController) {
 	'use strict';
 	var currentDroppable,
 		findNodeOnStage = function (nodeId) {
@@ -2018,8 +2018,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			}
 			return false;
 		},
-		nodeDragMove = function (id, x, y, nodeX, nodeY, shouldCopy, shouldPositionAbsolutely) {
-
+		nodeDragMove = function (id, x, y) {
 			var nodeId, node;
 			if (!mapModel.isEditingEnabled()) {
 				return;
@@ -2112,31 +2111,33 @@ MAPJS.dragdrop = function (mapModel, stage) {
 				return screenToStageCoordinates(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 			}
 			return screenToStageCoordinates(evt.layerX, evt.layerY);
-		};
-	jQuery(stage.getContainer()).imageDropWidget(new MAPJS.ImageInsertController(function (dataUrl, imgWidth, imgHeight, evt) {
-		var node,
-			nodeId,
-			content = mapModel.getIdea(),
-			point = getInteractionPoint(evt),
-			dropOn = function (ideaId, position) {
-				var scaleX = Math.min(imgWidth, 300) / imgWidth,
-					scaleY = Math.min(imgHeight, 300) / imgHeight,
-					scale = Math.min(scaleX, scaleY);
-				mapModel.setIcon('drag and drop', dataUrl, Math.round(imgWidth * scale), Math.round(imgHeight * scale), position, ideaId);
-			},
-			addNew = function () {
-				content.startBatch();
-				dropOn(content.addSubIdea(mapModel.getSelectedNodeId()), 'center');
-				content.endBatch();
-			};
-		for (nodeId in mapModel.getCurrentLayout().nodes) {
-			node = mapModel.getCurrentLayout().nodes[nodeId];
-			if (isPointOverNode(point.x, point.y, node)) {
-				return dropOn(nodeId, 'left');
+		},
+		dropImage =	function (dataUrl, imgWidth, imgHeight, evt) {
+			var node,
+				nodeId,
+				content = mapModel.getIdea(),
+				point = getInteractionPoint(evt),
+				dropOn = function (ideaId, position) {
+					var scaleX = Math.min(imgWidth, 300) / imgWidth,
+						scaleY = Math.min(imgHeight, 300) / imgHeight,
+						scale = Math.min(scaleX, scaleY);
+					mapModel.setIcon('drag and drop', dataUrl, Math.round(imgWidth * scale), Math.round(imgHeight * scale), position, ideaId);
+				},
+				addNew = function () {
+					content.startBatch();
+					dropOn(content.addSubIdea(mapModel.getSelectedNodeId()), 'center');
+					content.endBatch();
+				};
+			for (nodeId in mapModel.getCurrentLayout().nodes) {
+				node = mapModel.getCurrentLayout().nodes[nodeId];
+				if (isPointOverNode(point.x, point.y, node)) {
+					return dropOn(nodeId, 'left');
+				}
 			}
-		}
-		addNew();
-	}));
+			addNew();
+		};
+	jQuery(stage.getContainer()).imageDropWidget(imageInsertController);
+	imageInsertController.addEventListener('imageInserted', dropImage);
 	mapModel.addEventListener('nodeCreated', function (n) {
 		var node = findNodeOnStage(n.id), shouldPositionAbsolutely;
 		node.on('dragstart', function (evt) {
@@ -2150,11 +2151,7 @@ MAPJS.dragdrop = function (mapModel, stage) {
 			nodeDragMove(
 				n.id,
 				stagePoint.x,
-				stagePoint.y,
-				node.getX(),
-				node.getY(),
-				evt.shiftKey,
-				shouldPositionAbsolutely
+				stagePoint.y
 			);
 		});
 		node.on('dragend', function (evt) {
@@ -3462,15 +3459,15 @@ MAPJS.pngExport = function (idea) {
 	return deferred.promise();
 };
 /*global _, jQuery, Kinetic, MAPJS, window, document, $*/
-jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRendering) {
+jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController) {
 	'use strict';
 	return this.each(function () {
 		var element = jQuery(this),
 			stage = new Kinetic.Stage({
-				container: 'container',
+				container: this.id,
 				draggable: true
 			}),
-			mediator = new MAPJS.KineticMediator(mapModel, stage, imageRendering),
+			mediator = new MAPJS.KineticMediator(mapModel, stage),
 			setStageDimensions = function () {
 				stage.setWidth(element.width());
 				stage.setHeight(element.height());
@@ -3540,7 +3537,7 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageRender
 				}
 			});
 		});
-		MAPJS.dragdrop(mapModel, stage);
+		MAPJS.dragdrop(mapModel, stage, imageInsertController);
 		$(document).on('keypress', function (evt) {
 			if (!actOnKeys) {
 				return;
@@ -3637,12 +3634,49 @@ jQuery.fn.linkEditWidget = function (mapModel) {
 		element.mouseleave(element.hide.bind(element));
 	});
 };
-/*global $, FileReader, Image, MAPJS, _ */
-MAPJS.ImageInsertController = function (callback) {
+/*global observable, jQuery, FileReader, Image, MAPJS, document, _ */
+MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 	'use strict';
-	var self = this,
+	var isDataUri = function (string) {
+			return (/^data:image/).test(string);
+		},
+		convertSrcToDataUri = function (img) {
+			if (isDataUri(img.src)) {
+				return img.src;
+			}
+			var canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, 0, 0);
+			return canvas.toDataURL('image/png');
+		},
+		deferred = jQuery.Deferred(),
+		domImg = new Image();
+
+	domImg.onload = function () {
+		try {
+			deferred.resolve({dataUri: convertSrcToDataUri(domImg), width: domImg.width, height: domImg.height});
+		} catch (e) {
+			deferred.reject();
+		}
+	};
+	if (!isDataUri(src)) {
+		if (corsProxyUrl) {
+			domImg.crossOrigin = 'Anonymous';
+			src = corsProxyUrl + encodeURIComponent(src);
+		} else {
+			deferred.reject('no-cors');
+		}
+	}
+	domImg.src = src;
+	return deferred.promise();
+};
+MAPJS.ImageInsertController = function (corsProxyUrl) {
+	'use strict';
+	var self = observable(this),
 		readFileIntoDataUrl = function (fileInfo) {
-			var loader = $.Deferred(),
+			var loader = jQuery.Deferred(),
 				fReader = new FileReader();
 			fReader.onload = function (e) {
 				loader.resolve(e.target.result);
@@ -3651,19 +3685,16 @@ MAPJS.ImageInsertController = function (callback) {
 			fReader.onprogress = loader.notify;
 			fReader.readAsDataURL(fileInfo);
 			return loader.promise();
-		},
-		domImg;
-	self.insertDataUrl = function (dataUrl, evt) {
-		domImg = new Image();
-		domImg.onload = function () {
-			callback(dataUrl, domImg.width, domImg.height, evt);
 		};
-		domImg.src = dataUrl;
+	self.insertDataUrl = function (dataUrl, evt) {
+		MAPJS.getDataURIAndDimensions(dataUrl, corsProxyUrl).then(function (result) {
+			self.dispatchEvent('imageInserted', result.dataUri, result.width, result.height, evt);
+		});
 	};
 	self.insertFiles = function (files, evt) {
-		$.each(files, function (idx, fileInfo) {
+		jQuery.each(files, function (idx, fileInfo) {
 			if (/^image\//.test(fileInfo.type)) {
-				$.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
+				jQuery.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
 			}
 		});
 	};
@@ -3674,7 +3705,7 @@ MAPJS.ImageInsertController = function (callback) {
 		}
 	};
 };
-$.fn.imageDropWidget = function (imageInsertController) {
+jQuery.fn.imageDropWidget = function (imageInsertController) {
 	'use strict';
 	this.on('dragenter dragover', function (e) {
 		if (e.originalEvent.dataTransfer) {
@@ -3694,4 +3725,3 @@ $.fn.imageDropWidget = function (imageInsertController) {
 	});
 	return this;
 };
-

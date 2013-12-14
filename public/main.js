@@ -81,7 +81,7 @@ MM.main = function (config) {
 					jQuery('[rel=tooltip]').tooltip();
 				}
 				jQuery('body').mapStatusWidget(mapController);
-				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, false);
+				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, new MAPJS.ImageInsertController(config.corsProxyUrl));
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 
@@ -129,7 +129,7 @@ MM.main = function (config) {
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
-				jQuery('#modalIconEdit').iconEditorWidget(iconEditor);
+				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',

@@ -29,7 +29,7 @@ MM.iconEditor = function (mapModel) {
 	});
 
 };
-jQuery.fn.iconEditorWidget = function (iconEditor) {
+jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 	'use strict';
 	var self = this,
 		confirmElement = self.find('[data-mm-role=confirm]'),
@@ -70,15 +70,16 @@ jQuery.fn.iconEditorWidget = function (iconEditor) {
 				clearButton.show();
 			}
 		},
-		insertController = new MAPJS.ImageInsertController(
-			function (dataUrl, imgWidth, imgHeight, evt) {
-				imgPreview.attr('src', dataUrl);
-				widthBox.val(imgWidth);
-				heightBox.val(imgHeight);
-				self.find('[data-mm-role=attribs]').show();
-				imgPreview.show();
-			}
-		);
+		insertController = new MAPJS.ImageInsertController(corsProxyUrl);
+	insertController.addEventListener('imageInserted',
+		function (dataUrl, imgWidth, imgHeight) {
+			imgPreview.attr('src', dataUrl);
+			widthBox.val(imgWidth);
+			heightBox.val(imgHeight);
+			self.find('[data-mm-role=attribs]').show();
+			imgPreview.show();
+		}
+	);
 	dropZone.imageDropWidget(insertController);
 	widthBox.on('change', function () {
 		if (ratioBox[0].checked) {
