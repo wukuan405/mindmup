@@ -3,8 +3,11 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 	'use strict';
 	var properties = {},
 		driveLoaded,
+		gapiAuthToken = function () {
+			return window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token;
+		},
 		isAuthorised = function () {
-			return !!(window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token);
+			return !!(gapiAuthToken());
 		},
 		recognises = function (mapId) {
 			return mapId && mapId[0] === 'g';
@@ -232,7 +235,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 	};
 	this.showPicker = function (contentTypes, title, showDialogs) {
 		var deferred = jQuery.Deferred(),
-			defaultContentTypes = 'application/octet-stream,application/vnd.mindmup.collab,application/vnd-freemind,application/json,application/vnd.google.drive.ext-type.mup,application/x-freemind,application/vnd.google.drive.ext-type.mm',	
+			defaultContentTypes = 'application/octet-stream,application/vnd.mindmup.collab,application/vnd-freemind,application/json,application/vnd.google.drive.ext-type.mup,application/x-freemind,application/vnd.google.drive.ext-type.mm',
 			showPicker = function () {
 				var picker, view;
 				view = new google.picker.DocsView(google.picker.ViewId.DOCS);
@@ -253,6 +256,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					})
 					.setTitle(title)
 					.setSelectableMimeTypes(contentTypes)
+					.setOAuthToken(gapiAuthToken())
 					.build()
 					.setVisible(true);
 			};
