@@ -46,7 +46,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 		},
 		exportFailed = function (reason, fileId) {
 			var reasonMap = {
-				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number ' + fileId,
+				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number: <input type="text" value="' + fileId + '" readonly />',
 				'file-too-large': 'Your map is too large',
 				'polling-timeout': 'The server is too busy. Please try again later, or if this error persists contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export">contact@mindmup.com</a>'
 			},

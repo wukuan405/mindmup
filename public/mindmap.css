@@ -522,3 +522,14 @@ input.noglow {
 #modalPDFExport form {
 	margin-top: 20px;
 }
+
+.alert-error input {
+	background: transparent;
+	margin: 0px 0px 2px;
+	color: #b94a48;
+	border: none !important;
+	outline: none;
+	box-shadow: none !important;
+	width: 100%;
+	cursor: pointer;
+}
