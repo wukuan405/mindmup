@@ -67,6 +67,7 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
+			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -81,10 +82,9 @@ MM.main = function (config) {
 					jQuery('[rel=tooltip]').tooltip();
 				}
 				jQuery('body').mapStatusWidget(mapController);
-				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, new MAPJS.ImageInsertController(config.corsProxyUrl));
+				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, stageImageInsertController);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
-
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
 				jQuery.fn.colorPicker.showPalette = function (palette) {
 					oldShowPalette(palette);
@@ -130,6 +130,8 @@ MM.main = function (config) {
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
+
+				MM.setImageAlertWidget(stageImageInsertController, alert);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
