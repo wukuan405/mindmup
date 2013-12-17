@@ -326,37 +326,47 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 MM.S3FilePoller = function (bucket, prefix, postfix, sleepPeriod, timeoutPeriod) {
 	'use strict';
 	var bucketUrl = 'http://' + bucket + '.s3.amazonaws.com/';
-	this.poll = function (fileId) {
+	this.poll = function (fileId, stoppedSemaphore) {
 		var sleepTimeoutId,
 			timeoutId,
 			deferred = jQuery.Deferred(),
+			shouldPoll = function () {
+				return deferred && !(stoppedSemaphore && stoppedSemaphore());
+			},
 			execRequest = function () {
 				var setSleepTimeout = function () {
-					if (!deferred) {
-						return;
+					if (shouldPoll()) {
+						sleepTimeoutId = window.setTimeout(execRequest, sleepPeriod);
 					}
-					sleepTimeoutId = window.setTimeout(execRequest, sleepPeriod);
 				};
-				jQuery.ajax({
-					url: bucketUrl + '?prefix=' + encodeURIComponent(prefix + fileId + postfix) + '&max-keys=1',
-					method: 'GET'
-				}).then(function success(result) {
-					var key = jQuery(result).find('Contents Key').first().text();
-					if (deferred && key) {
-						window.clearTimeout(timeoutId);
-						deferred.resolve(bucketUrl + key);
-					} else {
-						setSleepTimeout();
-					}
-				}, setSleepTimeout);
+				if (shouldPoll()) {
+					jQuery.ajax({
+						url: bucketUrl + '?prefix=' + encodeURIComponent(prefix + fileId + postfix) + '&max-keys=1',
+						method: 'GET'
+					}).then(function success(result) {
+						var key = jQuery(result).find('Contents Key').first().text();
+						if (deferred && key) {
+							window.clearTimeout(timeoutId);
+							deferred.resolve(bucketUrl + key);
+						} else {
+							setSleepTimeout();
+						}
+					}, setSleepTimeout);
+				} else {
+					window.clearTimeout(timeoutId);
+				}
 			},
 			cancelRequest = function () {
+				if (shouldPoll()) {
+					deferred.reject('polling-timeout');
+				}
 				window.clearTimeout(sleepTimeoutId);
-				deferred.reject('polling-timeout');
 				deferred = undefined;
 			};
-		timeoutId = window.setTimeout(cancelRequest, timeoutPeriod);
-		execRequest();
+		if (shouldPoll()) {
+			timeoutId = window.setTimeout(cancelRequest, timeoutPeriod);
+			execRequest();
+		}
 		return deferred.promise();
 	};
 };

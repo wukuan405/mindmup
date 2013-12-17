@@ -2,8 +2,18 @@
 describe('LayoutExport', function () {
 	'use strict';
 	describe('LayoutExportController', function () {
-		var fileSystem, mapModel, currentLayout, underTest, requestId, resultPoller, activityLog;
+		var fileSystem, mapModel, currentLayout, underTest, requestId, resultPoller, errorPoller, activityLog;
+
 		beforeEach(function () {
+			var buildPoller = function () {
+				var poller = {
+					deferred: jQuery.Deferred(),
+					poll: function () {
+						return poller.deferred.promise();
+					}
+				};
+				return poller;
+			};
 			fileSystem = {};
 			mapModel = {};
 			activityLog = {};
@@ -14,13 +24,9 @@ describe('LayoutExport', function () {
 			fileSystem.saveMap.andReturn(jQuery.Deferred().resolve(requestId).promise());
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
 			mapModel.getCurrentLayout.andReturn(currentLayout);
-			resultPoller = {
-				deferred: jQuery.Deferred(),
-				poll: function () {
-					return resultPoller.deferred.promise();
-				}
-			};
-			underTest = new MM.LayoutExportController(mapModel, fileSystem, resultPoller, activityLog);
+			resultPoller = buildPoller();
+			errorPoller = buildPoller();
+			underTest = new MM.LayoutExportController(mapModel, fileSystem, resultPoller, errorPoller, activityLog);
 
 		});
 		it('pulls out current map model layout, and publishes JSON version of that to an fileSystem', function () {
@@ -35,9 +41,26 @@ describe('LayoutExport', function () {
 		it('polls for result when the request is started', function () {
 			spyOn(resultPoller, 'poll').andCallThrough();
 			underTest.startExport();
-			expect(resultPoller.poll).toHaveBeenCalledWith(requestId);
+			expect(resultPoller.poll).toHaveBeenCalledWith(requestId, jasmine.any(Function));
 		});
-
+		it('polls for error when the request is started', function () {
+			spyOn(errorPoller, 'poll').andCallThrough();
+			underTest.startExport();
+			expect(errorPoller.poll).toHaveBeenCalledWith(requestId, jasmine.any(Function));
+		});
+		it('export is marked as not stopped until deferred object is resolved', function () {
+			spyOn(errorPoller, 'poll').andCallThrough();
+			underTest.startExport();
+			var stopFunc = errorPoller.poll.mostRecentCall.args[1];
+			expect(stopFunc()).toBeFalsy();
+		});
+		it('export is marked as stopped after promise is resolved', function () {
+			spyOn(errorPoller, 'poll').andCallThrough();
+			underTest.startExport();
+			resultPoller.deferred.resolve('foo');
+			var stopFunc = errorPoller.poll.mostRecentCall.args[1];
+			expect(stopFunc()).toBeTruthy();
+		});
 		it('resolves promise when the poller resolves', function () {
 			var resolved = jasmine.createSpy('resolved'),
 				url = 'http://www.google.com';
@@ -47,6 +70,19 @@ describe('LayoutExport', function () {
 			resultPoller.deferred.resolve(url);
 			expect(resolved).toHaveBeenCalledWith(url);
 		});
+		it('rejects if the error poller resolves before the result poller', function () {
+			var resolved = jasmine.createSpy('resolved'),
+				url = 'http://www.google.com',
+				fail = jasmine.createSpy('fail');
+
+			underTest.startExport().then(resolved, fail);
+
+			errorPoller.deferred.resolve('www.fail.com');
+			resultPoller.deferred.resolve(url);
+
+			expect(resolved).not.toHaveBeenCalled();
+			expect(fail).toHaveBeenCalledWith('generation-error', requestId);
+		});
 		it('rejects promise if the poller rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
@@ -54,7 +90,7 @@ describe('LayoutExport', function () {
 			underTest.startExport().fail(fail);
 
 			resultPoller.deferred.reject(reason);
-			expect(fail).toHaveBeenCalledWith(reason);
+			expect(fail).toHaveBeenCalledWith(reason, requestId);
 		});
 		it('rejects promise if the file system rejects', function () {
 			var fail = jasmine.createSpy('fail'),
@@ -64,7 +100,7 @@ describe('LayoutExport', function () {
 
 			underTest.startExport().fail(fail);
 
-			expect(fail).toHaveBeenCalledWith(reason);
+			expect(fail).toHaveBeenCalledWith(reason, undefined);
 			expect(resultPoller.poll).not.toHaveBeenCalled();
 		});
 	});
@@ -104,6 +140,19 @@ describe('LayoutExport', function () {
 			clock.tick(sleepPeriod + 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
+		it('should not make initial call when semaphore function shows stopped', function () {
+			underTest.poll('REQUEST', function () {return true; });
+			expect(jQuery.ajax).not.toHaveBeenCalled();
+		});
+		it('stops polling when semaphore function shows stopped', function () {
+			var stopped = false;
+			underTest.poll('REQUEST', function () {return stopped; });
+			jQuery.ajax.reset();
+			ajaxDeferred.resolve(withoutFile);
+			stopped = true;
+			clock.tick(sleepPeriod + 1);
+			expect(jQuery.ajax).not.toHaveBeenCalled();
+		});
 		it('polls only after sleep period', function () {
 			underTest.poll('REQUEST');
 			jQuery.ajax.reset();
@@ -133,6 +182,15 @@ describe('LayoutExport', function () {
 			clock.tick(timeoutPeriod + 1);
 			expect(rejected).toHaveBeenCalledWith('polling-timeout');
 		});
+		it('should not time out if stopped after the initial request', function () {
+			var rejected = jasmine.createSpy('rejected'),
+				stopped = false;
+			underTest.poll('REQUEST', function () {return stopped; }).fail(rejected);
+			stopped = true;
+			clock.tick(timeoutPeriod + 1);
+			expect(rejected).not.toHaveBeenCalled();
+		});
+
 		it('stops polling after it times out', function () {
 			underTest.poll('REQUEST');
 			clock.tick(timeoutPeriod + 1);

@@ -1,22 +1,26 @@
 /*global jQuery, MM, _ */
-MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, activityLog) {
+MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, errorPoller, activityLog) {
 	'use strict';
 	var category = 'Map',
 		eventType = 'PDF Export';
 	this.startExport = function (exportProperties) {
 		var deferred = jQuery.Deferred(),
+			isStopped = function () {
+				return deferred.state() !== 'pending';
+			},
 			resolve = function () {
 				activityLog.log(category, eventType + ' completed');
 				deferred.resolve.apply(this, arguments);
 			},
-			reject = function (reason) {
+			reject = function (reason, fileId) {
 				activityLog.log(category, eventType + ' failed', reason);
-				deferred.reject.apply(this, arguments);
+				deferred.reject(reason, fileId);
 			},
 			layout = _.extend({}, mapModel.getCurrentLayout(), exportProperties);
 		activityLog.log(category, eventType + ' started');
 		fileSystem.saveMap(JSON.stringify(layout)).then(function (fileId) {
-			resultPoller.poll(fileId).then(resolve, reject);
+			errorPoller.poll(fileId, isStopped).then(function () { reject('generation-error', fileId); });
+			resultPoller.poll(fileId, isStopped).then(resolve, function (reason) { reject(reason, fileId); });
 		}, reject);
 		return deferred.promise();
 	};
@@ -32,8 +36,17 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 			alert.hide(alertId);
 			alertId = alert.show(format + ' export complete: ', '<a target="_blank" href="' + url + '">Click here to open</a> (This link will remain available for 24 hours)');
 		},
-		exportFailed = function (reason) {
+		getExportMetadata = function () {
+			var form = self.find('form'),
+				exportType = {};
+			form.find('button.active').add(form.find('select')).each(function () {
+				exportType[jQuery(this).attr('name')] = jQuery(this).val();
+			});
+			return exportType;
+		},
+		exportFailed = function (reason, fileId) {
 			var reasonMap = {
+				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number ' + fileId,
 				'file-too-large': 'Your map is too large',
 				'polling-timeout': 'The server is too busy. Please try again later, or if this error persists contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export">contact@mindmup.com</a>'
 			},
@@ -42,19 +55,10 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 
 			alertId = alert.show('Unable to export ' + format + ': ', reasonDescription, 'error');
 		},
-		getExportType = function () {
-			var form = self.find('form'),
-				exportType = {};
-			form.find('button.active').add(form.find('select')).each(function () {
-				exportType[jQuery(this).attr('name')] = jQuery(this).val();
-			});
-			return exportType;
-		},
 		doExport = function () {
 			alert.hide(alertId);
 			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...');
-			getExportType();
-			layoutExportController.startExport({'export': getExportType()}).then(exportComplete, exportFailed);
+			layoutExportController.startExport({'export': getExportMetadata()}).then(exportComplete, exportFailed);
 			self.modal('hide');
 		};
 	self.find('form').submit(function () {return false; });
