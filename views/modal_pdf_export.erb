@@ -5,15 +5,7 @@
   </div>
   <div class="modal-body">
     <div class="visible initial">
-      <p>The content of your map will be securely uploaded to our server for processing.</p>
-       <p>
-         The maximum size of maps that can be exported online is:
-         <ul>
-            <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
-            <li><a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size/(1024*1024)%> Mb</li>
-         </ul>
-       </p>
-       <p>For maps larger than  <%=settings.gold_pdf_max_size/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+      <p>The map will be securely uploaded to our server for processing. The <a href="http://blog.mindmup.com/p/pdf-export.html">PDF export documentation</a> page explains PDF file export in greater detail.</p>
       <form class="form-horizontal">
         <div class="control-group">
           <label class="control-label">Orientation:</label>
@@ -54,7 +46,27 @@
       <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
     </div>
     <div class="visible error alert alert-error alert-block">
-      <h4>Unable to export PDF:</h4> <span data-mm-role="error-message"></span>
+      <h4>Unable to export PDF:</h4>
+      <br/>
+
+      <span data-mm-role="error-message"></span>
+      <span data-mm-role="generation-error">
+        This map contains a feature not currently supported by PDF export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+      </span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The map you are exporting is too large. The maximum size of maps that can be exported online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
+              <li><a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size/(1024*1024)%> Mb</li>
+           </ul>
+           <p>For maps larger than  <%=settings.gold_pdf_max_size/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+
+         </p>
+      </span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
     </div>
   </div>
   <div class="modal-footer">

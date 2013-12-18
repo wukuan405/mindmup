@@ -30,7 +30,6 @@ MM.LayoutExportController = function (mapModel, fileSystem, poller, activityLog)
 jQuery.fn.layoutExportWidget = function (layoutExportController) {
 	'use strict';
 	var self = this,
-		format = self.data('mm-format'),
 		confirmElement = self.find('[data-mm-role=export]'),
 		setState = function (state) {
 			self.find('.visible').hide();
@@ -49,14 +48,17 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			return exportType;
 		},
 		exportFailed = function (reason, fileId) {
-			var reasonMap = {
-				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number: ' + fileId,
-				'file-too-large': 'Your map is too large',
-				'polling-timeout': 'The server is too busy. Please try again later, or if this error persists contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export">contact@mindmup.com</a>'
-			},
-			reasonDescription = reasonMap[reason] || reason;
-			self.find('[data-mm-role=error-message]').html(reasonDescription);
+			self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20PDF%20Export%20Error%20' + fileId; });
+			self.find('[data-mm-role=file-id]').html(fileId);
+			self.find('.error span').hide();
 			setState('error');
+
+			var predefinedMsg = self.find('[data-mm-role=' + reason + ']');
+			if (predefinedMsg.length > 0) {
+				predefinedMsg.show();
+			} else {
+				self.find('[data-mm-role=error-message]').html(reason).show();
+			}
 		},
 		doExport = function () {
 			setState('inprogress');
