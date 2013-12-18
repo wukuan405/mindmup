@@ -68,10 +68,7 @@ module MindMup::GoldLicenseAdmin
 end
 module MindMup::GoldPrivateRoutes
   post "/gold/signature" do
-
-    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-    headers['Access-Control-Allow-Origin'] = '*'
-    headers['Access-Control-Allow-Headers'] = 'accept, authorization, origin'
+    cors_headers
 
     # eg ?key=D3EbG0AHAgJhC3wUIw5wB08idhh9bCJCDzMgBi8XNzsWeAMeHWIxfQ==&filename=foo.mup&id=AKIAIT74E4XNDZCOHR3A&account=damjan
     signer=S3PolicySigner.new

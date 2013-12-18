@@ -55,7 +55,7 @@ configure do
   set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
   set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
-  set :layout_publishing_url, ENV['LAYOUT_PUBLISHING_URL'] || '/layoutPublishingConfig/'
+  set :layout_publishing_url, ENV['LAYOUT_PUBLISHING_URL'] || '/layoutPublishingConfig'
   cache_last_news
 end
 get '/' do
@@ -120,6 +120,7 @@ get "/m" do
   show_map
 end
 post "/layoutPublishingConfig" do
+  cors_headers
   s3_key_id = settings.s3_key_id
   aws_secret = settings.s3_secret_key
   max_upload_size = settings.s3_max_upload_size*1024
@@ -203,6 +204,11 @@ include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
 include Sinatra::UserAgentHelpers
 helpers do
+  def cors_headers
+    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    headers['Access-Control-Allow-Origin'] = '*'
+    headers['Access-Control-Allow-Headers'] = 'accept, authorization, origin'
+  end
   def show_map
     if (browser_supported? || user_accepted_browser?)
       erb :editor
