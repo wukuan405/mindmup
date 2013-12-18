@@ -100,8 +100,8 @@
               return s3Adapter;
             },
             mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(mapSource(config.mapId))),
-            mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);          
-          jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, config.renderImages);
+            mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
+          jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, observable({}));
           jQuery('.close.attachment').click(function () {
             jQuery('.attachment').hide();
             jQuery('.map').show();
@@ -109,7 +109,7 @@
 		  jQuery('a.mindmup').click(function () {
             _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', config.mapId]);
 		  });
-          jQuery(document).keydown('Esc backspace', function (){            
+          jQuery(document).keydown('Esc backspace', function (){
             jQuery('.attachment').hide();
             jQuery('.map').show();
           });
