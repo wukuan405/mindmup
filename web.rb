@@ -55,6 +55,7 @@ configure do
   set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
   set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
+  set :layout_publishing_url, ENV['LAYOUT_PUBLISHING_URL'] || '/layoutPublishingConfig/'
   cache_last_news
 end
 get '/' do

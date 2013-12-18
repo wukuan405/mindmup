@@ -153,8 +153,9 @@ SOFTWARE.
               userCohort: '<%= user_cohort %>',
               cachePreventionKey: '<%= settings.cache_prevention_key %>',
               dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
-			  pdfBucket: '<%= settings.export_bucket["pdf"]%>',
-			  corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>'
+              layoutPublishingUrl: '<%= settings.layout_publishing_url %>',
+              pdfBucket: '<%= settings.export_bucket["pdf"]%>',
+              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>'
         });
       },
       function (err) {

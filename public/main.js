@@ -45,7 +45,7 @@ MM.main = function (config) {
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey', config.goldSignatureUrl),
-			pdfPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator('https://' + config.pdfBucket + '.s3.amazonaws.com/', 'layoutPublishingConfig?format=pdf', undefined, goldLicenseManager.goldLicenseIdentifiers),
+			pdfPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator('https://' + config.pdfBucket + '.s3.amazonaws.com/', config.layoutPublishingUrl + '?format=pdf', undefined, goldLicenseManager.goldLicenseIdentifiers),
 			s3PrivateGoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true, 'b'), 'p', 'MindMup Gold Private', true), goldLicenseManager),
 			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, false, 'p'), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p'),
 			s3Adapter = new MM.S3Adapter(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
