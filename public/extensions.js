@@ -69,7 +69,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		});
 
 		if (!_.isEmpty(MM.Extensions.pendingScripts)) {
-			alertId = components.alert.show('Please wait, loading extensions... <i class="icon-spinner icon-spin"></i>&nbsp;<span data-mm-role="num-extensions"></span>');
+			alertId = components.alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, loading extensions...<span data-mm-role="num-extensions"></span>');
 			intervalId = window.setInterval(function () {
 				if (_.isEmpty(MM.Extensions.pendingScripts)) {
 					components.alert.hide(alertId);

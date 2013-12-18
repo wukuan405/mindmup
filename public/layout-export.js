@@ -27,15 +27,18 @@ MM.LayoutExportController = function (mapModel, fileSystem, poller, activityLog)
 	};
 };
 
-jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmation, alert) {
+jQuery.fn.layoutExportWidget = function (layoutExportController) {
 	'use strict';
-	var alertId,
-		self = this,
+	var self = this,
 		format = self.data('mm-format'),
 		confirmElement = self.find('[data-mm-role=export]'),
+		setState = function (state) {
+			self.find('.visible').hide();
+			self.find('.visible' + '.' + state).show();
+		},
 		exportComplete = function (url) {
-			alert.hide(alertId);
-			alertId = alert.show(format + ' export complete: ', '<a target="_blank" href="' + url + '">Click here to open</a> (This link will remain available for 24 hours)');
+			self.find('[data-mm-role=output-url]').attr('href', url);
+			setState('done');
 		},
 		getExportMetadata = function () {
 			var form = self.find('form'),
@@ -47,25 +50,25 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, modalConfirmati
 		},
 		exportFailed = function (reason, fileId) {
 			var reasonMap = {
-				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number: <input type="text" value="' + fileId + '" readonly />',
+				'generation-error': 'This map contains a feature not currently supported by ' + format + ' export. Please contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export%20Error%20' + fileId + '">contact@mindmup.com</a> quoting the reference number: ' + fileId,
 				'file-too-large': 'Your map is too large',
 				'polling-timeout': 'The server is too busy. Please try again later, or if this error persists contact us at <a href="mailto:contact@mindmup.com?subject=MindMup%20PDF%20Export">contact@mindmup.com</a>'
 			},
 			reasonDescription = reasonMap[reason] || reason;
-			alert.hide(alertId);
-
-			alertId = alert.show('Unable to export ' + format + ': ', reasonDescription, 'error');
+			self.find('[data-mm-role=error-message]').html(reasonDescription);
+			setState('error');
 		},
 		doExport = function () {
-			alert.hide(alertId);
-			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...');
+			setState('inprogress');
 			layoutExportController.startExport({'export': getExportMetadata()}).then(exportComplete, exportFailed);
-			self.modal('hide');
 		};
 	self.find('form').submit(function () {return false; });
 	confirmElement.click(doExport).keydown('space', doExport);
 	self.modal({keyboard: true, show: false});
-	this.on('shown', function () {
+	this.on('show', function () {
+		setState('initial');
+	}).on('shown', function () {
+
 		confirmElement.focus();
 	});
 

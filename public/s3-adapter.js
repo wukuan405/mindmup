@@ -341,6 +341,7 @@ MM.S3FilePoller = function (sleepPeriod, timeoutPeriod) {
 				if (shouldPoll()) {
 					jQuery.ajax({
 						url: signedListUrl,
+						timeout: sleepPeriod,
 						method: 'GET'
 					}).then(function success(result) {
 						var key = jQuery(result).find('Contents Key').first().text();
