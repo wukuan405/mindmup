@@ -292,7 +292,7 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 					contentType: false,
 					data: formData
 				}).done(function () {
-					deferred.resolve(publishingConfig.mapId, properties);
+					deferred.resolve(publishingConfig.mapId, _.extend(publishingConfig, properties));
 				}).fail(function (evt) {
 					var errorReason = 'network-error',
 						errorLabel = (evt && evt.responseText) || 'network-error',
@@ -323,10 +323,9 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 
 };
 
-MM.S3FilePoller = function (bucket, prefix, postfix, sleepPeriod, timeoutPeriod) {
+MM.S3FilePoller = function (sleepPeriod, timeoutPeriod) {
 	'use strict';
-	var bucketUrl = 'http://' + bucket + '.s3.amazonaws.com/';
-	this.poll = function (fileId, stoppedSemaphore) {
+	this.poll = function (signedListUrl, stoppedSemaphore) {
 		var sleepTimeoutId,
 			timeoutId,
 			deferred = jQuery.Deferred(),
@@ -341,13 +340,13 @@ MM.S3FilePoller = function (bucket, prefix, postfix, sleepPeriod, timeoutPeriod)
 				};
 				if (shouldPoll()) {
 					jQuery.ajax({
-						url: bucketUrl + '?prefix=' + encodeURIComponent(prefix + fileId + postfix) + '&max-keys=1',
+						url: signedListUrl,
 						method: 'GET'
 					}).then(function success(result) {
 						var key = jQuery(result).find('Contents Key').first().text();
 						if (deferred && key) {
 							window.clearTimeout(timeoutId);
-							deferred.resolve(bucketUrl + key);
+							deferred.resolve(key);
 						} else {
 							setSleepTimeout();
 						}

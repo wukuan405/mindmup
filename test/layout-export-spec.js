@@ -1,15 +1,22 @@
-/* global jasmine, beforeEach, it, describe, expect, jQuery, spyOn, sinon, MM*/
+/* global jasmine, beforeEach, it, describe, expect, jQuery, spyOn, sinon, MM, _*/
 describe('LayoutExport', function () {
 	'use strict';
 	describe('LayoutExportController', function () {
-		var fileSystem, mapModel, currentLayout, underTest, requestId, resultPoller, errorPoller, activityLog;
+		var fileSystem, mapModel, currentLayout, underTest, requestId, poller, activityLog,
+			lastPollerCallFor = function (url) {
+				return _.find(poller.poll.calls, function (call) {
+					return call.args[0] === url;
+				});
+			};
 
 		beforeEach(function () {
 			var buildPoller = function () {
 				var poller = {
-					deferred: jQuery.Deferred(),
-					poll: function () {
-						return poller.deferred.promise();
+					deferred: {}, //jQuery.Deferred(),
+					poll: function (url) {
+						var deferred = jQuery.Deferred();
+						poller.deferred[url] = deferred;
+						return deferred.promise();
 					}
 				};
 				return poller;
@@ -21,12 +28,16 @@ describe('LayoutExport', function () {
 			requestId = 'AIUHDKUHGDKHUD';
 			fileSystem.saveMap = jasmine.createSpy('saveMap');
 			activityLog.log = jasmine.createSpy('log');
-			fileSystem.saveMap.andReturn(jQuery.Deferred().resolve(requestId).promise());
+			fileSystem.saveMap.andReturn(
+				jQuery.Deferred().resolve(
+					requestId,
+					{'signedErrorListUrl': 'errorlisturl', 'signedOutputListUrl': 'outputlisturl', 'signedOutputUrl': 'outputurl'}
+				).promise());
+
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
 			mapModel.getCurrentLayout.andReturn(currentLayout);
-			resultPoller = buildPoller();
-			errorPoller = buildPoller();
-			underTest = new MM.LayoutExportController(mapModel, fileSystem, resultPoller, errorPoller, activityLog);
+			poller = buildPoller();
+			underTest = new MM.LayoutExportController(mapModel, fileSystem, poller, activityLog);
 
 		});
 		it('pulls out current map model layout, and publishes JSON version of that to an fileSystem', function () {
@@ -38,37 +49,31 @@ describe('LayoutExport', function () {
 			expect(fileSystem.saveMap).toHaveBeenCalledWith(JSON.stringify({'a': 'b', 'foo': 'bar'}));
 			expect(currentLayout).toEqual({'a': 'b'});
 		});
-		it('polls for result when the request is started', function () {
-			spyOn(resultPoller, 'poll').andCallThrough();
+		it('polls for result and error when the request is started', function () {
+			spyOn(poller, 'poll').andCallThrough();
 			underTest.startExport();
-			expect(resultPoller.poll).toHaveBeenCalledWith(requestId, jasmine.any(Function));
+			expect(poller.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Function));
+			expect(poller.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Function));
 		});
-		it('polls for error when the request is started', function () {
-			spyOn(errorPoller, 'poll').andCallThrough();
-			underTest.startExport();
-			expect(errorPoller.poll).toHaveBeenCalledWith(requestId, jasmine.any(Function));
-		});
+
 		it('export is marked as not stopped until deferred object is resolved', function () {
-			spyOn(errorPoller, 'poll').andCallThrough();
+			spyOn(poller, 'poll').andCallThrough();
 			underTest.startExport();
-			var stopFunc = errorPoller.poll.mostRecentCall.args[1];
-			expect(stopFunc()).toBeFalsy();
+			expect(lastPollerCallFor('outputlisturl').args[1]()).toBeFalsy();
 		});
 		it('export is marked as stopped after promise is resolved', function () {
-			spyOn(errorPoller, 'poll').andCallThrough();
+			spyOn(poller, 'poll').andCallThrough();
 			underTest.startExport();
-			resultPoller.deferred.resolve('foo');
-			var stopFunc = errorPoller.poll.mostRecentCall.args[1];
-			expect(stopFunc()).toBeTruthy();
+			poller.deferred.outputlisturl.resolve('foo');
+			expect(lastPollerCallFor('errorlisturl').args[1]()).toBeTruthy();
 		});
-		it('resolves promise when the poller resolves', function () {
-			var resolved = jasmine.createSpy('resolved'),
-				url = 'http://www.google.com';
+		it('resolves promise with signed output url when the poller resolves', function () {
+			var resolved = jasmine.createSpy('resolved');
 
 			underTest.startExport().then(resolved);
 
-			resultPoller.deferred.resolve(url);
-			expect(resolved).toHaveBeenCalledWith(url);
+			poller.deferred.outputlisturl.resolve();
+			expect(resolved).toHaveBeenCalledWith('outputurl');
 		});
 		it('rejects if the error poller resolves before the result poller', function () {
 			var resolved = jasmine.createSpy('resolved'),
@@ -77,8 +82,8 @@ describe('LayoutExport', function () {
 
 			underTest.startExport().then(resolved, fail);
 
-			errorPoller.deferred.resolve('www.fail.com');
-			resultPoller.deferred.resolve(url);
+			poller.deferred.errorlisturl.resolve('www.fail.com');
+			poller.deferred.outputlisturl.resolve(url);
 
 			expect(resolved).not.toHaveBeenCalled();
 			expect(fail).toHaveBeenCalledWith('generation-error', requestId);
@@ -89,19 +94,19 @@ describe('LayoutExport', function () {
 
 			underTest.startExport().fail(fail);
 
-			resultPoller.deferred.reject(reason);
+			poller.deferred.outputlisturl.reject(reason);
 			expect(fail).toHaveBeenCalledWith(reason, requestId);
 		});
 		it('rejects promise if the file system rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
 			fileSystem.saveMap.andReturn(jQuery.Deferred().reject(reason).promise());
-			spyOn(resultPoller, 'poll').andCallThrough();
+			spyOn(poller, 'poll').andCallThrough();
 
 			underTest.startExport().fail(fail);
 
 			expect(fail).toHaveBeenCalledWith(reason, undefined);
-			expect(resultPoller.poll).not.toHaveBeenCalled();
+			expect(poller.poll).not.toHaveBeenCalled();
 		});
 	});
 	describe('S3FilePoller', function () {
@@ -112,14 +117,14 @@ describe('LayoutExport', function () {
 			sleepPeriod = 1000;
 			spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
 			clock = sinon.useFakeTimers();
-			underTest = new MM.S3FilePoller('test-bucket', 'out/', '.pdf', sleepPeriod, timeoutPeriod);
+			underTest = new MM.S3FilePoller(sleepPeriod, timeoutPeriod); //'test-bucket', 'out/', '.pdf',
 			withFile = '<?xml version="1.0" encoding="UTF-8"?><ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-pdf</Name><Prefix>out/hello.pdf</Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>out/hello.pdf</Key><LastModified>2013-12-04T15:02:11.000Z</LastModified><ETag>&quot;047d0c7c9663813b053ae18957420632&quot;</ETag><Size>24504</Size><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>';
 			withoutFile = '<?xml version="1.0" encoding="UTF-8"?><ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-pdf</Name><Prefix>out/x.pdf</Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>';
 		});
-		it('polls using ajax bucket listing for a given prefix and postfix', function () {
+		it('polls using ajax for a given URL', function () {
 			underTest.poll('REQUEST');
 			expect(jQuery.ajax).toHaveBeenCalledWith({
-				url: 'http://test-bucket.s3.amazonaws.com/?prefix=out%2FREQUEST.pdf&max-keys=1',
+				url: 'REQUEST',
 				method: 'GET'
 			});
 		});
@@ -129,7 +134,7 @@ describe('LayoutExport', function () {
 			ajaxDeferred.resolve(withoutFile);
 			clock.tick(sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
-				url: 'http://test-bucket.s3.amazonaws.com/?prefix=out%2FREQUEST.pdf&max-keys=1',
+				url: 'REQUEST',
 				method: 'GET'
 			});
 		});
@@ -164,7 +169,7 @@ describe('LayoutExport', function () {
 			var resolved = jasmine.createSpy();
 			underTest.poll('REQUEST').then(resolved);
 			ajaxDeferred.resolve(withFile);
-			expect(resolved).toHaveBeenCalledWith('http://test-bucket.s3.amazonaws.com/out/hello.pdf');
+			expect(resolved).toHaveBeenCalledWith('out/hello.pdf');
 		});
 		it('retries if network request fails', function () {
 			underTest.poll('REQUEST');
@@ -172,7 +177,7 @@ describe('LayoutExport', function () {
 			ajaxDeferred.reject();
 			clock.tick(sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
-				url: 'http://test-bucket.s3.amazonaws.com/?prefix=out%2FREQUEST.pdf&max-keys=1',
+				url: 'REQUEST',
 				method: 'GET'
 			});
 		});

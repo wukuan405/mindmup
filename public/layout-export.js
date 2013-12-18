@@ -1,5 +1,5 @@
 /*global jQuery, MM, _ */
-MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, errorPoller, activityLog) {
+MM.LayoutExportController = function (mapModel, fileSystem, poller, activityLog) {
 	'use strict';
 	var category = 'Map',
 		eventType = 'PDF Export';
@@ -8,19 +8,20 @@ MM.LayoutExportController = function (mapModel, fileSystem, resultPoller, errorP
 			isStopped = function () {
 				return deferred.state() !== 'pending';
 			},
-			resolve = function () {
-				activityLog.log(category, eventType + ' completed');
-				deferred.resolve.apply(this, arguments);
-			},
 			reject = function (reason, fileId) {
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
 			layout = _.extend({}, mapModel.getCurrentLayout(), exportProperties);
 		activityLog.log(category, eventType + ' started');
-		fileSystem.saveMap(JSON.stringify(layout)).then(function (fileId) {
-			errorPoller.poll(fileId, isStopped).then(function () { reject('generation-error', fileId); });
-			resultPoller.poll(fileId, isStopped).then(resolve, function (reason) { reject(reason, fileId); });
+		fileSystem.saveMap(JSON.stringify(layout)).then(function (fileId, config) {
+			var resolve = function () {
+				activityLog.log(category, eventType + ' completed');
+				deferred.resolve(config.signedOutputUrl);
+			};
+
+			poller.poll(config.signedErrorListUrl, isStopped).then(function () { reject('generation-error', fileId); });
+			poller.poll(config.signedOutputListUrl, isStopped).then(resolve, function (reason) { reject(reason, fileId); });
 		}, reject);
 		return deferred.promise();
 	};
