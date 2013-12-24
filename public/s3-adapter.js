@@ -103,11 +103,41 @@ MM.mapIdToS3Key = function (prefix, mapId, defaultFileName, account) {
 	}
 	return decodeURIComponent(mapIdComponents[2]);
 };
-MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate, couldRedirectFrom) {
+MM.GoldApi = function (license, goldApiUrl) {
 	'use strict';
+	this.exec = function (apiProc, args) {
+		var formData = new FormData(),
+			dataTypes = { 'upload': 'json' };
+		formData.append('license', JSON.stringify(license));
+		if (args) {
+			_.each(args, function (value, key) {
+				formData.append(key, value);
+			});
+		}
+		return jQuery.ajax({
+			url: goldApiUrl + '/file/' + apiProc,
+			dataType: dataTypes[apiProc],
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST'
+		});
+	};
+	this.apiError = function (serverResult) {
+		var recognisedErrors = {
+			'invalid-license': 'not-authenticated',
+			'invalid-args': 'invalid-args'
+		};
+		return recognisedErrors[serverResult] || 'network-error';
+	};
+};
+MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate, couldRedirectFrom, goldApiUrl, goldBucketName) {
+	'use strict';
+
+
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
-			checkForDuplicate = function (config, licenseKey) {
+			checkForDuplicateV1 = function (config, licenseKey) {
 				if (mapId && (mapId[0] === idPrefix)) {
 					return deferred.resolve(config);
 				}
@@ -129,12 +159,35 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 					deferred.reject
 				);
 			},
+			checkForDuplicateV2 = function (config, fileToCheck, license) {
+				if (mapId && (mapId[0] === idPrefix)) {
+					return deferred.resolve(config);
+				}
+				new MM.GoldApi(license, goldApiUrl).exec('exists', {'file_key': fileToCheck}).then(
+					function (response) {
+						var list = MM.parseS3FileList('', response);
+						if (list && list.length) {
+							modalConfirmation.showModalToConfirm(
+								'Confirm saving',
+								'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
+								'Overwrite'
+							).then(
+								deferred.resolve.bind(deferred, config),
+								deferred.reject.bind(deferred, 'user-cancel')
+							);
+						} else {
+							deferred.resolve(config);
+						}
+					},
+					deferred.reject
+				);
+			},
 			handleRedirectMapId = function () {
 				if (mapId && mapId[0] === couldRedirectFrom) {
 					mapId = idPrefix + mapId.slice(1);
 				}
 			},
-			generateConfig = function (licenseKey) {
+			generateV1Config = function (licenseKey) {
 				if (isPrivate && !licenseKey.key) {
 					deferred.reject('not-authenticated');
 					return;
@@ -150,7 +203,24 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 						'signature': licenseKey.signature,
 						's3Url': 'https://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
 					};
-				checkForDuplicate(config, licenseKey);
+				checkForDuplicateV1(config, licenseKey);
+			},
+
+			generateConfig = function (license) {
+				var api = new MM.GoldApi(license, goldApiUrl);
+				api.exec('upload').then(
+				function (config) {
+					var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
+						result = _.extend(config, {
+							'mapId': idPrefix + '/' + license.account + '/' + encodeURIComponent(fileName), //mapId
+							'key': license.account + '/' + encodeURIComponent(fileName),
+							's3Url': 'https://' + config.s3BucketName + '.s3.amazonaws.com/'
+						});
+					checkForDuplicateV2(result, encodeURIComponent(fileName), license);
+				},
+				function (result) {
+					deferred.reject(api.apiError(result.text));
+				});
 			};
 		handleRedirectMapId();
 		licenseManager.retrieveLicense(showAuthentication).then(generateConfig, deferred.reject);
@@ -160,11 +230,8 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 		var deferred =  jQuery.Deferred(),
 		retrieveSignature = function (license) {
 			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
-			licenseManager.retieveFileSignature(s3key, license).then(
-				function (signatures) {
-					var url = 'https://mindmup-' + license.account + '.s3.amazonaws.com/' + s3key +  '?&AWSAccessKeyId=' + license.id + '&Signature=' + signatures.get + '&Expires=' + signatures.expiry;
-					deferred.resolve(url);
-				},
+			new MM.GoldApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
+				deferred.resolve,
 				deferred.reject
 			);
 		};
@@ -174,10 +241,27 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 				deferred.reject
 			);
 		} else {
-			deferred.resolve('https://mindmup-' + mapId.substr(idPrefix.length + 1).replace(/\//, '.s3.amazonaws.com/'));
+			deferred.resolve('https://' + goldBucketName + '.s3.amazonaws.com' + mapId.substr(idPrefix.length));
 		}
 		return deferred.promise();
 	};
+};
+MM.parseS3FileList = function (prepend, httpResult, remove) {
+	'use strict';
+	var parsed = jQuery(httpResult),
+		list = [];
+	parsed.find('Contents').each(function () {
+		var element = jQuery(this), fileId = element.children('Key').text();
+		if (remove) {
+			fileId = fileId.slice(remove);
+		}
+		list.push({
+			id: prepend + '/' + encodeURIComponent(fileId),
+			modifiedDate: element.children('LastModified').text(),
+			title:  decodeURIComponent(fileId)
+		});
+	});
+	return list;
 };
 MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
 	'use strict';
@@ -191,16 +275,7 @@ MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
 		type: 'GET'
 	}).then(
 		function (result) {
-			var parsed = jQuery(result),
-				list = [];
-			parsed.find('Contents').each(function () {
-				var element = jQuery(this);
-				list.push({
-					id: idPrefix + '/' + license.account + '/' + encodeURIComponent(element.children('Key').text()),
-					modifiedDate: element.children('LastModified').text(),
-					title:  decodeURIComponent(element.children('Key').text())
-				});
-			});
+			var list = MM.parseS3FileList(idPrefix + '/' + license.account, result);
 			deferred.resolve(list);
 		},
 		function (err) {
@@ -218,14 +293,19 @@ MM.s3AjaxErrorReason = function (err, isAuthenticated) {
 	return reason;
 };
 
-MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo) {
+MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo, goldApiUrl) {
 	'use strict';
 	var originaLoadMap = storageAdapter.loadMap;
 	storageAdapter.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred();
 		licenseManager.retrieveLicense(showLicenseDialog).then(
 			function (license) {
-				MM.ajaxS3List(license, storageAdapter.prefix).then(deferred.resolve, deferred.reject);
+				new MM.GoldApi(license, goldApiUrl).exec('list').then(
+					function (result) {
+						var list = MM.parseS3FileList(storageAdapter.prefix + '/' + license.account, result, license.account.length + 1);
+						deferred.resolve(list);
+					},
+					deferred.reject);
 			},
 			deferred.reject
 		);

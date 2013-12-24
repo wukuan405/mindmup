@@ -155,7 +155,9 @@ SOFTWARE.
               dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
               layoutPublishingUrl: '<%= settings.layout_publishing_url %>',
               pdfBucket: '<%= settings.export_bucket["pdf"]%>',
-              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>'
+              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
+              goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
+              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>'
         });
       },
       function (err) {
