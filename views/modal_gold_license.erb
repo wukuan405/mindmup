@@ -1,31 +1,111 @@
   <div class="modal hide fade" id='modalGoldLicense'>
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h3 data-mm-role="no-license">MindMup Gold License</h3>
-      <h3 data-mm-role="invalid-license">Invalid Gold License</h3>
+      <h3>MindMup Gold License</h3>
     </div>
     <div class="modal-body">
-	  <p data-mm-role="no-license">MindMup Gold License allows you to store larger files on our storage and for a longer period of time. To obtain a MindMup Gold License, 
-    send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a>. For more information on MindMup Gold, <a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">click here</a>.
-    </p>
-    <div data-mm-role="invalid-license">
-      <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might 
-        have expired, or the file you are trying to access might have been saved using a different license.<br/><br/>To obtain a new license, or to report a problem, 
-        please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
-    </div>
-      <form class="form-vertical">
-      <div class="control-group">
-        <label class="control-label"><span data-mm-role="no-license">Enter</span><span data-mm-role="invalid-license">Change</span> your MindMup Gold License Key: </label>
-        <div class="controls">
-          <textarea tabstop="1"></textarea>
-        </div>
-      </div>
-      </form>
-    </div>
+
+		<div data-mm-section="license-required">
+			<p data-mm-role="alert alert-block alert-error">This operation requires a valid MindMup Gold License, and this browser profile is not
+			set up for Gold access. </p>
+
+		</div>
+		<p data-mm-section="no-license">
+		MindMup Gold is an optional commercial storage service that removes many limitations of our anonymous storage and third-party APIs. This browser
+		profile is curently not set up for Gold access.
+		</p>	
+		<div data-mm-section="no-license license-required">
+			<p>	If you have a Gold license, click on "Set License" to set up the license. Otherwise, click on "Sign Up" to
+			obtain a Gold license.</p>
+			<p>For more information on MindMup Gold, <a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">click here</a>.</p>
+		</div>
+
+		<div data-mm-section="unauthorised-license">
+		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might 
+		  have expired, or the file you are trying to access might have been saved using a different license.
+		  In order to proceed, please click on "Set License" to change the active license in this browser. </p>
+		  <p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		</div>
+		<div data-mm-section="invalid-license">
+			<p>This license is invalid. Click on "Set License" to change the active license in this browser. </p>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		</div>
+		<div data-mm-section="view-license">
+			<p>This browser profile is using the following MindMup Gold account:</p>
+			<div data-mm-role="expired">
+				<span class="alert alert-error">This license has expired!</span>
+			</div>
+			<form class="form-horizontal">
+			  <div class="control-group">
+				<label class="control-label" for="gold-view-account-name" readonly>Account name</label>
+				<div class="controls">
+				  <input type="text" data-mm-role="account-name" readonly id="gold-view-account-name">
+				</div>
+			  </div>
+			  <div class="control-group">
+				<label class="control-label" for="gold-view-account-expiry">Valid until</label>
+				<div class="controls">
+				  <input type="text" data-mm-role="expiry-date" id="gold-view-account-expiry" readonly>
+				</div>
+			</div>
+			</form>
+		</div>
+
+		<div data-mm-section="register">
+
+			
+			<p>Please enter your desired account name and e-mail address to obtain a Gold license. 
+			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, 
+			containing only (latin) letters and numbers. The license will be sent to your e-mail.</p> 
+			<form class="form-horizontal">
+			  <div class="control-group">
+				<label class="control-label" for="gold-register-account-name">Account name</label>
+				<div class="controls">
+				  <input type="text" id="gold-register-account-name" name="account-name">
+				</div>
+			  </div>
+			  <div class="control-group">
+				<label class="control-label" for="gold-register-email">E-mail</label>
+				<div class="controls">
+				  <input type="text" id="gold-register-email" placeholder="" name="email">
+				</div>
+			  </div>
+			  <div class="control-group">
+				<div class="controls">
+					<label class="checkbox">
+						<input type="checkbox" id="gold-register-terms"/> 
+						I agree to the <a href="/legal/gold_terms" target="_blank">MindMup Gold Terms of Service</a>.
+					</label>
+				</div>
+			  </div>
+			</form>
+			<p>MindMup Gold currently costs 25 USD per year for a gigabyte of storage, and we accept all major credit cards. </p>
+		</div>
+
+		<div data-mm-section="registration-fail">
+		</div>
+		<div data-mm-section="registration-success">
+			<p>
+			You have successfully registered for MindMup Gold. The license has been sent to you by e-mail to <span data-mm-role="email"/>
+			(the e-mail was sent from contact@mindmup.com, so please ensure that this sender is not blocked by your spam filters).
+			The license allows you to store up to <span data-mm-role="license-capacity"/> until <span data-mm-role="expiry"/>.
+			Once you receive the e-mail, please click on "Set License" below to configure the current browser profile for Gold access.</p>
+			<p>
+			You can use your license immediately, and have <span data-mm-role="grace-period"/> to try it out.
+			If you would like to continue using the storage after that period, please pay for the license using the link in the e-mail 
+			(you can also pay immediately by clicking on the "Pay" button below). If, for any reason, you would not like to use
+			Gold after the trial period, you do not need to take any action to cancel it - we will do it automatically. Note, however,
+			that any data stored on Gold will also be removed without a backup in that case. </p>
+		</div>
+	</div>
     <div class="modal-footer">
-      <button data-mm-role="commit" class="btn btn-primary" tabstop="2">Save License</button>
-      <button data-dismiss="modal" data-mm-role="remove" class="btn btn-danger" tabstop="3">Remove License</button>
-      <button data-dismiss="modal" class="btn" tabstop="4">Cancel</button>
+      <button data-mm-role="upload" data-mm-section="no-license license-required invalid-license unauthorised-license registration-success" class="btn btn-primary" tabstop="2">Set License</button>
+      <button data-mm-role="upload" data-mm-section="view-license" class="btn btn-primary" tabstop="2">Change License</button>
+	  <input type="file" name="file" />
+	  <button data-mm-section="no-license license-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="3">Sign Up</button>
+      <button data-mm-role="remove" data-mm-section="view-license license-details" class="btn btn-danger" tabstop="6">Remove License</button>
+      <button data-dismiss="modal" data-mm-section="no-license license-required invalid-license unauthorised-license registration-success registration-fail" class="btn" tabstop="8">Cancel</button>
+      <button data-dismiss="modal" data-mm-section="view-license" class="btn" tabstop="8">Close</button>
     </div>
   </div>
 

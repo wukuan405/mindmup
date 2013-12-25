@@ -52,7 +52,6 @@ configure do
   set :protection, :except => [:frame_options, :http_origin], :origin_whitelist => [ENV['SITE_URL']]
   set :last_news_id, ""
   set :last_news_title, ""
-  set :gold_signature_url, ENV['GOLD_SIGNATURE_URL']||"/gold/signature"
   set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
   set :layout_publishing_url, ENV['LAYOUT_PUBLISHING_URL'] || '/layoutPublishingConfig'

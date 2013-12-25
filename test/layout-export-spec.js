@@ -125,7 +125,8 @@ describe('LayoutExport', function () {
 			underTest.poll('REQUEST');
 			expect(jQuery.ajax).toHaveBeenCalledWith({
 				url: 'REQUEST',
-				method: 'GET'
+				method: 'GET',
+				timeout: 1000
 			});
 		});
 		it('keeps polling if response is empty', function () {
@@ -135,7 +136,8 @@ describe('LayoutExport', function () {
 			clock.tick(sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
 				url: 'REQUEST',
-				method: 'GET'
+				method: 'GET',
+				timeout: 1000
 			});
 		});
 		it('stops polling after resolved', function () {
@@ -178,6 +180,7 @@ describe('LayoutExport', function () {
 			clock.tick(sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
 				url: 'REQUEST',
+				timeout: 1000,
 				method: 'GET'
 			});
 		});

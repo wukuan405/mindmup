@@ -1,10 +1,11 @@
 /*global $, FileReader */
-$.fn.file_reader_upload = function (start, complete, fail) {
+$.fn.file_reader_upload = function (start, complete, fail, formats) {
 	'use strict';
 	var element = this,
 		oFReader = new FileReader(),
 		fileName,
-		fileType;
+		fileType,
+		formats = formats || ['mup', 'mm'];
 	start = start || function (name) { console.log('Reading', name); };
 	complete = complete || function (content) { console.log('Read', content); };
 	fail = fail || function (error) { console.log('Read error', error); };
@@ -21,7 +22,7 @@ $.fn.file_reader_upload = function (start, complete, fail) {
 		var fileInfo = this.files[0];
 		fileName = fileInfo.name;
 		fileType = fileName.split('.').pop();
-		if (fileType !== 'mm' && fileType !== 'mup') {
+		if (!_.contains(formats, fileType)){
 			fail('unsupported format ' + fileType);
 			return;
 		}

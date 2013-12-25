@@ -30,71 +30,7 @@ MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder,
 		return jQuery.Deferred().resolve(s3Url + folder + mapId + '.json').promise();
 	};
 };
-MM.GoldLicenseManager = function (storage, storageKey, signatureUrl) {
-	'use strict';
-	var self = this,
-		currentDeferred;
-	observable(this);
-	this.getLicense = function () {
-		return storage.getItem(storageKey);
-	};
-	this.goldLicenseIdentifiers = function () {
-		var license = self.getLicense(),
-			generated;
-		if (license && license.key && license.id) {
-			generated =  _.pick(license, 'id', 'key');
-		}
-		return generated;
-	};
-	this.retrieveLicense = function (showAuthentication) {
-		currentDeferred = undefined;
-		if (!showAuthentication && this.getLicense()) {
-			return jQuery.Deferred().resolve(this.getLicense()).promise();
-		}
-		currentDeferred = jQuery.Deferred();
-		self.dispatchEvent('license-entry-required');
-		return currentDeferred.promise();
-	};
-	this.retieveFileSignature = function (s3Key, license) {
-		var deferred = jQuery.Deferred(),
-			formData = new FormData();
-		formData.append('key', license.key);
-		formData.append('filename', s3Key);
-		formData.append('id', license.id);
-		formData.append('account', license.account);
 
-		jQuery.ajax({
-			url: signatureUrl,
-			dataType: 'json',
-			data: formData,
-			processData: false,
-			contentType: false,
-			type: 'POST'
-		}).then(
-			deferred.resolve,
-			deferred.reject.bind(deferred, 'network-error')
-		);
-		return deferred.promise();
-	};
-	this.storeLicense = function (license) {
-		var deferred = currentDeferred;
-		storage.setItem(storageKey, license);
-		if (currentDeferred) {
-			currentDeferred = undefined;
-			deferred.resolve(license);
-		}
-	};
-	this.removeLicense = function () {
-		storage.setItem(storageKey, undefined);
-	};
-	this.cancelLicenseEntry = function () {
-		var deferred = currentDeferred;
-		if (currentDeferred) {
-			currentDeferred = undefined;
-			deferred.reject('user-cancel');
-		}
-	};
-};
 MM.mapIdToS3Key = function (prefix, mapId, defaultFileName, account) {
 	'use strict';
 	var mapIdComponents = mapId && mapId.split('/');
