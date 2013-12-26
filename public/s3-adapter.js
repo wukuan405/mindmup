@@ -43,7 +43,7 @@ MM.GoldFileApi = function (license, goldApiUrl) {
 	'use strict';
 	this.exec = function (apiProc, args) {
 		var formData = new FormData(),
-			dataTypes = { 'upload': 'json' };
+			dataTypes = { 'upload_config': 'json' };
 		formData.append('license', JSON.stringify(license));
 		if (args) {
 			_.each(args, function (value, key) {
@@ -144,7 +144,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 
 			generateConfig = function (license) {
 				var api = new MM.GoldFileApi(license, goldApiUrl);
-				api.exec('upload').then(
+				api.exec('upload_config').then(
 				function (config) {
 					var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
 						result = _.extend(config, {
