@@ -37,43 +37,41 @@
 			</div>
 			<form class="form-horizontal">
 			  <div class="control-group">
-				<label class="control-label" for="gold-view-account-name" readonly>Account name</label>
+				<label class="control-label" for="gold-view-account-name">Account name</label>
 				<div class="controls">
-				  <input type="text" data-mm-role="account-name" readonly id="gold-view-account-name">
+				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
 				</div>
 			  </div>
 			  <div class="control-group">
 				<label class="control-label" for="gold-view-account-expiry">Valid until</label>
 				<div class="controls">
-				  <input type="text" data-mm-role="expiry-date" id="gold-view-account-expiry" readonly>
+				  <input type="text" data-mm-role="expiry-date" id="gold-view-account-expiry" readonly="true"/>
 				</div>
 			</div>
 			</form>
 		</div>
 
 		<div data-mm-section="register">
-
-			
 			<p>Please enter your desired account name and e-mail address to obtain a Gold license. 
-			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, 
-			containing only (latin) letters and numbers. The license will be sent to your e-mail.</p> 
+			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, start with a letter and 
+			contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</p> 
 			<form class="form-horizontal">
 			  <div class="control-group">
 				<label class="control-label" for="gold-register-account-name">Account name</label>
 				<div class="controls">
-				  <input type="text" id="gold-register-account-name" name="account-name">
+				  <input type="text" id="gold-register-account-name" name="account-name"/>
 				</div>
 			  </div>
 			  <div class="control-group">
 				<label class="control-label" for="gold-register-email">E-mail</label>
 				<div class="controls">
-				  <input type="text" id="gold-register-email" placeholder="" name="email">
+				  <input type="text" id="gold-register-email" placeholder="youremail@server.com" name="email"/>
 				</div>
 			  </div>
 			  <div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
-						<input type="checkbox" id="gold-register-terms"/> 
+						<input type="checkbox" id="gold-register-terms" name="terms"/> 
 						I agree to the <a href="/legal/gold_terms" target="_blank">MindMup Gold Terms of Service</a>.
 					</label>
 				</div>
@@ -83,6 +81,19 @@
 		</div>
 
 		<div data-mm-section="registration-fail">
+			<div class="alert alert-error alert-block">
+				<h4>There was a problem with the registration</h4>
+				<p data-mm-role="email-exists">The e-mail is already registered. Please use a different e-mail or 
+				contact us at 
+				<a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Renewal">contact@mindmup.com</a> to renew the license for that e-mail.</p>
+				<p data-mm-role="user-exists">This account is already registered. Please choose a different account name.</p>
+				<p data-mm-role="invalid-args">The server is currently too busy, please try again later.</p>
+				<p data-mm-role="server-error">We could not send the registration e-mail.  Please check if the e-mail is correct, and if so contact us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Registration">contact@mindmup.com</a>.</p>
+				<p data-mm-role="network-error">The server is currently too busy, please try again later.</p>
+			</div>
+		</div>
+		<div data-mm-section="registration-progress">
+			<h3><i class="icon-spinner icon-spin"></i>Please wait, processing your registration</h3>
 		</div>
 		<div data-mm-section="registration-success">
 			<p>
@@ -103,9 +114,11 @@
       <button data-mm-role="upload" data-mm-section="view-license" class="btn btn-primary" tabstop="2">Change License</button>
 	  <input type="file" name="file" />
 	  <button data-mm-section="no-license license-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="3">Sign Up</button>
+      <button data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="5">Register</button>
+      <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="5">&lt; Back</button>
       <button data-mm-role="remove" data-mm-section="view-license license-details" class="btn btn-danger" tabstop="6">Remove License</button>
-      <button data-dismiss="modal" data-mm-section="no-license license-required invalid-license unauthorised-license registration-success registration-fail" class="btn" tabstop="8">Cancel</button>
-      <button data-dismiss="modal" data-mm-section="view-license" class="btn" tabstop="8">Close</button>
+      <button data-dismiss="modal" data-mm-section="no-license license-required invalid-license unauthorised-license registration-fail registration-progress register" class="btn" tabstop="8">Cancel</button>
+      <button data-dismiss="modal" data-mm-section="view-license registration-success" class="btn" tabstop="8">Close</button>
     </div>
   </div>
 

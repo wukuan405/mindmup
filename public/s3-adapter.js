@@ -39,7 +39,7 @@ MM.mapIdToS3Key = function (prefix, mapId, defaultFileName, account) {
 	}
 	return decodeURIComponent(mapIdComponents[2]);
 };
-MM.GoldApi = function (license, goldApiUrl) {
+MM.GoldFileApi = function (license, goldApiUrl) {
 	'use strict';
 	this.exec = function (apiProc, args) {
 		var formData = new FormData(),
@@ -99,7 +99,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 				if (mapId && (mapId[0] === idPrefix)) {
 					return deferred.resolve(config);
 				}
-				new MM.GoldApi(license, goldApiUrl).exec('exists', {'file_key': fileToCheck}).then(
+				new MM.GoldFileApi(license, goldApiUrl).exec('exists', {'file_key': fileToCheck}).then(
 					function (response) {
 						var list = MM.parseS3FileList('', response);
 						if (list && list.length) {
@@ -143,7 +143,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 			},
 
 			generateConfig = function (license) {
-				var api = new MM.GoldApi(license, goldApiUrl);
+				var api = new MM.GoldFileApi(license, goldApiUrl);
 				api.exec('upload').then(
 				function (config) {
 					var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
@@ -166,7 +166,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 		var deferred =  jQuery.Deferred(),
 		retrieveSignature = function (license) {
 			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
-			new MM.GoldApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
+			new MM.GoldFileApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
 				deferred.resolve,
 				deferred.reject
 			);
@@ -236,7 +236,7 @@ MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo, go
 		var deferred = jQuery.Deferred();
 		licenseManager.retrieveLicense(showLicenseDialog).then(
 			function (license) {
-				new MM.GoldApi(license, goldApiUrl).exec('list').then(
+				new MM.GoldFileApi(license, goldApiUrl).exec('list').then(
 					function (result) {
 						var list = MM.parseS3FileList(storageAdapter.prefix + '/' + license.account, result, license.account.length + 1);
 						deferred.resolve(list);

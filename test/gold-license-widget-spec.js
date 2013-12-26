@@ -1,4 +1,4 @@
-/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach*/
+/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach, _*/
 describe('Gold License Widget', function () {
 	'use strict';
 	var template = '<div class="modal">' +
@@ -12,12 +12,38 @@ describe('Gold License Widget', function () {
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="register"/>' +
 					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
+					'<div data-mm-section="register">' +
+					'<form>' +
+					'<div class="control-group">' +
+					'<input type="text" id="gold-register-account-name" name="account-name">' +
+					'</div>' +
+					'<div class="control-group">' +
+					'<input type="text" id="gold-register-email" placeholder="" name="email">' +
+					'</div>' +
+					'<div class="control-group">' +
+					'<input type="checkbox" name="terms" id="gold-register-terms"/>' +
+					'</div>' +
+					'</form>' +
+					'</div>' +
+					'<span data-mm-section="register"></span>' +
+					'<span data-mm-section="registration-fail"><span class="alert"><span data-mm-role="email-exists"></span><span data-mm-role="network-error"></span></span></span>' +
+					'<span data-mm-section="registration-progress"></span>' +
+					'<span data-mm-section="registration-success">' +
+					'<span data-mm-role="license-capacity"/>' +
+					'<span data-mm-role="license-grace-period"/>' +
+					'<span data-mm-role="license-email"/>' +
+					'<span data-mm-role="license-expiry"/>' +
+					'<a data-mm-role="license-payment-url"/>' +
+					'</span>' +
 					'</div>',
 		licenseManager,
 		underTest,
 		activityLog,
 		fileReader,
+		goldApi,
+		registerDeferred,
 		checkSectionShown = function (sectionName) {
 			expect(underTest.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').css('display')).toBe('none');
 			expect(underTest.find('[data-mm-section~=' + sectionName + ']').length > 0).toBeTruthy();
@@ -30,12 +56,14 @@ describe('Gold License Widget', function () {
 			removeLicense: jasmine.createSpy('removeLicense'),
 			storeLicense: jasmine.createSpy('storeLicense')
 		});
+		registerDeferred = jQuery.Deferred();
+		goldApi = { register: jasmine.createSpy('register').andReturn(registerDeferred.promise()) };
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
-		jQuery.fn.file_reader_upload = fileReader; 
-		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, activityLog);
+		/*jshint camelcase: false */
+		jQuery.fn.file_reader_upload = fileReader;
+		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog);
 		fakeBootstrapModal(underTest);
-
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -163,28 +191,79 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role~=expired]').is(':visible')).toBeFalsy();
 		});
 	});
-	/*
 	describe('registration workflow', function () {
+		beforeEach(function () {
+			underTest.find('[data-mm-section=register] input[name=account-name]').val('greg');
+			underTest.find('[data-mm-section=register] input[name=email]').val('the@baker.com');
+			underTest.find('[data-mm-section=register] input[name=terms]').prop('checked', true);
+		});
 		it('attempts to register if register button is clicked and email and account name are valid', function () {
-			expect(false).toBeTruthy();
+			underTest.find('[data-mm-role=register]').click();
+			expect(goldApi.register).toHaveBeenCalledWith('greg', 'the@baker.com');
+		});
+		it('shows registration-progress section if registration starts', function () {
+			underTest.find('[data-mm-role=register]').click();
+			checkSectionShown('registration-progress');
 		});
 		it('marks email as invalid if it does not contain @ and does not try to register', function () {
-			expect(false).toBeTruthy();
+			underTest.find('[data-mm-section=register] input[name=email]').val('greg');
+			underTest.find('[data-mm-role=register]').click();
+			expect(goldApi.register).not.toHaveBeenCalled();
+			expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
 		});
-		it('marks account name as invalid if it is not 4-20 chars and only alphanumeric with', function () {
-			expect(false).toBeTruthy();
+		describe('marks account name as invalid if it is not 4-20 chars and only alphanumeric lowercase', function () {
+			_.each(['abc', '123456789012345678901', 'ab_cd', 'abc@d', 'abcD'], function (name) {
+				it('rejects ' + name, function () {
+					underTest.find('[data-mm-section=register] input[name=account-name]').val(name);
+					underTest.find('[data-mm-role=register]').click();
+					expect(goldApi.register).not.toHaveBeenCalled();
+					expect(underTest.find('input[name=account-name]').parents('.control-group').hasClass('error')).toBeTruthy();
+				});
+			});
 		});
-		it('shows registration-fail section if registration fails allowing', function () {
-			expect(false).toBeTruthy();
+		it('marks the terms checkbox as invalid if not clicked', function () {
+			underTest.find('[data-mm-section=register] input[name=terms]').prop('checked', false);
+			underTest.find('[data-mm-role=register]').click();
+			expect(goldApi.register).not.toHaveBeenCalled();
+			expect(underTest.find('input[name=terms]').parents('.control-group').hasClass('error')).toBeTruthy();
+		});
+		it('shows registration-fail section and highlights the appropriate message if registration fails', function () {
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.reject('email-exists');
+			checkSectionShown('registration-fail');
+			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=email-exists]').is(':visible')).toBeTruthy();
+			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=network-error]').is(':visible')).toBeFalsy();
+		});
+		it('shows registration-fail section and highlights a generic message if registration fails unexpectedly', function () {
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.reject('unexpected');
+			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=email-exists]').is(':visible')).toBeFalsy();
+			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=network-error]').is(':visible')).toBeTruthy();
 		});
 		it('shows registration-success section if registration succeeds', function () {
-			expect(false).toBeTruthy();
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.resolve({});
+			checkSectionShown('registration-success');
 		});
 		it('fills in license-capacity, grace-period, expiry, email and payment-url when registration succeeds', function () {
-			expect(false).toBeTruthy();
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.resolve({
+				'capacity': 'cap',
+				'grace-period': 'grace',
+				'expiry': 1388029193,
+				'email': 'em',
+				'payment-url': 'purl'
+			});
+			checkSectionShown('registration-success');
+			expect(underTest.find('[data-mm-role=license-capacity]').text()).toEqual('cap');
+			expect(underTest.find('[data-mm-role=license-grace-period]').text()).toEqual('grace');
+			expect(underTest.find('[data-mm-role=license-expiry]').text()).toEqual('Thu Dec 26 2013');
+			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
+			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
 		
 	});
+	/*
 	describe('event logging', function () {
 		it('logs stuff', function () {
 			expect(false).toBeTruthy();

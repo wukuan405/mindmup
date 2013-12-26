@@ -45,6 +45,7 @@ MM.main = function (config) {
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
+			goldApi = new MM.GoldApi(goldLicenseManager, config.goldApiUrl, activityLog),
 			pdfPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator('https://' + config.pdfBucket + '.s3.amazonaws.com/', config.layoutPublishingUrl + '?format=pdf', undefined, goldLicenseManager.goldLicenseIdentifiers),
 			s3PrivateGoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true, 'b', config.goldApiUrl, config.goldBucketName), 'p', 'MindMup Gold Private', true), goldLicenseManager, undefined, config.goldApiUrl),
 			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, false, 'p', config.goldApiUrl, config.goldBucketName), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p', config.goldApiUrl),
@@ -128,7 +129,7 @@ MM.main = function (config) {
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
-				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, activityLog);
+				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 
 				MM.setImageAlertWidget(stageImageInsertController, alert);

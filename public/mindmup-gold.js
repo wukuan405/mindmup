@@ -1,4 +1,4 @@
-/* global MM, observable, jQuery */
+/* global MM, observable, jQuery, FormData, _ */
 MM.GoldLicenseManager = function (storage, storageKey) {
 	'use strict';
 	var self = this,
@@ -58,4 +58,44 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		}
 	};
 };
-
+MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
+	'use strict';
+	var self = this,
+		LOG_CATEGORY = 'GoldApi',
+		apiError = function (serverResult) {
+			var recognisedErrors = {
+				'invalid-license': 'not-authenticated',
+				'invalid-args': 'invalid-args',
+				'server-error': 'server-error',
+				'user-exists' : 'user-exists',
+				'email-exists': 'email-exists'
+			};
+			return recognisedErrors[serverResult] || 'network-error';
+		};
+	this.exec = function (apiProc, args) {
+		var deferred = jQuery.Deferred();
+		activityLog.log(LOG_CATEGORY, apiProc);
+		var formData = new FormData(),
+			dataTypes = { 'register': 'json' };
+		if (args) {
+			_.each(args, function (value, key) {
+				formData.append(key, value);
+			});
+		}
+		jQuery.ajax({
+			url: goldApiUrl + '/' + apiProc,
+			dataType: dataTypes[apiProc],
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST'
+		}).then(
+			deferred.resolve,
+			function (jxhr, result) { activityLog.log(LOG_CATEGORY, 'error', apiProc + ':' + result); deferred.reject(apiError(result)); }
+		);
+		return deferred.promise();
+	};
+	this.register = function (accountName, email) {
+		return self.exec('register', {'to_email': email, 'account_name' : accountName});
+	};
+};
