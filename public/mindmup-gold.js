@@ -63,14 +63,11 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 	var self = this,
 		LOG_CATEGORY = 'GoldApi',
 		apiError = function (serverResult) {
-			var recognisedErrors = {
-				'invalid-license': 'not-authenticated',
-				'invalid-args': 'invalid-args',
-				'server-error': 'server-error',
-				'user-exists' : 'user-exists',
-				'email-exists': 'email-exists'
-			};
-			return recognisedErrors[serverResult] || 'network-error';
+			var recognisedErrors = ['not-authenticated', 'invalid-args', 'server-error', 'user-exists', 'email-exists'];
+			if (_.contains(recognisedErrors, serverResult)) {
+				return serverResult;
+			}
+			return 'network-error';
 		};
 	this.exec = function (apiProc, args) {
 		var deferred = jQuery.Deferred();

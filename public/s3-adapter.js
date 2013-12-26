@@ -60,11 +60,11 @@ MM.GoldFileApi = function (license, goldApiUrl) {
 		});
 	};
 	this.apiError = function (serverResult) {
-		var recognisedErrors = {
-			'invalid-license': 'not-authenticated',
-			'invalid-args': 'invalid-args'
-		};
-		return recognisedErrors[serverResult] || 'network-error';
+		var recognisedErrors = ['not-authenticated', 'invalid-args', 'server-error', 'user-exists', 'email-exists'];
+		if (_.contains(recognisedErrors, serverResult)) {
+			return serverResult;
+		}
+		return 'network-error';
 	};
 };
 MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate, couldRedirectFrom, goldApiUrl, goldBucketName) {
