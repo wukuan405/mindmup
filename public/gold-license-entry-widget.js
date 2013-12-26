@@ -7,6 +7,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		remove = self.find('[data-mm-role~=remove]'),
 		fileInput = self.find('input[type=file]'),
 		uploadButton = self.find('[data-mm-role=upload]'),
+		audit = function (action, label) {
+			if (label) {
+				activityLog.log('Gold', action, label);
+			} else {
+				activityLog.log('Gold', action);
+			}
+		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
 				expiryDate = license && license.expiry &&  new Date(parseInt(license.expiry) * 1000);
@@ -20,7 +27,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 		},
 		setLicense = function (licenseText) {
-			activityLog.log('Gold', 'license-set');
+			audit('license-set');
 			if (licenseManager.storeLicense(licenseText)) {
 				hasAction = true;
 				if (openFromLicenseManager) {
@@ -43,6 +50,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 		},
 		showSection = function (sectionName) {
+			audit('license-section', sectionName);
 			self.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').hide();
 			self.find('[data-mm-section~=' + sectionName + ']').show();
 			setFileUploadButton();
@@ -101,7 +109,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		};
 	self.find('form').submit(function () {return false; });
 	self.on('show', function () {
-		activityLog.log('Gold', 'license-show');
+		audit('license-show');
 		hasAction = false;
 		var license = licenseManager.getLicense();
 		showSection(initialSection(license, openFromLicenseManager));
@@ -135,6 +143,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	fileInput.css('opacity', 0).hide();
 	/*jshint camelcase: false*/
 	fileInput.file_reader_upload(undefined, setLicense, function () {console.log('fail', arguments); showSection('invalid-license'); }, ['txt']);
+	self.find('a').click(function () { audit('license-click', this.href); });
+	self.find('button').click(function () { audit('license-click', jQuery(this).text()); });
 	return self;
 };
 

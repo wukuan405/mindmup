@@ -12,7 +12,7 @@ describe('Gold License Widget', function () {
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
-					'<button data-mm-role="register"/>' +
+					'<button data-mm-role="register">Register</button>' +
 					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
 					'<div data-mm-section="register">' +
 					'<form>' +
@@ -35,7 +35,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-grace-period"/>' +
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
-					'<a data-mm-role="license-payment-url"/>' +
+					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank"/>' +
 					'</span>' +
 					'</div>',
 		licenseManager,
@@ -263,11 +263,27 @@ describe('Gold License Widget', function () {
 		});
 		
 	});
-	/*
 	describe('event logging', function () {
-		it('logs stuff', function () {
-			expect(false).toBeTruthy();
+		it('logs opening of the dialog', function () {
+			underTest.modal('show');
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-show');
+		});
+		it('logs setting the license', function () {
+			licenseManager.storeLicense.andReturn(true);
+			fileReader.mostRecentCall.args[1]('some text');
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-set');
+		});
+		it('logs clicks on every link by the link href', function () {
+			underTest.find('a[data-mm-role=license-payment-url]').click();
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'http://payment/');
+		});
+		it('logs clicks on every button by the button text', function () {
+			underTest.find('button[data-mm-role=register]').click();
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'Register');
+		});
+		it('logs showing each section', function () {
+			underTest.find('[name=btntest]').click();
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-section', 'license-details');
 		});
 	});
-	*/
 });
