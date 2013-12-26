@@ -70,7 +70,12 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 			return 'network-error';
 		};
 	this.exec = function (apiProc, args) {
-		var deferred = jQuery.Deferred();
+		var deferred = jQuery.Deferred(),
+			rejectWithError = function (jxhr) {
+				var result = jxhr.responseText;
+				activityLog.log(LOG_CATEGORY, 'error', apiProc + ':' + result);
+				deferred.reject(apiError(result));
+			};
 		activityLog.log(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
 			dataTypes = { 'register': 'json' };
@@ -88,8 +93,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 			type: 'POST'
 		}).then(
 			deferred.resolve,
-			function (jxhr, result) { activityLog.log(LOG_CATEGORY, 'error', apiProc + ':' + result); deferred.reject(apiError(result)); }
-		);
+			rejectWithError);
 		return deferred.promise();
 	};
 	this.register = function (accountName, email) {

@@ -131,7 +131,7 @@ describe('MM.GoldApi', function () {
 			var	rejected = jasmine.createSpy();
 			underTest.register('test_name', 'test_email').fail(rejected);
 			
-			ajaxDeferred.reject({}, 'invalid-args');
+			ajaxDeferred.reject({responseText: 'invalid-args'});
 			
 			expect(rejected).toHaveBeenCalledWith('invalid-args');
 		});
@@ -139,7 +139,7 @@ describe('MM.GoldApi', function () {
 			var	rejected = jasmine.createSpy();
 			underTest.register('test_name', 'test_email').fail(rejected);
 			
-			ajaxDeferred.reject({}, 'invalid-error');
+			ajaxDeferred.reject({responseText: 'invalid-error'});
 			
 			expect(rejected).toHaveBeenCalledWith('network-error');
 		});
@@ -147,9 +147,9 @@ describe('MM.GoldApi', function () {
 			underTest.register('test_name', 'test_email');
 			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'register');
 		});
-		it('logs failure', function () {
+		it('logs actual failure', function () {
 			underTest.register('test_name', 'test_email');
-			ajaxDeferred.reject({}, 'invalid-error');
+			ajaxDeferred.reject({responseText: 'invalid-error'});
 			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'error', 'register:invalid-error');
 		});
 	});
