@@ -44,6 +44,7 @@ describe('Gold License Widget', function () {
 		fileReader,
 		goldApi,
 		registerDeferred,
+		expiryDeferred,
 		checkSectionShown = function (sectionName) {
 			expect(underTest.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').css('display')).toBe('none');
 			expect(underTest.find('[data-mm-section~=' + sectionName + ']').length > 0).toBeTruthy();
@@ -57,7 +58,8 @@ describe('Gold License Widget', function () {
 			storeLicense: jasmine.createSpy('storeLicense')
 		});
 		registerDeferred = jQuery.Deferred();
-		goldApi = { register: jasmine.createSpy('register').andReturn(registerDeferred.promise()) };
+		expiryDeferred = jQuery.Deferred();
+		goldApi = { register: jasmine.createSpy('register').andReturn(registerDeferred.promise()), getExpiry: jasmine.createSpy('register').andReturn(expiryDeferred.promise()) };
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
 		/*jshint camelcase: false */
@@ -124,9 +126,9 @@ describe('Gold License Widget', function () {
 		it('changes the license if valid license uploaded and shows the view-license section', function () {
 			underTest.modal('show');
 			licenseManager.storeLicense.andReturn(true);
-			
+
 			fileReader.mostRecentCall.args[1]('some text');
-			
+
 			expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('view-license');
@@ -134,9 +136,9 @@ describe('Gold License Widget', function () {
 		it('automatically closes the dialog when valid license is uploaded if loaded from the license manager', function () {
 			licenseManager.storeLicense.andReturn(true);
 			licenseManager.dispatchEvent('license-entry-required');
-			
+
 			fileReader.mostRecentCall.args[1]('some text');
-			
+
 			expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
 			expect(underTest.is(':visible')).toBeFalsy();
 		});
@@ -161,7 +163,7 @@ describe('Gold License Widget', function () {
 	describe('pre-populating fields on display', function () {
 		var currentLicense;
 		beforeEach(function () {
-			currentLicense = {account: 'test-acc', expiry: '1417132800'};
+			currentLicense = {account: 'test-acc'};
 			licenseManager.getLicense.andReturn(currentLicense);
 		});
 		it('fills in input fields data-mm-role=account-name with the current license account name', function () {
@@ -169,17 +171,18 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('input[data-mm-role~=account-name]').val()).toBe('test-acc');
 		});
 		it('fills in anything with data-mm-role=expiry-date with the current license expiry date, formatted as date', function () {
+			expiryDeferred.resolve('1417132800');
 			underTest.modal('show');
 			var stringInField = underTest.find('input[data-mm-role~=expiry-date]').val();
 			expect(Date.parse(stringInField) / 1000).toEqual(1417132800);
 		});
 		it('shows anything with data-mm-role=expired if license has expired', function () {
-			currentLicense.expiry = (Date.now() / 1000) - 100;
+			expiryDeferred.resolve((Date.now() / 1000) - 100);
 			underTest.modal('show');
 			expect(underTest.find('[data-mm-role=expired]').is(':visible')).toBeTruthy();
 		});
 		it('hides anything with data-mm-role=expired if the license has not expired', function () {
-			currentLicense.expiry = (Date.now() / 1000) + 100;
+			expiryDeferred.resolve((Date.now() / 1000) + 100);
 			underTest.modal('show');
 			expect(underTest.find('[data-mm-role=expired]').is(':visible')).toBeFalsy();
 		});
@@ -261,7 +264,7 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
 			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
-		
+
 	});
 	describe('event logging', function () {
 		it('logs opening of the dialog', function () {

@@ -16,14 +16,31 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
-				expiryDate = license && license.expiry &&  new Date(parseInt(license.expiry) * 1000);
-			
+				showExpiry = function (expiryDate) {
+					self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
+					if (expiryDate && expiryDate < new Date()) {
+						self.find('[data-mm-role~=expired]').show();
+					} else {
+						self.find('[data-mm-role~=expired]').hide();
+					}
+				},
+				isExpired = function () {
+					showExpiry();
+				};
+
 			self.find('input[data-mm-role~=account-name]').val((license && license.account) || '');
-			self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
-			if (expiryDate && expiryDate < new Date()) {
-				self.find('[data-mm-role~=expired]').show();
-			} else {
+			if (license) {
 				self.find('[data-mm-role~=expired]').hide();
+				self.find('input[data-mm-role~=expiry-date]').val('getting expiry date...');
+				goldApi.getExpiry().then(
+					function (expiryTimestamp) {
+						var expiryDate = expiryTimestamp && new Date(parseInt(expiryTimestamp, 10) * 1000);
+						showExpiry(expiryDate);
+					},
+					isExpired
+				);
+			} else {
+				isExpired();
 			}
 		},
 		setLicense = function (licenseText) {
@@ -65,7 +82,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			/*jshint sub: true*/
 			self.find('[data-mm-role=license-capacity]').text(apiResponse['capacity']);
 			self.find('[data-mm-role=license-grace-period]').text(apiResponse['grace-period']);
-			self.find('[data-mm-role=license-expiry]').text(new Date(parseInt(apiResponse['expiry']) * 1000).toDateString());
+			self.find('[data-mm-role=license-expiry]').text(new Date(parseInt(apiResponse['expiry'], 10) * 1000).toDateString());
 			self.find('[data-mm-role=license-email]').text(apiResponse['email']);
 			self.find('[data-mm-role=license-payment-url]').attr('href', apiResponse['payment-url']);
 			showSection('registration-success');
