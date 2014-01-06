@@ -55,11 +55,29 @@
 		background-position: -128px 0px;
 	  }
 
+    .msg {
+      display:none;
+      font-family: sans-serif;
+
+      text-align: center;
+      margin: 10px 10px 10px 10px;
+    }
+    .error h1 {
+      font-size: 20px;
+      color: red;
+    }
     </style>
 	<%= erb :timetrack %>
   </head>
   <body>
     <div id="container" class="map"></div>
+    <div id="error" class="msg error"><h1>Unfortunately, we could not load this map</h1>
+      <p>The original file may no longer be available or the license may have expired.
+      Please contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a> quoting reference: </p>
+      <input id="error-mapid" style="width:80%" readonly/>
+
+    </div>
+    <div id="loading" class="msg">Please wait, loading your map...</div>
 	<div id="rightmenu" style="display:none">
 		<a href="<%=settings.base_url%>map/<%=@mapid%>" target="_blank" class="button mindmup" title="View/Edit on MindMup"></a>
 		<a href="#" title="Back to map (Esc)" class="button close attachment" style="display:none"></a>
@@ -122,15 +140,23 @@
             jQuery('.attachment').show();
           });
           _gaq.push(['_trackEvent','Embedded Map', 'View', config.mapId]);
+      jQuery('#rightmenu').hide();
+      jQuery('#container').hide();
+      jQuery('#loading').show();
 		  window.mmtimestamp.log('embedded ui loaded');
-          mapLoader.loadMap(config.mapId).then(function (idea) {
-            mapModel.setIdea(idea);
-            _gaq.push(['_trackEvent','Embedded Map', 'Loaded', config.mapId]);
-          }, function (reason) {
-            _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
-          });
-		  var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
-		  jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
+      mapLoader.loadMap(config.mapId).then(function (idea) {
+        jQuery('#loading').hide();
+        jQuery('#container').show();
+        var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
+        jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
+        mapModel.setIdea(idea);
+        _gaq.push(['_trackEvent','Embedded Map', 'Loaded', config.mapId]);
+      }, function (reason) {
+        jQuery('#loading').hide();
+        jQuery('#error').show();
+        jQuery('#error-mapid').val(config.mapId);
+        _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
+      });
       },
       function (err) {
         var d=document.createElement("div"),
