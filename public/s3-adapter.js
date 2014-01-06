@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, observable, window, _*/
+/*global FormData, jQuery, MM, window, _*/
 MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder, additionalArgumentsGenerator) {
 	'use strict';
 	this.generate = function () {
@@ -267,7 +267,7 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 	'use strict';
 
 	var properties = {editable: true},
-		savePolicy = isPrivate ? 'bucket-owner-read' : 'public-read';
+		s3Api = new MM.S3Api();
 	this.description = description;
 	this.prefix = prefix;
 	this.recognises = function (mapId) {
@@ -294,41 +294,12 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 	this.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
 			submitS3Form = function (publishingConfig) {
-				var formData = new FormData();
-				['key', 'AWSAccessKeyId', 'policy', 'signature'].forEach(function (parameter) {
-					formData.append(parameter, publishingConfig[parameter]);
-				});
-				formData.append('acl', savePolicy);
-				formData.append('Content-Type', 'text/plain');
-				formData.append('file', contentToSave);
-				jQuery.ajax({
-					url: publishingConfig.s3Url,
-					type: 'POST',
-					processData: false,
-					contentType: false,
-					data: formData
-				}).done(function () {
-					deferred.resolve(publishingConfig.mapId, _.extend(publishingConfig, properties));
-				}).fail(function (evt) {
-					var errorReason = 'network-error',
-						errorLabel = (evt && evt.responseText) || 'network-error',
-						errorReasonMap = { 'EntityTooLarge': 'file-too-large' },
-						errorDoc;
-					if (evt.status === 403) {
-						deferred.reject('failed-authentication');
-						return;
-					}
-					try {
-						errorDoc = evt && (evt.responseXML || jQuery.parseXML(evt.responseText));
-						if (errorDoc) {
-							errorReason = jQuery(errorDoc).find('Error Code').text() || errorReason;
-							errorLabel = jQuery(errorDoc).find('Error Message').text() || errorLabel;
-						}
-					} catch (e) {
-						// just ignore, the network error is set by default
-					}
-					deferred.reject(errorReasonMap[errorReason] || errorReason, errorLabel);
-				});
+				s3Api.save(contentToSave, publishingConfig, {'isPrivate': isPrivate}).then(
+					function () {
+						deferred.resolve(publishingConfig.mapId, _.extend(publishingConfig, properties));
+					},
+					deferred.reject
+				);
 			};
 		publishingConfigGenerator.generate(mapId, fileName, prefix, showAuthenticationDialog).then(
 			submitS3Form,
@@ -338,7 +309,6 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 	};
 
 };
-
 MM.S3FilePoller = function (sleepPeriod, timeoutPeriod) {
 	'use strict';
 	this.poll = function (signedListUrl, stoppedSemaphore) {
