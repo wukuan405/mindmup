@@ -84,15 +84,15 @@
               s3Folder: '<%= settings.s3_upload_folder %>/',
               publishingConfigUrl: '',
               baseUrl: '<%= settings.base_url%>',
-              proxyLoadUrl: '<%= settings.proxy_load_url %>',
-              renderImages: false,
-              mapId:'<%=@mapid%>'
+              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
+              mapId:decodeURI(document.location.pathname.replace(/^\/embedded\//,''))
             },
             activityLog = console,
             ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
             s3Adapter = new MM.S3Adapter(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
-            goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(),
+            goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(undefined, false, false, undefined, undefined, config.goldBucketName),
             s3GoldAdapter = new MM.S3Adapter(goldPublishingConfigGenerator, 'b', 'MindMup Gold'),
+
             mapSource = function (mapId) {
               if (s3GoldAdapter.recognises(mapId)) {
                 return s3GoldAdapter;
