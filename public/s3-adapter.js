@@ -149,7 +149,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 					var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
 						result = _.extend(config, {
 							'mapId': idPrefix + '/' + license.account + '/' + encodeURIComponent(fileName), //mapId
-							'key': license.account + '/' + encodeURIComponent(fileName),
+							'key': license.account + '/' + fileName,
 							's3Url': 'https://' + config.s3BucketName + '.s3.amazonaws.com/'
 						});
 					checkForDuplicateV2(result, encodeURIComponent(fileName), license);
