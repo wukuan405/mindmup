@@ -1,5 +1,5 @@
 /*global jQuery, MM, _ */
-MM.LayoutExportController = function (mapModel, fileSystem, poller, activityLog) {
+MM.LayoutExportController = function (mapModel, fileSystem, storageApi, activityLog) {
 	'use strict';
 	var category = 'Map',
 		eventType = 'PDF Export';
@@ -20,8 +20,8 @@ MM.LayoutExportController = function (mapModel, fileSystem, poller, activityLog)
 				deferred.resolve(config.signedOutputUrl);
 			};
 
-			poller.poll(config.signedErrorListUrl, isStopped).then(function () { reject('generation-error', fileId); });
-			poller.poll(config.signedOutputListUrl, isStopped).then(resolve, function (reason) { reject(reason, fileId); });
+			storageApi.poll(config.signedErrorListUrl, {stoppedSemaphore: isStopped}).then(function () { reject('generation-error', fileId); });
+			storageApi.poll(config.signedOutputListUrl, {stoppedSemaphore: isStopped}).then(resolve, function (reason) { reject(reason, fileId); });
 		}, reject);
 		return deferred.promise();
 	};

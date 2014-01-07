@@ -39,6 +39,7 @@ MM.main = function (config) {
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
+			s3Api = new MM.S3Api(),
 			alert = new MM.Alert(),
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = MM.jsonStorage(browserStorage),
@@ -64,7 +65,7 @@ MM.main = function (config) {
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
 			layoutS3Adapter = new MM.S3Adapter(pdfPublishingConfigGenerator, undefined, 'S3_LAYOUT_EXPORT', true),
-			layoutExportController = new MM.LayoutExportController(mapModel, layoutS3Adapter, new MM.S3FilePoller(1000, 20000), activityLog),
+			layoutExportController = new MM.LayoutExportController(mapModel, layoutS3Adapter, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),

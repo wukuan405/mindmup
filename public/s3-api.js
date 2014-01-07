@@ -1,7 +1,8 @@
-/*global jQuery, MM, FormData*/
+/*global jQuery, MM, FormData, window, _*/
 
 MM.S3Api = function () {
 	'use strict';
+	var self = this;
 	this.save = function (contentToSave, saveConfiguration, options) {
 		var formData = new FormData(),
 			savePolicy = options && options.isPrivate ? 'bucket-owner-read' : 'public-read',
@@ -43,6 +44,53 @@ MM.S3Api = function () {
 			contentType: false,
 			data: formData
 		}).then(deferred.resolve, saveFailed);
+		return deferred.promise();
+	};
+	this.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 20000};
+	this.poll = function (signedListUrl, options) {
+		var sleepTimeoutId,
+			timeoutId,
+			deferred = jQuery.Deferred(),
+			shouldPoll = function () {
+				return deferred && !(options.stoppedSemaphore && options.stoppedSemaphore());
+			},
+			execRequest = function () {
+				var setSleepTimeout = function () {
+					if (shouldPoll()) {
+						options.sleepTimeoutId = window.setTimeout(execRequest, options.sleepPeriod);
+					}
+				};
+				if (shouldPoll()) {
+					jQuery.ajax({
+						url: signedListUrl,
+						timeout: options.sleepPeriod,
+						method: 'GET'
+					}).then(function success(result) {
+						var key = jQuery(result).find('Contents Key').first().text();
+						if (deferred && key) {
+							window.clearTimeout(timeoutId);
+							deferred.resolve(key);
+						} else {
+							setSleepTimeout();
+						}
+					}, setSleepTimeout);
+				} else {
+					window.clearTimeout(timeoutId);
+				}
+			},
+			cancelRequest = function () {
+				if (shouldPoll()) {
+					deferred.reject('polling-timeout');
+				}
+				window.clearTimeout(sleepTimeoutId);
+				deferred = undefined;
+			};
+		options = _.extend(self.pollerDefaults, options);
+
+		if (shouldPoll()) {
+			timeoutId = window.setTimeout(cancelRequest, options.timeoutPeriod);
+			execRequest();
+		}
 		return deferred.promise();
 	};
 };
