@@ -78,7 +78,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 			};
 		activityLog.log(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
-			dataTypes = { 'license/register': 'json' };
+			dataTypes = { 'license/register': 'json', 'file/export_config': 'json'};
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
@@ -102,5 +102,9 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 	this.getExpiry = function () {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('license/expiry', {'license': JSON.stringify(license)});
+	};
+	this.generateExportConfiguration = function (format) {
+		var license = goldLicenseManager.getLicense();
+		return self.exec('file/export_config', {'license': JSON.stringify(license), 'format': format});
 	};
 };

@@ -51,9 +51,7 @@ configure do
   set :protection, :except => [:frame_options, :http_origin], :origin_whitelist => [ENV['SITE_URL']]
   set :last_news_id, ""
   set :last_news_title, ""
-  set :export_bucket, {'pdf' => ENV['PDF_EXPORT_BUCKET']}
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
-  set :layout_publishing_url, ENV['LAYOUT_PUBLISHING_URL'] || '/layoutPublishingConfig'
   cache_last_news
 end
 get '/' do
@@ -116,38 +114,6 @@ end
 
 get "/m" do
   show_map
-end
-post "/layoutPublishingConfig" do
-  cors_headers
-  s3_key_id = settings.s3_key_id
-  aws_secret = settings.s3_secret_key
-  max_upload_size = settings.s3_max_upload_size*1024
-  signer=S3PolicySigner.new
-  if (params[:id] && params[:key]) then
-    s3_key_id = params[:id]
-    aws_secret = signer.decode_xor_key params[:key], settings.s3_secret_key
-    max_upload_size = settings.gold_pdf_max_size
-  end
-  export_bucket = settings.export_bucket[params[:format]]
-  json_fail("#{params[:format]} is not a supported format") unless export_bucket
-
-  s3_upload_identifier = settings.key_id_generator.generate(:compact)
-  file_path = 'in/' + s3_upload_identifier + ".json"
-  s3_content_type="text/plain"
-  @policy=signer.signed_policy aws_secret, s3_key_id, export_bucket, file_path, max_upload_size, s3_content_type, settings.s3_form_expiry, "bucket-owner-read"
-
-  expiry_in_secs = 60 * 60 * 26
-  expiration = signer.expiration expiry_in_secs
-
-  list_signature = signer.signed_request 'GET', settings.s3_secret_key, export_bucket, "/", expiration
-  output_signature = signer.signed_request 'GET', settings.s3_secret_key, export_bucket, "/out/" + s3_upload_identifier + '.' + params[:format], expiration
-
-  @policy[:upload_identifier] = s3_upload_identifier
-  @policy['signedErrorListUrl'] = "https://#{export_bucket}.s3.amazonaws.com/?prefix=error/#{s3_upload_identifier}.json&AWSAccessKeyId=#{settings.s3_key_id}&Signature=#{list_signature}&Expires=#{expiration}&max-keys=1"
-  @policy['signedOutputListUrl'] = "https://#{export_bucket}.s3.amazonaws.com/?prefix=out/#{s3_upload_identifier}.#{params[:format]}&AWSAccessKeyId=#{settings.s3_key_id}&Signature=#{list_signature}&Expires=#{expiration}&max-keys=1"
-  @policy['signedOutputUrl'] = "https://#{export_bucket}.s3.amazonaws.com/out/#{s3_upload_identifier}.#{params[:format]}?AWSAccessKeyId=#{settings.s3_key_id}&Signature=#{output_signature}&Expires=#{expiration}"
-
-  erb :layoutUploadConfig
 end
 post "/publishingConfig" do
   s3_upload_identifier = settings.current_map_data_version +  settings.key_id_generator.generate(:compact)

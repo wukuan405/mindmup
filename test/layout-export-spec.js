@@ -2,111 +2,126 @@
 describe('LayoutExport', function () {
 	'use strict';
 	describe('LayoutExportController', function () {
-		var fileSystem, mapModel, currentLayout, underTest, requestId, poller, activityLog,
-			lastPollerCallFor = function (url) {
-				return _.find(poller.poll.calls, function (call) {
+		var configurationGenerator, mapModel, currentLayout, underTest, requestId, storageApi, activityLog, saveConfiguration, saveOptions,
+			laststorageApiCallFor = function (url) {
+				return _.find(storageApi.poll.calls, function (call) {
 					return call.args[0] === url;
 				});
 			};
 
 		beforeEach(function () {
-			var buildPoller = function () {
-				var poller = {
+			var buildStorageApi = function () {
+				var storageApi = {
 					deferred: {}, //jQuery.Deferred(),
 					poll: function (url) {
 						var deferred = jQuery.Deferred();
-						poller.deferred[url] = deferred;
+						storageApi.deferred[url] = deferred;
 						return deferred.promise();
 					}
 				};
-				return poller;
+				storageApi.save = jasmine.createSpy('save');
+				storageApi.save.andReturn(
+					jQuery.Deferred().resolve().promise());
+				return storageApi;
 			};
-			fileSystem = {};
+			requestId = 'AIUHDKUHGDKHUD';
+			saveConfiguration = {'signedErrorListUrl': 'errorlisturl', 'signedOutputListUrl': 'outputlisturl', 'signedOutputUrl': 'outputurl', 's3UploadIdentifier': requestId};
+			saveOptions = {isPrivate: true};
+			configurationGenerator = {};
 			mapModel = {};
 			activityLog = {};
 			currentLayout = { 'a': 'b' };
-			requestId = 'AIUHDKUHGDKHUD';
-			fileSystem.saveMap = jasmine.createSpy('saveMap');
+			configurationGenerator.generateExportConfiguration = jasmine.createSpy('saveMap');
+			configurationGenerator.generateExportConfiguration.andReturn(
+				jQuery.Deferred().resolve(saveConfiguration).promise()
+			);
 			activityLog.log = jasmine.createSpy('log');
-			fileSystem.saveMap.andReturn(
-				jQuery.Deferred().resolve(
-					requestId,
-					{'signedErrorListUrl': 'errorlisturl', 'signedOutputListUrl': 'outputlisturl', 'signedOutputUrl': 'outputurl'}
-				).promise());
 
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
 			mapModel.getCurrentLayout.andReturn(currentLayout);
-			poller = buildPoller();
-			underTest = new MM.LayoutExportController(mapModel, fileSystem, poller, activityLog);
+			storageApi = buildStorageApi();
+			underTest = new MM.LayoutExportController(mapModel, configurationGenerator, storageApi, activityLog);
 
 		});
-		it('pulls out current map model layout, and publishes JSON version of that to an fileSystem', function () {
-			underTest.startExport();
-			expect(fileSystem.saveMap).toHaveBeenCalledWith(JSON.stringify(currentLayout));
+		it('pulls out current map model layout, passes the format to the configuration generator, and publishes JSON version of that to the storageApi', function () {
+			underTest.startExport('pdf');
+			expect(configurationGenerator.generateExportConfiguration).toHaveBeenCalledWith('pdf');
+			expect(storageApi.save).toHaveBeenCalledWith(JSON.stringify(currentLayout), saveConfiguration, saveOptions);
 		});
 		it('merges any object passed with the current map model layout, and publishes JSON version of that to an fileSystem, leaving current layout unchanged', function () {
-			underTest.startExport({'foo': 'bar'});
-			expect(fileSystem.saveMap).toHaveBeenCalledWith(JSON.stringify({'a': 'b', 'foo': 'bar'}));
+			underTest.startExport('pdf', {'foo': 'bar'});
+			expect(storageApi.save).toHaveBeenCalledWith(JSON.stringify({'a': 'b', 'foo': 'bar'}), saveConfiguration, saveOptions);
 			expect(currentLayout).toEqual({'a': 'b'});
 		});
 		it('polls for result and error when the request is started', function () {
-			spyOn(poller, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').andCallThrough();
 			underTest.startExport();
-			expect(poller.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Object));
-			expect(poller.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Object));
+			expect(storageApi.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Object));
+			expect(storageApi.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Object));
 		});
 
 		it('export is marked as not stopped until deferred object is resolved', function () {
-			spyOn(poller, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').andCallThrough();
 			underTest.startExport();
-			expect(lastPollerCallFor('outputlisturl').args[1].stoppedSemaphore()).toBeFalsy();
+			expect(laststorageApiCallFor('outputlisturl').args[1].stoppedSemaphore()).toBeFalsy();
 		});
 		it('export is marked as stopped after promise is resolved', function () {
-			spyOn(poller, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').andCallThrough();
 			underTest.startExport();
-			poller.deferred.outputlisturl.resolve('foo');
-			expect(lastPollerCallFor('errorlisturl').args[1].stoppedSemaphore()).toBeTruthy();
+			storageApi.deferred.outputlisturl.resolve('foo');
+			expect(laststorageApiCallFor('errorlisturl').args[1].stoppedSemaphore()).toBeTruthy();
 		});
-		it('resolves promise with signed output url when the poller resolves', function () {
+		it('resolves promise with signed output url when the storageApi resolves', function () {
 			var resolved = jasmine.createSpy('resolved');
 
 			underTest.startExport().then(resolved);
 
-			poller.deferred.outputlisturl.resolve();
+			storageApi.deferred.outputlisturl.resolve();
 			expect(resolved).toHaveBeenCalledWith('outputurl');
 		});
-		it('rejects if the error poller resolves before the result poller', function () {
+		it('rejects if the configuationGenerator fails', function () {
+			var fail = jasmine.createSpy('fail'),
+				reason = 'cos i cant get the config';
+			configurationGenerator.generateExportConfiguration.andReturn(jQuery.Deferred().reject(reason).promise());
+			spyOn(storageApi, 'poll').andCallThrough();
+
+			underTest.startExport().fail(fail);
+
+			expect(fail).toHaveBeenCalledWith(reason, undefined);
+			expect(storageApi.poll).not.toHaveBeenCalled();
+		});
+		it('rejects if the error storageApi poll resolves before the result storageApi poll', function () {
 			var resolved = jasmine.createSpy('resolved'),
 				url = 'http://www.google.com',
 				fail = jasmine.createSpy('fail');
 
 			underTest.startExport().then(resolved, fail);
 
-			poller.deferred.errorlisturl.resolve('www.fail.com');
-			poller.deferred.outputlisturl.resolve(url);
+			storageApi.deferred.errorlisturl.resolve('www.fail.com');
+			storageApi.deferred.outputlisturl.resolve(url);
 
 			expect(resolved).not.toHaveBeenCalled();
 			expect(fail).toHaveBeenCalledWith('generation-error', requestId);
 		});
-		it('rejects promise if the poller rejects', function () {
+		it('rejects promise if the storageApi rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
 
 			underTest.startExport().fail(fail);
 
-			poller.deferred.outputlisturl.reject(reason);
+			storageApi.deferred.outputlisturl.reject(reason);
 			expect(fail).toHaveBeenCalledWith(reason, requestId);
 		});
 		it('rejects promise if the file system rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
-			fileSystem.saveMap.andReturn(jQuery.Deferred().reject(reason).promise());
-			spyOn(poller, 'poll').andCallThrough();
+			storageApi.save.andReturn(jQuery.Deferred().reject(reason).promise());
+			spyOn(storageApi, 'poll').andCallThrough();
 
 			underTest.startExport().fail(fail);
 
 			expect(fail).toHaveBeenCalledWith(reason, undefined);
-			expect(poller.poll).not.toHaveBeenCalled();
+			expect(storageApi.poll).not.toHaveBeenCalled();
 		});
 	});
 });

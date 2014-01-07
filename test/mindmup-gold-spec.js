@@ -86,11 +86,15 @@ describe('MM.GoldLicenseManager', function () {
 });
 describe('MM.GoldApi', function () {
 	'use strict';
-	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred;
+	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license;
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
+
 		goldLicenseManager = {getLicense: function () {}};
+		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
+		spyOn(goldLicenseManager, 'getLicense').andReturn(license);
+
 		activityLog = { log: jasmine.createSpy() };
 		underTest = new MM.GoldApi(goldLicenseManager, 'API_URL', activityLog);
 		oldFormData = window.FormData;
@@ -105,11 +109,6 @@ describe('MM.GoldApi', function () {
 		window.FormData = oldFormData;
 	});
 	describe('getExpiry', function () {
-		var license;
-		beforeEach(function () {
-			license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
-			spyOn(goldLicenseManager, 'getLicense').andReturn(license);
-		});
 		it('posts an AJAX request to the API url', function () {
 			underTest.getExpiry();
 			expect(jQuery.ajax).toHaveBeenCalled();
@@ -117,21 +116,7 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.url).toEqual('API_URL/license/expiry');
 			expect(ajaxPost.dataType).toBeUndefined();
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
-			expect(ajaxPost.type).toEqual('POST');
 		});
-		it('returns a pending promise, waiting on ajax to resolve', function () {
-			var result = underTest.getExpiry();
-			expect(result.state()).toBe('pending');
-		});
-		it('resolves with the timestamp when ajax resolves', function () {
-			var	resolved = jasmine.createSpy();
-			underTest.getExpiry().then(resolved);
-
-			ajaxDeferred.resolve('1200');
-
-			expect(resolved).toHaveBeenCalledWith('1200');
-		});
-
 	});
 	describe('register', function () {
 
@@ -142,44 +127,56 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.url).toEqual('API_URL/license/register');
 			expect(ajaxPost.dataType).toEqual('json');
 			expect(ajaxPost.data.params).toEqual({'to_email' : 'test_email', 'account_name' : 'test_name'});
+		});
+	});
+	describe('exec', function () {
+		var execArgs, result, resolved, rejected;
+		beforeEach(function () {
+			resolved = jasmine.createSpy();
+			rejected = jasmine.createSpy();
+			execArgs = {'name': 'test_name'};
+			result = underTest.exec('entity/action', execArgs).then(resolved, rejected);
+		});
+		it('posts an AJAX request to the API url', function () {
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			expect(ajaxPost.url).toEqual('API_URL/entity/action');
+			expect(ajaxPost.data.params).toEqual(execArgs);
 			expect(ajaxPost.type).toEqual('POST');
 		});
+
 		it('returns a pending promise, waiting on ajax to resolve', function () {
-			var result = underTest.register('test_name', 'test_email');
 			expect(result.state()).toBe('pending');
 		});
 		it('resolves with the parsed JSON when ajax resolves', function () {
-			var	resolved = jasmine.createSpy();
-			underTest.register('test_name', 'test_email').then(resolved);
-
 			ajaxDeferred.resolve({'a': 'b'});
-
 			expect(resolved).toHaveBeenCalledWith({'a': 'b'});
 		});
 		it('rejects with the error reason if one of known errors', function () {
-			var	rejected = jasmine.createSpy();
-			underTest.register('test_name', 'test_email').fail(rejected);
-
 			ajaxDeferred.reject({responseText: 'invalid-args'});
-
 			expect(rejected).toHaveBeenCalledWith('invalid-args');
 		});
 		it('rejects with network-error if not a known error', function () {
-			var	rejected = jasmine.createSpy();
-			underTest.register('test_name', 'test_email').fail(rejected);
-
 			ajaxDeferred.reject({responseText: 'invalid-error'});
-
 			expect(rejected).toHaveBeenCalledWith('network-error');
 		});
 		it('logs request', function () {
-			underTest.register('test_name', 'test_email');
-			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'license/register');
+			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'entity/action');
 		});
 		it('logs actual failure', function () {
-			underTest.register('test_name', 'test_email');
 			ajaxDeferred.reject({responseText: 'invalid-error'});
-			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'error', 'license/register:invalid-error');
+			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'error', 'entity/action:invalid-error');
+		});
+
+	});
+	describe('generateExportConfiguration', function () {
+		it('posts an AJAX request to the API url', function () {
+			underTest.generateExportConfiguration('pdf');
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			expect(ajaxPost.url).toEqual('API_URL/file/export_config');
+			expect(ajaxPost.dataType).toEqual('json');
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'pdf'});
 		});
 	});
 });

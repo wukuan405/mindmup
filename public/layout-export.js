@@ -1,9 +1,9 @@
 /*global jQuery, MM, _ */
-MM.LayoutExportController = function (mapModel, fileSystem, storageApi, activityLog) {
+MM.LayoutExportController = function (mapModel, configurationGenerator, storageApi, activityLog) {
 	'use strict';
 	var category = 'Map',
 		eventType = 'PDF Export';
-	this.startExport = function (exportProperties) {
+	this.startExport = function (format, exportProperties) {
 		var deferred = jQuery.Deferred(),
 			isStopped = function () {
 				return deferred.state() !== 'pending';
@@ -14,64 +14,73 @@ MM.LayoutExportController = function (mapModel, fileSystem, storageApi, activity
 			},
 			layout = _.extend({}, mapModel.getCurrentLayout(), exportProperties);
 		activityLog.log(category, eventType + ' started');
-		fileSystem.saveMap(JSON.stringify(layout)).then(function (fileId, config) {
-			var resolve = function () {
-				activityLog.log(category, eventType + ' completed');
-				deferred.resolve(config.signedOutputUrl);
-			};
-
-			storageApi.poll(config.signedErrorListUrl, {stoppedSemaphore: isStopped}).then(function () { reject('generation-error', fileId); });
-			storageApi.poll(config.signedOutputListUrl, {stoppedSemaphore: isStopped}).then(resolve, function (reason) { reject(reason, fileId); });
-		}, reject);
+		configurationGenerator.generateExportConfiguration(format).then(
+			function (exportConfig) {
+				var fileId = exportConfig.s3UploadIdentifier;
+				storageApi.save(JSON.stringify(layout), exportConfig, {isPrivate: true}).then(
+					function () {
+						var resolve = function () {
+							activityLog.log(category, eventType + ' completed');
+							deferred.resolve(exportConfig.signedOutputUrl);
+						};
+						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped}).then(function () { reject('generation-error', fileId); });
+						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped}).then(resolve, function (reason) { reject(reason, fileId); });
+					},
+					reject
+				);
+			},
+			reject
+		);
 		return deferred.promise();
 	};
 };
 
 jQuery.fn.layoutExportWidget = function (layoutExportController) {
 	'use strict';
-	var self = this,
-		confirmElement = self.find('[data-mm-role=export]'),
-		setState = function (state) {
-			self.find('.visible').hide();
-			self.find('.visible' + '.' + state).show();
-		},
-		exportComplete = function (url) {
-			self.find('[data-mm-role=output-url]').attr('href', url);
-			setState('done');
-		},
-		getExportMetadata = function () {
-			var form = self.find('form'),
-				exportType = {};
-			form.find('button.active').add(form.find('select')).each(function () {
-				exportType[jQuery(this).attr('name')] = jQuery(this).val();
-			});
-			return exportType;
-		},
-		exportFailed = function (reason, fileId) {
-			self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20PDF%20Export%20Error%20' + fileId; });
-			self.find('[data-mm-role=file-id]').html(fileId);
-			self.find('.error span').hide();
-			setState('error');
+	return this.each(function () {
+		var self = jQuery(this),
+			format = self.data('mm-format'),
+			confirmElement = self.find('[data-mm-role=export]'),
+			setState = function (state) {
+				self.find('.visible').hide();
+				self.find('.visible' + '.' + state).show();
+			},
+			exportComplete = function (url) {
+				self.find('[data-mm-role=output-url]').attr('href', url);
+				setState('done');
+			},
+			getExportMetadata = function () {
+				var form = self.find('form'),
+					exportType = {};
+				form.find('button.active').add(form.find('select')).each(function () {
+					exportType[jQuery(this).attr('name')] = jQuery(this).val();
+				});
+				return exportType;
+			},
+			exportFailed = function (reason, fileId) {
+				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20PDF%20Export%20Error%20' + fileId; });
+				self.find('[data-mm-role=file-id]').html(fileId);
+				self.find('.error span').hide();
+				setState('error');
 
-			var predefinedMsg = self.find('[data-mm-role=' + reason + ']');
-			if (predefinedMsg.length > 0) {
-				predefinedMsg.show();
-			} else {
-				self.find('[data-mm-role=error-message]').html(reason).show();
-			}
-		},
-		doExport = function () {
-			setState('inprogress');
-			layoutExportController.startExport({'export': getExportMetadata()}).then(exportComplete, exportFailed);
-		};
-	self.find('form').submit(function () {return false; });
-	confirmElement.click(doExport).keydown('space', doExport);
-	self.modal({keyboard: true, show: false});
-	this.on('show', function () {
-		setState('initial');
-	}).on('shown', function () {
-
-		confirmElement.focus();
+				var predefinedMsg = self.find('[data-mm-role=' + reason + ']');
+				if (predefinedMsg.length > 0) {
+					predefinedMsg.show();
+				} else {
+					self.find('[data-mm-role=error-message]').html(reason).show();
+				}
+			},
+			doExport = function () {
+				setState('inprogress');
+				layoutExportController.startExport(format, {'export': getExportMetadata()}).then(exportComplete, exportFailed);
+			};
+		self.find('form').submit(function () {return false; });
+		confirmElement.click(doExport).keydown('space', doExport);
+		self.modal({keyboard: true, show: false});
+		self.on('show', function () {
+			setState('initial');
+		}).on('shown', function () {
+			confirmElement.focus();
+		});
 	});
-
 };
