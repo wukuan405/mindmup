@@ -25,6 +25,9 @@ MM.main = function (config) {
 			activityLog.addEventListener('error', function (message) {
 				jotForm.sendError(message, activityLog.getLog());
 			});
+			activityLog.addEventListener('timer', function (category, action, time) {
+				_gaq.push(['_trackEvent', category,  action, '', time]);
+			});
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}

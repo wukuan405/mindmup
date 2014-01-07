@@ -86,7 +86,7 @@ describe('MM.GoldLicenseManager', function () {
 });
 describe('MM.GoldApi', function () {
 	'use strict';
-	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license;
+	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy;
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
@@ -95,7 +95,10 @@ describe('MM.GoldApi', function () {
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
 		spyOn(goldLicenseManager, 'getLicense').andReturn(license);
 
-		activityLog = { log: jasmine.createSpy() };
+		activityLog = { log: jasmine.createSpy(), timer: jasmine.createSpy()};
+		endSpy = jasmine.createSpy();
+
+		activityLog.timer.andReturn({end: endSpy});
 		underTest = new MM.GoldApi(goldLicenseManager, 'API_URL', activityLog);
 		oldFormData = window.FormData;
 		window.FormData = function () {
@@ -151,23 +154,27 @@ describe('MM.GoldApi', function () {
 		it('resolves with the parsed JSON when ajax resolves', function () {
 			ajaxDeferred.resolve({'a': 'b'});
 			expect(resolved).toHaveBeenCalledWith({'a': 'b'});
+			expect(endSpy).toHaveBeenCalled();
 		});
 		it('rejects with the error reason if one of known errors', function () {
 			ajaxDeferred.reject({responseText: 'invalid-args'});
 			expect(rejected).toHaveBeenCalledWith('invalid-args');
+			expect(endSpy).toHaveBeenCalled();
 		});
 		it('rejects with network-error if not a known error', function () {
 			ajaxDeferred.reject({responseText: 'invalid-error'});
 			expect(rejected).toHaveBeenCalledWith('network-error');
+			expect(endSpy).toHaveBeenCalled();
 		});
-		it('logs request', function () {
-			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'entity/action');
+		it('starts the timer when request starts', function () {
+			expect(activityLog.timer).toHaveBeenCalledWith('GoldApi', 'entity/action');
+			expect(endSpy).not.toHaveBeenCalled();
 		});
 		it('logs actual failure', function () {
 			ajaxDeferred.reject({responseText: 'invalid-error'});
 			expect(activityLog.log).toHaveBeenCalledWith('GoldApi', 'error', 'entity/action:invalid-error');
+			expect(endSpy).toHaveBeenCalled();
 		});
-
 	});
 	describe('generateExportConfiguration', function () {
 		it('posts an AJAX request to the API url', function () {

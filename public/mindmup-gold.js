@@ -10,16 +10,6 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 	this.getLicense = function () {
 		return storage.getItem(storageKey);
 	};
-	this.goldLicenseIdentifiers = function () {
-		throw 'License format changed, fix me';
-/*		var license = self.getLicense(),
-			generated;
-		if (license && license.key && license.id) {
-			generated =  _.pick(license, 'id', 'key');
-		}
-		return generated;
-		*/
-	};
 	this.retrieveLicense = function (forceAuthentication) {
 		currentDeferred = undefined;
 		if (!forceAuthentication && this.getLicense()) {
@@ -75,8 +65,8 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 				var result = jxhr.responseText;
 				activityLog.log(LOG_CATEGORY, 'error', apiProc + ':' + result);
 				deferred.reject(apiError(result));
-			};
-		activityLog.log(LOG_CATEGORY, apiProc);
+			},
+			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
 			dataTypes = { 'license/register': 'json', 'file/export_config': 'json'};
 		if (args) {
@@ -91,9 +81,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 			processData: false,
 			contentType: false,
 			type: 'POST'
-		}).then(
-			deferred.resolve,
-			rejectWithError);
+		}).then(deferred.resolve, rejectWithError).always(timer.end);
 		return deferred.promise();
 	};
 	this.register = function (accountName, email) {

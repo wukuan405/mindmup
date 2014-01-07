@@ -13,56 +13,74 @@ describe('activity log', function () {
 	afterEach(function () {
 		clock.restore();
 	});
-	it('should be created', function () {
-		expect(activityLog).toBeDefined();
-	});
-	it('should be able to log activity', function () {
-		activityLog.log('Hello', 'World');
+	describe('log', function () {
 
-		expect(activityLog.getLog()).toEqual([{
-			id: 1,
-			ts: new Date(),
-			event: 'Hello,World'
-		}]);
-	});
-	it('should dispatch log event when log method invoked', function () {
-		activityLog.log('category', 'event type', 'label');
+		it('should be created', function () {
+			expect(activityLog).toBeDefined();
+		});
+		it('should be able to log activity', function () {
+			activityLog.log('Hello', 'World');
 
-		expect(logListener).toHaveBeenCalledWith('category', 'event type', 'label');
-	});
-	it('should always send log as a 1 depth array', function () {
-		activityLog.log(['category', 'event type', 'label']);
+			expect(activityLog.getLog()).toEqual([{
+				id: 1,
+				ts: new Date(),
+				event: 'Hello,World'
+			}]);
+		});
+		it('should dispatch log event when log method invoked', function () {
+			activityLog.log('category', 'event type', 'label');
 
-		expect(logListener).toHaveBeenCalledWith('category', 'event type', 'label');
-	});
-	it('should add error messages to the activity log', function () {
-		activityLog.error('Map save failed');
+			expect(logListener).toHaveBeenCalledWith('category', 'event type', 'label');
+		});
+		it('should always send log as a 1 depth array', function () {
+			activityLog.log(['category', 'event type', 'label']);
 
-		expect(activityLog.getLog()).toEqual([{
-			id: 1,
-			ts: new Date(),
-			event: 'Error,Map save failed'
-		}]);
-	});
-	it('should dispatch error event when error method invoked', function () {
-		activityLog.error('Map save failed');
+			expect(logListener).toHaveBeenCalledWith('category', 'event type', 'label');
+		});
+		it('should not exceed maximum event size', function () {
+			activityLog.log('foo');
+			activityLog.log('bar');
+			activityLog.log('baz');
 
-		expect(errorListener).toHaveBeenCalledWith('Map save failed', activityLog.getLog());
+			expect(activityLog.getLog()).toEqual([{
+				id: 2,
+				ts: new Date(),
+				event: 'bar'
+			}, {
+				id: 3,
+				ts: new Date(),
+				event: 'baz'
+			}]);
+		});
 	});
-	it('should not exceed maximum event size', function () {
-		activityLog.log('foo');
-		activityLog.log('bar');
-		activityLog.log('baz');
+	describe('error', function () {
+		it('should add error messages to the activity log', function () {
+			activityLog.error('Map save failed');
 
-		expect(activityLog.getLog()).toEqual([{
-			id: 2,
-			ts: new Date(),
-			event: 'bar'
-		}, {
-			id: 3,
-			ts: new Date(),
-			event: 'baz'
-		}]);
+			expect(activityLog.getLog()).toEqual([{
+				id: 1,
+				ts: new Date(),
+				event: 'Error,Map save failed'
+			}]);
+		});
+		it('should dispatch error event when error method invoked', function () {
+			activityLog.error('Map save failed');
+
+			expect(errorListener).toHaveBeenCalledWith('Map save failed', activityLog.getLog());
+		});
+	});
+	describe('timer', function () {
+		var timer;
+		beforeEach(function () {
+			timer = activityLog.timer('category', 'label');
+		});
+		it('dispatches an event once the timer is ended', function () {
+			var listener = jasmine.createSpy('listener');
+			activityLog.addEventListener('timer', listener);
+			clock.tick(100);
+			timer.end();
+			expect(listener).toHaveBeenCalledWith('category', 'label', 100);
+		});
 	});
 });
 describe('tracking widget', function () {
