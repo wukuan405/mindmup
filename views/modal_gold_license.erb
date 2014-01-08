@@ -153,7 +153,7 @@
 	  <input type="file" name="file" />
       <button data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
       <form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
-	<input type="hidden" data-mm-role="license-text">
+	<input type="hidden" data-mm-role="license-text" name="license">
       </form>
 
       <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
