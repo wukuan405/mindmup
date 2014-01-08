@@ -7,6 +7,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		remove = self.find('[data-mm-role~=remove]'),
 		fileInput = self.find('input[type=file]'),
 		uploadButton = self.find('[data-mm-role=upload]'),
+		currentSection,
 		audit = function (action, label) {
 			if (label) {
 				activityLog.log('Gold', action, label);
@@ -16,31 +17,36 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
-				showExpiry = function (expiryDate) {
-					self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
-					if (expiryDate && expiryDate < new Date()) {
-						self.find('[data-mm-role~=expired]').show();
-					} else {
-						self.find('[data-mm-role~=expired]').hide();
+				failExpiry = function (reason) {
+					if (currentSection === 'view-license') {
+						if (reason === 'not-authenticated') {
+							showSection('invalid-license');
+						}  else {
+							showSection('license-server-unavailable');
+						}
 					}
 				},
-				isExpired = function () {
-					showExpiry();
+				showExpiry = function (expiryString) {
+					var expiryTs = expiryString && parseInt(expiryString, 10),
+						expiryDate = new Date(expiryTs * 1000);
+					if (expiryTs === 0)  {
+						failExpiry('not-authenticated');
+					} else if (expiryDate && expiryDate < new Date()) {
+						if (currentSection === 'view-license') {
+							showSection('expired-license');
+						}
+					} else {
+						self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
+					}
 				};
-
 			self.find('input[data-mm-role~=account-name]').val((license && license.account) || '');
 			if (license) {
-				self.find('[data-mm-role~=expired]').hide();
+				self.find('input[data-mm-role~=license-text]').val(JSON.stringify(license));
 				self.find('input[data-mm-role~=expiry-date]').val('getting expiry date...');
-				goldApi.getExpiry().then(
-					function (expiryTimestamp) {
-						var expiryDate = expiryTimestamp && new Date(parseInt(expiryTimestamp, 10) * 1000);
-						showExpiry(expiryDate);
-					},
-					isExpired
-				);
-			} else {
-				isExpired();
+				goldApi.getExpiry().then(showExpiry, failExpiry);
+			}  else {
+				self.find('input[data-mm-role~=license-text]').val('');
+				self.find('input[data-mm-role~=expiry-date]').val('');
 			}
 		},
 		setLicense = function (licenseText) {
@@ -67,6 +73,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 		},
 		showSection = function (sectionName) {
+			currentSection = sectionName;
 			audit('license-section', sectionName);
 			self.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').hide();
 			self.find('[data-mm-section~=' + sectionName + ']').show();
@@ -124,7 +131,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			goldApi.register(accountNameField.val(), emailField.val()).then(regSuccess, regFail);
 			showSection('registration-progress');
 		};
-	self.find('form').submit(function () {return false; });
+	self.find('form').submit(function () {return this.action; });
+	self.find('[data-mm-role~=form-submit]').click(function () {
+		var id = jQuery(this).data('mm-form');
+		jQuery(id).submit();
+	});
 	self.on('show', function () {
 		audit('license-show');
 		hasAction = false;

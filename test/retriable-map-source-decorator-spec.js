@@ -1,17 +1,17 @@
 /*global MM, MAPJS, describe, it, beforeEach, afterEach, jQuery, expect, jasmine, observable, _, spyOn, sinon */
-describe("MM.RetriableMapSourceDecorator", function () {
+describe('MM.RetriableMapSourceDecorator', function () {
 	'use strict';
 	var underTest, decorated, clock;
 	beforeEach(function () {
 		var adapterPrototype = observable({
 			loadMap: function (mapId) {
-				return jQuery.Deferred().resolve(MAPJS.content({ "title": "hello" }), mapId).promise();
+				return jQuery.Deferred().resolve(MAPJS.content({ 'title': 'hello' }), mapId).promise();
 			},
 			saveMap: function (contentToSave, oldId) {
 				return jQuery.Deferred().resolve(oldId).promise();
 			},
 			recognises: function (mapId) {
-				return "fake" === mapId;
+				return 'fake' === mapId;
 			},
 			description: 'fake adapter'
 		});
@@ -19,8 +19,11 @@ describe("MM.RetriableMapSourceDecorator", function () {
 		underTest = new MM.RetriableMapSourceDecorator(decorated);
 		clock = sinon.useFakeTimers();
 	});
+	afterEach(function () {
+		clock.restore();
+	});
 
-	describe("loadMap", function () {
+	describe('loadMap', function () {
 
 		it('should use retry', function () {
 			spyOn(MM, 'retry').andCallThrough();
@@ -51,7 +54,7 @@ describe("MM.RetriableMapSourceDecorator", function () {
 			expect(callCount).toBe(6);
 		});
 	});
-	describe("saveMap", function () {
+	describe('saveMap', function () {
 		it('should use retry', function () {
 			spyOn(MM, 'retry').andCallThrough();
 
@@ -84,11 +87,11 @@ describe("MM.RetriableMapSourceDecorator", function () {
 			expect(callCount).toBe(6);
 		});
 	});
-	it("delegates calls to recognises()", function () {
+	it('delegates calls to recognises()', function () {
 		expect(underTest.recognises('fake')).toBeTruthy();
 		expect(underTest.recognises('xfake')).toBeFalsy();
 	});
-	it("delegates calls to description", function () {
+	it('delegates calls to description', function () {
 		expect(underTest.description).toBe('fake adapter');
 	});
 });
@@ -137,6 +140,7 @@ describe('MM.retry', function () {
 		expect(retryCount).toBe(0);
 		clock.tick(2);
 		expect(retryCount).toBe(1);
+		clock.restore();
 	});
 });
 describe('MM.linearBackoff', function () {

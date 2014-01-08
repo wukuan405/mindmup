@@ -13,7 +13,7 @@
 		<p data-mm-section="no-license">
 		MindMup Gold is an optional commercial storage service that removes many limitations of our anonymous storage and third-party APIs. This browser
 		profile is curently not set up for Gold access.
-		</p>	
+		</p>
 		<div data-mm-section="no-license license-required">
 			<p>	If you have a Gold license, click on <strong>Set License</strong> to set up the license. Otherwise, click on <strong>Sign Up</strong> to
 			obtain a Gold license.</p>
@@ -21,20 +21,34 @@
 		</div>
 
 		<div data-mm-section="unauthorised-license">
-		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might 
+		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.
 		  In order to proceed, please click on <strong>Set License</strong> to change the active license in this browser. </p>
 		  <p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
 		</div>
 		<div data-mm-section="invalid-license">
-			<p>This license is invalid. Click on <strong>Set License</strong> to change the active license in this browser. </p>
+			<p><strong>This license is invalid or expired</strong>. Click on <strong>Set License</strong> to change the active license in this browser. </p>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		</div>
+		<div data-mm-section="license-server-unavailable">
+			<p>This license server is unavailable at the moment. Please try again later. If the problem persists, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		</div>
+		<div data-mm-section="expired-license">
+			<h4>This license has expired</h4>
+			<p>Click on <strong>Change License</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current license. </p>
+			<form class="form-horizontal">
+			  <div class="control-group">
+				<label class="control-label" for="gold-view-account-name">Account name</label>
+				<div class="controls">
+				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
+				</div>
+			  </div>
+			 </form>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+
 		</div>
 		<div data-mm-section="view-license">
 			<p>This browser profile is using the following MindMup Gold account:</p>
-			<div data-mm-role="expired">
-				<span class="alert alert-error">This license has expired!</span>
-			</div>
 			<form class="form-horizontal">
 			  <div class="control-group">
 				<label class="control-label" for="gold-view-account-name">Account name</label>
@@ -52,9 +66,9 @@
 		</div>
 
 		<div data-mm-section="register">
-			<p>Please enter your desired account name and e-mail address to obtain a Gold license. 
-			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, start with a letter and 
-			contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</p> 
+			<p>Please enter your desired account name and e-mail address to obtain a Gold license.
+			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, start with a letter and
+			contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</p>
 			<form class="form-horizontal">
 			  <div class="control-group">
 				<label class="control-label" for="gold-register-account-name">Account name</label>
@@ -71,7 +85,7 @@
 			  <div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
-						<input type="checkbox" id="gold-register-terms" name="terms"/> 
+						<input type="checkbox" id="gold-register-terms" name="terms"/>
 						I agree to the <a href="http://gold.mindmup.com/terms" target="_blank">MindMup Gold Terms of Service</a>.
 					</label>
 				</div>
@@ -83,8 +97,8 @@
 		<div data-mm-section="registration-fail">
 			<div class="alert alert-error alert-block">
 				<h4>There was a problem with the registration</h4>
-				<p data-mm-role="email-exists">The e-mail is already registered. Please use a different e-mail or 
-				contact us at 
+				<p data-mm-role="email-exists">The e-mail is already registered. Please use a different e-mail or
+				contact us at
 				<a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Renewal">contact@mindmup.com</a> to renew the license for that e-mail.</p>
 				<p data-mm-role="user-exists">This account is already registered. Please choose a different account name.</p>
 				<p data-mm-role="invalid-args">The server is currently too busy, please try again later.</p>
@@ -108,8 +122,8 @@
 			  <dd data-mm-role="license-expiry"></dd>
 			</dl>
 			<p>
-			The license has been sent to you by e-mail from <strong>contact@mindmup.com</strong>, so please ensure that this sender 
-			is not blocked by your spam filters. Once you receive the e-mail, please click on <strong>Set License</strong> below to configure 
+			The license has been sent to you by e-mail from <strong>contact@mindmup.com</strong>, so please ensure that this sender
+			is not blocked by your spam filters. Once you receive the e-mail, please click on <strong>Set License</strong> below to configure
 			the current browser profile for Gold access.</p>
 			<p>
 			You can use your license immediately, and have <strong data-mm-role="license-grace-period"></strong> to try it out and pay for it.
@@ -122,13 +136,18 @@
 	  <button data-mm-section="no-license license-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign Up</button>
       <a target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>
       <button data-mm-role="upload" data-mm-section="no-license license-required invalid-license unauthorised-license registration-success" class="btn btn-primary" tabstop="3">Set License</button>
-      <button data-mm-role="upload" data-mm-section="view-license" class="btn btn-primary" tabstop="4">Change License</button>
+      <button data-mm-section="expired-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
+      <button data-mm-role="upload" data-mm-section="view-license expired-license" class="btn btn-primary" tabstop="5">Change License</button>
 	  <input type="file" name="file" />
-      <button data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="5">Register</button>
-      <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="6">&lt; Back</button>
-      <button data-mm-role="remove" data-mm-section="view-license license-details" class="btn btn-danger" tabstop="7">Remove License</button>
-      <button data-dismiss="modal" data-mm-section="no-license license-required invalid-license unauthorised-license registration-fail registration-progress register" class="btn" tabstop="8">Cancel</button>
-      <button data-dismiss="modal" data-mm-section="view-license registration-success" class="btn" tabstop="9">Close</button>
+      <button data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+      <form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
+	<input type="hidden" data-mm-role="license-text">
+      </form>
+
+      <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
+      <button data-mm-role="remove" data-mm-section="view-license license-details  expired-license invalid-license" class="btn btn-danger" tabstop="8">Remove License</button>
+      <button data-dismiss="modal" data-mm-section="no-license license-required invalid-license unauthorised-license registration-fail registration-progress register" class="btn" tabstop="9">Cancel</button>
+      <button data-dismiss="modal" data-mm-section="view-license registration-success license-server-unavailable  expired-license" class="btn" tabstop="10">Close</button>
     </div>
   </div>
 

@@ -125,6 +125,9 @@ describe('MM.S3Api', function () {
 			withFile = '<?xml version="1.0" encoding="UTF-8"?><ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-pdf</Name><Prefix>out/hello.pdf</Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>out/hello.pdf</Key><LastModified>2013-12-04T15:02:11.000Z</LastModified><ETag>&quot;047d0c7c9663813b053ae18957420632&quot;</ETag><Size>24504</Size><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>';
 			withoutFile = '<?xml version="1.0" encoding="UTF-8"?><ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-pdf</Name><Prefix>out/x.pdf</Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>';
 		});
+		afterEach(function () {
+			clock.restore();
+		});
 		it('uses ajax for a given URL', function () {
 			underTest.poll('REQUEST');
 			expect(jQuery.ajax).toHaveBeenCalledWith({
