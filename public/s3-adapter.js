@@ -165,7 +165,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 	this.buildMapUrl = function (mapId, idPrefix, showAuthentication) {
 		var deferred =  jQuery.Deferred(),
 		retrieveSignature = function (license) {
-			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
+			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account) || '');
 			if (s3key) {
 				new MM.GoldFileApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
 					deferred.resolve,
