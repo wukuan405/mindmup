@@ -155,7 +155,7 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 					checkForDuplicateV2(result, encodeURIComponent(fileName), license);
 				},
 				function (result) {
-					deferred.reject(api.apiError(result.text));
+					deferred.reject(api.apiError(result.responseText));
 				});
 			};
 		handleRedirectMapId();
