@@ -1,5 +1,5 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, window, _*/
+/*global FormData, jQuery, MM, _*/
 MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder, additionalArgumentsGenerator) {
 	'use strict';
 	this.generate = function () {
@@ -166,10 +166,14 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 		var deferred =  jQuery.Deferred(),
 		retrieveSignature = function (license) {
 			var s3key = encodeURIComponent(MM.mapIdToS3Key(idPrefix, mapId, undefined, license.account));
-			new MM.GoldFileApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
-				deferred.resolve,
-				deferred.reject
-			);
+			if (s3key) {
+				new MM.GoldFileApi(license, goldApiUrl).exec('url', {'file_key': s3key}).then(
+					deferred.resolve,
+					deferred.reject
+				);
+			} else {
+				deferred.reject('not-authenticated');
+			}
 		};
 		if (isPrivate) {
 			licenseManager.retrieveLicense(showAuthentication).then(
