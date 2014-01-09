@@ -43,28 +43,32 @@ MM.GoldFileApi = function (license, goldApiUrl) {
 	'use strict';
 	this.exec = function (apiProc, args) {
 		var formData = new FormData(),
-			dataTypes = { 'upload_config': 'json' };
+			dataTypes = { 'upload_config': 'json' },
+			deferred = jQuery.Deferred(),
+			apiError = function (serverResult) {
+				var recognisedErrors = ['not-authenticated', 'invalid-args', 'server-error', 'user-exists', 'email-exists'];
+				if (_.contains(recognisedErrors, serverResult)) {
+					return serverResult;
+				}
+				return 'network-error';
+			};
 		formData.append('license', JSON.stringify(license));
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
 			});
 		}
-		return jQuery.ajax({
+		jQuery.ajax({
 			url: goldApiUrl + '/file/' + apiProc,
 			dataType: dataTypes[apiProc],
 			data: formData,
 			processData: false,
 			contentType: false,
 			type: 'POST'
+		}).then(deferred.resolve, function (result) {
+			deferred.reject(apiError(result.responseText));
 		});
-	};
-	this.apiError = function (serverResult) {
-		var recognisedErrors = ['not-authenticated', 'invalid-args', 'server-error', 'user-exists', 'email-exists'];
-		if (_.contains(recognisedErrors, serverResult)) {
-			return serverResult;
-		}
-		return 'network-error';
+		return deferred.promise();
 	};
 };
 MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, isPrivate, couldRedirectFrom, goldApiUrl, goldBucketName) {
@@ -73,28 +77,6 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 
 	this.generate = function (mapId, defaultFileName, idPrefix, showAuthentication) {
 		var deferred = jQuery.Deferred(),
-			checkForDuplicateV1 = function (config, licenseKey) {
-				if (mapId && (mapId[0] === idPrefix)) {
-					return deferred.resolve(config);
-				}
-				MM.ajaxS3List(licenseKey, idPrefix, config.key).then(
-					function (list) {
-						if (list && list.length) {
-							modalConfirmation.showModalToConfirm(
-								'Confirm saving',
-								'There is already a file with that name in your cloud storage. Please confirm that you want to overwrite it, or cancel and rename the map before saving',
-								'Overwrite'
-							).then(
-								deferred.resolve.bind(deferred, config),
-								deferred.reject.bind(deferred, 'user-cancel')
-							);
-						} else {
-							deferred.resolve(config);
-						}
-					},
-					deferred.reject
-				);
-			},
 			checkForDuplicateV2 = function (config, fileToCheck, license) {
 				if (mapId && (mapId[0] === idPrefix)) {
 					return deferred.resolve(config);
@@ -123,40 +105,20 @@ MM.GoldPublishingConfigGenerator = function (licenseManager, modalConfirmation, 
 					mapId = idPrefix + mapId.slice(1);
 				}
 			},
-			generateV1Config = function (licenseKey) {
-				if (isPrivate && !licenseKey.key) {
-					deferred.reject('not-authenticated');
-					return;
-				}
-				var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, licenseKey.account),
-					config = {
-						'mapId': idPrefix + '/' + licenseKey.account + '/' + encodeURIComponent(fileName), //mapId
-						'key': fileName,
-						's3BucketName' : 'mindmup-' + licenseKey.account,
-						'Content-Type': 'text/plain',
-						'AWSAccessKeyId' : licenseKey.id,
-						'policy': licenseKey.policy,
-						'signature': licenseKey.signature,
-						's3Url': 'https://mindmup-' + licenseKey.account + '.s3.amazonaws.com/'
-					};
-				checkForDuplicateV1(config, licenseKey);
-			},
-
 			generateConfig = function (license) {
 				var api = new MM.GoldFileApi(license, goldApiUrl);
 				api.exec('upload_config').then(
-				function (config) {
-					var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
-						result = _.extend(config, {
-							'mapId': idPrefix + '/' + license.account + '/' + encodeURIComponent(fileName), //mapId
-							'key': license.account + '/' + fileName,
-							's3Url': 'https://' + config.s3BucketName + '.s3.amazonaws.com/'
-						});
-					checkForDuplicateV2(result, encodeURIComponent(fileName), license);
-				},
-				function (result) {
-					deferred.reject(api.apiError(result.responseText));
-				});
+					function (config) {
+						var fileName = MM.mapIdToS3Key(idPrefix, mapId, defaultFileName, license.account),
+							result = _.extend(config, {
+								'mapId': idPrefix + '/' + license.account + '/' + encodeURIComponent(fileName), //mapId
+								'key': license.account + '/' + fileName,
+								's3Url': 'https://' + config.s3BucketName + '.s3.amazonaws.com/'
+							});
+						checkForDuplicateV2(result, encodeURIComponent(fileName), license);
+					},
+					deferred.reject
+				);
 			};
 		handleRedirectMapId();
 		licenseManager.retrieveLicense(showAuthentication).then(generateConfig, deferred.reject);
