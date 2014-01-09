@@ -115,7 +115,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			} else {
 				emailField.parents('div.control-group').removeClass('error');
 			}
-			if (!/[a-z][a-z0-9]{3,20}/.test(accountNameField.val())) {
+			if (!/^[a-z][a-z0-9]{3,20}$/.test(accountNameField.val())) {
 				accountNameField.parents('div.control-group').addClass('error');
 			} else {
 				accountNameField.parents('div.control-group').removeClass('error');

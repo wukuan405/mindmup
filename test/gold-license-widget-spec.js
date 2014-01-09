@@ -255,7 +255,7 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
 		});
 		describe('marks account name as invalid if it is not 4-20 chars and only alphanumeric lowercase', function () {
-			_.each(['abc', '123456789012345678901', 'ab_cd', 'abc@d', 'abcD'], function (name) {
+			_.each(['abc', '123456789012345678901', 'ab_cd', 'abc@d', 'abcD', 'abcd efgh', 'abcd-efgh'], function (name) {
 				it('rejects ' + name, function () {
 					underTest.find('[data-mm-section=register] input[name=account-name]').val(name);
 					underTest.find('[data-mm-role=register]').click();
