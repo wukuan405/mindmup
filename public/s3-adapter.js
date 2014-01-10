@@ -195,7 +195,7 @@ MM.s3AjaxErrorReason = function (err, isAuthenticated) {
 	return reason;
 };
 
-MM.GoldStorageAdapter = function (storageAdapter, licenseManager, redirectTo, goldApiUrl) {
+MM.GoldStorageAdapterOld = function (storageAdapter, licenseManager, redirectTo, goldApiUrl) {
 	'use strict';
 	var originaLoadMap = storageAdapter.loadMap;
 	storageAdapter.list = function (showLicenseDialog) {
