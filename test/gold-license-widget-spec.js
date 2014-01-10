@@ -12,9 +12,11 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="view-license"></span>' +
 					'<input type="text" data-mm-role="expiry-date" value="dirty"/>' +
 					'<input type="text" data-mm-role="license-text" value="dirty"/>' +
+					'<textarea data-mm-role="license-text" >dirty</textarea>' +
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
 					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
 					'<div data-mm-section="register">' +
@@ -161,6 +163,41 @@ describe('Gold License Widget', function () {
 			checkSectionShown('license-details');
 		});
 
+		describe('edit license text', function () {
+			it('changes the license if valid license saved and shows the view-license section', function () {
+				underTest.modal('show');
+				underTest.find('textarea[data-mm-role=license-text]').val('some text');
+				licenseManager.storeLicense.andReturn(true);
+
+
+				underTest.find('[data-mm-role=save-license]').click();
+
+				expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
+				expect(underTest.is(':visible')).toBeTruthy();
+				checkSectionShown('view-license');
+			});
+			it('automatically closes the dialog when valid license is uploaded if loaded from the license manager', function () {
+				licenseManager.storeLicense.andReturn(true);
+				licenseManager.dispatchEvent('license-entry-required');
+				underTest.find('textarea[data-mm-role=license-text]').val('some text');
+
+				underTest.find('[data-mm-role=save-license]').click();
+
+				expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
+				expect(underTest.is(':visible')).toBeFalsy();
+			});
+			it('shows a validation error and keeps the dialog open if invalid license is uploaded', function () {
+				underTest.modal('show');
+				underTest.find('textarea[data-mm-role=license-text]').val('some text');
+				licenseManager.storeLicense.andReturn(false);
+
+				underTest.find('[data-mm-role=save-license]').click();
+
+				expect(underTest.is(':visible')).toBeTruthy();
+				checkSectionShown('invalid-license');
+			});
+		});
+
 	});
 
 	describe('pre-populating fields on display', function () {
@@ -182,13 +219,18 @@ describe('Gold License Widget', function () {
 		it('fills in anything with the data-mm-role=license-text with the current license text formatted as JSON', function () {
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=license-text]').val()).toBe('{"account":"test-acc"}');
+			underTest.find('[data-mm-role~=license-text]').each(function () {
+				expect(jQuery(this).val()).toEqual('{"account":"test-acc"}');
+			});
 		});
 		it('clears in anything with data-mm-role=license-text, expiry-date and account-name if the license is not defined, and hides anything with data-mm-role=expired', function () {
 			licenseManager.getLicense = jasmine.createSpy('getLicense').andReturn(false);
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=expiry-date]').val()).toEqual('');
 			expect(underTest.find('input[data-mm-role~=account-name]').val()).toEqual('');
-			expect(underTest.find('input[data-mm-role~=license-text]').val()).toEqual('');
+			underTest.find('[data-mm-role~=license-text]').each(function () {
+				expect(jQuery(this).val()).toEqual('');
+			});
 		});
 
 

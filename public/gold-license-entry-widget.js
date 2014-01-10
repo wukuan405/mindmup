@@ -41,11 +41,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				};
 			self.find('input[data-mm-role~=account-name]').val((license && license.account) || '');
 			if (license) {
-				self.find('input[data-mm-role~=license-text]').val(JSON.stringify(license));
+				self.find('[data-mm-role~=license-text]').val(JSON.stringify(license));
 				self.find('input[data-mm-role~=expiry-date]').val('getting expiry date...');
 				goldApi.getExpiry().then(showExpiry, failExpiry);
 			}  else {
-				self.find('input[data-mm-role~=license-text]').val('');
+				self.find('[data-mm-role~=license-text]').val('');
 				self.find('input[data-mm-role~=expiry-date]').val('');
 			}
 		},
@@ -135,6 +135,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	self.find('[data-mm-role~=form-submit]').click(function () {
 		var id = jQuery(this).data('mm-form');
 		jQuery(id).submit();
+	});
+	self.find('[data-mm-role=save-license]').click(function () {
+		var licenseText = self.find('textarea[data-mm-role=license-text]').val();
+		setLicense(licenseText);
 	});
 	self.on('show', function () {
 		audit('license-show');

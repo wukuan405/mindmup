@@ -81,11 +81,16 @@ MM.main = function (config) {
 				'iconEditor': iconEditor
 			}),
 			loadWidgets = function () {
-				if (!config.isTouch) {
+				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
+				if (isTouch) {
+					jQuery('[data-mm-role-touch]').attr('data-mm-role', function () {
+						return jQuery(this).attr('data-mm-role-touch');
+					});
+				} else {
 					jQuery('[rel=tooltip]').tooltip();
 				}
 				jQuery('body').mapStatusWidget(mapController);
-				jQuery('#container').mapWidget(activityLog, mapModel, config.isTouch, stageImageInsertController);
+				jQuery('#container').mapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
@@ -115,7 +120,7 @@ MM.main = function (config) {
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(s3GoldAdapter, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
-				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, config.isTouch);
+				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch);
 				jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 				jQuery('#modalEmbedMap').embedMapWidget(mapController);
 				jQuery('#linkEditWidget').linkEditWidget(mapModel);
@@ -144,7 +149,6 @@ MM.main = function (config) {
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		];
 		jQuery.fn.colorPicker.defaults.pickerDefault = 'transparent';
-		config.isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
