@@ -50,8 +50,9 @@ MM.main = function (config) {
 			ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
 			goldApi = new MM.GoldApi(goldLicenseManager, config.goldApiUrl, activityLog),
-			s3PrivateGoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true, 'b', config.goldApiUrl, config.goldBucketName), 'p', 'MindMup Gold Private', true), goldLicenseManager, undefined, config.goldApiUrl),
-			s3GoldAdapter = MM.GoldStorageAdapter(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, false, 'p', config.goldApiUrl, config.goldBucketName), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p', config.goldApiUrl),
+			goldStorageAdapter = new MM.GoldStorageAdapter('b', goldApi),
+			s3PrivateGoldAdapter = MM.GoldStorageAdapterOld(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, true, 'b', config.goldApiUrl, config.goldBucketName), 'p', 'MindMup Gold Private', true), goldLicenseManager, undefined),
+			s3GoldAdapter = MM.GoldStorageAdapterOld(new MM.S3Adapter(new MM.GoldPublishingConfigGenerator(goldLicenseManager, modalConfirm, false, 'p', config.goldApiUrl, config.goldBucketName), 'b', 'MindMup Gold Public'), goldLicenseManager, 'p'),
 			s3Adapter = new MM.S3Adapter(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
 			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
@@ -117,7 +118,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
-				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(s3GoldAdapter, mapController);
+				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorageAdapter, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
 				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch);

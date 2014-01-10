@@ -165,27 +165,6 @@ MM.parseS3FileList = function (prepend, httpResult, remove) {
 	});
 	return list;
 };
-MM.ajaxS3List = function (license, idPrefix, searchPrefix) {
-	'use strict';
-	var deferred = jQuery.Deferred(),
-		url = 'https://mindmup-' + license.account + '.s3.amazonaws.com/?&AWSAccessKeyId=' + license.id + '&Signature=' + license.list + '&Expires=' + license.expiry;
-	if (searchPrefix) {
-		url = url + '&prefix=' + encodeURIComponent(searchPrefix);
-	}
-	jQuery.ajax({
-		url: url,
-		type: 'GET'
-	}).then(
-		function (result) {
-			var list = MM.parseS3FileList(idPrefix + '/' + license.account, result);
-			deferred.resolve(list);
-		},
-		function (err) {
-			deferred.reject(MM.s3AjaxErrorReason(err, true));
-		}
-	);
-	return deferred.promise();
-};
 MM.s3AjaxErrorReason = function (err, isAuthenticated) {
 	'use strict';
 	var reason = 'network-error';
@@ -195,24 +174,9 @@ MM.s3AjaxErrorReason = function (err, isAuthenticated) {
 	return reason;
 };
 
-MM.GoldStorageAdapterOld = function (storageAdapter, licenseManager, redirectTo, goldApiUrl) {
+MM.GoldStorageAdapterOld = function (storageAdapter, licenseManager, redirectTo) {
 	'use strict';
 	var originaLoadMap = storageAdapter.loadMap;
-	storageAdapter.list = function (showLicenseDialog) {
-		var deferred = jQuery.Deferred();
-		licenseManager.retrieveLicense(showLicenseDialog).then(
-			function (license) {
-				new MM.GoldFileApi(license, goldApiUrl).exec('list').then(
-					function (result) {
-						var list = MM.parseS3FileList(storageAdapter.prefix + '/' + license.account, result, license.account.length + 1);
-						deferred.resolve(list);
-					},
-					deferred.reject);
-			},
-			deferred.reject
-		);
-		return deferred.promise();
-	};
 	storageAdapter.loadMap = function (mapId, showAuthentication) {
 		var deferred = jQuery.Deferred();
 		originaLoadMap(mapId, showAuthentication).then(

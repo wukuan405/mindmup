@@ -46,4 +46,27 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('file/export_config', {'license': JSON.stringify(license), 'format': format});
 	};
+	this.listFiles = function (showLicenseDialog) {
+		var deferred = jQuery.Deferred(),
+			onLicenceRetrieved = function (license) {
+				var onListReturned = function (httpResult) {
+					var parsed = jQuery(httpResult),
+						list = [];
+					parsed.find('Contents').each(function () {
+						var element = jQuery(this),
+							key = element.children('Key').text(),
+							remove = key.indexOf('/') + 1;
+						list.push({
+							modifiedDate: element.children('LastModified').text(),
+							title:  key.slice(remove)
+						});
+
+					});
+					deferred.resolve(list, license.account);
+				};
+				self.exec('file/list', {'license': JSON.stringify(license)}).then(onListReturned, deferred.reject);
+			};
+		goldLicenseManager.retrieveLicense(showLicenseDialog).then(onLicenceRetrieved, deferred.reject);
+		return deferred.promise();
+	};
 };
