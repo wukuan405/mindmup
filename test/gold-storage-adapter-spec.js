@@ -1,4 +1,4 @@
-/* global MM, describe, it, beforeEach, spyOn, expect, jQuery, jasmine*/
+/* global MM, describe, it, beforeEach, spyOn, expect, jQuery, jasmine, _*/
 describe('MM.GoldStorageAdapter', function () {
 	'use strict';
 	var underTest, goldApi, fileList, goldApiListDeferred;
@@ -35,14 +35,76 @@ describe('MM.GoldStorageAdapter', function () {
 		});
 	});
 	describe('saveMap', function () {
+		describe('configuration', function () {
+			it('retrieves it from the gold api', function () {
+				
+			});
+			_.each([true, false], function (arg) {
+				it('passes showAuthDialogs=' + arg + ' to the api', function () {
+
+				});
+			});
+			it('rejects when gold api rejects, preserving the error reason', function () {
+			
+			});
+		});
+		describe('saves the file', function () {
+			it('passes the content and save configuration to the s3 api', function () {});
+
+			it('saves public maps when adapter is public', function () {
+			
+			});
+			it('saves private maps when adapter is private', function () {
+			
+			});
+			it('resolves with map ID and adapter properties when save resolves', function () {
+
+			});
+			it('rejects and preserves the error reason when save rejects', function () {
+
+			});
+		});
+		describe('prevents unintentional over-writes', function () {
+			it('asks for confirmation before overwriting duplicate file names', function () {
+
+			});
+			it('does not ask for confirmation if the file does not exist already', function () {
+			});
+			it('saves without confirmation when changing the current file', function () {
+
+			});
+			it('saves without confirmation when moving the same map from public to private', function () {
+
+			});
+			it('saves without confirmation when moving the same map from private to public', function () {
+
+			});
+			it('rejects with user-cancel if the confirmation rejects, without saving the file', function () {
+
+			});
+			it('saves the file if the confirmation resolves', function () {
+
+			});
+			it('uses mapid as key if saving an existing file', function () {
+			
+			});
+			it('uses file name as key if creating a new file', function () {
+
+			});
+			it('uses file name as key if moving from a different storage provider', function () {
+
+			});
+		});
 
 	});
 	describe('loadMap', function () {
 
 	});
-	describe('recognises ', function () {
+	describe('recognises', function () {
 
 	});
+	describe('description', function () {
 
+	});
 
 });
