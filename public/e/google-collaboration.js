@@ -204,10 +204,17 @@ MM.Extensions.googleCollaboration = function () {
 						self.showFocus(event.sessionId);
 					}
 				},
+				prevAlert,
+				showUpdate = function (caption, text) {
+					if (prevAlert) {
+						alert.hide(prevAlert);
+					}
+					prevAlert = alert.show(caption, text, 'flash');
+				},
 				onCollaboratorLeft = function (event) {
 					var profileImg = sessionImages[event.collaborator.sessionId],
 						layer;
-					alert.show('Collaborator left!', event.collaborator.displayName + ' left this session', 'flash');
+					showUpdate('Collaborator left!', event.collaborator.displayName + ' left this session');
 					if (profileImg) {
 						layer = profileImg.getLayer();
 						profileImg.remove();
@@ -215,7 +222,7 @@ MM.Extensions.googleCollaboration = function () {
 					}
 				},
 				onCollaboratorJoined = function (event) {
-					alert.show('Collaborator joined!', event.collaborator.displayName + ' joined this session', 'flash');
+					showUpdate('Collaborator joined!', event.collaborator.displayName + ' joined this session');
 				},
 				onSelectionChanged = function (id, isSelected) {
 					if (isSelected) {
