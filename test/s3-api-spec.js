@@ -215,4 +215,27 @@ describe('MM.S3Api', function () {
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
 	});
+	describe('loadUrl', function () {
+		it('makes an ajax request using the url with cache set to false', function () {
+			underTest.loadUrl('https://foo.com');
+			expect(jQuery.ajax).toHaveBeenCalledWith('https://foo.com', {cache: false});
+		});
+		it('resolves with the result of the ajax call', function () {
+			var resolveSpy = jasmine.createSpy('resolve');
+			ajaxDeferred.resolve('response text');
+			underTest.loadUrl('https://foo.com').then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith('response text');
+		});
+		describe('rejects with according to error status is ', {
+			'map-not-found when 404': [404, 'map-not-found'],
+			'map-not-found when 403': [403, 'map-not-found'],
+			'network-error when 500': [500, 'network-error']
+		}, function (errorCode, expectedReason) {
+			var rejectSpy = jasmine.createSpy('reject');
+			ajaxDeferred.reject({status: errorCode});
+			underTest.loadUrl('https://foo.com').fail(rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith(expectedReason);
+		});
+	});
+
 });

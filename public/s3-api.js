@@ -46,8 +46,8 @@ MM.S3Api = function () {
 		}).then(deferred.resolve, saveFailed);
 		return deferred.promise();
 	};
-	this.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 20000};
-	this.poll = function (signedListUrl, options) {
+	self.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 20000};
+	self.poll = function (signedListUrl, options) {
 		var sleepTimeoutId,
 			timeoutId,
 			deferred = jQuery.Deferred(),
@@ -91,6 +91,21 @@ MM.S3Api = function () {
 			timeoutId = window.setTimeout(cancelRequest, options.timeoutPeriod);
 			execRequest();
 		}
+		return deferred.promise();
+	};
+	self.loadUrl = function  (url) {
+		var deferred = jQuery.Deferred();
+		jQuery.ajax(
+			url, { cache: false}).then(
+			deferred.resolve,
+			function (err) {
+				if (err.status === 404 || err.status === 403) {
+					deferred.reject('map-not-found');
+				} else {
+					deferred.reject('network-error');
+				}
+
+			});
 		return deferred.promise();
 	};
 };
