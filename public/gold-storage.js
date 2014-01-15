@@ -4,6 +4,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 	'use strict';
 	var self = this,
 		fileProperties = {editable: true},
+		privatePrefix,
 		isRelatedPrefix = function (mapPrefix) {
 			return mapPrefix && options && options[mapPrefix];
 		},
@@ -20,8 +21,15 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 				account: mapIdComponents[1],
 				fileNameKey: decodeURIComponent(mapIdComponents[2])
 			};
+		},
+		buildMapId = function (prefix, account, fileNameKey) {
+			return prefix + '/' + account + '/' + encodeURIComponent(fileNameKey);
 		};
-
+	_.each(options, function (val, key) {
+		if (val.isPrivate) {
+			privatePrefix = key;
+		}
+	});
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
@@ -54,7 +62,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 						return false;
 					},
 					onSaveComplete = function () {
-						deferred.resolve(prefix + '/' + account + '/' + encodeURIComponent(s3FileNameKey), fileProperties);
+						deferred.resolve(buildMapId(prefix, account, s3FileNameKey), fileProperties);
 					},
 					doSave = function () {
 						s3Api.save(contentToSave, config, options[prefix]).then(onSaveComplete, deferred.reject);
@@ -96,17 +104,27 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 	self.loadMap = function (mapId, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
 			goldMapInfo = goldMapIdComponents(mapId),
-			isPrivate = goldMapInfo && options[goldMapInfo.prefix].isPrivate;
-		if (goldMapInfo) {
-			goldApi.fileUrl(goldMapInfo.account, goldMapInfo.fileNameKey, isPrivate, showAuthenticationDialog).then(
-				function (url) {
-					s3Api.loadUrl(url).then(function (content) {
-						deferred.resolve(content, mapId, 'application/json', fileProperties);
+			loadMapInternal = function (mapPrefix, account, fileNameKey) {
+				var privateMap = options[mapPrefix].isPrivate;
+				goldApi.fileUrl(account, fileNameKey, privateMap, showAuthenticationDialog).then(
+					function (url) {
+						s3Api.loadUrl(url).then(function (content) {
+							deferred.resolve(content, buildMapId(mapPrefix, account, fileNameKey), 'application/json', fileProperties);
+						},
+						function (reason) {
+							if (reason === 'map-not-found' && !privateMap && privatePrefix)  {
+								loadMapInternal(privatePrefix, account, fileNameKey);
+							} else {
+								deferred.reject(reason);
+							}
+						});
 					},
-					deferred.reject);
-				},
-				deferred.reject
-			);
+					deferred.reject
+				);
+			};
+
+		if (goldMapInfo) {
+			loadMapInternal(goldMapInfo.prefix, goldMapInfo.account, goldMapInfo.fileNameKey);
 		} else {
 			deferred.reject('invalid-args');
 		}

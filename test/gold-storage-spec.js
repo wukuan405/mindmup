@@ -227,6 +227,32 @@ describe('MM.GoldStorage', function () {
 			it('rejects when S3 api rejects, preserving the error reason', function () {
 				s3LoadUrlDeferred.reject('a-reason');
 				expect(rejectSpy).toHaveBeenCalledWith('a-reason');
+				expect(s3Api.loadUrl.callCount).toBe(1);
+			});
+		});
+		describe('when attempting to load a private map from a public url', function () {
+
+			it('falls back to the private map url if the public one fails with reason map-not-found', function () {
+				var resolveSpy,
+					content = '{}',
+					publicUrl = 'http://..../freddy/foo.mup',
+					privateUrl = 'http://..../freddy/foo.mup?sign=signature';
+
+				resolveSpy = jasmine.createSpy('resolve');
+				s3Api.loadUrl.andCallFake(function (url) {
+					if (url === publicUrl) {
+						return jQuery.Deferred().reject('map-not-found').promise();
+					} else {
+						return jQuery.Deferred().resolve(content).promise();
+					}
+				});
+				goldApi.fileUrl.andCallFake(function (account, fileKey, isPrivate) {
+					return jQuery.Deferred().resolve(isPrivate ? privateUrl : publicUrl).promise();
+				});
+				underTest.loadMap('b/freddy/foo.mup').then(resolveSpy);
+
+				expect(s3Api.loadUrl).toHaveBeenCalledWith(privateUrl);
+				expect(resolveSpy).toHaveBeenCalledWith(content, 'p/freddy/foo.mup', 'application/json', {editable: true});
 			});
 		});
 	});
