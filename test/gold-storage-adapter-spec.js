@@ -1,9 +1,9 @@
 /* global MM, describe, it, beforeEach, expect, jQuery, jasmine, _*/
-describe('MM.GoldStorageAdapter', function () {
+describe('MM.GoldFileSystem', function () {
 	'use strict';
 	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, saveOptions, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred;
 	beforeEach(function () {
-		saveOptions = {isPrivate: true};
+		saveOptions = {isPrivate: true, relatedPrefixes: 'pb'};
 		goldApiListDeferred = jQuery.Deferred();
 		goldSaveConfigDeferred = jQuery.Deferred();
 		goldExistsDeferred = jQuery.Deferred();
@@ -24,7 +24,7 @@ describe('MM.GoldStorageAdapter', function () {
 			{title: 'map1.mup', modifiedDate: '2014-01-07T12:13:41.000Z'},
 			{title: 'a map / with \'funny\' chars?.mup', modifiedDate: '2014-01-10T12:13:41.000Z'}
 		];
-		underTest = new MM.GoldStorageAdapter('b', goldApi, s3Api, modalConfirmation, saveOptions);
+		underTest = new MM.GoldFileSystem('b', goldApi, s3Api, modalConfirmation, saveOptions);
 	});
 	describe('list', function () {
 		describe('should resolve with a list of files', function () {
@@ -132,17 +132,20 @@ describe('MM.GoldStorageAdapter', function () {
 			it('saves without confirmation when moving the same map from public to private', function () {
 				underTest.saveMap(contentToSave, 'p/jimbo/foo.mup', filename);
 				expect(modalConfirmation.showModalToConfirm).not.toHaveBeenCalled();
-				expect(s3Api.save).toHaveBeenCalled();
+				expect(s3Api.save).toHaveBeenCalledWith(contentToSave, {key: 'jimbo/foo.mup'}, saveOptions);
 			});
-
+			it('checks for duplicate file when saving from an unrecognised prefix', function () {
+				underTest.saveMap(contentToSave, 'd/jimbo/foo.mup', 'map file name .mup');
+				expect(goldApi.exists).toHaveBeenCalledWith('map file name .mup');
+			});
 		});
 		describe('prevents unintentional over-writes', function () {
 			var resolveSpy, rejectSpy;
 			beforeEach(function () {
 				resolveSpy = jasmine.createSpy('resolved');
 				rejectSpy = jasmine.createSpy('rejected');
-				underTest.saveMap(contentToSave, 'b', filename).then(resolveSpy, rejectSpy);
 				goldSaveConfigDeferred.resolve({}, 'jimbo');
+				underTest.saveMap(contentToSave, 'b', filename).then(resolveSpy, rejectSpy);
 			});
 			it('uses the goldApi to check if the map exists when mapid has changed', function () {
 				expect(goldApi.exists).toHaveBeenCalledWith('map with a space.mup');

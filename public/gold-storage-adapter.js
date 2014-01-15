@@ -1,7 +1,10 @@
 /* global MM, jQuery, _*/
-MM.GoldStorageAdapter = function (prefix, goldApi, s3Api, modalConfirmation, saveOptions) {
+MM.GoldFileSystem = function (prefix, goldApi, s3Api, modalConfirmation, saveOptions) {
 	'use strict';
-	var self = this;
+	var self = this,
+		isRelatedPrefix = function (prefix) {
+			return prefix && saveOptions.relatedPrefixes && saveOptions.relatedPrefixes.indexOf(prefix) > -1;
+		};
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
@@ -21,6 +24,9 @@ MM.GoldStorageAdapter = function (prefix, goldApi, s3Api, modalConfirmation, sav
 				if (mapIdComponents && mapIdComponents.length < 3) {
 					return false;
 				}
+				if (!isRelatedPrefix(mapIdComponents[0])) {
+					return false;
+				}
 				return {
 					prefix: mapIdComponents[0],
 					account: mapIdComponents[1],
@@ -28,20 +34,21 @@ MM.GoldStorageAdapter = function (prefix, goldApi, s3Api, modalConfirmation, sav
 				};
 			},
 			s3FileName = function (goldMapInfo, account) {
-				if (!goldMapInfo || goldMapInfo.account !== account) {
-					return fileName;
+				if (goldMapInfo && goldMapInfo.fileNameKey &&  goldMapInfo.account === account) {
+					return goldMapInfo.fileNameKey;
 				}
-				return goldMapInfo.fileNameKey;
+				return fileName;
+
 			},
 			onSaveConfig = function (saveConfig, account) {
 				var goldMapInfo = goldMapIdComponents(),
 					s3FileNameKey = s3FileName(goldMapInfo, account),
 					config = _.extend({}, saveConfig, {key: account + '/' + s3FileNameKey}),
 					shouldCheckForDuplicate = function () {
-						if (account === goldMapInfo.account && s3FileNameKey === goldMapInfo.fileNameKey) {
-							return false;
+						if (!goldMapInfo || account !== goldMapInfo.account) {
+							return true;
 						}
-						return true;
+						return false;
 					},
 					onSaveComplete = function () {
 						deferred.resolve(prefix + '/' + account + '/' + encodeURIComponent(s3FileNameKey), {editable: true});
