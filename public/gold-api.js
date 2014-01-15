@@ -1,5 +1,5 @@
 /* global MM, jQuery, FormData, _ */
-MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
+MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketName) {
 	'use strict';
 	var self = this,
 		LOG_CATEGORY = 'GoldApi',
@@ -9,8 +9,21 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 				return serverResult;
 			}
 			return 'network-error';
+		},
+		licenseExec = function (apiProc, showLicenseDialog, args) {
+			var deferred = jQuery.Deferred(),
+				onLicenceRetrieved = function (license) {
+					var execArgs = _.extend({}, args, {'license': JSON.stringify(license)});
+					self.exec(apiProc, execArgs).then(
+						function (httpResult) {
+							deferred.resolve(httpResult, license.account);
+						},
+						deferred.reject);
+				};
+			goldLicenseManager.retrieveLicense(showLicenseDialog).then(onLicenceRetrieved, deferred.reject);
+			return deferred.promise();
 		};
-	this.exec = function (apiProc, args) {
+	self.exec = function (apiProc, args) {
 		var deferred = jQuery.Deferred(),
 			rejectWithError = function (jxhr) {
 				var result = jxhr.responseText;
@@ -19,7 +32,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 			},
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
-			dataTypes = { 'license/register': 'json', 'file/export_config': 'json'};
+			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json'};
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
@@ -35,38 +48,45 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog) {
 		}).then(deferred.resolve, rejectWithError).always(timer.end);
 		return deferred.promise();
 	};
-	this.register = function (accountName, email) {
+	self.register = function (accountName, email) {
 		return self.exec('license/register', {'to_email': email, 'account_name' : accountName});
 	};
-	this.getExpiry = function () {
+	self.getExpiry = function () {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('license/expiry', {'license': JSON.stringify(license)});
 	};
-	this.generateExportConfiguration = function (format) {
+	self.generateExportConfiguration = function (format) {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('file/export_config', {'license': JSON.stringify(license), 'format': format});
 	};
-	this.listFiles = function (showLicenseDialog) {
+	self.listFiles = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
-			onLicenceRetrieved = function (license) {
-				var onListReturned = function (httpResult) {
-					var parsed = jQuery(httpResult),
-						list = [];
-					parsed.find('Contents').each(function () {
-						var element = jQuery(this),
-							key = element.children('Key').text(),
-							remove = key.indexOf('/') + 1;
-						list.push({
-							modifiedDate: element.children('LastModified').text(),
-							title:  key.slice(remove)
-						});
-
+			onListReturned = function (httpResult, account) {
+				var parsed = jQuery(httpResult),
+					list = [];
+				parsed.find('Contents').each(function () {
+					var element = jQuery(this),
+						key = element.children('Key').text(),
+						remove = key.indexOf('/') + 1;
+					list.push({
+						modifiedDate: element.children('LastModified').text(),
+						title:  key.slice(remove)
 					});
-					deferred.resolve(list, license.account);
-				};
-				self.exec('file/list', {'license': JSON.stringify(license)}).then(onListReturned, deferred.reject);
+				});
+				deferred.resolve(list, account);
 			};
-		goldLicenseManager.retrieveLicense(showLicenseDialog).then(onLicenceRetrieved, deferred.reject);
+		licenseExec('file/list', showLicenseDialog).then(onListReturned, deferred.reject);
 		return deferred.promise();
+	};
+	self.generateSaveConfig = function (showLicenseDialog) {
+		return licenseExec('file/upload_config', showLicenseDialog);
+	};
+	self.fileUrl = function (showAuthenticationDialog, account, fileNameKey, signedUrl) {
+		if (signedUrl) {
+			return licenseExec('file/url', showAuthenticationDialog);
+		} else {
+			return jQuery.Deferred().resolve('https://' + goldBucketName + '.s3.amazonaws.com/' + account + '/' + fileNameKey).promise();
+		}
+
 	};
 };
