@@ -1,20 +1,24 @@
 /* global MM, describe, it, beforeEach, expect, jQuery, jasmine, _*/
 describe('MM.GoldStorage', function () {
 	'use strict';
-	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, options, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred;
+	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, options, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred, goldFileUrlDeferred, s3LoadUrlDeferred;
 	beforeEach(function () {
 		options = {'p': {isPrivate: true}, 'b': {isPrivate: false}, listPrefix: 'b'};
 		goldApiListDeferred = jQuery.Deferred();
 		goldSaveConfigDeferred = jQuery.Deferred();
 		goldExistsDeferred = jQuery.Deferred();
+		goldFileUrlDeferred = jQuery.Deferred();
 		goldApi  = {
 			exists: jasmine.createSpy('exists').andReturn(goldExistsDeferred.promise()),
 			listFiles: jasmine.createSpy('listFiles').andReturn(goldApiListDeferred.promise()),
-			generateSaveConfig: jasmine.createSpy('generateSaveConfig').andReturn(goldSaveConfigDeferred.promise())
+			generateSaveConfig: jasmine.createSpy('generateSaveConfig').andReturn(goldSaveConfigDeferred.promise()),
+			fileUrl: jasmine.createSpy('fileUrl').andReturn(goldFileUrlDeferred.promise())
 		};
 		s3SaveDeferred = jQuery.Deferred();
+		s3LoadUrlDeferred = jQuery.Deferred();
 		s3Api = {
-			save: jasmine.createSpy('save').andReturn(s3SaveDeferred.promise())
+			save: jasmine.createSpy('save').andReturn(s3SaveDeferred.promise()),
+			loadUrl: jasmine.createSpy('loadUrl').andReturn(s3LoadUrlDeferred.promise())
 		};
 		showModalToConfirmDeferred = jQuery.Deferred();
 		modalConfirmation = {
@@ -177,39 +181,52 @@ describe('MM.GoldStorage', function () {
 		});
 	});
 	describe('loadMap', function () {
-		describe('public files', function () {
-			it('uses the S3 API to load a map from a S3 bucket URL without going to gold API to sign urls', function () {
-
+		var rejectSpy;
+		beforeEach(function () {
+			rejectSpy = jasmine.createSpy('reject');
+		});
+		it('rejects with invalid-args if prefix not recognised', function () {
+			underTest.loadMap('x/jimbo/foo.mup').fail(rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('invalid-args');
+		});
+		describe('uses goldApi to get the URL', function () {
+			describe('passing the file key and the options related to the prefix when ',
+				{
+					'public with dialog': ['b', true, false],
+					'public without dialog': ['b', false, false],
+					'private with dialog': ['p', true,  true],
+					'private without dialog': ['p', false, true]
+				},
+				function (prefix, showDialogs,  isPrivate) {
+					underTest.loadMap(prefix + '/jimbo/foo.mup', showDialogs);
+					expect(goldApi.fileUrl).toHaveBeenCalledWith('jimbo', 'foo.mup', isPrivate, showDialogs);
+				});
+			it('rejects when the goldApi rejects, preserving the error reason', function () {
+				underTest.loadMap('b/jimbo/foo.mup').fail(rejectSpy);
+				goldFileUrlDeferred.reject('reason');
+				expect(rejectSpy).toHaveBeenCalledWith('reason');
+				expect(s3Api.loadUrl).not.toHaveBeenCalled();
 			});
 		});
-		describe('private files', function () {
-			_.each([true, false], function (arg) {
-				it('uses the goldApi to retrieve a signed URL, passing the account and ' + arg + ' as showAuthDialogs', function () {
 
-				});
-			});
-			it('rejects as not-authenticated if the file does not belong to the current license', function () {
-
-			});
-			it('rejects when the goldApi rejects, preserving the error reason', function () {
-
+		describe('uses s3Api to load a map', function () {
+			var resolveSpy,
+				content = '{}';
+			beforeEach(function () {
+				resolveSpy = jasmine.createSpy('resolve');
+				goldFileUrlDeferred.resolve('https://.../jimbo/foo.mup');
+				underTest.loadMap('b/jimbo/foo.mup').then(resolveSpy, rejectSpy);
 			});
 			it('waits for goldAPI to resolve, then passes the URL on to S3 API to load the file', function () {
-
+				expect(s3Api.loadUrl).toHaveBeenCalledWith('https://.../jimbo/foo.mup');
 			});
-		});
-		describe('uses s3Api to load a map', function () {
-			// ensure S3API prevents cache here
-			// ensure S3 API uses https here
-
 			it('resolves when S3 api resolves, with content, mapId, application/json and file system properties', function () {
-
+				s3LoadUrlDeferred.resolve(content);
+				expect(resolveSpy).toHaveBeenCalledWith(content, 'b/jimbo/foo.mup', 'application/json', {editable: true});
 			});
 			it('rejects when S3 api rejects, preserving the error reason', function () {
-
-			});
-			it('when loading a map belonging to a different license account, resolves with map ID using that account not the current license', function () {
-
+				s3LoadUrlDeferred.reject('a-reason');
+				expect(rejectSpy).toHaveBeenCalledWith('a-reason');
 			});
 		});
 	});
@@ -221,3 +238,4 @@ describe('MM.GoldStorage', function () {
 	});
 
 });
+

@@ -3,9 +3,25 @@
 MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 	'use strict';
 	var self = this,
+		fileProperties = {editable: true},
 		isRelatedPrefix = function (mapPrefix) {
 			return mapPrefix && options && options[mapPrefix];
+		},
+		goldMapIdComponents = function (mapId) {
+			var mapIdComponents = mapId && mapId.split('/');
+			if (mapIdComponents && mapIdComponents.length < 3) {
+				return false;
+			}
+			if (!isRelatedPrefix(mapIdComponents[0])) {
+				return false;
+			}
+			return {
+				prefix: mapIdComponents[0],
+				account: mapIdComponents[1],
+				fileNameKey: decodeURIComponent(mapIdComponents[2])
+			};
 		};
+
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
@@ -20,20 +36,6 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 	};
 	self.saveMap = function (prefix, contentToSave, mapId, fileName, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
-			goldMapIdComponents = function () {
-				var mapIdComponents = mapId && mapId.split('/');
-				if (mapIdComponents && mapIdComponents.length < 3) {
-					return false;
-				}
-				if (!isRelatedPrefix(mapIdComponents[0])) {
-					return false;
-				}
-				return {
-					prefix: mapIdComponents[0],
-					account: mapIdComponents[1],
-					fileNameKey: decodeURIComponent(mapIdComponents[2])
-				};
-			},
 			s3FileName = function (goldMapInfo, account) {
 				if (goldMapInfo && goldMapInfo.fileNameKey &&  goldMapInfo.account === account) {
 					return goldMapInfo.fileNameKey;
@@ -42,7 +44,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 
 			},
 			onSaveConfig = function (saveConfig, account) {
-				var goldMapInfo = goldMapIdComponents(),
+				var goldMapInfo = goldMapIdComponents(mapId),
 					s3FileNameKey = s3FileName(goldMapInfo, account),
 					config = _.extend({}, saveConfig, {key: account + '/' + s3FileNameKey}),
 					shouldCheckForDuplicate = function () {
@@ -52,7 +54,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 						return false;
 					},
 					onSaveComplete = function () {
-						deferred.resolve(prefix + '/' + account + '/' + encodeURIComponent(s3FileNameKey), {editable: true});
+						deferred.resolve(prefix + '/' + account + '/' + encodeURIComponent(s3FileNameKey), fileProperties);
 					},
 					doSave = function () {
 						s3Api.save(contentToSave, config, options[prefix]).then(onSaveComplete, deferred.reject);
@@ -89,6 +91,25 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 
 		goldApi.generateSaveConfig(showAuthenticationDialog).then(onSaveConfig, deferred.reject);
 
+		return deferred.promise();
+	};
+	self.loadMap = function (mapId, showAuthenticationDialog) {
+		var deferred = jQuery.Deferred(),
+			goldMapInfo = goldMapIdComponents(mapId),
+			isPrivate = goldMapInfo && options[goldMapInfo.prefix].isPrivate;
+		if (goldMapInfo) {
+			goldApi.fileUrl(goldMapInfo.account, goldMapInfo.fileNameKey, isPrivate, showAuthenticationDialog).then(
+				function (url) {
+					s3Api.loadUrl(url).then(function (content) {
+						deferred.resolve(content, mapId, 'application/json', fileProperties);
+					},
+					deferred.reject);
+				},
+				deferred.reject
+			);
+		} else {
+			deferred.reject('invalid-args');
+		}
 		return deferred.promise();
 	};
 };
