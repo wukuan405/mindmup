@@ -1,14 +1,15 @@
 /* global MM, jQuery, _*/
-MM.GoldFileSystem = function (prefix, goldApi, s3Api, modalConfirmation, saveOptions) {
+
+MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 	'use strict';
 	var self = this,
-		isRelatedPrefix = function (prefix) {
-			return prefix && saveOptions.relatedPrefixes && saveOptions.relatedPrefixes.indexOf(prefix) > -1;
+		isRelatedPrefix = function (mapPrefix) {
+			return mapPrefix && options && options[mapPrefix];
 		};
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
-				var prepend = prefix + '/' + account + '/',
+				var prepend = options.listPrefix + '/' + account + '/',
 					adaptItem = function (item) {
 					return _.extend({id: prepend  + encodeURIComponent(item.title)}, item);
 				};
@@ -17,7 +18,7 @@ MM.GoldFileSystem = function (prefix, goldApi, s3Api, modalConfirmation, saveOpt
 		goldApi.listFiles(showLicenseDialog).then(onFileListReturned, deferred.reject);
 		return deferred.promise();
 	};
-	self.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialog) {
+	self.saveMap = function (prefix, contentToSave, mapId, fileName, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
 			goldMapIdComponents = function () {
 				var mapIdComponents = mapId && mapId.split('/');
@@ -54,7 +55,7 @@ MM.GoldFileSystem = function (prefix, goldApi, s3Api, modalConfirmation, saveOpt
 						deferred.resolve(prefix + '/' + account + '/' + encodeURIComponent(s3FileNameKey), {editable: true});
 					},
 					doSave = function () {
-						s3Api.save(contentToSave, config, saveOptions).then(onSaveComplete, deferred.reject);
+						s3Api.save(contentToSave, config, options[prefix]).then(onSaveComplete, deferred.reject);
 					},
 					doConfirm = function () {
 						modalConfirmation.showModalToConfirm(

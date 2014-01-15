@@ -1,9 +1,9 @@
 /* global MM, describe, it, beforeEach, expect, jQuery, jasmine, _*/
-describe('MM.GoldFileSystem', function () {
+describe('MM.GoldStorage', function () {
 	'use strict';
-	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, saveOptions, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred;
+	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, options, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred;
 	beforeEach(function () {
-		saveOptions = {isPrivate: true, relatedPrefixes: 'pb'};
+		options = {'p': {isPrivate: true}, 'b': {isPrivate: false}, listPrefix: 'b'};
 		goldApiListDeferred = jQuery.Deferred();
 		goldSaveConfigDeferred = jQuery.Deferred();
 		goldExistsDeferred = jQuery.Deferred();
@@ -24,7 +24,9 @@ describe('MM.GoldFileSystem', function () {
 			{title: 'map1.mup', modifiedDate: '2014-01-07T12:13:41.000Z'},
 			{title: 'a map / with \'funny\' chars?.mup', modifiedDate: '2014-01-10T12:13:41.000Z'}
 		];
-		underTest = new MM.GoldFileSystem('b', goldApi, s3Api, modalConfirmation, saveOptions);
+
+		underTest = new MM.GoldStorage(goldApi, s3Api, modalConfirmation, options);
+
 	});
 	describe('list', function () {
 		describe('should resolve with a list of files', function () {
@@ -58,7 +60,7 @@ describe('MM.GoldFileSystem', function () {
 			describe('retrieves it from the gold api', function () {
 				_.each([true, false], function (arg) {
 					it('and passes showAuthDialogs=' + arg + ' to the api', function () {
-						underTest.saveMap(contentToSave, mapId, filename, arg);
+						underTest.saveMap('b', contentToSave, mapId, filename, arg);
 						expect(goldApi.generateSaveConfig).toHaveBeenCalledWith(arg);
 					});
 				});
@@ -67,7 +69,7 @@ describe('MM.GoldFileSystem', function () {
 				var rejectSpy;
 				beforeEach(function () {
 					rejectSpy = jasmine.createSpy('rejected');
-					underTest.saveMap(contentToSave, mapId, filename).fail(rejectSpy);
+					underTest.saveMap('b', contentToSave, mapId, filename).fail(rejectSpy);
 					goldSaveConfigDeferred.reject('whatever');
 				});
 				it('rejects when gold api rejects, preserving the error reason', function () {
@@ -87,18 +89,18 @@ describe('MM.GoldFileSystem', function () {
 				goldExistsDeferred.resolve(false);
 			});
 			it('passes additional save configuration to the s3 api', function () {
-				underTest.saveMap(contentToSave, mapId, filename);
-				expect(s3Api.save).toHaveBeenCalledWith(contentToSave, s3SaveConfig, saveOptions);
+				underTest.saveMap('b', contentToSave, mapId, filename);
+				expect(s3Api.save).toHaveBeenCalledWith(contentToSave, s3SaveConfig, {isPrivate: false});
 			});
 			it('resolves with map ID and adapter properties when save resolves', function () {
 				var resolveSpy = jasmine.createSpy('resolved');
 				s3SaveDeferred.resolve();
-				underTest.saveMap(contentToSave, mapId, filename).then(resolveSpy);
+				underTest.saveMap('b', contentToSave, mapId, filename).then(resolveSpy);
 				expect(resolveSpy).toHaveBeenCalledWith(mapId, {editable: true});
 			});
 			it('rejects and preserves the error reason when save rejects', function () {
 				var rejectSpy = jasmine.createSpy('rejected');
-				underTest.saveMap(contentToSave, mapId, filename).fail(rejectSpy);
+				underTest.saveMap('b', contentToSave, mapId, filename).fail(rejectSpy);
 				s3SaveDeferred.reject('whatever');
 				expect(rejectSpy).toHaveBeenCalledWith('whatever');
 			});
@@ -112,9 +114,9 @@ describe('MM.GoldFileSystem', function () {
 				], function (args) {
 					it(args[0], function () {
 						var resolveSpy = jasmine.createSpy('resolved');
-						underTest.saveMap(contentToSave, args[1], filename).then(resolveSpy);
+						underTest.saveMap('b', contentToSave, args[1], filename).then(resolveSpy);
 						s3SaveDeferred.resolve();
-						expect(s3Api.save).toHaveBeenCalledWith(contentToSave, {key: 'jimbo/map with a space.mup', foo: 'a'}, saveOptions);
+						expect(s3Api.save).toHaveBeenCalledWith(contentToSave, {key: 'jimbo/map with a space.mup', foo: 'a'}, {isPrivate: false});
 						expect(resolveSpy).toHaveBeenCalledWith('b/jimbo/map%20with%20a%20space.mup', {editable: true});
 					});
 				});
@@ -125,17 +127,17 @@ describe('MM.GoldFileSystem', function () {
 				goldSaveConfigDeferred.resolve({}, 'jimbo');
 			});
 			it('saves without confirmation when changing the current file', function () {
-				underTest.saveMap(contentToSave, mapId, filename);
+				underTest.saveMap('b', contentToSave, mapId, filename);
 				expect(modalConfirmation.showModalToConfirm).not.toHaveBeenCalled();
 				expect(s3Api.save).toHaveBeenCalled();
 			});
 			it('saves without confirmation when moving the same map from public to private', function () {
-				underTest.saveMap(contentToSave, 'p/jimbo/foo.mup', filename);
+				underTest.saveMap('b', contentToSave, 'p/jimbo/foo.mup', filename);
 				expect(modalConfirmation.showModalToConfirm).not.toHaveBeenCalled();
-				expect(s3Api.save).toHaveBeenCalledWith(contentToSave, {key: 'jimbo/foo.mup'}, saveOptions);
+				expect(s3Api.save).toHaveBeenCalledWith(contentToSave, {key: 'jimbo/foo.mup'}, {isPrivate: false});
 			});
 			it('checks for duplicate file when saving from an unrecognised prefix', function () {
-				underTest.saveMap(contentToSave, 'd/jimbo/foo.mup', 'map file name .mup');
+				underTest.saveMap('b', contentToSave, 'd/jimbo/foo.mup', 'map file name .mup');
 				expect(goldApi.exists).toHaveBeenCalledWith('map file name .mup');
 			});
 		});
@@ -145,7 +147,7 @@ describe('MM.GoldFileSystem', function () {
 				resolveSpy = jasmine.createSpy('resolved');
 				rejectSpy = jasmine.createSpy('rejected');
 				goldSaveConfigDeferred.resolve({}, 'jimbo');
-				underTest.saveMap(contentToSave, 'b', filename).then(resolveSpy, rejectSpy);
+				underTest.saveMap('b', contentToSave, 'b', filename).then(resolveSpy, rejectSpy);
 			});
 			it('uses the goldApi to check if the map exists when mapid has changed', function () {
 				expect(goldApi.exists).toHaveBeenCalledWith('map with a space.mup');
@@ -175,7 +177,41 @@ describe('MM.GoldFileSystem', function () {
 		});
 	});
 	describe('loadMap', function () {
+		describe('public files', function () {
+			it('uses the S3 API to load a map from a S3 bucket URL without going to gold API to sign urls', function () {
 
+			});
+		});
+		describe('private files', function () {
+			_.each([true, false], function (arg) {
+				it('uses the goldApi to retrieve a signed URL, passing the account and ' + arg + ' as showAuthDialogs', function () {
+
+				});
+			});
+			it('rejects as not-authenticated if the file does not belong to the current license', function () {
+
+			});
+			it('rejects when the goldApi rejects, preserving the error reason', function () {
+
+			});
+			it('waits for goldAPI to resolve, then passes the URL on to S3 API to load the file', function () {
+
+			});
+		});
+		describe('uses s3Api to load a map', function () {
+			// ensure S3API prevents cache here
+			// ensure S3 API uses https here
+
+			it('resolves when S3 api resolves, with content, mapId, application/json and file system properties', function () {
+
+			});
+			it('rejects when S3 api rejects, preserving the error reason', function () {
+
+			});
+			it('when loading a map belonging to a different license account, resolves with map ID using that account not the current license', function () {
+
+			});
+		});
 	});
 	describe('recognises', function () {
 
