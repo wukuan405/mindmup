@@ -30,6 +30,19 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 			privatePrefix = key;
 		}
 	});
+	self.fileSystemFor = function (prefix, description) {
+		return {
+			recognises: function (mapId) {
+				return mapId && mapId[0] === prefix;
+			},
+			description: description,
+			saveMap: function (contentToSave, mapId, fileName, showAuthenticationDialog) {
+				return self.saveMap(prefix, contentToSave, mapId, fileName, showAuthenticationDialog);
+			},
+			loadMap: self.loadMap
+		};
+	};
+
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {

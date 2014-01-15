@@ -1,4 +1,4 @@
-/* global MM, describe, it, beforeEach, expect, jQuery, jasmine, _*/
+/* global MM, describe, it, beforeEach, expect, jQuery, jasmine, _, spyOn*/
 describe('MM.GoldStorage', function () {
 	'use strict';
 	var underTest, goldApi, s3Api, fileList, goldApiListDeferred, goldSaveConfigDeferred, s3SaveDeferred, options, modalConfirmation, showModalToConfirmDeferred, goldExistsDeferred, goldFileUrlDeferred, s3LoadUrlDeferred;
@@ -256,11 +256,29 @@ describe('MM.GoldStorage', function () {
 			});
 		});
 	});
-	describe('recognises', function () {
-
-	});
-	describe('description', function () {
-
+	describe('fileSystemFor', function () {
+		describe('creates an object with a filesystem api based on the prefix', {
+				'private': ['p', 'MindMup Gold Private', 'p/a/b', 'b/a/b'],
+				'public': ['b', 'MindMup Gold Public', 'b/a/b', 'p/a/b']
+			}, function (prefix, expectedDescription, recognisedMap, unrecognisedMap) {
+				var fileSystem = underTest.fileSystemFor(prefix, expectedDescription);
+				expect(fileSystem.recognises(prefix)).toBeTruthy();
+				expect(fileSystem.recognises(recognisedMap)).toBeTruthy();
+				expect(fileSystem.recognises(unrecognisedMap)).toBeFalsy();
+				expect(fileSystem.description).toEqual(expectedDescription);
+			});
+		it('proxies saveMap method by adding a prefix', function () {
+			var retVal = 'expected';
+			spyOn(underTest, 'saveMap').andReturn(retVal);
+			expect(underTest.fileSystemFor('b', 'test filesystem').saveMap('content', 'b/jimmy/foo.mup', 'a new map', true)).toEqual(retVal);
+			expect(underTest.saveMap).toHaveBeenCalledWith('b', 'content', 'b/jimmy/foo.mup', 'a new map', true);
+		});
+		it('proxies load method', function () {
+			var retVal = 'expected';
+			spyOn(underTest, 'loadMap').andReturn(retVal);
+			expect(underTest.fileSystemFor('b', 'test filesystem').loadMap('b/jimmy/foo.mup', true)).toEqual(retVal);
+			expect(underTest.loadMap).toHaveBeenCalledWith('b/jimmy/foo.mup', true);
+		});
 	});
 
 });
