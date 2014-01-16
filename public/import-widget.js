@@ -35,7 +35,6 @@ $.fn.importWidget = function (activityLog, mapController) {
 			activityLog.log('Map', 'import:fail', error);
 			statusDiv.html(
 				'<div class="alert fade in alert-error">' +
-					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
 					'<strong>' + error + '</strong>' +
 					'</div>'
 			);
@@ -64,11 +63,12 @@ $.fn.importWidget = function (activityLog, mapController) {
 			return (window.File && window.FileReader && window.FileList && window.Blob && (!$('body').hasClass('disable-filereader')));
 		};
 	if (shouldUseFileReader()) {
+		/*jshint camelcase:false*/
 		fileInput.file_reader_upload(start, success, fail);
 		uploadType = 'FileReader';
 	} else {
-		fileInput.background_upload('/import', start, success, fail);
-		uploadType = 'Remote Upload';
+		fail('This browser does not support importing from local disk');
+		selectButton.hide();
 	}
 	element.on('shown', function () {
 		fileInput.css('opacity', 0).css('position', 'absolute').offset(selectButton.offset()).width(selectButton.outerWidth())

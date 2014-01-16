@@ -129,21 +129,6 @@ get %r{/browserok/?(.*)} do |mapid|
   redirect "/#m:#{mapid}"
 end
 
-
-post '/import' do
-  file = params['file']
-  json_fail('No file uploaded') unless file
-  uploaded_size=request.env['CONTENT_LENGTH']
-  json_fail('Browser did not provide content length for upload') unless uploaded_size
-  json_fail("File too big. Maximum size is #{settings.max_upload_size}kb") if uploaded_size.to_i>settings.max_upload_size*1024
-  allowed_types=[".mm", ".mup"]
-  uploaded_type= File.extname file[:filename]
-  json_fail "unsupported file type #{uploaded_type}" unless allowed_types.include? uploaded_type
-  result=File.readlines(file[:tempfile]).join  ' '
-  content_type 'text/plain'
-  result
-end
-
 get "/un" do
   erb :unsupported
 end
