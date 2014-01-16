@@ -87,9 +87,9 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	};
 	self.fileUrl = function (showAuthenticationDialog, account, fileNameKey, signedUrl) {
 		if (signedUrl) {
-			return licenseExec('file/url', showAuthenticationDialog, {'file_key': fileNameKey}, account);
+			return licenseExec('file/url', showAuthenticationDialog, {'file_key': encodeURIComponent(fileNameKey)}, account);
 		} else {
-			return jQuery.Deferred().resolve('https://' + goldBucketName + '.s3.amazonaws.com/' + account + '/' + fileNameKey).promise();
+			return jQuery.Deferred().resolve('https://' + goldBucketName + '.s3.amazonaws.com/' + account + '/' + encodeURIComponent(fileNameKey)).promise();
 		}
 
 	};
@@ -97,7 +97,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		var deferred = jQuery.Deferred(),
 			license = goldLicenseManager.getLicense();
 		if (license) {
-			self.exec('file/exists', {'license': JSON.stringify(license), 'file_key': fileNameKey}).then(
+			self.exec('file/exists', {'license': JSON.stringify(license), 'file_key': encodeURIComponent(fileNameKey)}).then(
 				function (httpResult) {
 					var parsed = jQuery(httpResult);
 					deferred.resolve(parsed.find('Contents').length > 0);

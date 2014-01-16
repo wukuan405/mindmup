@@ -25,6 +25,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 		buildMapId = function (prefix, account, fileNameKey) {
 			return prefix + '/' + account + '/' + encodeURIComponent(fileNameKey);
 		};
+	options = _.extend({'p': {isPrivate: true}, 'b': {isPrivate: false}, listPrefix: 'b'}, options);
 	_.each(options, function (val, key) {
 		if (val.isPrivate) {
 			privatePrefix = key;
@@ -144,3 +145,4 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 		return deferred.promise();
 	};
 };
+

@@ -164,8 +164,8 @@ describe('MM.GoldApi', function () {
 	});
 	describe('fileUrl', function  () {
 		it('should return unsigned url immediately', function () {
-			underTest.fileUrl(true, 'jimmy', 'foo.mup', false).then(resolveSpy);
-			expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/jimmy/foo.mup');
+			underTest.fileUrl(true, 'jimmy', 'foo ? mup.mup', false).then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/jimmy/foo%20%3F%20mup.mup');
 		});
 		describe('urls needing information about the license', function () {
 			beforeEach(function () {
@@ -177,10 +177,10 @@ describe('MM.GoldApi', function () {
 				expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
 			});
 			it('should pass the file key as a parameter to the server', function () {
-				underTest.fileUrl(true, 'test', 'foo.mup', true);
+				underTest.fileUrl(true, 'test', 'foo ? mup.mup', true);
 				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
 				/*jshint camelcase:false*/
-				expect(ajaxPost.data.params.file_key).toEqual('foo.mup');
+				expect(ajaxPost.data.params.file_key).toEqual('foo%20%3F%20mup.mup');
 			});
 			it('should return signed url from server ', function () {
 				ajaxDeferred.resolve('https://gold-bucket-name.s3.amazonaws.com/test/foo.mup?sign=signature');
@@ -206,12 +206,12 @@ describe('MM.GoldApi', function () {
 			expect(resolveSpy).toHaveBeenCalledWith(false);
 		});
 		it('posts an AJAX request to the API url', function () {
-			underTest.exists('foo.mup');
+			underTest.exists('foo ? mup.mup');
 			expect(jQuery.ajax).toHaveBeenCalled();
 			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/exists');
 			expect(ajaxPost.dataType).toBeUndefined();
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'file_key': 'foo.mup'});
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'file_key': 'foo%20%3F%20mup.mup'});
 		});
 	});
 
