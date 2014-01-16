@@ -97,17 +97,10 @@
     loadScripts(
       function() {
 		window.mmtimestamp.log('scripts loaded');
-        var config = {
-              s3Url: 'http://<%= settings.s3_website %>/',
-              s3Folder: '<%= settings.s3_upload_folder %>/',
-              publishingConfigUrl: '',
-              baseUrl: '<%= settings.base_url%>',
-              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
-              mapId:decodeURI(document.location.pathname.replace(/^\/embedded\//,''))
-            },
+        var mapId = decodeURI(document.location.pathname.replace(/^\/embedded\//,'')),
             isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
             activityLog = console,
-            s3Adapter = new MM.S3Adapter(new MM.EmbeddedConfigGenerator({'a': {prefix: config.s3Url + config.s3Folder , postfix: '.json'}, 'b': {prefix: 'https://' + config.goldBucketName + '.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
+            s3Adapter = new MM.S3Adapter(new MM.EmbeddedConfigGenerator({'a': {prefix: 'http://<%= settings.s3_website %>/<%= settings.s3_upload_folder %>/'  , postfix: '.json'}, 'b': {prefix: 'https://<%= ENV['GOLD_BUCKET_NAME'] %>.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
             mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
             mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
           jQuery('#container').mapWidget(activityLog, mapModel, isTouch, observable({}));
@@ -116,7 +109,7 @@
             jQuery('.map').show();
           });
 		  jQuery('a.mindmup').click(function () {
-            _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', config.mapId]);
+            _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', mapId]);
 		  });
           jQuery(document).keydown('Esc backspace', function (){
             jQuery('.attachment').hide();
@@ -130,22 +123,22 @@
             jQuery('.map').hide();
             jQuery('.attachment').show();
           });
-          _gaq.push(['_trackEvent','Embedded Map', 'View', config.mapId]);
+          _gaq.push(['_trackEvent','Embedded Map', 'View', mapId]);
       jQuery('#rightmenu').hide();
       jQuery('#container').hide();
       jQuery('#loading').show();
 		  window.mmtimestamp.log('embedded ui loaded');
-      mapLoader.loadMap(config.mapId).then(function (idea) {
+      mapLoader.loadMap(mapId).then(function (idea) {
         jQuery('#loading').hide();
         jQuery('#container').show();
         var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
         jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
         mapModel.setIdea(idea);
-        _gaq.push(['_trackEvent','Embedded Map', 'Loaded', config.mapId]);
+        _gaq.push(['_trackEvent','Embedded Map', 'Loaded', mapId]);
       }, function (reason) {
         jQuery('#loading').hide();
         jQuery('#error').show();
-        jQuery('#error-mapid').val(config.mapId);
+        jQuery('#error-mapid').val(mapId);
         _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
       });
       },
