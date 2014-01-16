@@ -1,21 +1,26 @@
 /* global describe, it, expect, MM, beforeEach, jasmine, jQuery, spyOn, window, afterEach, _ */
 describe('MM.GoldApi', function () {
 	'use strict';
-	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy, goldLicenseManagerDeferred;
+	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy, goldLicenseManagerDeferred, resolveSpy, rejectSpy;
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
 
-		goldLicenseManagerDeferred = jQuery.Deferred();
-		goldLicenseManager = {getLicense: function () {}, retrieveLicense: function () {return goldLicenseManagerDeferred.promise(); }};
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
-		spyOn(goldLicenseManager, 'getLicense').andReturn(license);
+		goldLicenseManagerDeferred = jQuery.Deferred();
+		goldLicenseManager = {
+			getLicense: jasmine.createSpy('getLicense').andReturn(license),
+			retrieveLicense: jasmine.createSpy('retrieveLicense').andReturn(goldLicenseManagerDeferred.promise())
+		};
 
 		activityLog = { log: jasmine.createSpy(), timer: jasmine.createSpy()};
 		endSpy = jasmine.createSpy();
 
 		activityLog.timer.andReturn({end: endSpy});
 		underTest = new MM.GoldApi(goldLicenseManager, 'API_URL', activityLog, 'gold-bucket-name');
+		resolveSpy = jasmine.createSpy('resolved');
+		rejectSpy = jasmine.createSpy('reject');
+
 		oldFormData = window.FormData;
 		window.FormData = function () {
 			this.params = {};
@@ -104,13 +109,11 @@ describe('MM.GoldApi', function () {
 	describe('listFiles', function () {
 		it('converts the response into a list of objects from xml', function () {
 			var example = '<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-gold</Name><Prefix>dave/</Prefix><Marker></Marker><MaxKeys>100</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>jimbo/a map / with funny chars?.mup</Key><LastModified>2014-01-10T12:13:41.000Z</LastModified><ETag>&quot;62d3c2c0501f69bfe616b56936afb458&quot;</ETag><Size>79</Size><Owner><ID>b682c8bf07ef378a2566ba81eff11b58a1298ec117b94ec3a9cb591b67392584</ID><DisplayName>gojkoadzic</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents><Contents><Key>jimbo/foo.mup</Key><LastModified>2014-01-09T15:08:08.000Z</LastModified><ETag>&quot;b11d3862989dc5dda7c7f2ea692b6c17&quot;</ETag><Size>2018</Size><Owner><ID>b682c8bf07ef378a2566ba81eff11b58a1298ec117b94ec3a9cb591b67392584</ID><DisplayName>gojkoadzic</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>',
-				resolveSpy = jasmine.createSpy('resolveSpy'),
 				expected = [
 					{title: 'a map / with funny chars?.mup', modifiedDate: '2014-01-10T12:13:41.000Z'},
 					{title: 'foo.mup', modifiedDate: '2014-01-09T15:08:08.000Z'}
 				];
-
-			spyOn(goldLicenseManager, 'retrieveLicense').andReturn(goldLicenseManagerDeferred.resolve(license).promise());
+			goldLicenseManagerDeferred.resolve(license);
 			underTest.listFiles().then(resolveSpy);
 			ajaxDeferred.resolve(example);
 
@@ -118,9 +121,6 @@ describe('MM.GoldApi', function () {
 		});
 	});
 	describe('methods posting a license to the gold api ', function  () {
-		beforeEach(function () {
-			spyOn(goldLicenseManager, 'retrieveLicense').andReturn(goldLicenseManagerDeferred.promise());
-		});
 		_.each([
 			['listFiles', 'API_URL/file/list', undefined],
 			['generateSaveConfig', 'API_URL/file/upload_config', 'json'],
@@ -138,7 +138,6 @@ describe('MM.GoldApi', function () {
 					});
 				});
 				it('rejects when the license manager rejects', function () {
-					var rejectSpy = jasmine.createSpy('reject');
 					goldLicenseManagerDeferred.reject('urgh');
 					call().fail(rejectSpy);
 					expect(rejectSpy).toHaveBeenCalledWith('urgh');
@@ -157,29 +156,53 @@ describe('MM.GoldApi', function () {
 	});
 	describe('generateSaveConfig', function () {
 		it('should resolve with the config returned by ajax and the account name', function () {
-			var resolveSpy = jasmine.createSpy('resolved');
-			spyOn(goldLicenseManager, 'retrieveLicense').andReturn(goldLicenseManagerDeferred.resolve(license).promise());
+			goldLicenseManagerDeferred.resolve(license);
 			ajaxDeferred.resolve({x: 'a'});
 			underTest.generateSaveConfig(true).then(resolveSpy);
 			expect(resolveSpy).toHaveBeenCalledWith({x: 'a'}, license.account);
 		});
 	});
 	describe('fileUrl', function  () {
-		var resolveSpy;
-		beforeEach(function () {
-			resolveSpy = jasmine.createSpy('resolved');
-		});
 		it('should return unsigned url immediately', function () {
 			underTest.fileUrl(true, 'jimmy', 'foo.mup', false).then(resolveSpy);
 			expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/jimmy/foo.mup');
 		});
 		describe('urls needing information about the license', function () {
-			it('should reject requests to sign other peoples urls', function () {
-
+			beforeEach(function () {
+				goldLicenseManagerDeferred.resolve(license);
+			});
+			it('should reject requests to sign other peoples urls with not-authenticated', function () {
+				underTest.fileUrl(true, 'jimmy', 'foo.mup', true).fail(rejectSpy);
+				expect(jQuery.ajax).not.toHaveBeenCalled();
+				expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
+			});
+			it('should pass the file key as a parameter to the server', function () {
+				underTest.fileUrl(true, 'test', 'foo.mup', true);
+				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+				/*jshint camelcase:false*/
+				expect(ajaxPost.data.params.file_key).toEqual('foo.mup');
+			});
+			it('should return signed url from server ', function () {
+				ajaxDeferred.resolve('https://gold-bucket-name.s3.amazonaws.com/test/foo.mup?sign=signature');
+				underTest.fileUrl(true, 'test', 'foo.mup', true).then(resolveSpy);
+				expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/test/foo.mup?sign=signature', 'test');
 			});
 		});
 	});
 	describe('exists', function  () {
+		beforeEach(function () {
+			goldLicenseManagerDeferred.resolve(license);
+		});
+		it('should reject requests to check existence of  other peoples urls with not-authenticated', function () {
+
+		});
+		it('should resolve as  true if the file exists', function () {
+
+		});
+		it('should resolve as  true if the file does not exist', function () {
+
+		});
+
 	});
 
 });

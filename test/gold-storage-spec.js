@@ -198,8 +198,8 @@ describe('MM.GoldStorage', function () {
 					'private without dialog': ['p', false, true]
 				},
 				function (prefix, showDialogs,  isPrivate) {
-					underTest.loadMap(prefix + '/jimbo/foo.mup', showDialogs);
-					expect(goldApi.fileUrl).toHaveBeenCalledWith('jimbo', 'foo.mup', isPrivate, showDialogs);
+					underTest.loadMap(prefix + '/jimbo/foo%20bar.mup', showDialogs);
+					expect(goldApi.fileUrl).toHaveBeenCalledWith(showDialogs, 'jimbo', 'foo bar.mup', isPrivate);
 				});
 			it('rejects when the goldApi rejects, preserving the error reason', function () {
 				underTest.loadMap('b/jimbo/foo.mup').fail(rejectSpy);
@@ -246,7 +246,7 @@ describe('MM.GoldStorage', function () {
 						return jQuery.Deferred().resolve(content).promise();
 					}
 				});
-				goldApi.fileUrl.andCallFake(function (account, fileKey, isPrivate) {
+				goldApi.fileUrl.andCallFake(function (showDialogs, account, fileKey, isPrivate) {
 					return jQuery.Deferred().resolve(isPrivate ? privateUrl : publicUrl).promise();
 				});
 				underTest.loadMap('b/freddy/foo.mup').then(resolveSpy);

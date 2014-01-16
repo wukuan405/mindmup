@@ -10,15 +10,19 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			}
 			return 'network-error';
 		},
-		licenseExec = function (apiProc, showLicenseDialog, args) {
+		licenseExec = function (apiProc, showLicenseDialog, args, expectedAccount) {
 			var deferred = jQuery.Deferred(),
 				onLicenceRetrieved = function (license) {
 					var execArgs = _.extend({}, args, {'license': JSON.stringify(license)});
-					self.exec(apiProc, execArgs).then(
-						function (httpResult) {
-							deferred.resolve(httpResult, license.account);
-						},
-						deferred.reject);
+					if (expectedAccount && expectedAccount !== license.account) {
+						deferred.reject('not-authenticated');
+					} else {
+						self.exec(apiProc, execArgs).then(
+							function (httpResult) {
+								deferred.resolve(httpResult, license.account);
+							},
+							deferred.reject);
+					}
 				};
 			goldLicenseManager.retrieveLicense(showLicenseDialog).then(onLicenceRetrieved, deferred.reject);
 			return deferred.promise();
@@ -83,7 +87,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	};
 	self.fileUrl = function (showAuthenticationDialog, account, fileNameKey, signedUrl) {
 		if (signedUrl) {
-			return licenseExec('file/url', showAuthenticationDialog);
+			return licenseExec('file/url', showAuthenticationDialog, {'file_key': fileNameKey}, account);
 		} else {
 			return jQuery.Deferred().resolve('https://' + goldBucketName + '.s3.amazonaws.com/' + account + '/' + fileNameKey).promise();
 		}

@@ -119,7 +119,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 			goldMapInfo = goldMapIdComponents(mapId),
 			loadMapInternal = function (mapPrefix, account, fileNameKey) {
 				var privateMap = options[mapPrefix].isPrivate;
-				goldApi.fileUrl(account, fileNameKey, privateMap, showAuthenticationDialog).then(
+				goldApi.fileUrl(showAuthenticationDialog, account, fileNameKey, privateMap).then(
 					function (url) {
 						s3Api.loadUrl(url).then(function (content) {
 							deferred.resolve(content, buildMapId(mapPrefix, account, fileNameKey), 'application/json', fileProperties);
