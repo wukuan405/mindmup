@@ -93,4 +93,20 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		}
 
 	};
+	self.exists = function (fileNameKey) {
+		var deferred = jQuery.Deferred(),
+			license = goldLicenseManager.getLicense();
+		if (license) {
+			self.exec('file/exists', {'license': JSON.stringify(license), 'file_key': fileNameKey}).then(
+				function (httpResult) {
+					var parsed = jQuery(httpResult);
+					deferred.resolve(parsed.find('Contents').length > 0);
+				},
+				deferred.reject
+				);
+		} else {
+			deferred.reject('not-authenticated');
+		}
+		return deferred.promise();
+	};
 };

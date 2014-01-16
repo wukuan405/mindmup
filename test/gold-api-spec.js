@@ -190,19 +190,29 @@ describe('MM.GoldApi', function () {
 		});
 	});
 	describe('exists', function  () {
-		beforeEach(function () {
-			goldLicenseManagerDeferred.resolve(license);
-		});
-		it('should reject requests to check existence of  other peoples urls with not-authenticated', function () {
-
+		it('should reject as not-authenticated if the license is not set', function () {
+			goldLicenseManager.getLicense.andReturn(false);
+			underTest.exists('foo.mup').fail(rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
 		});
 		it('should resolve as  true if the file exists', function () {
-
+			ajaxDeferred.resolve('<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-gold</Name><Prefix>test/foo.mup</Prefix><Marker></Marker><MaxKeys>1</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>jimbo/a map / with funny chars?.mup</Key><LastModified>2014-01-10T12:13:41.000Z</LastModified><ETag>&quot;62d3c2c0501f69bfe616b56936afb458&quot;</ETag><Size>79</Size><Owner><ID>b682c8bf07ef378a2566ba81eff11b58a1298ec117b94ec3a9cb591b67392584</ID><DisplayName>gojkoadzic</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>');
+			underTest.exists('foo.mup').then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith(true);
 		});
-		it('should resolve as  true if the file does not exist', function () {
-
+		it('should resolve as false if the file does not exist', function () {
+			ajaxDeferred.resolve('<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-gold</Name><Prefix>test/foo.mup</Prefix><Marker></Marker><MaxKeys>1</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>');
+			underTest.exists('foo.mup').then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith(false);
 		});
-
+		it('posts an AJAX request to the API url', function () {
+			underTest.exists('foo.mup');
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			expect(ajaxPost.url).toEqual('API_URL/file/exists');
+			expect(ajaxPost.dataType).toBeUndefined();
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'file_key': 'foo.mup'});
+		});
 	});
 
 });
