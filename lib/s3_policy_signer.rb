@@ -1,7 +1,6 @@
 require 'base64'
 require 'openssl'
 require 'digest/sha1'
-require 'cgi'
 
 class S3PolicySigner
 	# see http://aws.amazon.com/articles/1434/
@@ -23,35 +22,9 @@ class S3PolicySigner
 		policy = Base64.encode64(policy_document).gsub("\n","")
 		signature = Base64.encode64(
 			OpenSSL::HMAC.digest(
-				OpenSSL::Digest::Digest.new('sha1'), 
+				OpenSSL::Digest::Digest.new('sha1'),
 				aws_secret_key, policy)
 		).gsub("\n","")
 		{policy: policy, signature: signature, aws_id: key_id, upload_path:upload_path, bucket_name: bucket_name, content_type: content_type}
 	end
-  # see http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
-  def expiration expires_in_seconds
-    expiration_time = Time.now+expires_in_seconds
-    expiration_time.strftime('%s')
-  end
-  def signed_request req_type, aws_secret, bucket_name, get_path, expiration
-    string_to_sign = "#{req_type}\n\n\n#{expiration}\n/#{bucket_name}#{get_path}"
-		signature = CGI.escape(Base64.encode64(
-			OpenSSL::HMAC.digest(
-				OpenSSL::Digest::Digest.new('sha1'), 
-				aws_secret, string_to_sign)
-		).gsub("\n","")).gsub("+","%2B")
-    return signature
-  end
-  def decode_xor_key xor_key, aws_secret
-    xor4 aws_secret, Base64.decode64(xor_key)
-  end
-  def encode_secret_key user_secret, mm_aws_secret
-    xor_key = xor4 mm_aws_secret, user_secret
-    Base64.encode64(xor_key).gsub("\n","")
-  end
-  def xor4(first, second)
-    s = []
-    first.unpack('C*').zip(second.unpack('C*')) {|a,b| s.push( (a||0) ^ (b||0) ) }
-    s.pack('C*')
-  end
 end
