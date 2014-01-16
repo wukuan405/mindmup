@@ -165,35 +165,8 @@ MM.parseS3FileList = function (prepend, httpResult, remove) {
 	});
 	return list;
 };
-MM.s3AjaxErrorReason = function (err, isAuthenticated) {
-	'use strict';
-	var reason = 'network-error';
-	if (err.status === 404 || err.status === 403) {
-		reason = isAuthenticated ? 'not-authenticated' :'map-not-found';
-	}
-	return reason;
-};
 
-MM.GoldStorageAdapterOld = function (storageAdapter, licenseManager, redirectTo) {
-	'use strict';
-	var originaLoadMap = storageAdapter.loadMap;
-	storageAdapter.loadMap = function (mapId, showAuthentication) {
-		var deferred = jQuery.Deferred();
-		originaLoadMap(mapId, showAuthentication).then(
-			deferred.resolve,
-			function (reason) {
-				if (reason === 'map-not-found' && redirectTo) {
-					deferred.reject('map-load-redirect', redirectTo + mapId.slice(1));
-				} else  {
-					deferred.reject(reason);
-				}
-			}
-		);
-		return deferred.promise();
-	};
-	return storageAdapter;
-};
-MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPrivate) {
+MM.S3Adapter = function (publishingConfigGenerator, prefix, description) {
 	'use strict';
 
 	var properties = {editable: true},
@@ -210,12 +183,7 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 			};
 		publishingConfigGenerator.buildMapUrl(mapId, prefix, showAuthentication).then(
 			function (mapUrl) {
-				jQuery.ajax(
-					mapUrl, { dataType: 'json', cache: false}).then(
-					onMapLoaded,
-					function (err) {
-						deferred.reject(MM.s3AjaxErrorReason(err, isPrivate));
-					});
+				s3Api.loadUrl(mapUrl).then(onMapLoaded, deferred.reject);
 			},
 			deferred.reject
 		);
@@ -224,7 +192,7 @@ MM.S3Adapter = function (publishingConfigGenerator, prefix, description, isPriva
 	this.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
 			submitS3Form = function (publishingConfig) {
-				s3Api.save(contentToSave, publishingConfig, {'isPrivate': isPrivate}).then(
+				s3Api.save(contentToSave, publishingConfig, {'isPrivate': false}).then(
 					function () {
 						deferred.resolve(publishingConfig.mapId, _.extend(publishingConfig, properties));
 					},

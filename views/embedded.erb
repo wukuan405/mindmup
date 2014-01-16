@@ -107,18 +107,8 @@
             },
             isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
             activityLog = console,
-            ajaxPublishingConfigGenerator = new MM.AjaxPublishingConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
-            s3Adapter = new MM.S3Adapter(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
-            goldPublishingConfigGenerator = new MM.GoldPublishingConfigGenerator(undefined, false, false, undefined, undefined, config.goldBucketName),
-            s3GoldAdapter = new MM.S3Adapter(goldPublishingConfigGenerator, 'b', 'MindMup Gold'),
-
-            mapSource = function (mapId) {
-              if (s3GoldAdapter.recognises(mapId)) {
-                return s3GoldAdapter;
-              }
-              return s3Adapter;
-            },
-            mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(mapSource(config.mapId))),
+            s3Adapter = new MM.S3Adapter(new MM.EmbeddedConfigGenerator({'a': {prefix: config.s3Url + config.s3Folder , postfix: '.json'}, 'b': {prefix: 'https://' + config.goldBucketName + '.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
+            mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3Adapter)),
             mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
           jQuery('#container').mapWidget(activityLog, mapModel, isTouch, observable({}));
           jQuery('.close.attachment').click(function () {
