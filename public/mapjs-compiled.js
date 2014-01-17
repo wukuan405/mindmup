@@ -291,6 +291,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		var toClone = (subIdeaId && subIdeaId != contentAggregate.id && contentAggregate.findSubIdeaById(subIdeaId)) || contentAggregate;
 		return JSON.parse(JSON.stringify(toClone));
 	};
+	contentAggregate.cloneMultiple = function (subIdeaIdArray) {
+		return _.map(subIdeaIdArray, contentAggregate.clone);
+	};
 	contentAggregate.calculatePath = function (ideaId, currentPath, potentialParent) {
 		if (contentAggregate.id == ideaId) {
 			return [];
@@ -398,6 +401,14 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			contentAggregate.endBatch(originSession);
 		}
 	};
+	contentAggregate.pasteMultiple = function (parentIdeaId, jsonArrayToPaste) {
+		contentAggregate.startBatch();
+		var results = _.map(jsonArrayToPaste, function (json) {
+			return contentAggregate.paste(parentIdeaId, json);
+		});
+		contentAggregate.endBatch();
+		return results;
+	};
 	contentAggregate.paste = function (parentIdeaId, jsonToPaste, initialId) {
 		return contentAggregate.execCommand('paste', arguments);
 	};
@@ -490,6 +501,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}, originSession);
 		return idea.id;
 	};
+	contentAggregate.removeMultiple = function (subIdeaIdArray) {
+		contentAggregate.startBatch();
+		var results = _.map(subIdeaIdArray, contentAggregate.removeSubIdea);
+		contentAggregate.endBatch();
+		return results;
+	};
 	contentAggregate.removeSubIdea = function (subIdeaId) {
 		return contentAggregate.execCommand('removeSubIdea', arguments);
 	};
@@ -508,6 +525,15 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return true;
 		}
 		return false;
+	};
+	contentAggregate.insertIntermediateMultiple = function (idArray) {
+		contentAggregate.startBatch();
+		var newId = contentAggregate.insertIntermediate(idArray[0]);
+		_.each(idArray.slice(1), function (id) {
+			contentAggregate.changeParent(id, newId);
+		});
+		contentAggregate.endBatch();
+		return newId;
 	};
 	contentAggregate.insertIntermediate = function (inFrontOfIdeaId, title, optionalNewId) {
 		return contentAggregate.execCommand('insertIntermediate', arguments);
@@ -1188,6 +1214,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		isInputEnabled = true,
 		isEditingEnabled = true,
 		currentlySelectedIdeaId,
+		activatedNodes = [],
+		setActiveNodes = function (activated) {
+			var wasActivated = _.clone(activatedNodes);
+			activatedNodes = activated;
+			self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
+		},
 		getRandomTitle = function (titles) {
 			return titles[Math.floor(titles.length * Math.random())];
 		},
@@ -1268,36 +1300,20 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			self.dispatchEvent('layoutChangeComplete');
 		},
 		revertSelectionForUndo,
-		checkDefaultUIActions = function (command, args) {
-			var newIdeaId;
-			if (command === 'paste') {
-				newIdeaId = args[2];
-				self.selectNode(newIdeaId);
-			}
-
-		},
+		revertActivatedForUndo,
 		editNewIdea = function (newIdeaId) {
 			revertSelectionForUndo = currentlySelectedIdeaId;
+			revertActivatedForUndo = activatedNodes.slice(0);
 			self.selectNode(newIdeaId);
 			self.editNode(false, true, true);
 		},
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
-		onIdeaChanged = function (command, args, originSession) {
-			var localCommand = (!originSession) || originSession === idea.getSessionKey();
+		onIdeaChanged = function () {
 			revertSelectionForUndo = false;
+			revertActivatedForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
-			if (!localCommand) {
-				return;
-			}
-			if (command === 'batch') {
-				_.each(args, function (singleCmd) {
-					checkDefaultUIActions(singleCmd[0], singleCmd.slice(1));
-				});
-			} else {
-				checkDefaultUIActions(command, args);
-			}
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -1320,6 +1336,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		return currentLayout;
 	};
 	self.analytic = analytic;
+	self.getCurrentlySelectedIdeaId = getCurrentlySelectedIdeaId;
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
@@ -1485,8 +1502,10 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		if (!isInputEnabled || currentlySelectedIdeaId === idea.id) {
 			return false;
 		}
+		var activeNodes = [], newId;
 		analytic('insertIntermediate', source);
-		var newId = idea.insertIntermediate(currentlySelectedIdeaId, getRandomTitle(intermediaryTitlesToRandomlyChooseFrom));
+		self.applyToActivated(function (i) { activeNodes.push(i); });
+		newId = idea.insertIntermediateMultiple(activeNodes);
 		if (newId) {
 			editNewIdea(newId);
 		}
@@ -1656,12 +1675,17 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 
 		analytic('undo', source);
-		var undoSelection = revertSelectionForUndo;
+		var undoSelectionClone = revertSelectionForUndo,
+			undoActivationClone = revertActivatedForUndo;
 		if (isInputEnabled) {
 			idea.undo();
-			if (undoSelection) {
-				self.selectNode(undoSelection);
+			if (undoSelectionClone) {
+				self.selectNode(undoSelectionClone);
 			}
+			if (undoActivationClone) {
+				setActiveNodes(undoActivationClone);
+			}
+
 		}
 	};
 	self.redo = function (source) {
@@ -1689,20 +1713,28 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 		analytic('cut', source);
 		if (isInputEnabled) {
-			self.clipBoard = idea.clone(currentlySelectedIdeaId);
-			var parent = idea.findParent(currentlySelectedIdeaId);
-			if (idea.removeSubIdea(currentlySelectedIdeaId)) {
-				self.selectNode(parent.id);
-			}
+			var activeNodeIds = [], parents = [], firstLiveParent;
+			self.applyToActivated(function (nodeId) {
+				activeNodeIds.push(nodeId);
+				parents.push(idea.findParent(nodeId).id);
+			});
+			self.clipBoard = idea.cloneMultiple(activeNodeIds);
+			idea.removeMultiple(activeNodeIds);
+			firstLiveParent = _.find(parents, idea.findSubIdeaById);
+			self.selectNode(firstLiveParent || idea.id);
 		}
 	};
 	self.copy = function (source) {
+		var activeNodeIds = [];
 		if (!isEditingEnabled) {
 			return false;
 		}
 		analytic('copy', source);
 		if (isInputEnabled) {
-			self.clipBoard = idea.clone(currentlySelectedIdeaId);
+			self.applyToActivated(function (node) {
+				activeNodeIds.push(node);
+			});
+			self.clipBoard = idea.cloneMultiple(activeNodeIds);
 		}
 	};
 	self.paste = function (source) {
@@ -1711,7 +1743,10 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 		analytic('paste', source);
 		if (isInputEnabled) {
-			idea.paste(currentlySelectedIdeaId, self.clipBoard);
+			var result = idea.pasteMultiple(currentlySelectedIdeaId, self.clipBoard);
+			if (result && result[0]) {
+				self.selectNode(result[0]);
+			}
 		}
 	};
 	self.pasteStyle = function (source) {
@@ -1719,9 +1754,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			return false;
 		}
 		analytic('pasteStyle', source);
-		if (isInputEnabled && self.clipBoard) {
-
-			var pastingStyle = self.clipBoard.attr && self.clipBoard.attr.style;
+		if (isInputEnabled && self.clipBoard && self.clipBoard[0]) {
+			var pastingStyle = self.clipBoard[0].attr && self.clipBoard[0].attr.style;
 			self.applyToActivated(function (id) {
 				idea.updateAttr(id, 'style', pastingStyle);
 			});
@@ -1762,14 +1796,118 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	self.getSelectedNodeId = function () {
 		return getCurrentlySelectedIdeaId();
 	};
-	//node activation
+	//node activation and selection
 	(function () {
-		var activatedNodes = [],
-			setActiveNodes = function (activated) {
-				var wasActivated = _.clone(activatedNodes);
-				activatedNodes = activated;
-				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
-			};
+			var isRootOrRightHalf = function (id) {
+				return currentLayout.nodes[id].x >= currentLayout.nodes[idea.id].x;
+			},
+			isRootOrLeftHalf = function (id) {
+				return currentLayout.nodes[id].x <= currentLayout.nodes[idea.id].x;
+			},
+			nodesWithIDs = function () {
+				return _.map(currentLayout.nodes,
+					function (n, nodeId) {
+						return _.extend({ id: parseInt(nodeId, 10)}, n);
+					});
+			},
+			applyToNodeLeft = function (source, analyticTag, method) {
+				var node,
+					rank,
+					isRoot = currentlySelectedIdeaId === idea.id,
+					targetRank = isRoot ? -Infinity : Infinity;
+				if (!isInputEnabled) {
+					return;
+				}
+				analytic(analyticTag, source);
+				if (isRootOrLeftHalf(currentlySelectedIdeaId)) {
+					node = idea.id === currentlySelectedIdeaId ? idea : idea.findSubIdeaById(currentlySelectedIdeaId);
+					ensureNodeIsExpanded(source, node.id);
+					for (rank in node.ideas) {
+						rank = parseFloat(rank);
+						if ((isRoot && rank < 0 && rank > targetRank) || (!isRoot && rank > 0 && rank < targetRank)) {
+							targetRank = rank;
+						}
+					}
+					if (targetRank !== Infinity && targetRank !== -Infinity) {
+						method.apply(self, [node.ideas[targetRank].id]);
+					}
+				} else {
+					method.apply(self, [idea.findParent(currentlySelectedIdeaId).id]);
+				}
+			},
+			applyToNodeRight = function (source, analyticTag, method) {
+				var node, rank, minimumPositiveRank = Infinity;
+				if (!isInputEnabled) {
+					return;
+				}
+				analytic(analyticTag, source);
+				if (isRootOrRightHalf(currentlySelectedIdeaId)) {
+					node = idea.id === currentlySelectedIdeaId ? idea : idea.findSubIdeaById(currentlySelectedIdeaId);
+					ensureNodeIsExpanded(source, node.id);
+					for (rank in node.ideas) {
+						rank = parseFloat(rank);
+						if (rank > 0 && rank < minimumPositiveRank) {
+							minimumPositiveRank = rank;
+						}
+					}
+					if (minimumPositiveRank !== Infinity) {
+						method.apply(self, [node.ideas[minimumPositiveRank].id]);
+					}
+				} else {
+					method.apply(self, [idea.findParent(currentlySelectedIdeaId).id]);
+				}
+			},
+			applyToNodeUp = function (source, analyticTag, method) {
+				var previousSibling = idea.previousSiblingId(currentlySelectedIdeaId),
+					nodesAbove,
+					closestNode,
+					currentNode = currentLayout.nodes[currentlySelectedIdeaId];
+				if (!isInputEnabled) {
+					return;
+				}
+				analytic(analyticTag, source);
+				if (previousSibling) {
+					method.apply(self, [previousSibling]);
+				} else {
+					if (!currentNode) { return; }
+					nodesAbove = _.reject(nodesWithIDs(), function (node) {
+						return node.y >= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
+					});
+					if (_.size(nodesAbove) === 0) {
+						return;
+					}
+					closestNode = _.min(nodesAbove, function (node) {
+						return Math.pow(node.x - currentNode.x, 2) + Math.pow(node.y - currentNode.y, 2);
+					});
+					method.apply(self, [closestNode.id]);
+				}
+			},
+			applyToNodeDown = function (source, analyticTag, method) {
+				var nextSibling = idea.nextSiblingId(currentlySelectedIdeaId),
+					nodesBelow,
+					closestNode,
+					currentNode = currentLayout.nodes[currentlySelectedIdeaId];
+				if (!isInputEnabled) {
+					return;
+				}
+				analytic(analyticTag, source);
+				if (nextSibling) {
+					method.apply(self, [nextSibling]);
+				} else {
+					if (!currentNode) { return; }
+					nodesBelow = _.reject(nodesWithIDs(), function (node) {
+						return node.y <= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
+					});
+					if (_.size(nodesBelow) === 0) {
+						return;
+					}
+					closestNode = _.min(nodesBelow, function (node) {
+						return Math.pow(node.x - currentNode.x, 2) + Math.pow(node.y - currentNode.y, 2);
+					});
+					method.apply(self, [closestNode.id]);
+				}
+			},
+			applyFuncs = { 'Left': applyToNodeLeft, 'Up': applyToNodeUp, 'Down': applyToNodeDown, 'Right': applyToNodeRight };
 		self.activateSiblingNodes = function (source) {
 			var parent = idea.findParent(currentlySelectedIdeaId),
 				siblingIds;
@@ -1787,6 +1925,17 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			subtree.push(contextId);
 			setActiveNodes(subtree);
 		};
+		_.each(['Left', 'Right', 'Up', 'Down'], function (position) {
+			self['activateNode' + position] = function (source) {
+				applyFuncs[position](source, 'activateNode' + position, function (nodeId) {
+					self.activateNode(source, nodeId);
+					currentlySelectedIdeaId = nodeId;
+				});
+			};
+			self['selectNode' + position] = function (source) {
+				applyFuncs[position](source, 'selectNode' + position, self.selectNode);
+			};
+		});
 		self.toggleActivationOnNode = function (source, nodeId) {
 			analytic('toggleActivated', source);
 			if (!self.isActivated(nodeId)) {
@@ -1798,7 +1947,8 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		self.activateNode = function (source, nodeId) {
 			analytic('activateNode', source);
 			if (!self.isActivated(nodeId)) {
-				setActiveNodes([nodeId].concat(activatedNodes));
+				activatedNodes.push(nodeId);
+				self.dispatchEvent('activatedNodesChanged', [nodeId], []);
 			}
 		};
 		self.activateChildren = function (source) {
@@ -1860,119 +2010,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 				setActiveNodes(activatedNodes.concat([selectedId]));
 			}
 		});
-	}());
 
-
-	(function () {
-		var isRootOrRightHalf = function (id) {
-				return currentLayout.nodes[id].x >= currentLayout.nodes[idea.id].x;
-			},
-			isRootOrLeftHalf = function (id) {
-				return currentLayout.nodes[id].x <= currentLayout.nodes[idea.id].x;
-			},
-			nodesWithIDs = function () {
-				return _.map(currentLayout.nodes,
-					function (n, nodeId) {
-						return _.extend({ id: parseInt(nodeId, 10)}, n);
-					});
-			};
-		self.selectNodeLeft = function (source) {
-			var node,
-				rank,
-				isRoot = currentlySelectedIdeaId === idea.id,
-				targetRank = isRoot ? -Infinity : Infinity;
-			if (!isInputEnabled) {
-				return;
-			}
-			analytic('selectNodeLeft', source);
-			if (isRootOrLeftHalf(currentlySelectedIdeaId)) {
-				node = idea.id === currentlySelectedIdeaId ? idea : idea.findSubIdeaById(currentlySelectedIdeaId);
-				ensureNodeIsExpanded(source, node.id);
-				for (rank in node.ideas) {
-					rank = parseFloat(rank);
-					if ((isRoot && rank < 0 && rank > targetRank) || (!isRoot && rank > 0 && rank < targetRank)) {
-						targetRank = rank;
-					}
-				}
-				if (targetRank !== Infinity && targetRank !== -Infinity) {
-					self.selectNode(node.ideas[targetRank].id);
-				}
-			} else {
-				self.selectNode(idea.findParent(currentlySelectedIdeaId).id);
-			}
-		};
-		self.selectNodeRight = function (source) {
-			var node, rank, minimumPositiveRank = Infinity;
-			if (!isInputEnabled) {
-				return;
-			}
-			analytic('selectNodeRight', source);
-			if (isRootOrRightHalf(currentlySelectedIdeaId)) {
-				node = idea.id === currentlySelectedIdeaId ? idea : idea.findSubIdeaById(currentlySelectedIdeaId);
-				ensureNodeIsExpanded(source, node.id);
-				for (rank in node.ideas) {
-					rank = parseFloat(rank);
-					if (rank > 0 && rank < minimumPositiveRank) {
-						minimumPositiveRank = rank;
-					}
-				}
-				if (minimumPositiveRank !== Infinity) {
-					self.selectNode(node.ideas[minimumPositiveRank].id);
-				}
-			} else {
-				self.selectNode(idea.findParent(currentlySelectedIdeaId).id);
-			}
-		};
-		self.selectNodeUp = function (source) {
-			var previousSibling = idea.previousSiblingId(currentlySelectedIdeaId),
-				nodesAbove,
-				closestNode,
-				currentNode = currentLayout.nodes[currentlySelectedIdeaId];
-			if (!isInputEnabled) {
-				return;
-			}
-			analytic('selectNodeUp', source);
-			if (previousSibling) {
-				self.selectNode(previousSibling);
-			} else {
-				if (!currentNode) { return; }
-				nodesAbove = _.reject(nodesWithIDs(), function (node) {
-					return node.y >= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
-				});
-				if (_.size(nodesAbove) === 0) {
-					return;
-				}
-				closestNode = _.min(nodesAbove, function (node) {
-					return Math.pow(node.x - currentNode.x, 2) + Math.pow(node.y - currentNode.y, 2);
-				});
-				self.selectNode(closestNode.id);
-			}
-		};
-		self.selectNodeDown = function (source) {
-			var nextSibling = idea.nextSiblingId(currentlySelectedIdeaId),
-				nodesBelow,
-				closestNode,
-				currentNode = currentLayout.nodes[currentlySelectedIdeaId];
-			if (!isInputEnabled) {
-				return;
-			}
-			analytic('selectNodeDown', source);
-			if (nextSibling) {
-				self.selectNode(nextSibling);
-			} else {
-				if (!currentNode) { return; }
-				nodesBelow = _.reject(nodesWithIDs(), function (node) {
-					return node.y <= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
-				});
-				if (_.size(nodesBelow) === 0) {
-					return;
-				}
-				closestNode = _.min(nodesBelow, function (node) {
-					return Math.pow(node.x - currentNode.x, 2) + Math.pow(node.y - currentNode.y, 2);
-				});
-				self.selectNode(closestNode.id);
-			}
-		};
 	}());
 };
 /*global _, MAPJS, jQuery*/
@@ -3368,11 +3406,13 @@ jQuery.fn.mapToolbarWidget = function (mapModel) {
 			'copy', 'cut', 'paste', 'resetView', 'openAttachment', 'toggleAddLinkMode', 'activateChildren', 'activateNodeAndChildren', 'activateSiblingNodes', 'editIcon'],
 		changeMethodNames = ['updateStyle'];
 	return this.each(function () {
-		var element = jQuery(this);
+		var element = jQuery(this), preventRoundtrip = false;
 		mapModel.addEventListener('nodeSelectionChanged', function () {
+			preventRoundtrip = true;
 			element.find('.updateStyle[data-mm-target-property]').val(function () {
 				return mapModel.getSelectedStyle(jQuery(this).data('mm-target-property'));
 			}).change();
+			preventRoundtrip = false;
 		});
 		mapModel.addEventListener('addLinkModeToggled', function () {
 			element.find('.toggleAddLinkMode').toggleClass('active');
@@ -3386,6 +3426,9 @@ jQuery.fn.mapToolbarWidget = function (mapModel) {
 		});
 		changeMethodNames.forEach(function (methodName) {
 			element.find('.' + methodName).change(function () {
+				if (preventRoundtrip) {
+					return;
+				}
 				var tool = jQuery(this);
 				if (tool.data('mm-target-property')) {
 					mapModel[methodName]('toolbar', tool.data('mm-target-property'), tool.val());
@@ -3492,9 +3535,13 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageInsert
 				'left': 'selectNodeLeft',
 				'up': 'selectNodeUp',
 				'right': 'selectNodeRight',
+				'shift+right': 'activateNodeRight',
+				'shift+left': 'activateNodeLeft',
+				'shift+up': 'activateNodeUp',
+				'shift+down': 'activateNodeDown',
 				'down': 'selectNodeDown',
 				'space f2': 'editNode',
-				'shift+up': 'toggleCollapse',
+				'f': 'toggleCollapse',
 				'c meta+x ctrl+x': 'cut',
 				'p meta+v ctrl+v': 'paste',
 				'y meta+c ctrl+c': 'copy',
