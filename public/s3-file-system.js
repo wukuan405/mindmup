@@ -1,6 +1,6 @@
 /*jslint forin: true*/
-/*global FormData, jQuery, MM, _*/
-MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder, additionalArgumentsGenerator) {
+/*global jQuery, MM, _*/
+MM.S3ConfigGenerator = function (s3Url, publishingConfigUrl, folder) {
 	'use strict';
 	this.generate = function () {
 		var deferred = jQuery.Deferred(),
@@ -10,12 +10,7 @@ MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder,
 				type: 'POST',
 				processData: false,
 				contentType: false
-			},
-			generatorArgs = additionalArgumentsGenerator && additionalArgumentsGenerator();
-		if (generatorArgs) {
-			options.data =  new FormData();
-			_.each(generatorArgs, function (val, key) { options.data.append(key, val); });
-		}
+			};
 		jQuery.ajax(options).then(
 			function (jsonConfig) {
 				jsonConfig.s3Url = s3Url;
