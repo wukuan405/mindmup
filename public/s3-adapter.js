@@ -31,7 +31,7 @@ MM.AjaxPublishingConfigGenerator = function (s3Url, publishingConfigUrl, folder,
 	};
 };
 
-MM.S3Adapter = function (publishingConfigGenerator, prefix, description) {
+MM.S3FileSystem = function (publishingConfigGenerator, prefix, description) {
 	'use strict';
 
 	var properties = {editable: true},
