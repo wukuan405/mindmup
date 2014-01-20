@@ -1,11 +1,11 @@
 /* global jasmine, describe, it, beforeEach, MM, expect*/
-describe('MM.EmbeddedConfigGenerator', function  () {
+describe('MM.EmbeddedMapUrlGenerator', function  () {
 	'use strict';
 	var underTest, resolveSpy, rejectSpy;
 	beforeEach(function () {
 		resolveSpy = jasmine.createSpy('resolve');
 		rejectSpy = jasmine.createSpy('reject');
-		underTest = new MM.EmbeddedConfigGenerator({'a': {prefix: 'https://mindmup.awsamazon.com/files/', postfix: '.json'}, 'b': {prefix: 'https://mindmup-gold.awsamazon.com/', remove: 2}});
+		underTest = new MM.EmbeddedMapUrlGenerator({'a': {prefix: 'https://mindmup.awsamazon.com/files/', postfix: '.json'}, 'b': {prefix: 'https://mindmup-gold.awsamazon.com/', remove: 2}});
 	});
 	describe('buildMapUrl', function () {
 		// .buildMapUrl(mapId, prefix, showAuthentication)

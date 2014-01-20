@@ -1,5 +1,5 @@
 /* global MM, jQuery*/
-MM.EmbeddedConfigGenerator = function (config) {
+MM.EmbeddedMapUrlGenerator = function (config) {
 	'use strict';
 	var self = this;
 	self.buildMapUrl = function (mapId) {
