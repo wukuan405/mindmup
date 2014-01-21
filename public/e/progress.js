@@ -2,6 +2,13 @@
 
 MM.CalcModel = function () {
 	'use strict';
+	var self = observable(this);
+	self.getTable = function () {
+		return [
+			['first', 2],
+			['second', 4]
+		];
+	};
 };
 
 $.fn.calcWidget = function (calcModel) {
@@ -21,6 +28,7 @@ $.fn.calcWidget = function (calcModel) {
 			},
 			id = self.attr('id');
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
+		self.hide();
 		jQuery('[data-mm-role=show-calc-widget][data-mm-calc-id='  + id + ']').click(function () {
 			calcModel.addEventListener('dataUpdated', repopulateTable);
 			var data = calcModel.getTable();
@@ -337,13 +345,14 @@ MM.Extensions.progress = function () {
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
 				toolbar = parsed.find('[data-mm-role=floating-toolbar]').clone().appendTo($('body')).draggable().css('position', 'absolute'),
 				modal = parsed.find('[data-mm-role=modal]').clone().appendTo($('body')),
+				calcWidget = parsed.find('#progress-calc-widget'),
 				updater;
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
 			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-
+			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel()).floatingToolbarWidget();
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

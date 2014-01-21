@@ -24,6 +24,8 @@
 			<li><a data-category="Top Bar" data-event-type="Progress - Deactivate" data-mm-role="deactivate" data-mm-progress-visible="active"><i class="icon-eject" ></i>&nbsp;Deactivate for this map</a></li>
 			<li><a data-category="Top Bar" data-event-type="Progress - Configure" data-toggle="modal" data-target="#progressEditModal"><i class="icon-cog" ></i>&nbsp;
 				<span data-mm-progress-visible="active">Configure</span><span data-mm-progress-visible="inactive">Custom</span> statuses</a></li>
+			<li><a data-category="Top Bar" data-event-type="Progress - Calc" data-mm-role="show-calc-widget" data-mm-calc-id="progress-calc-widget" data-mm-progress-visible="active"><i class="icon-qrcode" ></i>&nbsp;Show Status Counts</a></li>
+
 		</ul>
 	</li>
   <div class='well span3 progress-toolbar' data-mm-role="floating-toolbar">
@@ -91,5 +93,10 @@
 		<a href='#' data-dismiss='modal' class='btn btn-primary' data-mm-role="save">Save</a>
 		<a href='#' data-dismiss='modal' class='btn'>Cancel</a>
 	  </div>
+	</div>
+	<div id="progress-calc-widget" style="position:absolute; top:50px; left:50:px; border:1px solid black; padding:20px; z-index:999; border-radius:10px;">
+		<table data-mm-role="calc-table" class="table"></table>
+		<button class="btn" data-mm-role="hide-calc-widget" data-mm-calc-id="progress-calc-widget" style="margin-top:10px;">Close</button>
+
 	</div>
 </div>
