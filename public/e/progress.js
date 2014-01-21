@@ -18,17 +18,18 @@ $.fn.calcWidget = function (calcModel) {
 						cellDOM.text(cell);
 					});
 				});
-			};
+			},
+			id = self.attr('id');
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
-		self.modal({keyboard: true, show: false});
-		self.on('show', function () {
+		jQuery('[data-mm-role=show-calc-widget][data-mm-calc-id='  + id + ']').click(function () {
 			calcModel.addEventListener('dataUpdated', repopulateTable);
 			var data = calcModel.getTable();
 			repopulateTable(data);
-
+			self.show();
 		});
-		self.on('hide', function () {
+		jQuery('[data-mm-role=hide-calc-widget][data-mm-calc-id='  + id + ']').click(function () {
 			calcModel.removeEventListener('dataUpdated', repopulateTable);
+			self.hide();
 		});
 	});
 };

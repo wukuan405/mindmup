@@ -1,4 +1,4 @@
-/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach, fakeBootstrapModal, _, spyOn */
+/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach,  _, spyOn */
 /*jshint laxbreak:true*/
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
@@ -642,10 +642,15 @@ describe('progressStatusUpdateWidget', function () {
 });
 describe('Calc widget', function () {
 	'use strict';
-	var template =	'<div class="modal">' +
+
+	var template =	'<div id="calcWidget1" class="modal" >' +
+					'<button data-mm-role="hide-calc-widget" data-mm-calc-id="calcWidget1"></button>' +
 					'<table data-mm-role="calc-table"></table>' +
 					'</div>',
+		openButtonTemplate = '<button data-mm-role="show-calc-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
+		showButton,
+		hideButton,
 		activityLog,
 		calcModel,
 		tableDOM,
@@ -665,37 +670,41 @@ describe('Calc widget', function () {
 	beforeEach(function () {
 		activityLog = { log: jasmine.createSpy('log') };
 		calcModel = observable({ getTable: jasmine.createSpy('getTable') });
+		showButton = jQuery(openButtonTemplate).appendTo('body');
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
+		hideButton = jQuery('[data-mm-role=hide-calc-widget][data-mm-calc-id=calcWidget1]');
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
-		fakeBootstrapModal(underTest);
+	});
+	afterEach(function () {
+		jQuery('#calcWidget1').detach();
+		jQuery('[data-mm-role=show-calc-widget]').detach();
 	});
 	describe('shows the progress status counts when it becomes visible', function () {
-
 		beforeEach(function () {
 			calcModel.getTable.andReturn(simpleTable);
 		});
 		it('creates data rows for each table row inside data-mm-role=counts-table', function () {
-			underTest.modal('show');
+			showButton.click();
 			checkContents(simpleTable);
 		});
 		it('removes any previous content from data-mm-role=counts-table', function () {
 			tableDOM.html('<tr><td>hey</td><td>there</td></tr>');
-			underTest.modal('show');
+			showButton.click();
 			checkContents(simpleTable);
 		});
 	});
 	it('updates automatically when the model fires an update', function () {
 		calcModel.getTable.andReturn([[1, 2]]);
-		underTest.modal('show');
+		showButton.click();
 		calcModel.dispatchEvent('dataUpdated', simpleTable);
 		checkContents(simpleTable);
 	});
 	it('removes itself as a listener from the model when it is hidden', function () {
 		calcModel.getTable.andReturn(simpleTable);
 		underTest.modal('show');
+		showButton.click();
 		spyOn(calcModel, 'removeEventListener').andCallThrough();
-
-		underTest.modal('hide');
+		hideButton.click();
 		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
 
 		expect(calcModel.removeEventListener).toHaveBeenCalled();
