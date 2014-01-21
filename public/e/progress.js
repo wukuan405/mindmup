@@ -1,5 +1,13 @@
 /*global MM, _, observable, jQuery, $, window*/
 
+MM.CalcModel = function () {
+	'use strict';
+};
+
+MM.CalcWidget = function () {
+	'use strict';
+};
+
 MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {
 	'use strict';
 	var self = observable(this),
@@ -164,7 +172,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 					}).then(function (result) {
 						alertController.hide(alertId);
 						updater.setStatusConfig(result);
-					}, function (error) {
+					}, function () {
 						alertController.hide(alertId);
 						alertController.show('Error Loading progress configuration from URL', statusConfig, 'error');
 					});
