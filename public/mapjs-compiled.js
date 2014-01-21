@@ -220,7 +220,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				if (prev.eventMethod === 'batch') {
 					eventStacks[originSession].push({
 						eventMethod: 'batch',
-						eventArgs: prev.eventArgs.push([method].concat(args)),
+						eventArgs: prev.eventArgs.concat([[method].concat(args)]),
 						undoFunction: function () {
 							undofunc();
 							prev.undoFunction();
@@ -498,6 +498,24 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}, originSession);
 		return true;
 	};
+	contentAggregate.initialiseTitle = function (ideaId, title) {
+		return contentAggregate.execCommand('initialiseTitle', arguments);
+	};
+	commandProcessors.initialiseTitle = function (originSession, ideaId, title) {
+		var idea = findIdeaById(ideaId), originalTitle;
+		if (!idea) {
+			return false;
+		}
+		originalTitle = idea.title;
+		if (originalTitle == title) {
+			return false;
+		}
+		idea.title = title;
+		appendChange('initialiseTitle', [ideaId, title], function () {
+			idea.title = originalTitle;
+		}, originSession);
+		return true;
+	};
 	contentAggregate.updateTitle = function (ideaId, title) {
 		return contentAggregate.execCommand('updateTitle', arguments);
 	};
@@ -510,19 +528,10 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		if (originalTitle == title) {
 			return false;
 		}
-		if (!idea.title) {
-			idea.title = title;
-			appendChange('updateTitle', [ideaId, title], function () {
-				idea.title = originalTitle;
-			}, originSession);
-		}
-		else {
-			idea.title = title;
-			logChange('updateTitle', [ideaId, title], function () {
-				idea.title = originalTitle;
-			}, originSession);
-		}
-
+		idea.title = title;
+		logChange('updateTitle', [ideaId, title], function () {
+			idea.title = originalTitle;
+		}, originSession);
 		return true;
 	};
 	contentAggregate.addSubIdea = function (parentId, ideaTitle, optionalNewId) {
@@ -1260,6 +1269,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		isInputEnabled = true,
 		isEditingEnabled = true,
 		currentlySelectedIdeaId,
+		activatedNodes = [],
+		setActiveNodes = function (activated) {
+			var wasActivated = _.clone(activatedNodes);
+			activatedNodes = activated;
+			self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
+		},
 		getRandomTitle = function (titles) {
 			return titles[Math.floor(titles.length * Math.random())];
 		},
@@ -1340,8 +1355,10 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			self.dispatchEvent('layoutChangeComplete');
 		},
 		revertSelectionForUndo,
+		revertActivatedForUndo,
 		editNewIdea = function (newIdeaId) {
 			revertSelectionForUndo = currentlySelectedIdeaId;
+			revertActivatedForUndo = activatedNodes.slice(0);
 			self.selectNode(newIdeaId);
 			self.editNode(false, true, true);
 		},
@@ -1350,6 +1367,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		},
 		onIdeaChanged = function () {
 			revertSelectionForUndo = false;
+			revertActivatedForUndo = false;
 			updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
 		},
 		currentlySelectedIdea = function () {
@@ -1585,8 +1603,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 		}
 	};
-	this.updateTitle = function (ideaId, title) {
-		idea.updateTitle(ideaId, title);
+	this.updateTitle = function (ideaId, title, isNew) {
+		if (isNew) {
+			idea.initialiseTitle(ideaId, title);
+		} else {
+			idea.updateTitle(ideaId, title);
+		}
 	};
 	this.editNode = function (source, shouldSelectAll, editingNew) {
 		if (!isEditingEnabled) {
@@ -1712,12 +1734,17 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 		}
 
 		analytic('undo', source);
-		var undoSelection = revertSelectionForUndo;
+		var undoSelectionClone = revertSelectionForUndo,
+			undoActivationClone = revertActivatedForUndo;
 		if (isInputEnabled) {
 			idea.undo();
-			if (undoSelection) {
-				self.selectNode(undoSelection);
+			if (undoSelectionClone) {
+				self.selectNode(undoSelectionClone);
 			}
+			if (undoActivationClone) {
+				setActiveNodes(undoActivationClone);
+			}
+
 		}
 	};
 	self.redo = function (source) {
@@ -1830,13 +1857,7 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	//node activation and selection
 	(function () {
-		var activatedNodes = [],
-			setActiveNodes = function (activated) {
-				var wasActivated = _.clone(activatedNodes);
-				activatedNodes = activated;
-				self.dispatchEvent('activatedNodesChanged', _.difference(activatedNodes, wasActivated), _.difference(wasActivated, activatedNodes));
-			},
-			isRootOrRightHalf = function (id) {
+			var isRootOrRightHalf = function (id) {
 				return currentLayout.nodes[id].x >= currentLayout.nodes[idea.id].x;
 			},
 			isRootOrLeftHalf = function (id) {
@@ -2715,7 +2736,8 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 					self.setStyle();
 					self.getStage().draw();
 					self.fire(':textChanged', {
-						text: newText || unformattedText
+						text: newText || unformattedText,
+						isNew: deleteOnCancel
 					});
 					ideaInput.remove();
 					self.stopEditing = undefined;
@@ -3216,7 +3238,7 @@ MAPJS.KineticMediator = function (mapModel, stage) {
 			mapModel.editNode('mouse', false, false);
 		});
 		node.on(':textChanged', function (event) {
-			mapModel.updateTitle(n.id, event.text);
+			mapModel.updateTitle(n.id, event.text, event.isNew);
 			mapModel.setInputEnabled(true);
 		});
 		node.on(':editing', function () {
@@ -3444,11 +3466,13 @@ jQuery.fn.mapToolbarWidget = function (mapModel) {
 			'copy', 'cut', 'paste', 'resetView', 'openAttachment', 'toggleAddLinkMode', 'activateChildren', 'activateNodeAndChildren', 'activateSiblingNodes', 'editIcon'],
 		changeMethodNames = ['updateStyle'];
 	return this.each(function () {
-		var element = jQuery(this);
+		var element = jQuery(this), preventRoundtrip = false;
 		mapModel.addEventListener('nodeSelectionChanged', function () {
+			preventRoundtrip = true;
 			element.find('.updateStyle[data-mm-target-property]').val(function () {
 				return mapModel.getSelectedStyle(jQuery(this).data('mm-target-property'));
 			}).change();
+			preventRoundtrip = false;
 		});
 		mapModel.addEventListener('addLinkModeToggled', function () {
 			element.find('.toggleAddLinkMode').toggleClass('active');
@@ -3462,6 +3486,9 @@ jQuery.fn.mapToolbarWidget = function (mapModel) {
 		});
 		changeMethodNames.forEach(function (methodName) {
 			element.find('.' + methodName).change(function () {
+				if (preventRoundtrip) {
+					return;
+				}
 				var tool = jQuery(this);
 				if (tool.data('mm-target-property')) {
 					mapModel[methodName]('toolbar', tool.data('mm-target-property'), tool.val());
