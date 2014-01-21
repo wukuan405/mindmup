@@ -4,8 +4,33 @@ MM.CalcModel = function () {
 	'use strict';
 };
 
-MM.CalcWidget = function () {
+$.fn.calcWidget = function (calcModel) {
 	'use strict';
+	return this.each(function () {
+		var self = jQuery(this),
+		    table = self.find('[data-mm-role=calc-table]'),
+			repopulateTable = function (data) {
+				table.empty();
+				_.each(data, function (row) {
+					var rowDOM = jQuery('<tr>').appendTo(table);
+					_.each(row, function (cell) {
+						var cellDOM = jQuery('<td>').appendTo(rowDOM);
+						cellDOM.text(cell);
+					});
+				});
+			};
+		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
+		self.modal({keyboard: true, show: false});
+		self.on('show', function () {
+			calcModel.addEventListener('dataUpdated', repopulateTable);
+			var data = calcModel.getTable();
+			repopulateTable(data);
+
+		});
+		self.on('hide', function () {
+			calcModel.removeEventListener('dataUpdated', repopulateTable);
+		});
+	});
 };
 
 MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {

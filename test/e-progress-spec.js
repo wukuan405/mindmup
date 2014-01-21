@@ -1,4 +1,5 @@
-/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach */
+/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach, fakeBootstrapModal, _, spyOn */
+/*jshint laxbreak:true*/
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
 	var underTest, content,
@@ -308,7 +309,7 @@ describe('MM.ContentStatusUpdater', function () {
 		*/
 		//TODO: improve by removing only backgrounds and icons that are actually included in the status (eg don't clear color if status did not define color
 	});
-	describe("setStatusConfig", function () {
+	describe('setStatusConfig', function () {
 		var content, underTest,
 			configOne = { 'passing': { style: { background: '#ffffff' } } };
 		beforeEach(function () {
@@ -318,30 +319,30 @@ describe('MM.ContentStatusUpdater', function () {
 			});
 			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
 		});
-		it("changes status configuration on current content", function () {
+		it('changes status configuration on current content', function () {
 			underTest.setStatusConfig(configOne);
 			expect(content.getAttr('test-statuses')).toEqual(configOne);
 		});
-		it("changes status configuration on current content", function () {
+		it('changes status configuration on current content', function () {
 			underTest.setStatusConfig(false);
 			expect(content.getAttr('test-statuses')).toBeFalsy();
 		});
-		it("dispatches config changed event when configuration changes", function () {
+		it('dispatches config changed event when configuration changes', function () {
 			var listener = jasmine.createSpy();
-			underTest.addEventListener("configChanged", listener);
+			underTest.addEventListener('configChanged', listener);
 			underTest.setStatusConfig(configOne);
 			expect(listener).toHaveBeenCalledWith(configOne);
 		});
-		it("ignores non numerical priority", function () {
+		it('ignores non numerical priority', function () {
 			underTest.setStatusConfig({ 'passing': { priority: 'abc', style: { background: '#ffffff' } } });
 			expect(content.getAttr('test-statuses')).toEqual(configOne);
 		});
-		it("parses numerical priorities if provided as strings", function () {
+		it('parses numerical priorities if provided as strings', function () {
 			underTest.setStatusConfig({ 'passing': { priority: '2', style: { background: '#ffffff' } } });
 			expect(content.getAttr('test-statuses')).toEqual({ 'passing': { priority: '2', style: { background: '#ffffff' } } });
 		});
 	});
-	describe("mapController bindings", function () {
+	describe('mapController bindings', function () {
 		var mapController, underTest, configOne, configTwo, firstContent, secondContent;
 		beforeEach(function () {
 			mapController = observable({});
@@ -357,15 +358,15 @@ describe('MM.ContentStatusUpdater', function () {
 				attr: { 'test-statuses': configTwo }
 			});
 		});
-		it("fires configChanged when the content changes", function () {
+		it('fires configChanged when the content changes', function () {
 			var listener = jasmine.createSpy();
-			underTest.addEventListener("configChanged", listener);
+			underTest.addEventListener('configChanged', listener);
 			mapController.dispatchEvent('mapLoaded', '', firstContent);
 			expect(listener).toHaveBeenCalledWith(configOne);
 		});
 	});
 });
-describe("progressStatusUpdateWidget", function () {
+describe('progressStatusUpdateWidget', function () {
 	'use strict';
 	var elementHTML = '<div>  ' +
 		'	<ul data-mm-role="status-list">' +
@@ -415,20 +416,20 @@ describe("progressStatusUpdateWidget", function () {
 	afterEach(function () {
 		domElement.detach();
 	});
-	describe("menu visibility", function () {
-		it("removes items with visible=active when by default", function () {
+	describe('menu visibility', function () {
+		it('removes items with visible=active when by default', function () {
 			expectVisibilitySettings('none', 'list-item');
 		});
-		it("shows active and removes inactive when there is an active configuration", function () {
+		it('shows active and removes inactive when there is an active configuration', function () {
 			updater.dispatchEvent('configChanged', singleConfig);
 			expectVisibilitySettings('list-item', 'none');
 		});
-		it("hides active and shows inactive when there is no active configuration", function () {
+		it('hides active and shows inactive when there is no active configuration', function () {
 			updater.dispatchEvent('configChanged', singleConfig);
 			updater.dispatchEvent('configChanged', false);
 			expectVisibilitySettings('none', 'list-item');
 		});
-		it("clones the template for each status in the config when config changes, setting the fields from the config", function () {
+		it('clones the template for each status in the config when config changes, setting the fields from the config', function () {
 			updater.dispatchEvent('configChanged', doubleConfig);
 			var statuses = domElement.find('[data-mm-role=progress]');
 			expect(statuses.size()).toBe(2);
@@ -454,7 +455,7 @@ describe("progressStatusUpdateWidget", function () {
 			expect(statuses.first().find('[data-mm-role=icon-image-placeholder]').attr('src')).toEqual('http://failedurl');
 			expect(statuses.first().find('[data-mm-role=icon-image-placeholder]').css('display')).toBe('inline');
 		});
-		it("orders by priority, highest priority first, then items without priority in alphabetic order", function () {
+		it('orders by priority, highest priority first, then items without priority in alphabetic order', function () {
 			var numericOrderConfig = {
 				'kalpha': {description: 'F', style: {background: 'rgb(255, 0, 0)'}},
 				'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
@@ -470,49 +471,42 @@ describe("progressStatusUpdateWidget", function () {
 			expect(statuses.eq(2).attr('data-mm-progress-key')).toBe('k777');
 			expect(statuses.eq(3).attr('data-mm-progress-key')).toBe('kalpha');
 		});
-		it("supports inputs for color, setting the value", function () {
-			var inputElHTML = '<div>  ' +
-				'	<ul data-mm-role="status-list">' +
-				'			<li data-mm-role="status-template">' +
-				'				<input data-mm-role="status-color"></input>' +
-				'			</li>' +
-				'		</ul>' +
-				'	</div>';
+		it('supports inputs for color, setting the value', function () {
 			updater.dispatchEvent('configChanged', singleConfig);
 			expect(domElement.find('[data-mm-role=status-color]').val()).toBe('#FF0000');
 		});
 
 	});
-	describe("action binding", function () {
+	describe('action binding', function () {
 		beforeEach(function () {
 			updater.dispatchEvent('configChanged', singleConfig);
 		});
-		it("drops config when clicked on deactivate", function () {
+		it('drops config when clicked on deactivate', function () {
 			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=deactivate]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith(false);
 		});
-		it("sets configuration to the one specified with data-mm-progress-type when clicked on start", function () {
+		it('sets configuration to the one specified with data-mm-progress-type when clicked on start', function () {
 			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-progress-type=double]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith(doubleConfig);
 		});
-		it("clears statuses clicked on clear", function () {
+		it('clears statuses clicked on clear', function () {
 			updater.clear = jasmine.createSpy();
 			domElement.find('[data-mm-role=clear]').click();
 			expect(updater.clear).toHaveBeenCalled();
 		});
-		it("puts body class progress-toolbar-active when clicked on toggle-toolbar if class does not exist", function () {
+		it('puts body class progress-toolbar-active when clicked on toggle-toolbar if class does not exist', function () {
 			jQuery('body').removeClass('progress-toolbar-active');
 			domElement.find('[data-mm-role=toggle-toolbar]').click();
 			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeTruthy();
 		});
-		it("removes body class progress-toolbar-active when clicked on toggle-toolbar if class exists", function () {
+		it('removes body class progress-toolbar-active when clicked on toggle-toolbar if class exists', function () {
 			jQuery('body').addClass('progress-toolbar-active');
 			domElement.find('[data-mm-role=toggle-toolbar]').click();
 			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeFalsy();
 		});
-		it("updates currently activated nodes when clicked on a progress status link", function () {
+		it('updates currently activated nodes when clicked on a progress status link', function () {
 			updater.updateStatus = jasmine.createSpy();
 			mapModel.applyToActivated = function (func) {
 				func(17);
@@ -520,7 +514,7 @@ describe("progressStatusUpdateWidget", function () {
 			domElement.find('[data-mm-role=progress] [data-mm-role=set-status]').click();
 			expect(updater.updateStatus).toHaveBeenCalledWith(17, 'passed');
 		});
-		it("serialises current list of statuses to updater when clicked on save link", function () {
+		it('serialises current list of statuses to updater when clicked on save link', function () {
 			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
@@ -550,7 +544,7 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
-		it("ignores transparent color when reading background", function () {
+		it('ignores transparent color when reading background', function () {
 			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="transparent"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
@@ -570,7 +564,7 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
-		it("ignores false as string color when reading background", function () {
+		it('ignores false as string color when reading background', function () {
 			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="false"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
@@ -590,7 +584,7 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
-		it("autogenerates keys for statuses without a key, numerically skipping any existing values", function () {
+		it('autogenerates keys for statuses without a key, numerically skipping any existing values', function () {
 			var newStatusHtml = '<li data-mm-role="progress" >'
 				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
@@ -617,7 +611,7 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
-		it("autogenerates keys starting from 1 when no keys are defined", function () {
+		it('autogenerates keys starting from 1 when no keys are defined', function () {
 			var newStatusHtml = '<li data-mm-role="progress" >'
 				+ '<input data-mm-role="status-color" value="#0FF0FF"/>'
 				+ '<span data-mm-role="status-name">Name 1</span>'
@@ -644,5 +638,67 @@ describe("progressStatusUpdateWidget", function () {
 				}
 			});
 		});
+	});
+});
+describe('Calc widget', function () {
+	'use strict';
+	var template =	'<div class="modal">' +
+					'<table data-mm-role="calc-table"></table>' +
+					'</div>',
+		underTest,
+		activityLog,
+		calcModel,
+		tableDOM,
+		simpleTable = [
+			['first', 2],
+			['second', 4]
+		],
+		checkContents = function (dataTable) {
+			expect(tableDOM.find('tr').length).toBe(dataTable.length);
+			_.each(dataTable, function (row, rowindex) {
+				expect(tableDOM.find('tr:eq(' + rowindex + ') td').length).toBe(row.length);
+				_.each(row, function (cell, cellindex) {
+					expect(tableDOM.find('tr:eq(' + rowindex + ') td:eq(' + cellindex + ')').text()).toEqual(cell.toString());
+				});
+			});
+		};
+	beforeEach(function () {
+		activityLog = { log: jasmine.createSpy('log') };
+		calcModel = observable({ getTable: jasmine.createSpy('getTable') });
+		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
+		tableDOM = underTest.find('[data-mm-role=calc-table]');
+		fakeBootstrapModal(underTest);
+	});
+	describe('shows the progress status counts when it becomes visible', function () {
+
+		beforeEach(function () {
+			calcModel.getTable.andReturn(simpleTable);
+		});
+		it('creates data rows for each table row inside data-mm-role=counts-table', function () {
+			underTest.modal('show');
+			checkContents(simpleTable);
+		});
+		it('removes any previous content from data-mm-role=counts-table', function () {
+			tableDOM.html('<tr><td>hey</td><td>there</td></tr>');
+			underTest.modal('show');
+			checkContents(simpleTable);
+		});
+	});
+	it('updates automatically when the model fires an update', function () {
+		calcModel.getTable.andReturn([[1, 2]]);
+		underTest.modal('show');
+		calcModel.dispatchEvent('dataUpdated', simpleTable);
+		checkContents(simpleTable);
+	});
+	it('removes itself as a listener from the model when it is hidden', function () {
+		calcModel.getTable.andReturn(simpleTable);
+		underTest.modal('show');
+		spyOn(calcModel, 'removeEventListener').andCallThrough();
+
+		underTest.modal('hide');
+		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
+
+		expect(calcModel.removeEventListener).toHaveBeenCalled();
+		checkContents(simpleTable);
 	});
 });
