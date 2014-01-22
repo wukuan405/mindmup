@@ -13,6 +13,7 @@
   border-radius: 9px;
   position: absolute !important;
   padding: 10px;
+  cursor: move;
 }
 .progress-calc {
   top:50px;

@@ -217,8 +217,8 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				sortedConfig = _.sortBy(sortedAlpha, function (status) {
 					return -1 * status.priority || 0;
 				});
-			_.each(sortedConfig, function (status) {
-				var newItem = template.clone().appendTo(domParent);
+			_.each(sortedConfig.reverse(), function (status) {
+				var newItem = template.clone().prependTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
 				if (status.style && status.style.background) {
 					newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
