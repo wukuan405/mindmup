@@ -1,4 +1,4 @@
-/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach,  _, spyOn */
+/*global beforeEach, describe, expect, it, MAPJS, MM, jasmine, observable, jQuery, afterEach,  _, spyOn*/
 /*jshint laxbreak:true*/
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
@@ -715,6 +715,65 @@ describe('MM.ProgressAggregation', function () {
 	});
 });
 
+describe('progressFilterWidget', function () {
+	'use strict';
+	var template =	'<div id="progressFilterWidget">' +
+					'<button data-mm-role="toggle-widget"></button>' +
+					'<div data-mm-role="filter"></div>' +
+					'</div>',
+		toggleButton,
+		underTest,
+		activityLog,
+		calcModel,
+		filterDom;
+	beforeEach(function () {
+		activityLog = {};
+		calcModel = observable({});
+		var widgetDom = jQuery(template).appendTo('body');
+		underTest = widgetDom.progressFilterWidget(calcModel, activityLog);
+		filterDom = widgetDom.find('[data-mm-role=filter]');
+		toggleButton = widgetDom.find('[data-mm-role=toggle-widget]');
+
+	});
+	afterEach(function () {
+		jQuery('#progressFilterWidget').detach();
+	});
+	it('should hide the filter ui when initialised', function () {
+		expect(filterDom.css('display')).toBe('none');
+	});
+	describe('toggle button', function () {
+		it('should show the filter ui if it is hidden', function () {
+			toggleButton.click();
+			expect(filterDom.css('display')).not.toBe('none');
+		});
+		it('should hide the filter ui if it is visible', function () {
+			toggleButton.click();
+			toggleButton.click();
+			expect(filterDom.css('display')).toBe('none');
+		});
+	});
+	describe('when it becomes visible', function () {
+		it('subscribes to the model ', function () {
+			spyOn(calcModel, 'addEventListener').andCallThrough();
+			toggleButton.click();
+			expect(calcModel.addEventListener).toHaveBeenCalledWith('dataUpdated', jasmine.any(Function));
+		});
+	});
+	describe('when it is hidden', function () {
+		it('unsubscribes from the model', function () {
+			toggleButton.click();
+			spyOn(calcModel, 'removeEventListener').andCallThrough();
+			toggleButton.click();
+			expect(calcModel.removeEventListener).toHaveBeenCalledWith('dataUpdated', jasmine.any(Function));
+		});
+	});
+	describe('updates the model with the filter when it changed in the ui', function () {
+
+	});
+	describe('updates the ui when the model publishes a changed filter', function () {
+
+	});
+});
 describe('MM.CalcModel', function () {
 	'use strict';
 	var underTest, aggregator, mapController, activeContent, aggregation, filter;
@@ -817,7 +876,7 @@ describe('Calc widget', function () {
 					'<table data-mm-role="calc-table"></table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
 					'</div>',
-		openButtonTemplate = '<button data-mm-role="toggle-calc-widget" data-mm-calc-id="calcWidget1"></button>',
+		openButtonTemplate = '<button data-mm-role="toggle-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
 		toggleButton,
 		activityLog,
@@ -847,7 +906,7 @@ describe('Calc widget', function () {
 	});
 	afterEach(function () {
 		jQuery('#calcWidget1').detach();
-		jQuery('[data-mm-role=toggle-calc-widget]').detach();
+		jQuery('[data-mm-role=toggle-widget]').detach();
 	});
 	describe('shows the progress status counts when it becomes visible', function () {
 		it('creates data rows for each table row inside data-mm-role=counts-table', function () {

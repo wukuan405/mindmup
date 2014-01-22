@@ -73,6 +73,29 @@ MM.CalcModel = function (aggregation, mapController) {
 	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 
+$.fn.progressFilterWidget = function (calcModel) {
+	'use strict';
+	return this.each(function () {
+		var self = jQuery(this),
+			toggleButton = self.find('[data-mm-role=toggle-widget]'),
+			filterSection = self.find('[data-mm-role=filter]'),
+			onFilterChanged = function () {},
+			setFilterUIVisible = function (visible) {
+				if (visible) {
+					filterSection.show();
+					calcModel.addEventListener('dataUpdated', onFilterChanged);
+				} else {
+					filterSection.hide();
+					calcModel.removeEventListener('dataUpdated', onFilterChanged);
+				}
+			};
+		filterSection.hide();
+		toggleButton.click(function () {
+			setFilterUIVisible(filterSection.css('display') === 'none');
+		});
+	});
+};
+
 $.fn.calcWidget = function (calcModel) {
 	'use strict';
 	return this.each(function () {
@@ -97,7 +120,7 @@ $.fn.calcWidget = function (calcModel) {
 				}
 			},
 			id = self.attr('id'),
-			toggleButtons = jQuery('[data-mm-role=toggle-calc-widget][data-mm-calc-id='  + id + ']'),
+			toggleButtons = jQuery('[data-mm-role=toggle-widget][data-mm-calc-id='  + id + ']'),
 			setWidgetVisible = function (visible) {
 				if (visible) {
 					calcModel.addEventListener('dataUpdated', repopulateTable);
