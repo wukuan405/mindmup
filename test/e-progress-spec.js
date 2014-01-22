@@ -457,7 +457,8 @@ describe('progressStatusUpdateWidget', function () {
 		});
 		it('orders by priority, highest priority first, then items without priority in alphabetic order', function () {
 			var numericOrderConfig = {
-				'kalpha': {description: 'F', style: {background: 'rgb(255, 0, 0)'}},
+				'kalpha': {description: 'FA', style: {background: 'rgb(255, 0, 0)'}},
+				'kbeta': {description: 'FB', style: {background: 'rgb(255, 0, 0)'}},
 				'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
 				'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
 				'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
@@ -465,11 +466,12 @@ describe('progressStatusUpdateWidget', function () {
 				statuses;
 			updater.dispatchEvent('configChanged', numericOrderConfig);
 			statuses = domElement.find('[data-mm-role=progress]');
-			expect(statuses.size()).toBe(4);
+			expect(statuses.size()).toBe(5);
 			expect(statuses.eq(0).attr('data-mm-progress-key')).toBe('k999');
 			expect(statuses.eq(1).attr('data-mm-progress-key')).toBe('k888');
 			expect(statuses.eq(2).attr('data-mm-progress-key')).toBe('k777');
 			expect(statuses.eq(3).attr('data-mm-progress-key')).toBe('kalpha');
+			expect(statuses.eq(4).attr('data-mm-progress-key')).toBe('kbeta');
 		});
 		it('supports inputs for color, setting the value', function () {
 			updater.dispatchEvent('configChanged', singleConfig);

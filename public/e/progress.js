@@ -20,7 +20,10 @@ MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
 				flattened = _.map(currentCounts, function (v, k) {
 					return [k, v];
 				}),
-				sorted = _.sortBy(flattened, function (row) {return row[0]; });
+				sorted = _.sortBy(flattened, function (row) {
+					var config = statusConfig[row[0]] || {};
+					return config.description || row[0];
+				});
 			sorted = _.sortBy(sorted, function (row) {
 					var config = statusConfig[row[0]] || {};
 					if (config.priority)  {
@@ -208,11 +211,14 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 		generateStatuses = function (config) {
 			var domParent = element.find('[data-mm-role=status-list]'),
 				configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
-				sortedConfig = _.sortBy(configWithKeys, function (status) {
-					return status.priority || 0;
+				sortedAlpha = _.sortBy(configWithKeys, function (status) {
+					return status.description || status.key;
+				}),
+				sortedConfig = _.sortBy(sortedAlpha, function (status) {
+					return -1 * status.priority || 0;
 				});
 			_.each(sortedConfig, function (status) {
-				var newItem = template.clone().prependTo(domParent);
+				var newItem = template.clone().appendTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
 				if (status.style && status.style.background) {
 					newItem.find('[data-mm-role=status-color]').css('backgroundColor', status.style.background).val(status.style.background);
