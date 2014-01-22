@@ -798,14 +798,12 @@ describe('Calc widget', function () {
 	'use strict';
 
 	var template =	'<div id="calcWidget1" class="modal" >' +
-					'<button data-mm-role="hide-calc-widget" data-mm-calc-id="calcWidget1"></button>' +
 					'<table data-mm-role="calc-table"></table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
 					'</div>',
-		openButtonTemplate = '<button data-mm-role="show-calc-widget" data-mm-calc-id="calcWidget1"></button>',
+		openButtonTemplate = '<button data-mm-role="toggle-calc-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
-		showButton,
-		hideButton,
+		toggleButton,
 		activityLog,
 		calcModel,
 		tableDOM,
@@ -826,32 +824,31 @@ describe('Calc widget', function () {
 	beforeEach(function () {
 		activityLog = { log: jasmine.createSpy('log') };
 		calcModel = observable({});
-		showButton = jQuery(openButtonTemplate).appendTo('body');
+		toggleButton = jQuery(openButtonTemplate).appendTo('body');
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
-		hideButton = jQuery('[data-mm-role=hide-calc-widget][data-mm-calc-id=calcWidget1]');
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
 		msgDiv = underTest.find('[data-mm-role=empty]');
 	});
 	afterEach(function () {
 		jQuery('#calcWidget1').detach();
-		jQuery('[data-mm-role=show-calc-widget]').detach();
+		jQuery('[data-mm-role=toggle-calc-widget]').detach();
 	});
 	describe('shows the progress status counts when it becomes visible', function () {
 		it('creates data rows for each table row inside data-mm-role=counts-table', function () {
-			showButton.click();
+			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
 		});
 		it('removes any previous content from data-mm-role=counts-table', function () {
 			tableDOM.html('<tr><td>hey</td><td>there</td></tr>');
-			showButton.click();
+			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
 		});
 	});
 	describe('graceful handling of no data in the report', function () {
 		beforeEach(function () {
-			showButton.click();
+			toggleButton.click();
 			underTest.show();
 			tableDOM.show();
 		});
@@ -867,16 +864,16 @@ describe('Calc widget', function () {
 		});
 	});
 	it('updates automatically when the model fires an update', function () {
-		showButton.click();
+		toggleButton.click();
 		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
 		calcModel.dispatchEvent('dataUpdated', simpleTable);
 		checkContents(simpleTable);
 	});
 	it('removes itself as a listener from the model when it is hidden', function () {
-		showButton.click();
+		toggleButton.click();
 		calcModel.dispatchEvent('dataUpdated', simpleTable);
 		spyOn(calcModel, 'removeEventListener').andCallThrough();
-		hideButton.click();
+		toggleButton.click();
 		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
 
 		expect(calcModel.removeEventListener).toHaveBeenCalled();
