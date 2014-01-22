@@ -745,9 +745,51 @@ describe('Calc Model', function () {
 				activeContent.updateAttr(1, 'status', 'yellow');
 				expect(listenerOne).not.toHaveBeenCalled();
 			});
-
+			it('orders statuses by priority descending then alphanumeric when publishing', function () {
+				var numericOrderConfig = {
+						'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
+						'kalpha': {description: 'F1', style: {background: 'rgb(255, 0, 0)'}},
+						'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+						'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+						'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+					},
+					newContent = MAPJS.content({
+						id: 1,
+						attr: {
+							status: 'k888',
+							'test-statuses': numericOrderConfig
+						},
+						ideas: {
+							1: {
+								id: 11,
+								attr: { status: 'k999' },
+								ideas: {
+									1: {
+										id: 111,
+										attr: {status: 'kalpha2'}
+									},
+									2: {
+										id: 111,
+										attr: {status: 'kalpha'}
+									},
+									3: {
+										id: 112,
+										attr: { status: 'k777'},
+									}
+								}
+							}
+						}
+					});
+				mapController.dispatchEvent('mapLoaded', 'testID2', newContent);
+				expect(listenerOne).toHaveBeenCalledWith([
+					['Y999', 1],
+					['Z888', 1],
+					['X777', 1],
+					['F1', 1],
+					['F2', 1]
+				]);
+			});
 		});
-
 	});
 });
 describe('Calc widget', function () {

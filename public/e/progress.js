@@ -16,10 +16,22 @@ MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
 			});
 		},
 		publishableData = function () {
-			var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {};
-			return _.map(currentCounts, function (v, k) {
-				return [(statusConfig[k] && statusConfig[k].description) || k, v];
+			var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
+				flattened = _.map(currentCounts, function (v, k) {
+					return [k, v];
+				}),
+				sorted = _.sortBy(flattened, function (row) {return row[0]; });
+			sorted = _.sortBy(sorted, function (row) {
+					var config = statusConfig[row[0]] || {};
+					if (config.priority)  {
+						return -1 * config.priority;
+					}
+					return 0;
+				});
+			_.each(sorted, function (row) {
+				row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
 			});
+			return sorted;
 		},
 		recalcAndPublish = function () {
 			if (self.listeners('dataUpdated').length > 0) {
