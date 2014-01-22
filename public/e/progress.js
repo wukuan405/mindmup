@@ -1,14 +1,48 @@
 /*global MM, _, observable, jQuery, $, window*/
 
-MM.CalcModel = function () {
+MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
 	'use strict';
-	var self = observable(this);
-	self.getTable = function () {
-		return [
-			['first', 2],
-			['second', 4]
-		];
+	var self = observable(this),
+		oldAddEventListener = self.addEventListener,
+		activeContent,
+		currentCounts = {},
+		recalculate = function () {
+			currentCounts = {};
+			activeContent.traverse(function (idea) {
+				var stat = idea.attr && idea.attr[statusAttributeName];
+				if (stat) {
+					currentCounts[stat] = (currentCounts[stat] + 1) || 1;
+				}
+			});
+		},
+		publishableData = function () {
+			var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {};
+			return _.map(currentCounts, function (v, k) {
+				return [(statusConfig[k] && statusConfig[k].description) || k, v];
+			});
+		},
+		recalcAndPublish = function () {
+			if (self.listeners('dataUpdated').length > 0) {
+				recalculate();
+				self.dispatchEvent('dataUpdated', publishableData());
+			}
+		},
+		setActiveContent = function (mapId, content) {
+			if (activeContent) {
+				activeContent.removeEventListener('changed', recalcAndPublish);
+			}
+			activeContent = content;
+			recalcAndPublish();
+			activeContent.addEventListener('changed', recalcAndPublish);
+		};
+	self.addEventListener = function (event, listener) {
+		if (self.listeners('dataUpdated').length === 0) {
+			recalculate();
+		}
+		oldAddEventListener(event, listener);
+		listener.apply(undefined, [publishableData()]);
 	};
+	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 
 $.fn.calcWidget = function (calcModel) {
@@ -16,23 +50,29 @@ $.fn.calcWidget = function (calcModel) {
 	return this.each(function () {
 		var self = jQuery(this),
 		    table = self.find('[data-mm-role=calc-table]'),
+		    msgDiv = self.find('[data-mm-role=empty]'),
 			repopulateTable = function (data) {
 				table.empty();
-				_.each(data, function (row) {
-					var rowDOM = jQuery('<tr>').appendTo(table);
-					_.each(row, function (cell) {
-						var cellDOM = jQuery('<td>').appendTo(rowDOM);
-						cellDOM.text(cell);
+				if (_.isEmpty(data)) {
+					table.hide();
+					msgDiv.show();
+				} else {
+					table.show();
+					msgDiv.hide();
+					_.each(data, function (row) {
+						var rowDOM = jQuery('<tr>').appendTo(table);
+						_.each(row, function (cell) {
+							var cellDOM = jQuery('<td>').appendTo(rowDOM);
+							cellDOM.text(cell);
+						});
 					});
-				});
+				}
 			},
 			id = self.attr('id');
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
 		self.hide();
 		jQuery('[data-mm-role=show-calc-widget][data-mm-calc-id='  + id + ']').click(function () {
 			calcModel.addEventListener('dataUpdated', repopulateTable);
-			var data = calcModel.getTable();
-			repopulateTable(data);
 			self.show();
 		});
 		jQuery('[data-mm-role=hide-calc-widget][data-mm-calc-id='  + id + ']').click(function () {
@@ -352,7 +392,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel()).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(statusAttributeName, statusConfigurationAttributeName, mapController)).floatingToolbarWidget();
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

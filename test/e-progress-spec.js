@@ -640,12 +640,123 @@ describe('progressStatusUpdateWidget', function () {
 		});
 	});
 });
+describe('Calc Model', function () {
+	'use strict';
+	var underTest,
+		mapController,
+		activeContent,
+		contentWithStatuses = MAPJS.content({
+			id: 1,
+			attr: {
+				status: 'done',
+				'test-statuses': {
+					done: { description: 'Done!!'},
+					shonky: { description: 'Shonky!'}
+				}
+			},
+			ideas: {
+				1: {
+					id: 11,
+					attr: { status: 'done' },
+					ideas: {
+						1: {
+							id: 111,
+						},
+						3: {
+							id: 112,
+							attr: { status: 'shonky'},
+						}
+					}
+				}
+			}
+		});
+	beforeEach(function () {
+		mapController = observable({});
+		activeContent = MAPJS.content({});
+		underTest = new MM.CalcModel('status', 'test-statuses', mapController);
+		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
+	});
+	describe('publishing update events when content changes', function () {
+		describe('when has no listeners', function () {
+			it('does not traverse the tree if a node changes', function () {
+				spyOn(activeContent, 'traverse').andCallThrough();
+				activeContent.updateAttr(1, 'status', 'yellow');
+				expect(activeContent.traverse).not.toHaveBeenCalled();
+			});
+			it('does not traverse the tree when a new map is loaded', function () {
+				spyOn(contentWithStatuses, 'traverse').andCallThrough();
+				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				expect(contentWithStatuses.traverse).not.toHaveBeenCalled();
+
+			});
+		});
+		describe('when it gets a listener', function () {
+			var listenerOne, listenerTwo;
+			beforeEach(function () {
+				listenerOne = jasmine.createSpy('one');
+				listenerTwo = jasmine.createSpy('one');
+				underTest.addEventListener('dataUpdated', listenerOne);
+				listenerOne.reset();
+
+				underTest.addEventListener('dataUpdated', listenerTwo);
+			});
+			it('publishes a dataUpdated event immediately to that listener', function () {
+				expect(listenerTwo).toHaveBeenCalledWith([]);
+			});
+			it('does not publish a dataUpdated event to any other listners', function () {
+				expect(listenerOne).not.toHaveBeenCalled();
+			});
+		});
+		describe('when first listener is added', function () {
+			var listenerOne;
+			it('recalculates the table', function () {
+				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				listenerOne = jasmine.createSpy('one');
+				underTest.addEventListener('dataUpdated', listenerOne);
+				expect(listenerOne).toHaveBeenCalledWith([
+					['Done!!', 2],
+					['Shonky!', 1]
+				]);
+			});
+		});
+		describe('when it has listeners', function () {
+			var listenerOne;
+			beforeEach(function () {
+				listenerOne = jasmine.createSpy('one');
+				underTest.addEventListener('dataUpdated', listenerOne);
+				listenerOne.reset();
+			});
+			it('publishes a dataUpdated event if the progress status of any node changes', function () {
+				activeContent.updateAttr(1, 'status', 'yellow');
+				expect(listenerOne).toHaveBeenCalledWith([
+					['yellow', 1]
+				]);
+			});
+			it('publishes a dataUpdated event when a new map is loaded', function () {
+				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				expect(listenerOne).toHaveBeenCalledWith([
+					['Done!!', 2],
+					['Shonky!', 1]
+				]);
+			});
+			it('does not publish an event after a new map is loaded when the old content changes', function () {
+				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				listenerOne.reset();
+				activeContent.updateAttr(1, 'status', 'yellow');
+				expect(listenerOne).not.toHaveBeenCalled();
+			});
+
+		});
+
+	});
+});
 describe('Calc widget', function () {
 	'use strict';
 
 	var template =	'<div id="calcWidget1" class="modal" >' +
 					'<button data-mm-role="hide-calc-widget" data-mm-calc-id="calcWidget1"></button>' +
 					'<table data-mm-role="calc-table"></table>' +
+					'<div data-mm-role="empty">BLA!</div>' +
 					'</div>',
 		openButtonTemplate = '<button data-mm-role="show-calc-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
@@ -654,6 +765,7 @@ describe('Calc widget', function () {
 		activityLog,
 		calcModel,
 		tableDOM,
+		msgDiv,
 		simpleTable = [
 			['first', 2],
 			['second', 4]
@@ -669,40 +781,56 @@ describe('Calc widget', function () {
 		};
 	beforeEach(function () {
 		activityLog = { log: jasmine.createSpy('log') };
-		calcModel = observable({ getTable: jasmine.createSpy('getTable') });
+		calcModel = observable({});
 		showButton = jQuery(openButtonTemplate).appendTo('body');
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
 		hideButton = jQuery('[data-mm-role=hide-calc-widget][data-mm-calc-id=calcWidget1]');
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
+		msgDiv = underTest.find('[data-mm-role=empty]');
 	});
 	afterEach(function () {
 		jQuery('#calcWidget1').detach();
 		jQuery('[data-mm-role=show-calc-widget]').detach();
 	});
 	describe('shows the progress status counts when it becomes visible', function () {
-		beforeEach(function () {
-			calcModel.getTable.andReturn(simpleTable);
-		});
 		it('creates data rows for each table row inside data-mm-role=counts-table', function () {
 			showButton.click();
+			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
 		});
 		it('removes any previous content from data-mm-role=counts-table', function () {
 			tableDOM.html('<tr><td>hey</td><td>there</td></tr>');
 			showButton.click();
+			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
 		});
 	});
+	describe('graceful handling of no data in the report', function () {
+		beforeEach(function () {
+			showButton.click();
+			underTest.show();
+			tableDOM.show();
+		});
+		it('hides the table and shows the data-mm-role=empty div when the data is empty', function () {
+			calcModel.dispatchEvent('dataUpdated', []);
+			expect(tableDOM.css('display')).toBe('none');
+			expect(msgDiv.css('display')).not.toBe('none');
+		});
+		it('hides data-mm-role=empty div and shows the table when the data is not empty', function () {
+			calcModel.dispatchEvent('dataUpdated', simpleTable);
+			expect(tableDOM.css('display')).not.toBe('none');
+			expect(msgDiv.css('display')).toBe('none');
+		});
+	});
 	it('updates automatically when the model fires an update', function () {
-		calcModel.getTable.andReturn([[1, 2]]);
 		showButton.click();
+		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
 		calcModel.dispatchEvent('dataUpdated', simpleTable);
 		checkContents(simpleTable);
 	});
 	it('removes itself as a listener from the model when it is hidden', function () {
-		calcModel.getTable.andReturn(simpleTable);
-		underTest.modal('show');
 		showButton.click();
+		calcModel.dispatchEvent('dataUpdated', simpleTable);
 		spyOn(calcModel, 'removeEventListener').andCallThrough();
 		hideButton.click();
 		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
@@ -710,4 +838,5 @@ describe('Calc widget', function () {
 		expect(calcModel.removeEventListener).toHaveBeenCalled();
 		checkContents(simpleTable);
 	});
+
 });
