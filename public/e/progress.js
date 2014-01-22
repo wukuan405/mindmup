@@ -66,6 +66,13 @@ MM.CalcModel = function (aggregation, mapController) {
 		oldAddEventListener(event, listener);
 		listener.apply(undefined, [currentData]);
 	};
+	self.setFilter = function (newFilter) {
+		activeFilter = newFilter;
+		recalcAndPublish();
+	};
+	self.getFilter = function () {
+		return activeFilter;
+	};
 	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 
@@ -424,7 +431,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(statusAttributeName, statusConfigurationAttributeName, mapController)).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(new MM.ProgressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController)).floatingToolbarWidget();
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
