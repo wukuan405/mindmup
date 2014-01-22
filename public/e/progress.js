@@ -1,43 +1,40 @@
 /*global MM, _, observable, jQuery, $, window*/
 
-MM.ProgressAggregation = function (statusAttributeName, statusConfigAttr) {
+MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 	'use strict';
-	var self = this,
-		recalculate = function (activeContent) {
-			var currentCounts = {};
-			activeContent.traverse(function (idea) {
-				var stat = idea.attr && idea.attr[statusAttributeName];
-				if (stat) {
-					currentCounts[stat] = (currentCounts[stat] + 1) || 1;
-				}
-			});
-			return currentCounts;
-		},
-		publishableData = function (activeContent) {
-			var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
-				flattened = _.map(recalculate(activeContent), function (v, k) {
+	return function (activeContent, filter) {
+		var recalculate = function () {
+				var currentCounts = {};
+				activeContent.traverse(function (idea) {
+					var stat = idea.attr && idea.attr[statusAttributeName];
+					if (stat && (!filter || !filter.statuses  || _.include(filter.statuses, stat))) {
+						currentCounts[stat] = (currentCounts[stat] + 1) || 1;
+					}
+				});
+				return currentCounts;
+			},
+			statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
+				flattened = _.map(recalculate(activeContent, filter), function (v, k) {
 					return [k, v];
 				}),
 				sorted = _.sortBy(flattened, function (row) {
 					var config = statusConfig[row[0]] || {};
 					return config.description || row[0];
 				});
-			sorted = _.sortBy(sorted, function (row) {
-					var config = statusConfig[row[0]] || {};
-					if (config.priority)  {
-						return -1 * config.priority;
-					}
-					return 0;
-				});
-			_.each(sorted, function (row) {
-				row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
+		sorted = _.sortBy(sorted, function (row) {
+				var config = statusConfig[row[0]] || {};
+				if (config.priority)  {
+					return -1 * config.priority;
+				}
+				return 0;
 			});
-			return sorted;
-		};
-	self.calculate = function (content, filter) {
-		return publishableData(content, filter);
+		_.each(sorted, function (row) {
+			row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
+		});
+		return sorted;
 	};
 };
+
 MM.CalcModel = function (aggregation, mapController) {
 	'use strict';
 	var self = observable(this),
@@ -47,8 +44,8 @@ MM.CalcModel = function (aggregation, mapController) {
 		currentData,
 		recalcAndPublish = function () {
 			if (self.listeners('dataUpdated').length > 0) {
-				currentData = aggregation.calculate(activeContent, activeFilter);
-				self.dispatchEvent('dataUpdated', currentData);
+				currentData = aggregation(activeContent, activeFilter);
+				self.dispatchEvent('dataUpdated', currentData, activeFilter);
 			}
 		},
 		setActiveContent = function (mapId, content) {
@@ -61,10 +58,10 @@ MM.CalcModel = function (aggregation, mapController) {
 		};
 	self.addEventListener = function (event, listener) {
 		if (self.listeners('dataUpdated').length === 0) {
-			currentData = aggregation.calculate(activeContent, activeFilter);
+			currentData = aggregation(activeContent, activeFilter);
 		}
 		oldAddEventListener(event, listener);
-		listener.apply(undefined, [currentData]);
+		listener.apply(undefined, [currentData, activeFilter]);
 	};
 	self.setFilter = function (newFilter) {
 		activeFilter = newFilter;
@@ -431,7 +428,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(new MM.ProgressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController)).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController)).floatingToolbarWidget();
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
