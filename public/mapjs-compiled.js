@@ -64,6 +64,7 @@ MAPJS.URLHelper = {
 	}
 };
 /*jslint eqeq: true, forin: true, nomen: true*/
+/*jshint unused:false, loopfunc:true */
 /*global _, MAPJS, observable*/
 MAPJS.content = function (contentAggregate, sessionKey) {
 	'use strict';
@@ -213,6 +214,40 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				contentAggregate.dispatchEvent('changed', method, args, originSession);
 			} else {
 				contentAggregate.dispatchEvent('changed', method, args);
+			}
+		},
+		appendChange = function (method, args, undofunc, originSession) {
+			var prev;
+			if (method === 'batch' || batches[originSession] || !eventStacks || !eventStacks[originSession] || eventStacks[originSession].length === 0) {
+				logChange(method, args, undofunc, originSession);
+				return;
+			} else {
+				prev = eventStacks[originSession].pop();
+				if (prev.eventMethod === 'batch') {
+					eventStacks[originSession].push({
+						eventMethod: 'batch',
+						eventArgs: prev.eventArgs.concat([[method].concat(args)]),
+						undoFunction: function () {
+							undofunc();
+							prev.undoFunction();
+						}
+					});
+				} else {
+					eventStacks[originSession].push({
+						eventMethod: 'batch',
+						eventArgs: [[prev.eventMethod].concat(prev.eventArgs)].concat([[method].concat(args)]),
+						undoFunction: function () {
+							undofunc();
+							prev.undoFunction();
+						}
+					});
+				}
+			}
+			if (isRedoInProgress) {
+				contentAggregate.dispatchEvent('changed', 'redo', undefined, originSession);
+			} else {
+				notifyChange(method, args, originSession);
+				redoStacks[originSession] = [];
 			}
 		},
 		logChange = function (method, args, undofunc, originSession) {
@@ -415,6 +450,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		contentAggregate.endBatch();
 		return results;
 	};
+
 	contentAggregate.paste = function (parentIdeaId, jsonToPaste, initialId) {
 		return contentAggregate.execCommand('paste', arguments);
 	};
@@ -465,6 +501,24 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		reorderChild(contentAggregate, newRank, currentRank);
 		logChange('flip', [ideaId], function () {
 			reorderChild(contentAggregate, currentRank, newRank);
+		}, originSession);
+		return true;
+	};
+	contentAggregate.initialiseTitle = function (ideaId, title) {
+		return contentAggregate.execCommand('initialiseTitle', arguments);
+	};
+	commandProcessors.initialiseTitle = function (originSession, ideaId, title) {
+		var idea = findIdeaById(ideaId), originalTitle;
+		if (!idea) {
+			return false;
+		}
+		originalTitle = idea.title;
+		if (originalTitle == title) {
+			return false;
+		}
+		idea.title = title;
+		appendChange('initialiseTitle', [ideaId, title], function () {
+			idea.title = originalTitle;
 		}, originSession);
 		return true;
 	};
@@ -779,6 +833,7 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		};
 		commandProcessors.removeLink = function (originSession, ideaIdOne, ideaIdTwo) {
 			var i = 0, link;
+
 			while (contentAggregate.links && i < contentAggregate.links.length) {
 				link = contentAggregate.links[i];
 				if (String(link.ideaIdFrom) === String(ideaIdOne) && String(link.ideaIdTo) === String(ideaIdTwo)) {
@@ -1554,8 +1609,12 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 			}
 		}
 	};
-	this.updateTitle = function (ideaId, title) {
-		idea.updateTitle(ideaId, title);
+	this.updateTitle = function (ideaId, title, isNew) {
+		if (isNew) {
+			idea.initialiseTitle(ideaId, title);
+		} else {
+			idea.updateTitle(ideaId, title);
+		}
 	};
 	this.editNode = function (source, shouldSelectAll, editingNew) {
 		if (!isEditingEnabled) {
@@ -2683,7 +2742,8 @@ Kinetic.Util.extend(Kinetic.Clip, Kinetic.Shape);
 					self.setStyle();
 					self.getStage().draw();
 					self.fire(':textChanged', {
-						text: newText || unformattedText
+						text: newText || unformattedText,
+						isNew: deleteOnCancel
 					});
 					ideaInput.remove();
 					self.stopEditing = undefined;
@@ -3184,7 +3244,7 @@ MAPJS.KineticMediator = function (mapModel, stage) {
 			mapModel.editNode('mouse', false, false);
 		});
 		node.on(':textChanged', function (event) {
-			mapModel.updateTitle(n.id, event.text);
+			mapModel.updateTitle(n.id, event.text, event.isNew);
 			mapModel.setInputEnabled(true);
 		});
 		node.on(':editing', function () {
