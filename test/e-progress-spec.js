@@ -642,40 +642,81 @@ describe('progressStatusUpdateWidget', function () {
 		});
 	});
 });
-describe('Calc Model', function () {
+
+describe('MM.ProgressAggregation', function () {
 	'use strict';
 	var underTest,
-		mapController,
 		activeContent,
-		contentWithStatuses = MAPJS.content({
+		activeFilter,
+		numericOrderConfig;
+	beforeEach(function () {
+		numericOrderConfig = {
+				'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
+				'kalpha3': {description: 'F3', style: {background: 'rgb(255, 0, 0)'}},
+				'kalpha': {description: 'F1', style: {background: 'rgb(255, 0, 0)'}},
+				'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+				'k666': {description: 'X666', priority: 666, style: {background: 'rgb(255, 0, 0)'}},
+				'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+				'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+			};
+		activeContent = MAPJS.content({
 			id: 1,
 			attr: {
-				status: 'done',
-				'test-statuses': {
-					done: { description: 'Done!!'},
-					shonky: { description: 'Shonky!'}
-				}
+				status: 'k888',
+				'test-statuses': numericOrderConfig
 			},
 			ideas: {
 				1: {
 					id: 11,
-					attr: { status: 'done' },
+					attr: { status: 'k999' },
 					ideas: {
 						1: {
 							id: 111,
+							attr: {status: 'kalpha2'}
+						},
+						2: {
+							id: 111,
+							attr: {status: 'kalpha'}
 						},
 						3: {
 							id: 112,
-							attr: { status: 'shonky'},
+							attr: { status: 'k777'},
+						},
+						4: {
+							id: 113,
+							attr: { status: 'k777'},
+						},
+						5: {
+							id: 114
 						}
+
 					}
 				}
 			}
 		});
+		underTest = new MM.ProgressAggregation('status', 'test-statuses');
+	});
+	it('orders statuses by priority descending then alphanumeric when publishing', function () {
+		var result = underTest.calculate(activeContent, activeFilter);
+		expect(result).toEqual([
+			['Y999', 1],
+			['Z888', 1],
+			['X777', 2],
+			['F1', 1],
+			['F2', 1]
+		]);
+	});
+});
+
+describe('MM.CalcModel', function () {
+	'use strict';
+	var underTest, aggregator, mapController, activeContent, aggregation, filter;
 	beforeEach(function () {
 		mapController = observable({});
-		activeContent = MAPJS.content({});
-		underTest = new MM.CalcModel('status', 'test-statuses', mapController);
+		activeContent = MAPJS.content({id: 1});
+		aggregation = [['foo', 1]];
+		aggregator = {calculate: jasmine.createSpy('calculate').andReturn(aggregation) };
+		underTest = new MM.CalcModel(aggregator, mapController);
 		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
 	});
 	describe('publishing update events when content changes', function () {
@@ -686,10 +727,9 @@ describe('Calc Model', function () {
 				expect(activeContent.traverse).not.toHaveBeenCalled();
 			});
 			it('does not traverse the tree when a new map is loaded', function () {
-				spyOn(contentWithStatuses, 'traverse').andCallThrough();
-				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
-				expect(contentWithStatuses.traverse).not.toHaveBeenCalled();
-
+				spyOn(activeContent, 'traverse').andCallThrough();
+				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
+				expect(activeContent.traverse).not.toHaveBeenCalled();
 			});
 		});
 		describe('when it gets a listener', function () {
@@ -703,7 +743,7 @@ describe('Calc Model', function () {
 				underTest.addEventListener('dataUpdated', listenerTwo);
 			});
 			it('publishes a dataUpdated event immediately to that listener', function () {
-				expect(listenerTwo).toHaveBeenCalledWith([]);
+				expect(listenerTwo).toHaveBeenCalledWith(aggregation);
 			});
 			it('does not publish a dataUpdated event to any other listners', function () {
 				expect(listenerOne).not.toHaveBeenCalled();
@@ -712,13 +752,14 @@ describe('Calc Model', function () {
 		describe('when first listener is added', function () {
 			var listenerOne;
 			it('recalculates the table', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
+				expect(aggregator.calculate).not.toHaveBeenCalled();
+
 				listenerOne = jasmine.createSpy('one');
 				underTest.addEventListener('dataUpdated', listenerOne);
-				expect(listenerOne).toHaveBeenCalledWith([
-					['Done!!', 2],
-					['Shonky!', 1]
-				]);
+
+				expect(aggregator.calculate).toHaveBeenCalledWith(activeContent, filter);
+				expect(listenerOne).toHaveBeenCalledWith(aggregation);
 			});
 		});
 		describe('when it has listeners', function () {
@@ -730,70 +771,25 @@ describe('Calc Model', function () {
 			});
 			it('publishes a dataUpdated event if the progress status of any node changes', function () {
 				activeContent.updateAttr(1, 'status', 'yellow');
-				expect(listenerOne).toHaveBeenCalledWith([
-					['yellow', 1]
-				]);
+				expect(aggregator.calculate).toHaveBeenCalledWith(activeContent, filter);
+				expect(listenerOne).toHaveBeenCalledWith(aggregation);
 			});
 			it('publishes a dataUpdated event when a new map is loaded', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
-				expect(listenerOne).toHaveBeenCalledWith([
-					['Done!!', 2],
-					['Shonky!', 1]
-				]);
+				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
+				expect(aggregator.calculate).toHaveBeenCalledWith(activeContent, filter);
+				expect(listenerOne).toHaveBeenCalledWith(aggregation);
 			});
 			it('does not publish an event after a new map is loaded when the old content changes', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', contentWithStatuses);
+				mapController.dispatchEvent('mapLoaded', 'testID2', MAPJS.content({id: 1}));
 				listenerOne.reset();
 				activeContent.updateAttr(1, 'status', 'yellow');
 				expect(listenerOne).not.toHaveBeenCalled();
 			});
-			it('orders statuses by priority descending then alphanumeric when publishing', function () {
-				var numericOrderConfig = {
-						'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
-						'kalpha': {description: 'F1', style: {background: 'rgb(255, 0, 0)'}},
-						'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
-						'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-						'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
-					},
-					newContent = MAPJS.content({
-						id: 1,
-						attr: {
-							status: 'k888',
-							'test-statuses': numericOrderConfig
-						},
-						ideas: {
-							1: {
-								id: 11,
-								attr: { status: 'k999' },
-								ideas: {
-									1: {
-										id: 111,
-										attr: {status: 'kalpha2'}
-									},
-									2: {
-										id: 111,
-										attr: {status: 'kalpha'}
-									},
-									3: {
-										id: 112,
-										attr: { status: 'k777'},
-									}
-								}
-							}
-						}
-					});
-				mapController.dispatchEvent('mapLoaded', 'testID2', newContent);
-				expect(listenerOne).toHaveBeenCalledWith([
-					['Y999', 1],
-					['Z888', 1],
-					['X777', 1],
-					['F1', 1],
-					['F2', 1]
-				]);
-			});
 		});
 	});
 });
+
+
 describe('Calc widget', function () {
 	'use strict';
 

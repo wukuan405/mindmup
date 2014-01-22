@@ -1,23 +1,21 @@
 /*global MM, _, observable, jQuery, $, window*/
 
-MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
+MM.ProgressAggregation = function (statusAttributeName, statusConfigAttr) {
 	'use strict';
-	var self = observable(this),
-		oldAddEventListener = self.addEventListener,
-		activeContent,
-		currentCounts = {},
-		recalculate = function () {
-			currentCounts = {};
+	var self = this,
+		recalculate = function (activeContent) {
+			var currentCounts = {};
 			activeContent.traverse(function (idea) {
 				var stat = idea.attr && idea.attr[statusAttributeName];
 				if (stat) {
 					currentCounts[stat] = (currentCounts[stat] + 1) || 1;
 				}
 			});
+			return currentCounts;
 		},
-		publishableData = function () {
+		publishableData = function (activeContent) {
 			var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
-				flattened = _.map(currentCounts, function (v, k) {
+				flattened = _.map(recalculate(activeContent), function (v, k) {
 					return [k, v];
 				}),
 				sorted = _.sortBy(flattened, function (row) {
@@ -35,11 +33,22 @@ MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
 				row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
 			});
 			return sorted;
-		},
+		};
+	self.calculate = function (content, filter) {
+		return publishableData(content, filter);
+	};
+};
+MM.CalcModel = function (aggregation, mapController) {
+	'use strict';
+	var self = observable(this),
+		oldAddEventListener = self.addEventListener,
+		activeContent,
+		activeFilter,
+		currentData,
 		recalcAndPublish = function () {
 			if (self.listeners('dataUpdated').length > 0) {
-				recalculate();
-				self.dispatchEvent('dataUpdated', publishableData());
+				currentData = aggregation.calculate(activeContent, activeFilter);
+				self.dispatchEvent('dataUpdated', currentData);
 			}
 		},
 		setActiveContent = function (mapId, content) {
@@ -52,10 +61,10 @@ MM.CalcModel = function (statusAttributeName, statusConfigAttr, mapController) {
 		};
 	self.addEventListener = function (event, listener) {
 		if (self.listeners('dataUpdated').length === 0) {
-			recalculate();
+			currentData = aggregation.calculate(activeContent, activeFilter);
 		}
 		oldAddEventListener(event, listener);
-		listener.apply(undefined, [publishableData()]);
+		listener.apply(undefined, [currentData]);
 	};
 	mapController.addEventListener('mapLoaded', setActiveContent);
 };
