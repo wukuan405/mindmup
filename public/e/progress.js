@@ -16,9 +16,13 @@ MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 		var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
 			recalculate = function () {
 				var currentCounts = {};
+				filter = filter || {};
 				activeContent.traverse(function (idea) {
 					var stat = idea.attr && idea.attr[statusAttributeName];
-					if (stat && statusConfig[stat] && (!filter || !filter.statuses  || _.include(filter.statuses, stat))) {
+					if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
+						return;
+					}
+					if (stat && statusConfig[stat] && (!filter.statuses  || _.include(filter.statuses, stat))) {
 						currentCounts[stat] = (currentCounts[stat] + 1) || 1;
 					}
 				});
@@ -94,15 +98,20 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 			filterSection = self.find('[data-mm-role=filter]'),
 			statusList = filterSection.find('[data-mm-role=status-list]'),
 			statusTemplate = statusList.find('[data-mm-role=template]').detach(),
+		    statusCheckboxSelector = 'input[data-mm-role=status-checkbox]',
+			toggleCheckboxSelector = 'input[data-mm-role=toggle-property]',
 			onFilterChanged = function (newFilter) {
 				newFilter = newFilter || calcModel.getFilter;
 				if (!newFilter || !newFilter.statuses) {
-					statusList.find('input[data-mm-role=status-checkbox]').prop('checked', true);
+					statusList.find(statusCheckboxSelector).prop('checked', true);
 				} else {
-					statusList.find('input[data-mm-role=status-checkbox]').prop('checked', function () {
+					statusList.find(statusCheckboxSelector).prop('checked', function () {
 						return _.include(newFilter.statuses, this.value);
 					});
 				}
+				filterSection.find(toggleCheckboxSelector).prop('checked', function () {
+					return !!(newFilter && newFilter[this.value]);
+				});
 			},
 			onDataUpdate = function (newData, newFilter) {
 				onFilterChanged(newFilter);
@@ -117,12 +126,15 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 				}
 			},
 			changeFilter = function () {
-				var checkBoxes = statusList.find('input[data-mm-role=status-checkbox]'),
+				var checkBoxes = statusList.find(statusCheckboxSelector),
 					filter = {};
 				var checkedStatuses = _.map(checkBoxes.filter(':checked'), function (domCheckbox) { return domCheckbox.value; });
 				if (checkedStatuses.length < checkBoxes.length) {
 					filter.statuses = checkedStatuses;
 				}
+				_.each(filterSection.find(toggleCheckboxSelector).filter(':checked'), function (domCheckbox) {
+					filter[domCheckbox.value] = true;
+				});
 				calcModel.setFilter(filter);
 			},
 			rebuildUI = function (config) {
@@ -145,6 +157,7 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 		toggleButton.click(function () {
 			setFilterUIVisible(filterSection.css('display') === 'none');
 		});
+		filterSection.find(toggleCheckboxSelector).click(changeFilter);
 	});
 };
 

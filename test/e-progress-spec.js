@@ -717,6 +717,36 @@ describe('MM.ProgressAggregation', function () {
 		]);
 
 	});
+	describe('filtering hierarchy', function () {
+		beforeEach(function () {
+			activeContent = MAPJS.content({
+				id: 1,
+				attr: { status: 'k888', 'test-statuses': numericOrderConfig },
+				ideas: {
+					2: {id: 2},
+					3: {id: 3}
+				}
+			});
+		});
+		_.each({
+			'ignores parents of same status without filter': [{}, 1],
+			'includes parents of same status with filter': [{includeParents: true}, 2]
+		}, function (testSetup, testCase) {
+			describe(testCase, function () {
+				it('when a child has no status', function () {
+					expect(underTest(activeContent, testSetup[0])).toEqual([['Z888', 1]]);
+				});
+				it('when a child has the same status', function () {
+					activeContent.updateAttr(2, 'status', 'k888');
+					expect(underTest(activeContent, testSetup[0])).toEqual([['Z888', testSetup[1]]]);
+				});
+				it('when a child has a different status', function () {
+					activeContent.updateAttr(2, 'status', 'k999');
+					expect(underTest(activeContent, testSetup[0])).toEqual([['Y999', 1], ['Z888', 1]]);
+				});
+			});
+		});
+	});
 });
 
 describe('progressFilterWidget', function () {
@@ -724,6 +754,8 @@ describe('progressFilterWidget', function () {
 	var template =	'<div id="progressFilterWidget">' +
 					'<button data-mm-role="toggle-widget"></button>' +
 					'<div data-mm-role="filter">' +
+						'<input type="checkbox" data-mm-role="toggle-property" value="firstProp" />' +
+						'<input type="checkbox" data-mm-role="toggle-property" value="secondProp" />' +
 						'<table data-mm-role="status-list">' +
 							'<tr data-mm-role="template"><td><input type="checkbox" data-mm-role="status-checkbox"/></td><td data-mm-role="status-description"></td></tr>' +
 						'</table>' +
@@ -810,53 +842,73 @@ describe('progressFilterWidget', function () {
 	});
 	describe('updates the model with the filter when it changed in the ui', function () {
 		var newConfig = {passed: {priority: 1}, failed: {}},
-			checkBoxes;
+			statusCheckboxes,
+			toggleCheckboxes;
 		beforeEach(function () {
 			toggleButton.click();
 			configStatusUpdater.dispatchEvent('configChanged', newConfig);
-			checkBoxes = filterDom.find('input').prop('checked', false);
+			statusCheckboxes = filterDom.find('input[data-mm-role=status-checkbox]').prop('checked', false);
+			toggleCheckboxes = filterDom.find('[data-mm-role=toggle-property]');
 		});
 		it('sends the filter containing a list of checked checkboxes on any checkbox click', function () {
-			checkBoxes.first().click();
+			statusCheckboxes.first().click();
 			expect(calcModel.setFilter).toHaveBeenCalledWith({statuses: ['passed']});
 		});
+		it('sends the filter containing toggled properties', function () {
+			toggleCheckboxes.first().click();
+			expect(calcModel.setFilter).toHaveBeenCalledWith({statuses: [], firstProp: true});
+		});
 		it('removes the statuses property if all checkboxes are checked', function () {
-			checkBoxes.first().click();
+			statusCheckboxes.first().click();
 			calcModel.setFilter.reset();
-			checkBoxes.eq(1).click();
+			statusCheckboxes.eq(1).click();
 			expect(calcModel.setFilter).toHaveBeenCalledWith({});
 		});
 	});
 	describe('updates the ui when the model publishes a changed filter', function () {
 		var newConfig = {passed: {}, failed: {}},
-			checkBoxes;
+			statusCheckboxes,
+			toggleCheckboxes;
 		beforeEach(function () {
 			toggleButton.click();
 			configStatusUpdater.dispatchEvent('configChanged', newConfig);
-			checkBoxes = filterDom.find('input');
+			statusCheckboxes = filterDom.find('[data-mm-role=status-list] input');
+			toggleCheckboxes = filterDom.find('[data-mm-role=toggle-property]');
 		});
 		it('checks all the check boxes if there is no status filter', function () {
 			calcModel.dispatchEvent('dataUpdated', [], undefined);
-			expect(checkBoxes.filter(':checked').length).toBe(2);
+			expect(statusCheckboxes.filter(':checked').length).toBe(2);
 		});
 		it('unchecks all the check boxes if the filter contains an empty status array', function () {
 			calcModel.dispatchEvent('dataUpdated', [], {statuses: []});
-			expect(checkBoxes.filter(':checked').length).toBe(0);
+			expect(statusCheckboxes.filter(':checked').length).toBe(0);
 		});
 		it('checks all the check boxes if the filter does not contain a status array', function () {
 			calcModel.dispatchEvent('dataUpdated', [], {});
-			expect(checkBoxes.filter(':checked').length).toBe(2);
+			expect(statusCheckboxes.filter(':checked').length).toBe(2);
 		});
 		it('checks only the statuses from the status array if defined', function () {
 			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
-			expect(checkBoxes.filter(':checked').length).toBe(1);
-			expect(checkBoxes.filter(':checked').prop('value')).toBe('passed');
+			expect(statusCheckboxes.filter(':checked').length).toBe(1);
+			expect(statusCheckboxes.filter(':checked').prop('value')).toBe('passed');
 		});
 		it('unchecks the statuses that are not in the list', function () {
-			checkBoxes.prop('checked', true);
+			statusCheckboxes.prop('checked', true);
 			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
-			expect(checkBoxes.filter(':checked').length).toBe(1);
-			expect(checkBoxes.filter(':checked').prop('value')).toBe('passed');
+			expect(statusCheckboxes.filter(':checked').length).toBe(1);
+			expect(statusCheckboxes.filter(':checked').prop('value')).toBe('passed');
+		});
+		it('checks any data-mm-role=toggle-property checkboxes supplied with the filter', function () {
+			toggleCheckboxes.prop('checked', false);
+			calcModel.dispatchEvent('dataUpdated', [], {firstProp: true});
+			expect(toggleCheckboxes.filter('[value=firstProp]').is(':checked')).toBeTruthy();
+			expect(toggleCheckboxes.filter('[value=secondProp]').is(':checked')).toBeFalsy();
+		});
+		it('unchecks any data-mm-role=toggle-property checkboxes not supplied with the filter', function () {
+			toggleCheckboxes.prop('checked', true);
+			calcModel.dispatchEvent('dataUpdated', [], {firstProp: true});
+			expect(toggleCheckboxes.filter('[value=firstProp]').is(':checked')).toBeTruthy();
+			expect(toggleCheckboxes.filter('[value=secondProp]').is(':checked')).toBeFalsy();
 		});
 		it('does not cause a round-trip', function () {
 			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
