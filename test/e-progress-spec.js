@@ -733,7 +733,7 @@ describe('progressFilterWidget', function () {
 		configStatusUpdater;
 	beforeEach(function () {
 		activityLog = {};
-		calcModel = observable({});
+		calcModel = observable({setFilter: jasmine.createSpy()});
 		configStatusUpdater = observable({});
 		var widgetDom = jQuery(template).appendTo('body');
 		underTest = widgetDom.progressFilterWidget(calcModel, configStatusUpdater, activityLog);
@@ -774,30 +774,90 @@ describe('progressFilterWidget', function () {
 		});
 	});
 	describe('updating UI', function () {
+		var newConfig = {
+			passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
+			failed: {description: 'Failed desc', priority: 1, icon: {url: 'http://failedurl' }, style: {background: 'rgb(255, 0, 0)'}}
+		};
 		it('binds to an ConfigStatusUpdater and updates the UI on configChanged', function () {
-			var newConfig = {
-				passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
-				failed: {description: 'Failed desc', priority: 1, icon: {url: 'http://failedurl' }, style: {background: 'rgb(255, 0, 0)'}}
-			};
 			configStatusUpdater.dispatchEvent('configChanged', newConfig);
 			var rows = filterDom.find('[data-mm-role=status-list] tr');
 			expect(rows.length).toBe(2);
 			expect(rows.first().find('td:eq(1)').text()).toEqual('Failed desc');
+			expect(rows.first().find('input').prop('value')).toEqual('failed');
 			expect(rows.eq(1).find('td:eq(1)').text()).toEqual('Passed desc');
+			expect(rows.eq(1).find('input').prop('value')).toEqual('passed');
+		});
+		it('clears out any existing rows from the status list when updating', function () {
+			filterDom.find('[data-mm-role=status-list]').html('<tr><td>H</td></tr>');
+			configStatusUpdater.dispatchEvent('configChanged', newConfig);
+			var rows = filterDom.find('[data-mm-role=status-list] tr');
+			expect(rows.length).toBe(2);
 		});
 	});
 	describe('updates the model with the filter when it changed in the ui', function () {
+		var newConfig = {passed: {priority: 1}, failed: {}},
+			checkBoxes;
+		beforeEach(function () {
+			toggleButton.click();
+			configStatusUpdater.dispatchEvent('configChanged', newConfig);
+			checkBoxes = filterDom.find('input');
+		});
+		it('sends the filter containing a list of checked checkboxes on any checkbox click', function () {
+			checkBoxes.first().click();
+			expect(calcModel.setFilter).toHaveBeenCalledWith({statuses: ['passed']});
+		});
+		it('removes the statuses property if all checkboxes are checked', function () {
+			checkBoxes.first().click();
+			calcModel.setFilter.reset();
+			checkBoxes.eq(1).click();
+			expect(calcModel.setFilter).toHaveBeenCalledWith({});
+		});
+		it('does not cause a round-trip', function () {
 
+		});
 	});
 	describe('updates the ui when the model publishes a changed filter', function () {
-
+		var newConfig = {passed: {}, failed: {}},
+			checkBoxes;
+		beforeEach(function () {
+			toggleButton.click();
+			configStatusUpdater.dispatchEvent('configChanged', newConfig);
+			checkBoxes = filterDom.find('input');
+		});
+		it('checks all the check boxes if there is no status filter', function () {
+			calcModel.dispatchEvent('dataUpdated', [], undefined);
+			expect(checkBoxes.filter(':checked').length).toBe(2);
+		});
+		it('unchecks all the check boxes if the filter contains an empty status array', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {statuses: []});
+			expect(checkBoxes.filter(':checked').length).toBe(0);
+		});
+		it('checks all the check boxes if the filter does not contain a status array', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {});
+			expect(checkBoxes.filter(':checked').length).toBe(2);
+		});
+		it('checks only the statuses from the status array if defined', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
+			expect(checkBoxes.filter(':checked').length).toBe(1);
+			expect(checkBoxes.filter(':checked').prop('value')).toBe('passed');
+		});
+		it('unchecks the statuses that are not in the list', function () {
+			checkBoxes.prop('checked', true);
+			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
+			expect(checkBoxes.filter(':checked').length).toBe(1);
+			expect(checkBoxes.filter(':checked').prop('value')).toBe('passed');
+		});
+		it('does not cause a round-trip', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
+			expect(calcModel.setFilter).not.toHaveBeenCalled();
+		});
 	});
 });
 describe('MM.CalcModel', function () {
 	'use strict';
 	var underTest, aggregator, mapController, activeContent, aggregation, filter;
 	beforeEach(function () {
-		filter = 'originalfilter';
+		filter = {some: {complex: ['object']}};
 		mapController = observable({});
 		activeContent = MAPJS.content({id: 1});
 		aggregation = [['foo', 1]];
@@ -866,6 +926,11 @@ describe('MM.CalcModel', function () {
 				underTest.setFilter('newFilter');
 				expect(aggregator).toHaveBeenCalledWith(activeContent, 'newFilter');
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, 'newFilter');
+			});
+			it('does not publish a dataUpdatedEvent if the filter is set to the previous filter', function () {
+				underTest.setFilter({some: {complex: ['object']}});
+				expect(aggregator).not.toHaveBeenCalled();
+				expect(listenerOne).not.toHaveBeenCalled();
 			});
 			it('publishes a dataUpdated event if the progress status of any node changes', function () {
 				activeContent.updateAttr(1, 'status', 'yellow');
@@ -992,7 +1057,6 @@ describe('MM.sortProgressConfig', function () {
 		var config = {
 			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
 		};
-
 		expect(MM.sortProgressConfig(config)).toEqual([{description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}, key: 'y'}]);
 	});
 });

@@ -74,6 +74,9 @@ MM.CalcModel = function (aggregation, mapController) {
 		listener.apply(undefined, [currentData, activeFilter]);
 	};
 	self.setFilter = function (newFilter) {
+		if (_.isEqual(newFilter, activeFilter)) {
+			return;
+		}
 		activeFilter = newFilter;
 		recalcAndPublish();
 	};
@@ -91,7 +94,15 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 			filterSection = self.find('[data-mm-role=filter]'),
 			statusList = filterSection.find('[data-mm-role=status-list]'),
 			statusTemplate = statusList.find('[data-mm-role=template]').detach(),
-			onFilterChanged = function () {},
+			onFilterChanged = function (newData, newFilter) {
+				if (!newFilter || !newFilter.statuses) {
+					statusList.find('input[data-mm-role=status-checkbox]').prop('checked', true);
+				} else {
+					statusList.find('input[data-mm-role=status-checkbox]').prop('checked', function () {
+						return _.include(newFilter.statuses, this.value);
+					});
+				}
+			},
 			setFilterUIVisible = function (visible) {
 				if (visible) {
 					filterSection.show();
@@ -101,12 +112,23 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 					calcModel.removeEventListener('dataUpdated', onFilterChanged);
 				}
 			},
+			changeFilter = function () {
+				var checkBoxes = statusList.find('input[data-mm-role=status-checkbox]'),
+					filter = {};
+				var checkedStatuses = _.map(checkBoxes.filter(':checked'), function (domCheckbox) { return domCheckbox.value; });
+				if (checkedStatuses.length < checkBoxes.length) {
+					filter.statuses = checkedStatuses;
+				}
+				calcModel.setFilter(filter);
+			},
 			rebuildUI = function (config) {
 				// order
 				var sortedConfig = MM.sortProgressConfig(config);
+				statusList.empty();
 				_.each(sortedConfig, function (config) {
 					var newRow = statusTemplate.clone().appendTo(statusList);
 					newRow.find('[data-mm-role=status-description]').text(config.description);
+					newRow.find('[data-mm-role=status-checkbox]').prop('value', config.key).click(changeFilter);
 				});
 			};
 		contentStatusUpdater.addEventListener('configChanged', rebuildUI);
