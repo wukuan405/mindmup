@@ -57,3 +57,9 @@
 .filter-header {
   margin-bottom: 5px;
 }
+.filter-box th {
+  text-align: left;
+}
+.filter-box input {
+  margin: 0px !important;
+}
