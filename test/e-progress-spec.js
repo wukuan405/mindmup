@@ -674,19 +674,23 @@ describe('MM.ProgressAggregation', function () {
 							attr: {status: 'kalpha2'}
 						},
 						2: {
-							id: 111,
+							id: 112,
 							attr: {status: 'kalpha'}
 						},
 						3: {
-							id: 112,
-							attr: { status: 'k777'},
-						},
-						4: {
 							id: 113,
 							attr: { status: 'k777'},
 						},
+						4: {
+							id: 114,
+							attr: { status: 'k777'},
+						},
 						5: {
-							id: 114
+							id: 115
+						},
+						6: {
+							id: 116,
+							attr: { status: 'unknown'}
 						}
 
 					}
@@ -793,6 +797,16 @@ describe('progressFilterWidget', function () {
 			var rows = filterDom.find('[data-mm-role=status-list] tr');
 			expect(rows.length).toBe(2);
 		});
+		it('hides itself if progress status is not configured', function () {
+			underTest.show();
+			configStatusUpdater.dispatchEvent('configChanged', false);
+			expect(underTest.css('display')).toBe('none');
+		});
+		it('shows itself if progress status is defined', function () {
+			underTest.hide();
+			configStatusUpdater.dispatchEvent('configChanged', newConfig);
+			expect(underTest.css('display')).not.toBe('none');
+		});
 	});
 	describe('updates the model with the filter when it changed in the ui', function () {
 		var newConfig = {passed: {priority: 1}, failed: {}},
@@ -800,7 +814,7 @@ describe('progressFilterWidget', function () {
 		beforeEach(function () {
 			toggleButton.click();
 			configStatusUpdater.dispatchEvent('configChanged', newConfig);
-			checkBoxes = filterDom.find('input');
+			checkBoxes = filterDom.find('input').prop('checked', false);
 		});
 		it('sends the filter containing a list of checked checkboxes on any checkbox click', function () {
 			checkBoxes.first().click();
@@ -811,9 +825,6 @@ describe('progressFilterWidget', function () {
 			calcModel.setFilter.reset();
 			checkBoxes.eq(1).click();
 			expect(calcModel.setFilter).toHaveBeenCalledWith({});
-		});
-		it('does not cause a round-trip', function () {
-
 		});
 	});
 	describe('updates the ui when the model publishes a changed filter', function () {

@@ -13,24 +13,24 @@ MM.sortProgressConfig = function (config) {
 MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 	'use strict';
 	return function (activeContent, filter) {
-		var recalculate = function () {
+		var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
+			recalculate = function () {
 				var currentCounts = {};
 				activeContent.traverse(function (idea) {
 					var stat = idea.attr && idea.attr[statusAttributeName];
-					if (stat && (!filter || !filter.statuses  || _.include(filter.statuses, stat))) {
+					if (stat && statusConfig[stat] && (!filter || !filter.statuses  || _.include(filter.statuses, stat))) {
 						currentCounts[stat] = (currentCounts[stat] + 1) || 1;
 					}
 				});
 				return currentCounts;
 			},
-			statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
-				flattened = _.map(recalculate(activeContent, filter), function (v, k) {
-					return [k, v];
-				}),
-				sorted = _.sortBy(flattened, function (row) {
-					var config = statusConfig[row[0]] || {};
-					return config.description || row[0];
-				});
+			flattened = _.map(recalculate(activeContent, filter), function (v, k) {
+				return [k, v];
+			}),
+			sorted = _.sortBy(flattened, function (row) {
+				var config = statusConfig[row[0]] || {};
+				return config.description || row[0];
+			});
 		sorted = _.sortBy(sorted, function (row) {
 				var config = statusConfig[row[0]] || {};
 				if (config.priority)  {
@@ -94,7 +94,8 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 			filterSection = self.find('[data-mm-role=filter]'),
 			statusList = filterSection.find('[data-mm-role=status-list]'),
 			statusTemplate = statusList.find('[data-mm-role=template]').detach(),
-			onFilterChanged = function (newData, newFilter) {
+			onFilterChanged = function (newFilter) {
+				newFilter = newFilter || calcModel.getFilter;
 				if (!newFilter || !newFilter.statuses) {
 					statusList.find('input[data-mm-role=status-checkbox]').prop('checked', true);
 				} else {
@@ -103,13 +104,16 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 					});
 				}
 			},
+			onDataUpdate = function (newData, newFilter) {
+				onFilterChanged(newFilter);
+			},
 			setFilterUIVisible = function (visible) {
 				if (visible) {
 					filterSection.show();
-					calcModel.addEventListener('dataUpdated', onFilterChanged);
+					calcModel.addEventListener('dataUpdated', onDataUpdate);
 				} else {
 					filterSection.hide();
-					calcModel.removeEventListener('dataUpdated', onFilterChanged);
+					calcModel.removeEventListener('dataUpdated', onDataUpdate);
 				}
 			},
 			changeFilter = function () {
@@ -122,14 +126,19 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 				calcModel.setFilter(filter);
 			},
 			rebuildUI = function (config) {
-				// order
-				var sortedConfig = MM.sortProgressConfig(config);
-				statusList.empty();
-				_.each(sortedConfig, function (config) {
-					var newRow = statusTemplate.clone().appendTo(statusList);
-					newRow.find('[data-mm-role=status-description]').text(config.description);
-					newRow.find('[data-mm-role=status-checkbox]').prop('value', config.key).click(changeFilter);
-				});
+				if (config) {
+					var sortedConfig = MM.sortProgressConfig(config);
+					statusList.empty();
+					_.each(sortedConfig, function (config) {
+						var newRow = statusTemplate.clone().appendTo(statusList);
+						newRow.find('[data-mm-role=status-description]').text(config.description);
+						newRow.find('[data-mm-role=status-checkbox]').prop('value', config.key).click(changeFilter);
+					});
+					onFilterChanged();
+					self.show();
+				} else {
+					self.hide();
+				}
 			};
 		contentStatusUpdater.addEventListener('configChanged', rebuildUI);
 		filterSection.hide();
@@ -491,6 +500,9 @@ MM.Extensions.progress = function () {
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			calcWidget.detach().appendTo($('body')).calcWidget(calcModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
+			updater.addEventListener('configChanged', function () {
+				calcModel.setFilter({});
+			});
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
