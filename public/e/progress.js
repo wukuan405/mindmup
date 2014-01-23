@@ -1,5 +1,15 @@
 /*global MM, _, observable, jQuery, $, window*/
 
+MM.sortProgressConfig = function (config) {
+	'use strict';
+	var	configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
+		sortedAlpha = _.sortBy(configWithKeys, function (status) {
+			return status.description || status.key;
+		});
+	return _.sortBy(sortedAlpha, function (status) {
+		return -1 * status.priority || 0;
+	});
+};
 MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 	'use strict';
 	return function (activeContent, filter) {
@@ -73,12 +83,14 @@ MM.CalcModel = function (aggregation, mapController) {
 	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 
-$.fn.progressFilterWidget = function (calcModel) {
+$.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
 			toggleButton = self.find('[data-mm-role=toggle-widget]'),
 			filterSection = self.find('[data-mm-role=filter]'),
+			statusList = filterSection.find('[data-mm-role=status-list]'),
+			statusTemplate = statusList.find('[data-mm-role=template]').detach(),
 			onFilterChanged = function () {},
 			setFilterUIVisible = function (visible) {
 				if (visible) {
@@ -88,7 +100,16 @@ $.fn.progressFilterWidget = function (calcModel) {
 					filterSection.hide();
 					calcModel.removeEventListener('dataUpdated', onFilterChanged);
 				}
+			},
+			rebuildUI = function (config) {
+				// order
+				var sortedConfig = MM.sortProgressConfig(config);
+				_.each(sortedConfig, function (config) {
+					var newRow = statusTemplate.clone().appendTo(statusList);
+					newRow.find('[data-mm-role=status-description]').text(config.description);
+				});
 			};
+		contentStatusUpdater.addEventListener('configChanged', rebuildUI);
 		filterSection.hide();
 		toggleButton.click(function () {
 			setFilterUIVisible(filterSection.css('display') === 'none');
@@ -251,13 +272,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 		template = element.find('[data-mm-role=status-template]').detach(),
 		generateStatuses = function (config) {
 			var domParent = element.find('[data-mm-role=status-list]'),
-				configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
-				sortedAlpha = _.sortBy(configWithKeys, function (status) {
-					return status.description || status.key;
-				}),
-				sortedConfig = _.sortBy(sortedAlpha, function (status) {
-					return -1 * status.priority || 0;
-				});
+				sortedConfig = MM.sortProgressConfig(config);
 			_.each(sortedConfig.reverse(), function (status) {
 				var newItem = template.clone().prependTo(domParent);
 				newItem.attr('data-mm-role', 'progress');
@@ -439,6 +454,7 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
+		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController),
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
@@ -451,7 +467,8 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController)).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(calcModel).floatingToolbarWidget();
+			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

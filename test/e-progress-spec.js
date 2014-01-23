@@ -719,18 +719,24 @@ describe('progressFilterWidget', function () {
 	'use strict';
 	var template =	'<div id="progressFilterWidget">' +
 					'<button data-mm-role="toggle-widget"></button>' +
-					'<div data-mm-role="filter"></div>' +
+					'<div data-mm-role="filter">' +
+						'<table data-mm-role="status-list">' +
+							'<tr data-mm-role="template"><td><input type="checkbox" data-mm-role="status-checkbox"/></td><td data-mm-role="status-description"></td></tr>' +
+						'</table>' +
+					'</div>' +
 					'</div>',
 		toggleButton,
 		underTest,
 		activityLog,
 		calcModel,
-		filterDom;
+		filterDom,
+		configStatusUpdater;
 	beforeEach(function () {
 		activityLog = {};
 		calcModel = observable({});
+		configStatusUpdater = observable({});
 		var widgetDom = jQuery(template).appendTo('body');
-		underTest = widgetDom.progressFilterWidget(calcModel, activityLog);
+		underTest = widgetDom.progressFilterWidget(calcModel, configStatusUpdater, activityLog);
 		filterDom = widgetDom.find('[data-mm-role=filter]');
 		toggleButton = widgetDom.find('[data-mm-role=toggle-widget]');
 
@@ -765,6 +771,19 @@ describe('progressFilterWidget', function () {
 			spyOn(calcModel, 'removeEventListener').andCallThrough();
 			toggleButton.click();
 			expect(calcModel.removeEventListener).toHaveBeenCalledWith('dataUpdated', jasmine.any(Function));
+		});
+	});
+	describe('updating UI', function () {
+		it('binds to an ConfigStatusUpdater and updates the UI on configChanged', function () {
+			var newConfig = {
+				passed: {description: 'Passed desc', style: {background: 'rgb(0, 0, 255)'}},
+				failed: {description: 'Failed desc', priority: 1, icon: {url: 'http://failedurl' }, style: {background: 'rgb(255, 0, 0)'}}
+			};
+			configStatusUpdater.dispatchEvent('configChanged', newConfig);
+			var rows = filterDom.find('[data-mm-role=status-list] tr');
+			expect(rows.length).toBe(2);
+			expect(rows.first().find('td:eq(1)').text()).toEqual('Failed desc');
+			expect(rows.eq(1).find('td:eq(1)').text()).toEqual('Passed desc');
 		});
 	});
 	describe('updates the model with the filter when it changed in the ui', function () {
@@ -954,5 +973,26 @@ describe('Calc widget', function () {
 		expect(calcModel.removeEventListener).toHaveBeenCalled();
 		checkContents(simpleTable);
 	});
+});
+describe('MM.sortProgressConfig', function () {
+	'use strict';
+	it('orders by priority, highest priority first, then items without priority in alphabetic order', function () {
+		var config = {
+			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
+			'z': {description: 'AAA', style: {background: 'rgb(255, 0, 0)'}},
+			'x': {description: 'MMM', style: {background: 'rgb(255, 0, 0)'}},
+			'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+			'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+			'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+		}, result;
+		result = MM.sortProgressConfig(config);
+		expect(_.map(result, function (e) { return e.key; })).toEqual(['k999', 'k888', 'k777', 'z', 'x', 'y']);
+	});
+	it('flattens hash map into an array and adds the key element to each item', function () {
+		var config = {
+			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
+		};
 
+		expect(MM.sortProgressConfig(config)).toEqual([{description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}, key: 'y'}]);
+	});
 });
