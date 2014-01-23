@@ -47,3 +47,13 @@
   vertical-align: middle;
   text-align:center;
 }
+.filter-box {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 5px;
+  background-color: white;
+  margin-bottom: 5px;
+}
+.filter-header {
+  margin-bottom: 5px;
+}
