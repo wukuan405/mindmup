@@ -1,4 +1,5 @@
 var MAPJS = {};
+/*global console*/
 var observable = function (base) {
 	'use strict';
 	var listeners = [];
@@ -35,7 +36,12 @@ var observable = function (base) {
 				return secondListenerDetails.priority - firstListenerDetails.priority;
 			})
 			.some(function (listenerDetails) {
-				return listenerDetails.listener.apply(undefined, args) === false;
+				try {
+					return listenerDetails.listener.apply(undefined, args) === false;
+				} catch (e) {
+					console.log('dispatchEvent failed', e, listenerDetails);
+				}
+
 			});
 	};
 	return base;

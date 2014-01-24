@@ -1,6 +1,6 @@
 /*global MM, _, observable, jQuery, $, window*/
 
-MM.CalcModel = function (aggregation, projections, mapController) {
+MM.CalcModel = function (aggregation, projections) {
 	'use strict';
 	var self = observable(this),
 		oldAddEventListener = self.addEventListener,
@@ -13,21 +13,15 @@ MM.CalcModel = function (aggregation, projections, mapController) {
 				currentData = aggregation(activeContent, activeFilter);
 				self.dispatchEvent('dataUpdated', activeProjection.iterator(currentData), activeFilter);
 			}
-		},
-		setActiveContent = function (mapId, content) {
-			if (activeContent) {
-				activeContent.removeEventListener('changed', recalcAndPublish);
-			}
-			activeContent = content;
-			recalcAndPublish();
-			activeContent.addEventListener('changed', recalcAndPublish);
 		};
 	self.addEventListener = function (event, listener) {
-		if (self.listeners('dataUpdated').length === 0) {
+		if (activeContent && self.listeners('dataUpdated').length === 0) {
 			currentData = aggregation(activeContent, activeFilter);
 		}
 		oldAddEventListener(event, listener);
-		listener.apply(undefined, [activeProjection.iterator(currentData), activeFilter]);
+		if (activeContent) {
+			listener.apply(undefined, [activeProjection.iterator(currentData), activeFilter]);
+		}
 	};
 	self.setFilter = function (newFilter) {
 		if (_.isEqual(newFilter, activeFilter)) {
@@ -45,6 +39,10 @@ MM.CalcModel = function (aggregation, projections, mapController) {
 	self.getActiveProjection = function () {
 		return activeProjection.name;
 	};
+	self.dataUpdated = function (content) {
+		activeContent = content;
+		recalcAndPublish();
+	};
 	self.setActiveProjection = function (name) {
 		if (activeProjection.name === name) {
 			return;
@@ -52,7 +50,6 @@ MM.CalcModel = function (aggregation, projections, mapController) {
 		activeProjection = _.find(projections, function (projection) { return projection.name === name; }) || activeProjection;
 		recalcAndPublish();
 	};
-	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 
 $.fn.calcWidget = function (calcModel) {
@@ -110,6 +107,31 @@ $.fn.calcWidget = function (calcModel) {
 	});
 };
 
+MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, configStatusUpdater) {
+	'use strict';
+	var activeContent,
+		setActiveContent = function (mapId, content) {
+			if (activeContent) {
+				activeContent.removeEventListener('changed', publishData);
+			}
+			activeContent = content;
+			publishData();
+			activeContent.addEventListener('changed', publishData);
+		},
+		publishData = function () {
+			calcModel.dataUpdated(activeContent);
+		};
+	configStatusUpdater.addEventListener('configChanged', function () {
+		calcModel.setFilter({});
+	});
+	mapModel.addEventListener('nodeSelectionChanged', function () {
+		var filter = calcModel.getFilter() || {};
+		if (filter.selectedSubtree) {
+			publishData();
+		}
+	});
+	mapController.addEventListener('mapLoaded', setActiveContent);
+};
 MM.sortProgressConfig = function (config) {
 	'use strict';
 	var	configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
@@ -134,13 +156,16 @@ MM.progressPercentProjection = function () {
 		});
 	};
 };
-MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
+MM.progressAggregation = function (statusAttributeName, statusConfigAttr, mapModel) {
 	'use strict';
 	return function (activeContent, filter) {
 		var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
 			recalculate = function () {
 				var currentCounts = {};
 				filter = filter || {};
+				if (filter.selectedSubtree) {
+					activeContent = activeContent.findSubIdeaById(mapModel.getCurrentlySelectedIdeaId()) || activeContent;
+				}
 				activeContent.traverse(function (idea) {
 					var stat = idea.attr && idea.attr[statusAttributeName];
 					if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
@@ -152,7 +177,7 @@ MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 				});
 				return currentCounts;
 			},
-			flattened = _.map(recalculate(activeContent, filter), function (v, k) {
+			flattened = _.map(recalculate(), function (v, k) {
 				return [k, v];
 			}),
 			sorted = _.sortBy(flattened, function (row) {
@@ -546,7 +571,7 @@ MM.Extensions.progress = function () {
 			{name: 'Counts', 'iterator': function (data) { return data; }},
 			{name: 'Percentages', 'iterator': MM.progressPercentProjection() }
 		],
-		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), projections, mapController),
+		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName, mapModel), projections),
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
@@ -561,9 +586,7 @@ MM.Extensions.progress = function () {
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			calcWidget.detach().appendTo($('body')).calcWidget(calcModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
-			updater.addEventListener('configChanged', function () {
-				calcModel.setFilter({});
-			});
+			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
 	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));

@@ -969,12 +969,62 @@ describe('MM.progressPercentProjection', function () {
 		])).toEqual([]);
 	});
 });
+
+describe('MM.progressCalcChangeMediator', function () {
+	'use strict';
+	var mapController, activeContent, mapModel, calcModel, filter, progressConfigUpdater;
+	beforeEach(function () {
+		filter = {};
+		calcModel = {
+			dataUpdated: jasmine.createSpy('dataUpdated'),
+			getFilter: function () { return filter; },
+			setFilter: jasmine.createSpy('setFilter')
+		};
+		mapModel = observable({});
+		progressConfigUpdater = observable({});
+		mapController = observable({});
+		activeContent = MAPJS.content({id: 1});
+		MM.progressCalcChangeMediator(calcModel, mapController, mapModel, progressConfigUpdater);
+		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
+		calcModel.dataUpdated.reset();
+	});
+	it('calls calcModel.setFilter when progress config changes', function () {
+		progressConfigUpdater.dispatchEvent('configChanged');
+		expect(calcModel.setFilter).toHaveBeenCalledWith({});
+	});
+	describe('calls calcModel.dataUpdated when', function () {
+		it('the progress status of any node changes', function () {
+			activeContent.updateAttr(1, 'status', 'yellow');
+			expect(calcModel.dataUpdated).toHaveBeenCalledWith(activeContent);
+		});
+		it('a new map is loaded', function () {
+			mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
+			expect(calcModel.dataUpdated).toHaveBeenCalledWith(activeContent);
+		});
+		it('the active id changes and the filter is for subtree', function () {
+			filter.selectedSubtree = true;
+			mapModel.dispatchEvent('nodeSelectionChanged', 1);
+			expect(calcModel.dataUpdated).toHaveBeenCalledWith(activeContent);
+		});
+	});
+	describe('does not call calcModel.dataUpdated when', function () {
+		it('a new map has been loaded and the old content changes', function () {
+			mapController.dispatchEvent('mapLoaded', 'testID2', MAPJS.content({id: 1}));
+			calcModel.dataUpdated.reset();
+			activeContent.updateAttr(1, 'status', 'yellow');
+			expect(calcModel.dataUpdated).not.toHaveBeenCalled();
+		});
+		it('the active id changes and the filter is not  for subtree', function () {
+			mapModel.dispatchEvent('nodeSelectionChanged', 1);
+			expect(calcModel.dataUpdated).not.toHaveBeenCalledWith(activeContent);
+		});
+	});
+});
 describe('MM.CalcModel', function () {
 	'use strict';
-	var underTest, aggregator, mapController, activeContent, aggregation, filter, projections;
+	var underTest, aggregator, activeContent, aggregation, filter, projections;
 	beforeEach(function () {
 		filter = {some: {complex: ['object']}};
-		mapController = observable({});
 		activeContent = MAPJS.content({id: 1});
 		aggregation = [['foo', 1]];
 		aggregator = jasmine.createSpy('calculate').andReturn(aggregation);
@@ -982,9 +1032,8 @@ describe('MM.CalcModel', function () {
 			{name: 'Counts', 'iterator': jasmine.createSpy('counts').andReturn(aggregation)},
 			{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
 		];
-		underTest = new MM.CalcModel(aggregator, projections, mapController);
+		underTest = new MM.CalcModel(aggregator, projections);
 		underTest.setFilter(filter);
-		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
 	});
 	describe('projections', function () {
 		it('should return a list of projections', function () {
@@ -1010,6 +1059,7 @@ describe('MM.CalcModel', function () {
 			beforeEach(function () {
 				projections[0].iterator.andReturn(projectionResults[0]);
 				projections[1].iterator.andReturn(projectionResults[1]);
+				underTest.dataUpdated(activeContent);
 			});
 			it(' when a new listener is added', function () {
 				underTest.addEventListener('dataUpdated', listener, filter);
@@ -1019,7 +1069,7 @@ describe('MM.CalcModel', function () {
 			it('when the data is recalculated', function () {
 				underTest.addEventListener('dataUpdated', jasmine.createSpy('one'), filter);
 				projections[0].iterator.reset();
-				activeContent.updateAttr(1, 'status', 'yellow');
+				underTest.dataUpdated(activeContent);
 				expect(projections[0].iterator).toHaveBeenCalledWith(aggregation);
 				expect(listener).toHaveBeenCalledWith(projectionResults[0], filter);
 			});
@@ -1044,12 +1094,8 @@ describe('MM.CalcModel', function () {
 	});
 	describe('publishing update events when content changes', function () {
 		describe('when has no listeners', function () {
-			it('does not recalculate if a node changes', function () {
-				activeContent.updateAttr(1, 'status', 'yellow');
-				expect(aggregator).not.toHaveBeenCalled();
-			});
-			it('does not recalculate when a new map is loaded', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
+			it('does not recalculate when dataUpdated', function () {
+				underTest.dataUpdated(activeContent);
 				expect(aggregator).not.toHaveBeenCalled();
 			});
 			it('does not not recalculate when the filter is changed, but does store the filter', function () {
@@ -1059,32 +1105,51 @@ describe('MM.CalcModel', function () {
 				expect(underTest.getFilter()).toBe(newFilter);
 			});
 		});
+
 		describe('when it gets a listener', function () {
 			var listenerOne, listenerTwo;
 			beforeEach(function () {
 				listenerOne = jasmine.createSpy('one');
 				listenerTwo = jasmine.createSpy('one');
-				underTest.addEventListener('dataUpdated', listenerOne, filter);
-				listenerOne.reset();
+				underTest.addEventListener('dataUpdated', listenerOne);
+			});
 
-				underTest.addEventListener('dataUpdated', listenerTwo, filter);
+			describe('when there is activeContent', function () {
+				beforeEach(function () {
+					underTest.dataUpdated(activeContent);
+					listenerOne.reset();
+
+					underTest.addEventListener('dataUpdated', listenerTwo);
+				});
+				it('publishes a dataUpdated event immediately to that listener if there was data loaded before', function () {
+					expect(listenerTwo).toHaveBeenCalledWith(aggregation, filter);
+				});
+				it('does not publish a dataUpdated event to any other listners', function () {
+					expect(listenerOne).not.toHaveBeenCalled();
+				});
+
 			});
-			it('publishes a dataUpdated event immediately to that listener', function () {
-				expect(listenerTwo).toHaveBeenCalledWith(aggregation, filter);
+			describe('when there is not activeContent', function () {
+				beforeEach(function () {
+					listenerOne.reset();
+					underTest.addEventListener('dataUpdated', listenerTwo);
+				});
+				it('does not publish if there is no activeContent', function () {
+					expect(listenerTwo).not.toHaveBeenCalled();
+					expect(listenerOne).not.toHaveBeenCalled();
+				});
+
 			});
-			it('does not publish a dataUpdated event to any other listners', function () {
-				expect(listenerOne).not.toHaveBeenCalled();
-			});
+
 		});
 		describe('when first listener is added', function () {
 			var listenerOne;
 			it('recalculates the table', function () {
 				var newFilter = 'new filter';
-				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
-				expect(aggregator).not.toHaveBeenCalled();
+				underTest.dataUpdated(activeContent);
 				underTest.setFilter(newFilter);
 				listenerOne = jasmine.createSpy('one');
-				underTest.addEventListener('dataUpdated', listenerOne, newFilter);
+				underTest.addEventListener('dataUpdated', listenerOne);
 
 				expect(aggregator).toHaveBeenCalledWith(activeContent, newFilter);
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, newFilter);
@@ -1094,7 +1159,8 @@ describe('MM.CalcModel', function () {
 			var listenerOne;
 			beforeEach(function () {
 				listenerOne = jasmine.createSpy('one');
-				underTest.addEventListener('dataUpdated', listenerOne, filter);
+				underTest.dataUpdated(activeContent);
+				underTest.addEventListener('dataUpdated', listenerOne);
 				listenerOne.reset();
 				aggregator.reset();
 			});
@@ -1108,21 +1174,10 @@ describe('MM.CalcModel', function () {
 				expect(aggregator).not.toHaveBeenCalled();
 				expect(listenerOne).not.toHaveBeenCalled();
 			});
-			it('publishes a dataUpdated event if the progress status of any node changes', function () {
-				activeContent.updateAttr(1, 'status', 'yellow');
+			it('publishes a dataUpdated event if the dataUpdated', function () {
+				underTest.dataUpdated(activeContent);
 				expect(aggregator).toHaveBeenCalledWith(activeContent, filter);
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, filter);
-			});
-			it('publishes a dataUpdated event when a new map is loaded', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', activeContent);
-				expect(aggregator).toHaveBeenCalledWith(activeContent, filter);
-				expect(listenerOne).toHaveBeenCalledWith(aggregation, filter);
-			});
-			it('does not publish an event after a new map is loaded when the old content changes', function () {
-				mapController.dispatchEvent('mapLoaded', 'testID2', MAPJS.content({id: 1}));
-				listenerOne.reset();
-				activeContent.updateAttr(1, 'status', 'yellow');
-				expect(listenerOne).not.toHaveBeenCalled();
 			});
 		});
 	});
