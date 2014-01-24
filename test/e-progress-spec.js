@@ -916,18 +916,131 @@ describe('progressFilterWidget', function () {
 		});
 	});
 });
+
+describe('MM.sortProgressConfig', function () {
+	'use strict';
+	it('orders by priority, highest priority first, then items without priority in alphabetic order', function () {
+		var config = {
+			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
+			'z': {description: 'AAA', style: {background: 'rgb(255, 0, 0)'}},
+			'x': {description: 'MMM', style: {background: 'rgb(255, 0, 0)'}},
+			'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+			'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+			'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+		}, result;
+		result = MM.sortProgressConfig(config);
+		expect(_.map(result, function (e) { return e.key; })).toEqual(['k999', 'k888', 'k777', 'z', 'x', 'y']);
+	});
+	it('flattens hash map into an array and adds the key element to each item', function () {
+		var config = {
+			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
+		};
+		expect(MM.sortProgressConfig(config)).toEqual([{description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}, key: 'y'}]);
+	});
+});
+
+describe('MM.progressPercentProjection', function () {
+	'use strict';
+	var underTest;
+	beforeEach(function () {
+		underTest = MM.progressPercentProjection();
+	});
+	it('converts a single data item to be 100%', function  () {
+		expect(underTest([['foo', 1]])).toEqual([['foo', '100%']]);
+	});
+	it('converts multiple values to be percentages, rounding to 2 decimals', function () {
+		expect(underTest([
+				['foo', 1],
+				['bar', 1],
+				['goo', 1]
+			])).toEqual([
+				['foo', '33%'],
+				['bar', '33%'],
+				['goo', '33%']
+			]);
+	});
+	it('handles no data', function () {
+		expect(underTest([])).toEqual([]);
+	});
+	it('should not return data for zero total counts', function () {
+		expect(underTest([
+			['foo', 0],
+			['bar', 0]
+		])).toEqual([]);
+	});
+});
 describe('MM.CalcModel', function () {
 	'use strict';
-	var underTest, aggregator, mapController, activeContent, aggregation, filter;
+	var underTest, aggregator, mapController, activeContent, aggregation, filter, projections;
 	beforeEach(function () {
 		filter = {some: {complex: ['object']}};
 		mapController = observable({});
 		activeContent = MAPJS.content({id: 1});
 		aggregation = [['foo', 1]];
 		aggregator = jasmine.createSpy('calculate').andReturn(aggregation);
-		underTest = new MM.CalcModel(aggregator, mapController);
+		projections = [
+			{name: 'Counts', 'iterator': jasmine.createSpy('counts').andReturn(aggregation)},
+			{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+		];
+		underTest = new MM.CalcModel(aggregator, projections, mapController);
 		underTest.setFilter(filter);
 		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
+	});
+	describe('projections', function () {
+		it('should return a list of projections', function () {
+			expect(underTest.getProjections()).toEqual(['Counts', 'Percentages']);
+		});
+		it('should default to first projection', function () {
+			expect(underTest.getActiveProjection()).toEqual('Counts');
+		});
+		it('should change the active projections', function () {
+			underTest.setActiveProjection('Percentages');
+			expect(underTest.getActiveProjection()).toEqual('Percentages');
+		});
+		it('should not change the active projections if an invalid name is supplied', function () {
+			underTest.setActiveProjection('foo');
+			expect(underTest.getActiveProjection()).toEqual('Counts');
+		});
+		describe('should use the active projection when publishing the active data', function () {
+			var projectionResults = [
+					[['bar', 1]],
+					[['bar', 100]]
+				],
+				listener = jasmine.createSpy('one');
+			beforeEach(function () {
+				projections[0].iterator.andReturn(projectionResults[0]);
+				projections[1].iterator.andReturn(projectionResults[1]);
+			});
+			it(' when a new listener is added', function () {
+				underTest.addEventListener('dataUpdated', listener, filter);
+				expect(projections[0].iterator).toHaveBeenCalledWith(aggregation);
+				expect(listener).toHaveBeenCalledWith(projectionResults[0], filter);
+			});
+			it('when the data is recalculated', function () {
+				underTest.addEventListener('dataUpdated', jasmine.createSpy('one'), filter);
+				projections[0].iterator.reset();
+				activeContent.updateAttr(1, 'status', 'yellow');
+				expect(projections[0].iterator).toHaveBeenCalledWith(aggregation);
+				expect(listener).toHaveBeenCalledWith(projectionResults[0], filter);
+			});
+			it('when the projection is changed', function () {
+				underTest.addEventListener('dataUpdated', listener, filter);
+				projections[0].iterator.reset();
+				listener.reset();
+				underTest.setActiveProjection('Percentages');
+				expect(projections[1].iterator).toHaveBeenCalledWith(aggregation);
+				expect(listener).toHaveBeenCalledWith(projectionResults[1], filter);
+			});
+		});
+		it('should not be called if the activeProjection is changed to the same one as currently set', function () {
+			var listener = jasmine.createSpy('one');
+			underTest.addEventListener('dataUpdated', listener, filter);
+			projections[0].iterator.reset();
+			listener.reset();
+			underTest.setActiveProjection('Counts');
+			expect(projections[1].iterator).not.toHaveBeenCalled();
+			expect(listener).not.toHaveBeenCalled();
+		});
 	});
 	describe('publishing update events when content changes', function () {
 		describe('when has no listeners', function () {
@@ -1020,6 +1133,8 @@ describe('Calc widget', function () {
 	'use strict';
 
 	var template =	'<div id="calcWidget1" class="modal" >' +
+					'<span data-mm-role="active-projection" ></span>' +
+					'<ul data-mm-role="projections"><li data-mm-role="projection-template"><a data-mm-role="projection-name"></a></li></ul>' +
 					'<table data-mm-role="calc-table"></table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
 					'</div>',
@@ -1045,7 +1160,11 @@ describe('Calc widget', function () {
 		};
 	beforeEach(function () {
 		activityLog = { log: jasmine.createSpy('log') };
-		calcModel = observable({});
+		calcModel = observable({
+			getProjections: jasmine.createSpy('getProjections').andReturn(['projection1', 'projection2']),
+			getActiveProjection: jasmine.createSpy('getActiveProjection'),
+			setActiveProjection: jasmine.createSpy('setActiveProjection')
+		});
 		toggleButton = jQuery(openButtonTemplate).appendTo('body');
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
@@ -1066,6 +1185,27 @@ describe('Calc widget', function () {
 			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
+		});
+	});
+	describe('projections', function () {
+		describe('when loaded', function () {
+			it('shows a list of projections, supplied by the model', function () {
+				var rows = underTest.find('[data-mm-role=projections] li');
+				expect(rows.length).toBe(2);
+				expect(rows.first().find('[data-mm-role=projection-name]').text()).toEqual('projection1');
+				expect(rows.eq(1).find('[data-mm-role=projection-name]').text()).toEqual('projection2');
+			});
+			it('adds a click event handler to send the projection name to the model', function () {
+				var rows = underTest.find('[data-mm-role=projections] li a');
+				rows.eq(1).click();
+				expect(calcModel.setActiveProjection).toHaveBeenCalledWith('projection2');
+			});
+		});
+		it('changes the label to the active projection when a dataUpdated event is recieved', function () {
+			calcModel.getActiveProjection.andReturn('projection2');
+			toggleButton.click();
+			calcModel.dispatchEvent('dataUpdated', simpleTable);
+			expect(underTest.find('[data-mm-role=active-projection]').text()).toEqual('projection2');
 		});
 	});
 	describe('graceful handling of no data in the report', function () {
@@ -1100,26 +1240,5 @@ describe('Calc widget', function () {
 
 		expect(calcModel.removeEventListener).toHaveBeenCalled();
 		checkContents(simpleTable);
-	});
-});
-describe('MM.sortProgressConfig', function () {
-	'use strict';
-	it('orders by priority, highest priority first, then items without priority in alphabetic order', function () {
-		var config = {
-			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
-			'z': {description: 'AAA', style: {background: 'rgb(255, 0, 0)'}},
-			'x': {description: 'MMM', style: {background: 'rgb(255, 0, 0)'}},
-			'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
-			'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-			'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
-		}, result;
-		result = MM.sortProgressConfig(config);
-		expect(_.map(result, function (e) { return e.key; })).toEqual(['k999', 'k888', 'k777', 'z', 'x', 'y']);
-	});
-	it('flattens hash map into an array and adds the key element to each item', function () {
-		var config = {
-			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
-		};
-		expect(MM.sortProgressConfig(config)).toEqual([{description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}, key: 'y'}]);
 	});
 });

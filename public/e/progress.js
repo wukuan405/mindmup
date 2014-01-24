@@ -1,5 +1,115 @@
 /*global MM, _, observable, jQuery, $, window*/
 
+MM.CalcModel = function (aggregation, projections, mapController) {
+	'use strict';
+	var self = observable(this),
+		oldAddEventListener = self.addEventListener,
+		activeContent,
+		activeFilter,
+		currentData,
+		activeProjection = _.first(projections),
+		recalcAndPublish = function () {
+			if (self.listeners('dataUpdated').length > 0) {
+				currentData = aggregation(activeContent, activeFilter);
+				self.dispatchEvent('dataUpdated', activeProjection.iterator(currentData), activeFilter);
+			}
+		},
+		setActiveContent = function (mapId, content) {
+			if (activeContent) {
+				activeContent.removeEventListener('changed', recalcAndPublish);
+			}
+			activeContent = content;
+			recalcAndPublish();
+			activeContent.addEventListener('changed', recalcAndPublish);
+		};
+	self.addEventListener = function (event, listener) {
+		if (self.listeners('dataUpdated').length === 0) {
+			currentData = aggregation(activeContent, activeFilter);
+		}
+		oldAddEventListener(event, listener);
+		listener.apply(undefined, [activeProjection.iterator(currentData), activeFilter]);
+	};
+	self.setFilter = function (newFilter) {
+		if (_.isEqual(newFilter, activeFilter)) {
+			return;
+		}
+		activeFilter = newFilter;
+		recalcAndPublish();
+	};
+	self.getFilter = function () {
+		return activeFilter;
+	};
+	self.getProjections = function () {
+		return _.map(projections, function (projection) { return projection.name; });
+	};
+	self.getActiveProjection = function () {
+		return activeProjection.name;
+	};
+	self.setActiveProjection = function (name) {
+		if (activeProjection.name === name) {
+			return;
+		}
+		activeProjection = _.find(projections, function (projection) { return projection.name === name; }) || activeProjection;
+		recalcAndPublish();
+	};
+	mapController.addEventListener('mapLoaded', setActiveContent);
+};
+
+$.fn.calcWidget = function (calcModel) {
+	'use strict';
+	return this.each(function () {
+		var self = jQuery(this),
+		    table = self.find('[data-mm-role=calc-table]'),
+		    msgDiv = self.find('[data-mm-role=empty]'),
+			repopulateTable = function (data) {
+				showActiveProjection();
+				table.empty();
+				if (_.isEmpty(data)) {
+					table.hide();
+					msgDiv.show();
+				} else {
+					table.show();
+					msgDiv.hide();
+					_.each(data, function (row) {
+						var rowDOM = jQuery('<tr>').appendTo(table);
+						_.each(row, function (cell) {
+							var cellDOM = jQuery('<td>').appendTo(rowDOM);
+							cellDOM.text(cell);
+						});
+					});
+				}
+			},
+			id = self.attr('id'),
+			toggleButtons = jQuery('[data-mm-role=toggle-widget][data-mm-calc-id='  + id + ']'),
+			setWidgetVisible = function (visible) {
+				if (visible) {
+					calcModel.addEventListener('dataUpdated', repopulateTable);
+					self.show();
+				} else {
+					calcModel.removeEventListener('dataUpdated', repopulateTable);
+					self.hide();
+				}
+			},
+			setProjections = function () {
+				var projectionsContainer = self.find('[data-mm-role=projections]'),
+					template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection');
+				_.each(calcModel.getProjections(), function (projection) {
+					var item = template.clone().appendTo(projectionsContainer);
+					item.find('[data-mm-role=projection-name]').text(projection).click(function () {calcModel.setActiveProjection(projection); });
+				});
+			},
+			showActiveProjection = function () {
+				self.find('[data-mm-role=active-projection]').text(calcModel.getActiveProjection());
+			};
+		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
+		setWidgetVisible(false);
+		setProjections();
+		toggleButtons.click(function () {
+			setWidgetVisible(!self.is(':visible'));
+		});
+	});
+};
+
 MM.sortProgressConfig = function (config) {
 	'use strict';
 	var	configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
@@ -9,6 +119,20 @@ MM.sortProgressConfig = function (config) {
 	return _.sortBy(sortedAlpha, function (status) {
 		return -1 * status.priority || 0;
 	});
+};
+
+MM.progressPercentProjection = function () {
+	'use strict';
+	return function (data) {
+		var total = _.reduce(data, function (valueSoFar, item) {return valueSoFar + item[1]; }, 0);
+		if (total === 0) {
+			return [];
+		}
+		return _.map(data, function (item) {
+			var percent = (100 * item[1] / total).toFixed(0) + '%';
+			return [item[0], percent];
+		});
+	};
 };
 MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 	'use strict';
@@ -49,46 +173,7 @@ MM.progressAggregation = function (statusAttributeName, statusConfigAttr) {
 	};
 };
 
-MM.CalcModel = function (aggregation, mapController) {
-	'use strict';
-	var self = observable(this),
-		oldAddEventListener = self.addEventListener,
-		activeContent,
-		activeFilter,
-		currentData,
-		recalcAndPublish = function () {
-			if (self.listeners('dataUpdated').length > 0) {
-				currentData = aggregation(activeContent, activeFilter);
-				self.dispatchEvent('dataUpdated', currentData, activeFilter);
-			}
-		},
-		setActiveContent = function (mapId, content) {
-			if (activeContent) {
-				activeContent.removeEventListener('changed', recalcAndPublish);
-			}
-			activeContent = content;
-			recalcAndPublish();
-			activeContent.addEventListener('changed', recalcAndPublish);
-		};
-	self.addEventListener = function (event, listener) {
-		if (self.listeners('dataUpdated').length === 0) {
-			currentData = aggregation(activeContent, activeFilter);
-		}
-		oldAddEventListener(event, listener);
-		listener.apply(undefined, [currentData, activeFilter]);
-	};
-	self.setFilter = function (newFilter) {
-		if (_.isEqual(newFilter, activeFilter)) {
-			return;
-		}
-		activeFilter = newFilter;
-		recalcAndPublish();
-	};
-	self.getFilter = function () {
-		return activeFilter;
-	};
-	mapController.addEventListener('mapLoaded', setActiveContent);
-};
+
 
 $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 	'use strict';
@@ -161,47 +246,6 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 	});
 };
 
-$.fn.calcWidget = function (calcModel) {
-	'use strict';
-	return this.each(function () {
-		var self = jQuery(this),
-		    table = self.find('[data-mm-role=calc-table]'),
-		    msgDiv = self.find('[data-mm-role=empty]'),
-			repopulateTable = function (data) {
-				table.empty();
-				if (_.isEmpty(data)) {
-					table.hide();
-					msgDiv.show();
-				} else {
-					table.show();
-					msgDiv.hide();
-					_.each(data, function (row) {
-						var rowDOM = jQuery('<tr>').appendTo(table);
-						_.each(row, function (cell) {
-							var cellDOM = jQuery('<td>').appendTo(rowDOM);
-							cellDOM.text(cell);
-						});
-					});
-				}
-			},
-			id = self.attr('id'),
-			toggleButtons = jQuery('[data-mm-role=toggle-widget][data-mm-calc-id='  + id + ']'),
-			setWidgetVisible = function (visible) {
-				if (visible) {
-					calcModel.addEventListener('dataUpdated', repopulateTable);
-					self.show();
-				} else {
-					calcModel.removeEventListener('dataUpdated', repopulateTable);
-					self.hide();
-				}
-			};
-		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
-		setWidgetVisible(false);
-		toggleButtons.click(function () {
-			setWidgetVisible(!self.is(':visible'));
-		});
-	});
-};
 
 MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {
 	'use strict';
@@ -498,7 +542,11 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
-		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), mapController),
+		projections = [
+			{name: 'Counts', 'iterator': function (data) { return data; }},
+			{name: 'Percentages', 'iterator': MM.progressPercentProjection() }
+		],
+		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName), projections, mapController),
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
