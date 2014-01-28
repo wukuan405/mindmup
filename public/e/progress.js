@@ -306,7 +306,7 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 };
 
 
-MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, mapController) {
+MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, measurementAttributeName, measurementConfigurationAttributeName, mapController) {
 	'use strict';
 	var self = observable(this),
 		content,
@@ -321,8 +321,13 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			content = mapContent;
 			content.addEventListener('changed', function (method, attrs) {
 				/*jslint eqeq: true*/
-				if (method === 'updateAttr' && attrs[0] == content.id && attrs[1] === statusConfigurationAttributeName) {
-					self.dispatchEvent('configChanged', attrs[2]);
+				if (method === 'updateAttr' && attrs[0] == content.id) {
+					if (attrs[1] === statusConfigurationAttributeName) {
+						self.dispatchEvent('configChanged', attrs[2]);
+					}
+					else if (attrs[1] === measurementConfigurationAttributeName) {
+						self.dispatchEvent('measurementsChanged', attrs[2]);
+					}
 				}
 			});
 		},
@@ -401,11 +406,15 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		}
 		return result;
 	};
+	self.setMeasurements = function (updatedMeasurements) {
+		content.updateAttr(content.id, measurementConfigurationAttributeName, updatedMeasurements);
+	};
 	self.clear = function () {
 		recursiveClear(content);
 	};
 	self.refresh = function () {
 		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
+		self.dispatchEvent('measurementsChanged', content.getAttr(measurementConfigurationAttributeName));
 	};
 	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
 		bindTo(mapContent);
@@ -488,6 +497,8 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			element.find('[data-mm-role=save]').click(function () {
 				var config = {},
 					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
+					measurementsElement = element.find('[data-mm-role=measurements]'),
+					measurements =  _.reject(_.map(measurementsElement.val().split(','), function (t) { return t.trim(); }), function (v) {return !v || v.length === 0; }),
 					existing = _.reject(
 						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
 						function (x) {return isNaN(x); }
@@ -520,11 +531,22 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 					config[key] = statusConfig;
 				});
 				updater.setStatusConfig(config);
+
+				updater.setMeasurements(measurements);
 			});
 		};
 	bindGenericFunctions();
 	updater.addEventListener('configChanged', function (config) {
 		updateUI(config);
+	});
+	updater.addEventListener('measurementsChanged', function (measurements) {
+		var measurementElement = element.find('[data-mm-role=measurements]');
+		if (measurements) {
+			measurementElement.val(measurements.join(','));
+		}
+		else {
+			measurementElement.val('');
+		}
 	});
 	updateUI();
 	return this;
@@ -597,6 +619,8 @@ MM.Extensions.progress = function () {
 	'use strict';
 	var statusConfigurationAttributeName = MM.Extensions.config.progress.aggregateAttributeName,
 		statusAttributeName = 'progress',
+		measurementsConfigurationAttributeName = MM.Extensions.config.progress.measurementsConfigName,
+		measureAttributeName = 'measurements',
 		mapController = MM.Extensions.components.mapController,
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
@@ -611,7 +635,7 @@ MM.Extensions.progress = function () {
 				calcWidget = parsed.find('#progress-calc-widget'),
 				updater;
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
-			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, mapController);
+			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapController);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);

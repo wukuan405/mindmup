@@ -108,12 +108,39 @@ describe('MM.ContentStatusUpdater', function () {
 
 			}
 		});
-		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', mapControllerStub(content));
+		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
 	});
 	it('propagation keeps child status - regression bug check', function () {
 		underTest.updateStatus(1111, 'questionable');
 		expect(content.getAttrById(1111, 'test-status')).toBe('questionable');
 		expect(content.getAttrById(111, 'test-status')).toBe('questionable');
+	});
+	describe('setMeasurements', function () {
+		it('sets measurements', function () {
+			underTest.setMeasurements(['one', 'two']);
+			expect(content.getAttrById(1, 'test-measurement-config')).toEqual(['one', 'two']);
+		});
+		it('sets empty list of measurements', function () {
+			underTest.setMeasurements([]);
+			expect(content.getAttrById(1, 'test-measurement-config')).toBeFalsy();
+		});
+	});
+	describe('measurement changed event', function () {
+		var listener;
+		beforeEach(function () {
+			listener = jasmine.createSpy('listener');
+			underTest.addEventListener('measurementsChanged', listener);
+		});
+		it('should publish a measurementsChanged event when the attribute changes', function () {
+			content.updateAttr(1,  'test-measurement-config', ['three', 'four']);
+			expect(listener).toHaveBeenCalledWith(['three', 'four']);
+		});
+		it('should publish a measurementsChanged event when the updater is refreshed', function () {
+			content.updateAttr(1,  'test-measurement-config', ['three', 'four']);
+			listener.reset();
+			underTest.refresh();
+			expect(listener).toHaveBeenCalledWith(['three', 'four']);
+		});
 	});
 	describe('updateStatus', function () {
 		it('should change the node to be the color associated with the status', function () {
@@ -268,7 +295,7 @@ describe('MM.ContentStatusUpdater', function () {
 					}
 				}
 			});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses',  'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
 		});
 		it('drops status attributes from cleared nodes', function () {
 			underTest.clear();
@@ -317,7 +344,7 @@ describe('MM.ContentStatusUpdater', function () {
 				id: 1,
 				attr: { 'test-statuses': 'old' }
 			});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapControllerStub(content));
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
 		});
 		it('changes status configuration on current content', function () {
 			underTest.setStatusConfig(configOne);
@@ -346,12 +373,12 @@ describe('MM.ContentStatusUpdater', function () {
 		var mapController, underTest, configOne, configTwo, firstContent, secondContent;
 		beforeEach(function () {
 			mapController = observable({});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', mapController);
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapController);
 			configOne = { 'passing': { style: { background: '#ffffff' } } };
 			configTwo = { 'failing': { style: { background: '#ffffff' } } };
 			firstContent = MAPJS.content({
 				id: 1,
-				attr: { 'test-statuses': configOne }
+				attr: { 'test-statuses': configOne, 'test-measurement-config': ['one', 'two'] }
 			});
 			secondContent = MAPJS.content({
 				id: 1,
@@ -364,6 +391,13 @@ describe('MM.ContentStatusUpdater', function () {
 			mapController.dispatchEvent('mapLoaded', '', firstContent);
 			expect(listener).toHaveBeenCalledWith(configOne);
 		});
+		it('fires measurementsChanged when the content changes', function () {
+			var listener = jasmine.createSpy();
+			underTest.addEventListener('measurementsChanged', listener);
+			mapController.dispatchEvent('mapLoaded', '', firstContent);
+			expect(listener).toHaveBeenCalledWith(['one', 'two']);
+		});
+
 	});
 });
 describe('progressStatusUpdateWidget', function () {
@@ -386,6 +420,7 @@ describe('progressStatusUpdateWidget', function () {
 		'			<li data-mm-progress-visible="active"><a data-mm-role="clear" ></a></li>' +
 		'			<li data-mm-progress-visible="active"><a data-mm-role="deactivate" ></a></li>' +
 		'			<li data-mm-progress-visible="active"><a data-mm-role="save" ></a></li>' +
+		'			<input data-mm-role="measurements" value="Cost,Effort" />' +
 		'		</ul>' +
 		'	</div>',
 		mapModel,
@@ -407,7 +442,11 @@ describe('progressStatusUpdateWidget', function () {
 
 	beforeEach(function () {
 		mapModel = observable({});
-		updater = observable({});
+		updater = observable({
+			setMeasurements: jasmine.createSpy('setMeasurements'),
+			setStatusConfig: jasmine.createSpy(),
+			updateStatus: jasmine.createSpy()
+		});
 		domElement = jQuery(elementHTML).appendTo('body').progressStatusUpdateWidget(updater, mapModel, {
 			single: singleConfig,
 			double: doubleConfig
@@ -484,12 +523,10 @@ describe('progressStatusUpdateWidget', function () {
 			updater.dispatchEvent('configChanged', singleConfig);
 		});
 		it('drops config when clicked on deactivate', function () {
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=deactivate]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith(false);
 		});
 		it('sets configuration to the one specified with data-mm-progress-type when clicked on start', function () {
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-progress-type=double]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith(doubleConfig);
 		});
@@ -509,7 +546,6 @@ describe('progressStatusUpdateWidget', function () {
 			expect(jQuery('body').hasClass('progress-toolbar-active')).toBeFalsy();
 		});
 		it('updates currently activated nodes when clicked on a progress status link', function () {
-			updater.updateStatus = jasmine.createSpy();
 			mapModel.applyToActivated = function (func) {
 				func(17);
 			};
@@ -531,7 +567,6 @@ describe('progressStatusUpdateWidget', function () {
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
 			domElement.find('#secondIcon').data('icon', {url: 'xxx'});
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
 				'Key 1': {
@@ -546,6 +581,42 @@ describe('progressStatusUpdateWidget', function () {
 				}
 			});
 		});
+		describe('saving measurements', function () {
+			it('when there are measurements', function () {
+				domElement.find('[data-mm-role=measurements]').val('Cost,Effort');
+				domElement.find('[data-mm-role=save]').click();
+				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
+			});
+			it('when there are no measurements', function () {
+				domElement.find('[data-mm-role=measurements]').val('');
+				domElement.find('[data-mm-role=save]').click();
+				expect(updater.setMeasurements).toHaveBeenCalledWith([]);
+			});
+			it('when the measurements are surrounded with spaces', function () {
+				domElement.find('[data-mm-role=measurements]').val(' Cost , Effort ');
+				domElement.find('[data-mm-role=save]').click();
+				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
+			});
+			it('when the measurements contain empty elements', function () {
+				domElement.find('[data-mm-role=measurements]').val('Cost, ,,Effort');
+				domElement.find('[data-mm-role=save]').click();
+				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
+			});
+		});
+		describe('populating measurements', function () {
+			it('when there are  measurements', function () {
+				updater.dispatchEvent('measurementsChanged', ['Man Days', 'Profit']);
+				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('Man Days,Profit');
+			});
+			it('when there are not  measurements', function () {
+				updater.dispatchEvent('measurementsChanged', []);
+				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('');
+			});
+			it('when there are undefined measurements', function () {
+				updater.dispatchEvent('measurementsChanged', false);
+				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('');
+			});
+		});
 		it('ignores transparent color when reading background', function () {
 			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="transparent"/>'
@@ -556,7 +627,6 @@ describe('progressStatusUpdateWidget', function () {
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
 			domElement.find('#firstIcon').data('icon', {url: 'xxx'});
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
 				'Key 1': {
@@ -576,7 +646,6 @@ describe('progressStatusUpdateWidget', function () {
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
 			domElement.find('#firstIcon').data('icon', {url: 'xxx'});
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
 				'Key 1': {
@@ -599,7 +668,6 @@ describe('progressStatusUpdateWidget', function () {
 				+ '</li>';
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
 				'7': {
@@ -626,7 +694,6 @@ describe('progressStatusUpdateWidget', function () {
 				+ '</li>';
 			domElement.find('[data-mm-role=progress]').remove();
 			domElement.find('[data-mm-role=status-list]').append(jQuery(newStatusHtml));
-			updater.setStatusConfig = jasmine.createSpy();
 			domElement.find('[data-mm-role=save]').click();
 			expect(updater.setStatusConfig).toHaveBeenCalledWith({
 				'1': {

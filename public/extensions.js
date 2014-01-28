@@ -104,6 +104,7 @@ MM.Extensions.config = {
 		doc: 'http://blog.mindmup.com/p/monitoring-progress.html',
 		desc: 'Progress allows you to manage hierarchies of tasks faster by propagating statuses to parent nodes. For example, when all sub-tasks are completed, the parent task is marked as completed automatically.',
 		aggregateAttributeName: 'progress-statuses',
+		measurementsConfigName: 'measurements-config',
 		isActiveOnMapContent: function (content) {
 			'use strict';
 			return content.getAttr(MM.Extensions.config.progress.aggregateAttributeName);
