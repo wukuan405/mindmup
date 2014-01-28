@@ -751,7 +751,13 @@ describe('MM.Progress.Calc', function () {
 						3: {
 							id: 113,
 							title: 'one hundred and thirteen',
-							attr: { status: 'k777'},
+							attr: {
+								status: 'k777',
+								'test-measurement': {
+									one: 10,
+									two: 20
+								}
+							},
 						},
 						4: {
 							id: 114,
@@ -844,21 +850,21 @@ describe('MM.Progress.Calc', function () {
 		it('denormalises map structure into a flat list of values, removing non-status or unrecognised status items', function () {
 			var result = underTest.dataAdapter(activeContent);
 			expect(result).toEqual([
-				{ status: 'k888', id: 1},
-				{ status: 'k999', id: 11},
-				{ status: 'kalpha2', id: 111},
-				{ status: 'kalpha', id: 112},
-				{ status: 'k777', id: 113},
-				{ status: 'k777', id: 114}
+				{ status: 'k888', id: 1, title: 'one'},
+				{ status: 'k999', id: 11, title: 'eleven'},
+				{ status: 'kalpha2', id: 111, title: 'one hundred and eleven', measurements: {'one': 100}},
+				{ status: 'kalpha', id: 112, title: 'one hundred and twelve', measurements: {'two': 200}},
+				{ status: 'k777', id: 113, title: 'one hundred and thirteen', measurements: {'one': 10, 'two': 20}},
+				{ status: 'k777', id: 114, title: 'one hundred and fourteen'}
 			]);
 		});
 
 		it('should apply filter by status names', function () {
 			var result = underTest.dataAdapter(activeContent, {statuses: ['k777',  'kalpha2']});
 			expect(result).toEqual([
-				{ status: 'kalpha2', id: 111},
-				{ status: 'k777', id: 113},
-				{ status: 'k777', id: 114}
+				{ status: 'kalpha2', id: 111, title: 'one hundred and eleven', measurements: {'one': 100}},
+				{ status: 'k777', id: 113, title: 'one hundred and thirteen', measurements: {'one': 10, 'two': 20}},
+				{ status: 'k777', id: 114, title: 'one hundred and fourteen'}
 			]);
 
 		});
@@ -868,21 +874,21 @@ describe('MM.Progress.Calc', function () {
 			});
 			it('includes only the selected subtree when selectedSubtree is set', function () {
 				expect(underTest.dataAdapter(activeContent, {selectedSubtree: true})).toEqual([
-					{ status: 'k999', id: 11},
-					{ status: 'kalpha2', id: 111},
-					{ status: 'kalpha', id: 112},
-					{ status: 'k777', id: 113},
-					{ status: 'k777', id: 114}
+					{ status: 'k999', id: 11, title: 'eleven'},
+					{ status: 'kalpha2', id: 111, title: 'one hundred and eleven', measurements: {'one': 100}},
+					{ status: 'kalpha', id: 112, title: 'one hundred and twelve', measurements: {'two': 200}},
+					{ status: 'k777', id: 113, title: 'one hundred and thirteen', measurements: {'one': 10, 'two': 20}},
+					{ status: 'k777', id: 114, title: 'one hundred and fourteen'}
 				]);
 			});
 			it('includes the entire tree when selectedSubtree is not set', function () {
 				expect(underTest.dataAdapter(activeContent, {})).toEqual([
-					{ status: 'k888', id: 1},
-					{ status: 'k999', id: 11},
-					{ status: 'kalpha2', id: 111},
-					{ status: 'kalpha', id: 112},
-					{ status: 'k777', id: 113},
-					{ status: 'k777', id: 114}
+					{ status: 'k888', id: 1, title: 'one'},
+					{ status: 'k999', id: 11, title: 'eleven'},
+					{ status: 'kalpha2', id: 111, title: 'one hundred and eleven', measurements: {'one': 100}},
+					{ status: 'kalpha', id: 112, title: 'one hundred and twelve', measurements: {'two': 200}},
+					{ status: 'k777', id: 113, title: 'one hundred and thirteen', measurements: {'one': 10, 'two': 20}},
+					{ status: 'k777', id: 114, title: 'one hundred and fourteen'}
 				]);
 			});
 		});

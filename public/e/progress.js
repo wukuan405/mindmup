@@ -206,12 +206,20 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 			activeContent = activeContent.findSubIdeaById(mapModel.getCurrentlySelectedIdeaId()) || activeContent;
 		}
 		activeContent.traverse(function (idea) {
-			var stat = idea.attr && idea.attr[statusAttributeName];
+			var stat = idea.attr && idea.attr[statusAttributeName],
+				resultItem;
 			if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
 				return;
 			}
 			if (stat && statusConfig[stat] && (!filter.statuses  || _.include(filter.statuses, stat))) {
-				result.push({status: stat, id: idea.id});
+				resultItem = {status: stat, id: idea.id};
+				if (idea.title) {
+					resultItem.title = idea.title;
+				}
+				if (idea.attr && idea.attr[measurementAttributeName]) {
+					resultItem.measurements = idea.attr[measurementAttributeName];
+				}
+				result.push(resultItem);
 			}
 		});
 		return result;
