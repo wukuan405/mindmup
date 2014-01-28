@@ -1,17 +1,26 @@
 /*global MM, _, observable, jQuery, $, window*/
 
-MM.CalcModel = function (aggregation, projections) {
+MM.Progress = {
+	Projections: {}
+};
+
+MM.CalcModel = function (calc) {
 	'use strict';
 	var self = observable(this),
 		oldAddEventListener = self.addEventListener,
 		activeContent,
 		activeFilter,
 		currentData,
-		activeProjection = _.first(projections),
+		projections,
+		activeProjectionName,
+		aggregation = calc.dataAdapter,
+		projectionByName = function (name) {
+			return _.find(projections, function (projection) { return projection.name === name; });
+		},
 		recalcAndPublish = function () {
-			if (self.listeners('dataUpdated').length > 0) {
+			if (activeProjectionName && self.listeners('dataUpdated').length > 0) {
 				currentData = aggregation(activeContent, activeFilter);
-				self.dispatchEvent('dataUpdated', activeProjection.iterator(currentData), activeFilter);
+				self.dispatchEvent('dataUpdated', projectionByName(activeProjectionName).iterator(currentData), activeFilter);
 			}
 		};
 	self.addEventListener = function (event, listener) {
@@ -20,7 +29,7 @@ MM.CalcModel = function (aggregation, projections) {
 		}
 		oldAddEventListener(event, listener);
 		if (activeContent) {
-			listener.apply(undefined, [activeProjection.iterator(currentData), activeFilter]);
+			listener.apply(undefined, [projectionByName(activeProjectionName).iterator(currentData), activeFilter]);
 		}
 	};
 	self.setFilter = function (newFilter) {
@@ -37,18 +46,26 @@ MM.CalcModel = function (aggregation, projections) {
 		return _.map(projections, function (projection) { return projection.name; });
 	};
 	self.getActiveProjection = function () {
-		return activeProjection.name;
+		return activeProjectionName;
 	};
 	self.dataUpdated = function (content) {
 		activeContent = content;
+		projections = calc.getProjectionsFor(activeContent);
+		if (!activeProjectionName) {
+			// TODO: switch to first one if current is no longer available
+			activeProjectionName = _.first(projections).name;
+		}
+		// if projections are different -> dispatch event to listeners to update UI
 		recalcAndPublish();
 	};
 	self.setActiveProjection = function (name) {
-		if (activeProjection.name === name) {
+		if (activeProjectionName === name) {
 			return;
 		}
-		activeProjection = _.find(projections, function (projection) { return projection.name === name; }) || activeProjection;
-		recalcAndPublish();
+		if (projectionByName(name)) {
+			activeProjectionName = name;
+			recalcAndPublish();
+		}
 	};
 };
 
@@ -106,6 +123,78 @@ $.fn.calcWidget = function (calcModel) {
 		});
 	});
 };
+MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, mapModel) {
+	'use strict';
+	var self = this,
+		getConfig = function (activeContent) {
+			return activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {};
+		};
+	self.getProjectionsFor = function (activeContent) {
+		var projections = [],
+			statusConfig = getConfig(activeContent),
+			buildPercentProjection = function (wrappedProjection) {
+				return function (originalData, activeContent) {
+					var data = wrappedProjection(originalData, activeContent),
+						total = _.reduce(data, function (valueSoFar, item) {return valueSoFar + item[1]; }, 0);
+					if (total === 0) {
+						return [];
+					}
+					return _.map(data, function (item) {
+						var percent = (100 * item[1] / total).toFixed(0) + '%';
+						return [item[0], percent];
+					});
+				};
+			};
+		projections.push({name: 'Counts', iterator: function (data) {
+			var rawCounts = function () {
+					var currentCounts = {};
+					_.each(data, function (element) {
+						currentCounts[element.status] = (currentCounts[element.status] + 1) || 1;
+					});
+					return currentCounts;
+				},
+				flattened = _.map(rawCounts(), function (v, k) {
+					return [k, v];
+				}),
+				sorted = flattened.sort(function (row1, row2) {
+					var config1 = statusConfig[row1[0]] || {},
+						config2 = statusConfig[row2[0]] || {},
+						priority1 = config1.priority || 0,
+						priority2 = config2.priority || 0;
+					if (priority1 === priority2) {
+						return config1.description.localeCompare(config2.description);
+					} else {
+						return priority2 - priority1;
+					}
+				});
+			_.each(sorted, function (row) {
+				row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
+			});
+			return sorted;
+		}});
+		projections.push({name: 'Percentages', iterator: buildPercentProjection(projections[0].iterator)});
+		return projections;
+	};
+
+	self.dataAdapter = function (activeContent, filter) {
+		var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
+			result = [];
+		filter = filter || {};
+		if (filter.selectedSubtree) {
+			activeContent = activeContent.findSubIdeaById(mapModel.getCurrentlySelectedIdeaId()) || activeContent;
+		}
+		activeContent.traverse(function (idea) {
+			var stat = idea.attr && idea.attr[statusAttributeName];
+			if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
+				return;
+			}
+			if (stat && statusConfig[stat] && (!filter.statuses  || _.include(filter.statuses, stat))) {
+				result.push({status: stat, id: idea.id});
+			}
+		});
+		return result;
+	};
+};
 
 MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, configStatusUpdater) {
 	'use strict';
@@ -142,62 +231,6 @@ MM.sortProgressConfig = function (config) {
 		return -1 * status.priority || 0;
 	});
 };
-
-MM.progressPercentProjection = function () {
-	'use strict';
-	return function (data) {
-		var total = _.reduce(data, function (valueSoFar, item) {return valueSoFar + item[1]; }, 0);
-		if (total === 0) {
-			return [];
-		}
-		return _.map(data, function (item) {
-			var percent = (100 * item[1] / total).toFixed(0) + '%';
-			return [item[0], percent];
-		});
-	};
-};
-MM.progressAggregation = function (statusAttributeName, statusConfigAttr, mapModel) {
-	'use strict';
-	return function (activeContent, filter) {
-		var statusConfig = activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {},
-			recalculate = function () {
-				var currentCounts = {};
-				filter = filter || {};
-				if (filter.selectedSubtree) {
-					activeContent = activeContent.findSubIdeaById(mapModel.getCurrentlySelectedIdeaId()) || activeContent;
-				}
-				activeContent.traverse(function (idea) {
-					var stat = idea.attr && idea.attr[statusAttributeName];
-					if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
-						return;
-					}
-					if (stat && statusConfig[stat] && (!filter.statuses  || _.include(filter.statuses, stat))) {
-						currentCounts[stat] = (currentCounts[stat] + 1) || 1;
-					}
-				});
-				return currentCounts;
-			},
-			flattened = _.map(recalculate(), function (v, k) {
-				return [k, v];
-			}),
-			sorted = _.sortBy(flattened, function (row) {
-				var config = statusConfig[row[0]] || {};
-				return config.description || row[0];
-			});
-		sorted = _.sortBy(sorted, function (row) {
-				var config = statusConfig[row[0]] || {};
-				if (config.priority)  {
-					return -1 * config.priority;
-				}
-				return 0;
-			});
-		_.each(sorted, function (row) {
-			row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
-		});
-		return sorted;
-	};
-};
-
 
 
 $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
@@ -567,11 +600,8 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
-		projections = [
-			{name: 'Counts', 'iterator': function (data) { return data; }},
-			{name: 'Percentages', 'iterator': MM.progressPercentProjection() }
-		],
-		calcModel = new MM.CalcModel(MM.progressAggregation(statusAttributeName, statusConfigurationAttributeName, mapModel), projections),
+		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, mapModel),
+		calcModel = new MM.CalcModel(progressCalc),
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),

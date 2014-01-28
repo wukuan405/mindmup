@@ -643,26 +643,32 @@ describe('progressStatusUpdateWidget', function () {
 	});
 });
 
-describe('MM.ProgressAggregation', function () {
+describe('MM.Progress.Calc', function () {
 	'use strict';
-	var underTest,
-		activeContent,
-		numericOrderConfig;
+	var data, config, underTest, mapModel, activeContent;
 	beforeEach(function () {
-		numericOrderConfig = {
-				'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
-				'kalpha3': {description: 'F3', style: {background: 'rgb(255, 0, 0)'}},
-				'kalpha': {description: 'F1', style: {background: 'rgb(255, 0, 0)'}},
-				'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
-				'k666': {description: 'X666', priority: 666, style: {background: 'rgb(255, 0, 0)'}},
-				'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-				'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
-			};
+		data = [
+			{ status: 'k999', title: 'Parent', id: 1 },
+			{ status: 'k888', title: 'first2', id: 2},
+			{ status: 'k777', title: 'first3', id: 3},
+			{ status: 'kalpha2', title: 'first4', id: 4},
+			{ status: 'k777', title: 'first5', id: 5},
+			{ status: 'kalpha', title: 'first6', id: 6},
+		];
+		config = {
+			'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
+			'kalpha3': {description: 'F3', style: {background: 'rgb(255, 0, 0)'}},
+			'kalpha': {description: 'F1', style: {background: 'rgb(255, 0, 0)'}},
+			'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
+			'k666': {description: 'X666', priority: 666, style: {background: 'rgb(255, 0, 0)'}},
+			'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
+			'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+		};
 		activeContent = MAPJS.content({
 			id: 1,
 			attr: {
 				status: 'k888',
-				'test-statuses': numericOrderConfig
+				'test-statuses': config
 			},
 			ideas: {
 				1: {
@@ -697,58 +703,133 @@ describe('MM.ProgressAggregation', function () {
 				}
 			}
 		});
-		underTest = MM.progressAggregation('status', 'test-statuses');
+		mapModel = observable({});
+		underTest = new MM.Progress.Calc('status', 'test-statuses', mapModel);
 	});
-	it('orders statuses by priority descending then alphanumeric when publishing', function () {
-		var result = underTest(activeContent);
-		expect(result).toEqual([
-			['Y999', 1],
-			['Z888', 1],
-			['X777', 2],
-			['F1', 1],
-			['F2', 1]
-		]);
-	});
-	it('should filter by status names', function () {
-		var result = underTest(activeContent, {statuses: ['k777',  'kalpha2']});
-		expect(result).toEqual([
-			['X777', 2],
-			['F2', 1]
-		]);
-
-	});
-	describe('filtering hierarchy', function () {
+	describe('projections', function () {
+		var projections;
 		beforeEach(function () {
-			activeContent = MAPJS.content({
-				id: 1,
-				attr: { status: 'k888', 'test-statuses': numericOrderConfig },
-				ideas: {
-					2: {id: 2},
-					3: {id: 3}
-				}
+			projections = underTest.getProjectionsFor(activeContent);
+			projections.counts = projections[0].iterator;
+			projections.percent = projections[1].iterator;
+		});
+
+		describe('counts', function () {
+			it('aggregates by status, replacing the status with description, and orders statuses by priority descending then alphanumeric when publishing', function () {
+				var result = projections.counts(data);
+				expect(result).toEqual([
+					['Y999', 1],
+					['Z888', 1],
+					['X777', 2],
+					['F1', 1],
+					['F2', 1]
+				]);
 			});
 		});
-		_.each({
-			'ignores parents of same status without filter': [{}, 1],
-			'includes parents of same status with filter': [{includeParents: true}, 2]
-		}, function (testSetup, testCase) {
-			describe(testCase, function () {
-				it('when a child has no status', function () {
-					expect(underTest(activeContent, testSetup[0])).toEqual([['Z888', 1]]);
+		describe('percent', function () {
+			it('converts a single data item to be 100%', function  () {
+				expect(projections.percent([
+						{status: 'k777'}
+					])).toEqual([['X777', '100%']]);
+			});
+			it('converts multiple values to be percentages, rounding to 2 decimals', function () {
+				var result = projections.percent(data);
+				expect(result).toEqual([
+					['Y999', '17%'],
+					['Z888', '17%'],
+					['X777', '33%'],
+					['F1', '17%'],
+					['F2', '17%']
+				]);
+			});
+			it('handles no data', function () {
+				expect(projections.percent([])).toEqual([]);
+			});
+		});
+	});
+	describe('dataAdapter', function () {
+		it('denormalises map structure into a flat list of values, removing non-status or unrecognised status items', function () {
+			var result = underTest.dataAdapter(activeContent);
+			expect(result).toEqual([
+				{ status: 'k888', id: 1},
+				{ status: 'k999', id: 11},
+				{ status: 'kalpha2', id: 111},
+				{ status: 'kalpha', id: 112},
+				{ status: 'k777', id: 113},
+				{ status: 'k777', id: 114}
+			]);
+		});
+
+		it('should apply filter by status names', function () {
+			var result = underTest.dataAdapter(activeContent, {statuses: ['k777',  'kalpha2']});
+			expect(result).toEqual([
+				{ status: 'kalpha2', id: 111},
+				{ status: 'k777', id: 113},
+				{ status: 'k777', id: 114}
+			]);
+
+		});
+		describe('filtering by selected node', function () {
+			beforeEach(function () {
+				mapModel.getCurrentlySelectedIdeaId = jasmine.createSpy().andReturn(11);
+			});
+			it('includes only the selected subtree when selectedSubtree is set', function () {
+				expect(underTest.dataAdapter(activeContent, {selectedSubtree: true})).toEqual([
+					{ status: 'k999', id: 11},
+					{ status: 'kalpha2', id: 111},
+					{ status: 'kalpha', id: 112},
+					{ status: 'k777', id: 113},
+					{ status: 'k777', id: 114}
+				]);
+			});
+			it('includes the entire tree when selectedSubtree is not set', function () {
+				expect(underTest.dataAdapter(activeContent, {})).toEqual([
+					{ status: 'k888', id: 1},
+					{ status: 'k999', id: 11},
+					{ status: 'kalpha2', id: 111},
+					{ status: 'kalpha', id: 112},
+					{ status: 'k777', id: 113},
+					{ status: 'k777', id: 114}
+				]);
+			});
+		});
+		describe('filtering hierarchy', function () {
+			beforeEach(function () {
+				activeContent = MAPJS.content({
+					id: 1,
+					attr: { status: 'k888', 'test-statuses': config },
+					ideas: {
+						2: {id: 2},
+						3: {id: 3}
+					}
 				});
-				it('when a child has the same status', function () {
+			});
+			describe('when a child has no status', function () {
+				it('includes parents even when includeParents filter is not set', function () {
+					expect(underTest.dataAdapter(activeContent, {})).toEqual([{status: 'k888', id: 1}]);
+				});
+			});
+			describe('when a child has same status as parent', function () {
+				beforeEach(function () {
 					activeContent.updateAttr(2, 'status', 'k888');
-					expect(underTest(activeContent, testSetup[0])).toEqual([['Z888', testSetup[1]]]);
 				});
-				it('when a child has a different status', function () {
+				it('ignores parents when includeParents filter is not set', function () {
+					expect(underTest.dataAdapter(activeContent, {})).toEqual([{status: 'k888', id: 2}]);
+				});
+				it('includes parents when includeParents filter is set', function () {
+					expect(underTest.dataAdapter(activeContent, {includeParents: true})).toEqual([{status: 'k888', id: 1}, {status: 'k888', id: 2}]);
+				});
+			});
+			describe('when a child has a different status', function () {
+				it('includes parents even when includeParents filter is not set', function () {
 					activeContent.updateAttr(2, 'status', 'k999');
-					expect(underTest(activeContent, testSetup[0])).toEqual([['Y999', 1], ['Z888', 1]]);
+					expect(underTest.dataAdapter(activeContent, {})).toEqual([{status: 'k888', id: 1}, {status: 'k999', id: 2}]);
+
 				});
 			});
 		});
 	});
 });
-
 describe('progressFilterWidget', function () {
 	'use strict';
 	var template =	'<div id="progressFilterWidget">' +
@@ -939,36 +1020,6 @@ describe('MM.sortProgressConfig', function () {
 	});
 });
 
-describe('MM.progressPercentProjection', function () {
-	'use strict';
-	var underTest;
-	beforeEach(function () {
-		underTest = MM.progressPercentProjection();
-	});
-	it('converts a single data item to be 100%', function  () {
-		expect(underTest([['foo', 1]])).toEqual([['foo', '100%']]);
-	});
-	it('converts multiple values to be percentages, rounding to 2 decimals', function () {
-		expect(underTest([
-				['foo', 1],
-				['bar', 1],
-				['goo', 1]
-			])).toEqual([
-				['foo', '33%'],
-				['bar', '33%'],
-				['goo', '33%']
-			]);
-	});
-	it('handles no data', function () {
-		expect(underTest([])).toEqual([]);
-	});
-	it('should not return data for zero total counts', function () {
-		expect(underTest([
-			['foo', 0],
-			['bar', 0]
-		])).toEqual([]);
-	});
-});
 
 describe('MM.progressCalcChangeMediator', function () {
 	'use strict';
@@ -1022,20 +1073,28 @@ describe('MM.progressCalcChangeMediator', function () {
 });
 describe('MM.CalcModel', function () {
 	'use strict';
-	var underTest, aggregator, activeContent, aggregation, filter, projections;
+	var underTest, activeContent, aggregation, filter, projections, calc;
 	beforeEach(function () {
 		filter = {some: {complex: ['object']}};
 		activeContent = MAPJS.content({id: 1});
 		aggregation = [['foo', 1]];
-		aggregator = jasmine.createSpy('calculate').andReturn(aggregation);
 		projections = [
 			{name: 'Counts', 'iterator': jasmine.createSpy('counts').andReturn(aggregation)},
 			{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
 		];
-		underTest = new MM.CalcModel(aggregator, projections);
+		calc = {
+			dataAdapter: jasmine.createSpy('calculate').andReturn(aggregation),
+			getProjectionsFor: function () {
+				return projections;
+			}
+		};
+		underTest = new MM.CalcModel(calc);
 		underTest.setFilter(filter);
 	});
 	describe('projections', function () {
+		beforeEach(function () {
+			underTest.dataUpdated(activeContent);
+		});
 		it('should return a list of projections', function () {
 			expect(underTest.getProjections()).toEqual(['Counts', 'Percentages']);
 		});
@@ -1096,12 +1155,12 @@ describe('MM.CalcModel', function () {
 		describe('when has no listeners', function () {
 			it('does not recalculate when dataUpdated', function () {
 				underTest.dataUpdated(activeContent);
-				expect(aggregator).not.toHaveBeenCalled();
+				expect(calc.dataAdapter).not.toHaveBeenCalled();
 			});
 			it('does not not recalculate when the filter is changed, but does store the filter', function () {
 				var newFilter = 'newFilter';
 				underTest.setFilter(newFilter);
-				expect(aggregator).not.toHaveBeenCalled();
+				expect(calc.dataAdapter).not.toHaveBeenCalled();
 				expect(underTest.getFilter()).toBe(newFilter);
 			});
 		});
@@ -1151,7 +1210,7 @@ describe('MM.CalcModel', function () {
 				listenerOne = jasmine.createSpy('one');
 				underTest.addEventListener('dataUpdated', listenerOne);
 
-				expect(aggregator).toHaveBeenCalledWith(activeContent, newFilter);
+				expect(calc.dataAdapter).toHaveBeenCalledWith(activeContent, newFilter);
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, newFilter);
 			});
 		});
@@ -1162,21 +1221,21 @@ describe('MM.CalcModel', function () {
 				underTest.dataUpdated(activeContent);
 				underTest.addEventListener('dataUpdated', listenerOne);
 				listenerOne.reset();
-				aggregator.reset();
+				calc.dataAdapter.reset();
 			});
 			it('published the dataUpdatedEvent if the filter is changed', function () {
 				underTest.setFilter('newFilter');
-				expect(aggregator).toHaveBeenCalledWith(activeContent, 'newFilter');
+				expect(calc.dataAdapter).toHaveBeenCalledWith(activeContent, 'newFilter');
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, 'newFilter');
 			});
 			it('does not publish a dataUpdatedEvent if the filter is set to the previous filter', function () {
 				underTest.setFilter({some: {complex: ['object']}});
-				expect(aggregator).not.toHaveBeenCalled();
+				expect(calc.dataAdapter).not.toHaveBeenCalled();
 				expect(listenerOne).not.toHaveBeenCalled();
 			});
 			it('publishes a dataUpdated event if the dataUpdated', function () {
 				underTest.dataUpdated(activeContent);
-				expect(aggregator).toHaveBeenCalledWith(activeContent, filter);
+				expect(calc.dataAdapter).toHaveBeenCalledWith(activeContent, filter);
 				expect(listenerOne).toHaveBeenCalledWith(aggregation, filter);
 			});
 		});
