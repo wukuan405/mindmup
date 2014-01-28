@@ -1105,6 +1105,24 @@ describe('MM.CalcModel', function () {
 
 			expect(listener).toHaveBeenCalledWith(['Count1']);
 		});
+		it('should change the active projection to the first name in the list if the current active projection is not valid', function () {
+			calc.getProjectionsFor.andReturn([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)},
+				{name: 'Percentages1', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+			]);
+			underTest.dataUpdated(activeContent);
+			expect(underTest.getActiveProjection()).toEqual('Count1');
+		});
+		it('should retain the current active projection if it is in the list', function () {
+			underTest.setActiveProjection('Percentages');
+			calc.getProjectionsFor.andReturn([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)},
+				{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+			]);
+			underTest.dataUpdated(activeContent);
+			expect(underTest.getActiveProjection()).toEqual('Percentages');
+
+		});
 		it('should not publish list of projections if they have not changed', function () {
 			listener.reset();
 			underTest.dataUpdated(activeContent);

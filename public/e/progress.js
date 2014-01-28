@@ -52,11 +52,9 @@ MM.CalcModel = function (calc) {
 			projectionNames = newProjectionNames;
 			self.dispatchEvent('projectionsChanged', projectionNames);
 		}
-		if (!activeProjectionName) {
-			// TODO: switch to first one if current is no longer available
+		if (!_.include(projectionNames, activeProjectionName)) {
 			activeProjectionName = _.first(projectionNames);
 		}
-		// if projections are different -> dispatch event to listeners to update UI
 		recalcAndPublish();
 	};
 	self.setActiveProjection = function (name) {
