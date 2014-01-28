@@ -11,11 +11,11 @@ MM.CalcModel = function (calc) {
 		activeContent,
 		activeFilter,
 		currentData,
-		projections,
+		projectionNames,
 		activeProjectionName,
 		aggregation = calc.dataAdapter,
 		projectionByName = function (name) {
-			return _.find(projections, function (projection) { return projection.name === name; });
+			return _.find(calc.getProjectionsFor(activeContent), function (projection) { return projection.name === name; });
 		},
 		recalcAndPublish = function () {
 			if (activeProjectionName && self.listeners('dataUpdated').length > 0) {
@@ -24,11 +24,11 @@ MM.CalcModel = function (calc) {
 			}
 		};
 	self.addEventListener = function (event, listener) {
-		if (activeContent && self.listeners('dataUpdated').length === 0) {
+		if (activeContent && event === 'dataUpdated' && self.listeners('dataUpdated').length === 0) {
 			currentData = aggregation(activeContent, activeFilter);
 		}
 		oldAddEventListener(event, listener);
-		if (activeContent) {
+		if (activeContent && event === 'dataUpdated') {
 			listener.apply(undefined, [projectionByName(activeProjectionName).iterator(currentData), activeFilter]);
 		}
 	};
@@ -42,18 +42,19 @@ MM.CalcModel = function (calc) {
 	self.getFilter = function () {
 		return activeFilter;
 	};
-	self.getProjections = function () {
-		return _.map(projections, function (projection) { return projection.name; });
-	};
 	self.getActiveProjection = function () {
 		return activeProjectionName;
 	};
 	self.dataUpdated = function (content) {
 		activeContent = content;
-		projections = calc.getProjectionsFor(activeContent);
+		var newProjectionNames =  _.map(calc.getProjectionsFor(activeContent), function (projection) { return projection.name; });
+		if (!_.isEqual(newProjectionNames, projectionNames)) {
+			projectionNames = newProjectionNames;
+			self.dispatchEvent('projectionsChanged', projectionNames);
+		}
 		if (!activeProjectionName) {
 			// TODO: switch to first one if current is no longer available
-			activeProjectionName = _.first(projections).name;
+			activeProjectionName = _.first(projectionNames);
 		}
 		// if projections are different -> dispatch event to listeners to update UI
 		recalcAndPublish();
@@ -75,6 +76,7 @@ $.fn.calcWidget = function (calcModel) {
 		var self = jQuery(this),
 		    table = self.find('[data-mm-role=calc-table]'),
 		    msgDiv = self.find('[data-mm-role=empty]'),
+		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
 			repopulateTable = function (data) {
 				showActiveProjection();
 				table.empty();
@@ -104,10 +106,10 @@ $.fn.calcWidget = function (calcModel) {
 					self.hide();
 				}
 			},
-			setProjections = function () {
-				var projectionsContainer = self.find('[data-mm-role=projections]'),
-					template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection');
-				_.each(calcModel.getProjections(), function (projection) {
+			setProjections = function (projections) {
+				var projectionsContainer = self.find('[data-mm-role=projections]');
+				projectionsContainer.find('li').remove(0);
+				_.each(projections, function (projection) {
 					var item = template.clone().appendTo(projectionsContainer);
 					item.find('[data-mm-role=projection-name]').text(projection).click(function () {calcModel.setActiveProjection(projection); });
 				});
@@ -117,7 +119,8 @@ $.fn.calcWidget = function (calcModel) {
 			};
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
 		setWidgetVisible(false);
-		setProjections();
+		//setProjections();
+		calcModel.addEventListener('projectionsChanged', setProjections);
 		toggleButtons.click(function () {
 			setWidgetVisible(!self.is(':visible'));
 		});

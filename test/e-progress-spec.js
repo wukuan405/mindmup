@@ -1084,19 +1084,31 @@ describe('MM.CalcModel', function () {
 		];
 		calc = {
 			dataAdapter: jasmine.createSpy('calculate').andReturn(aggregation),
-			getProjectionsFor: function () {
-				return projections;
-			}
+			getProjectionsFor: jasmine.createSpy('getProjectionsFor').andReturn(projections)
 		};
 		underTest = new MM.CalcModel(calc);
 		underTest.setFilter(filter);
 	});
 	describe('projections', function () {
+		var listener;
 		beforeEach(function () {
+			listener = jasmine.createSpy('listener');
 			underTest.dataUpdated(activeContent);
+			underTest.addEventListener('projectionsChanged', listener);
 		});
-		it('should return a list of projections', function () {
-			expect(underTest.getProjections()).toEqual(['Counts', 'Percentages']);
+		it('should publish a list of projections when they have changed', function () {
+			calc.getProjectionsFor.andReturn([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)}
+			]);
+			listener.reset();
+			underTest.dataUpdated(activeContent);
+
+			expect(listener).toHaveBeenCalledWith(['Count1']);
+		});
+		it('should not publish list of projections if they have not changed', function () {
+			listener.reset();
+			underTest.dataUpdated(activeContent);
+			expect(listener).not.toHaveBeenCalled();
 		});
 		it('should default to first projection', function () {
 			expect(underTest.getActiveProjection()).toEqual('Counts');
@@ -1259,6 +1271,7 @@ describe('Calc widget', function () {
 		calcModel,
 		tableDOM,
 		msgDiv,
+		projections,
 		simpleTable = [
 			['first', 2],
 			['second', 4]
@@ -1273,9 +1286,10 @@ describe('Calc widget', function () {
 			});
 		};
 	beforeEach(function () {
+		projections = ['projection1', 'projection2'];
 		activityLog = { log: jasmine.createSpy('log') };
 		calcModel = observable({
-			getProjections: jasmine.createSpy('getProjections').andReturn(['projection1', 'projection2']),
+			getProjections: jasmine.createSpy('getProjections').andReturn(projections),
 			getActiveProjection: jasmine.createSpy('getActiveProjection'),
 			setActiveProjection: jasmine.createSpy('setActiveProjection')
 		});
@@ -1302,7 +1316,10 @@ describe('Calc widget', function () {
 		});
 	});
 	describe('projections', function () {
-		describe('when loaded', function () {
+		describe('when projections are changed', function () {
+			beforeEach(function () {
+				calcModel.dispatchEvent('projectionsChanged', projections);
+			});
 			it('shows a list of projections, supplied by the model', function () {
 				var rows = underTest.find('[data-mm-role=projections] li');
 				expect(rows.length).toBe(2);
@@ -1313,6 +1330,13 @@ describe('Calc widget', function () {
 				var rows = underTest.find('[data-mm-role=projections] li a');
 				rows.eq(1).click();
 				expect(calcModel.setActiveProjection).toHaveBeenCalledWith('projection2');
+			});
+			it('should remove previously set projections',  function () {
+				calcModel.dispatchEvent('projectionsChanged', ['projection3', 'projection4']);
+				var rows = underTest.find('[data-mm-role=projections] li');
+				expect(rows.length).toBe(2);
+				expect(rows.first().find('[data-mm-role=projection-name]').text()).toEqual('projection3');
+				expect(rows.eq(1).find('[data-mm-role=projection-name]').text()).toEqual('projection4');
 			});
 		});
 		it('changes the label to the active projection when a dataUpdated event is recieved', function () {
