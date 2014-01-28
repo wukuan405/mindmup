@@ -317,24 +317,6 @@ describe('MM.ContentStatusUpdater', function () {
 			expect(content.getAttrById(113, 'style').background).toBeTruthy();
 
 		});
-		it('clears the status for a single node if given a node id', function () {
-		});
-		/*
-		it('deletes all status attributes and drops styling for any elements with status', function () {
-			underTest.clear();
-			expect(content.getAttr('status')).toBeFalsy();
-			expect(content.getAttr('style')).toBeFalsy();
-			expect(content.findSubIdeaById(11).getAttr('status')).toBeFalsy();
-			expect(content.findSubIdeaById(11).getAttr('style')).toBeFalsy();
-			expect(content.findSubIdeaById(11).getAttr('icon')).toBeFalsy();
-		});
-		it('does not drop styling of non-status elements', function () {
-			underTest.clear();
-			expect(content.findSubIdeaById(111).getAttr('style')).toEqual({background: 'yellow'});
-			expect(content.findSubIdeaById(112).getAttr('icon')).toEqual({url: 'http://old'});
-		});
-		*/
-		//TODO: improve by removing only backgrounds and icons that are actually included in the status (eg don't clear color if status did not define color
 	});
 	describe('setStatusConfig', function () {
 		var content, underTest,
@@ -712,16 +694,17 @@ describe('progressStatusUpdateWidget', function () {
 
 describe('MM.Progress.Calc', function () {
 	'use strict';
-	var data, config, underTest, mapModel, activeContent;
+	var data, config, underTest, mapModel, activeContent, measurementConfig;
 	beforeEach(function () {
 		data = [
 			{ status: 'k999', title: 'Parent', id: 1 },
-			{ status: 'k888', title: 'first2', id: 2},
+			{ status: 'k888', title: 'first2', id: 2, measurements: {'one': 20}},
 			{ status: 'k777', title: 'first3', id: 3},
-			{ status: 'kalpha2', title: 'first4', id: 4},
-			{ status: 'k777', title: 'first5', id: 5},
+			{ status: 'kalpha2', title: 'first4', id: 4, measurements: {'one': 50, 'two': 100}},
+			{ status: 'k777', title: 'first5', id: 5, measurements: {'two': 300}},
 			{ status: 'kalpha', title: 'first6', id: 6},
 		];
+		measurementConfig = ['one', 'two'];
 		config = {
 			'kalpha2': {description: 'F2', style: {background: 'rgb(255, 0, 0)'}},
 			'kalpha3': {description: 'F3', style: {background: 'rgb(255, 0, 0)'}},
@@ -733,29 +716,46 @@ describe('MM.Progress.Calc', function () {
 		};
 		activeContent = MAPJS.content({
 			id: 1,
+			title: 'one',
 			attr: {
 				status: 'k888',
-				'test-statuses': config
+				'test-statuses': config,
+				'test-measurement-config': measurementConfig
 			},
 			ideas: {
 				1: {
 					id: 11,
+					title: 'eleven',
 					attr: { status: 'k999' },
 					ideas: {
 						1: {
 							id: 111,
-							attr: {status: 'kalpha2'}
+							title: 'one hundred and eleven',
+							attr: {
+								status: 'kalpha2',
+								'test-measurement': {
+									one: 100
+								}
+							}
 						},
 						2: {
 							id: 112,
-							attr: {status: 'kalpha'}
+							title: 'one hundred and twelve',
+							attr: {
+								status: 'kalpha',
+								'test-measurement': {
+									two: 200
+								}
+							}
 						},
 						3: {
 							id: 113,
+							title: 'one hundred and thirteen',
 							attr: { status: 'k777'},
 						},
 						4: {
 							id: 114,
+							title: 'one hundred and fourteen',
 							attr: { status: 'k777'},
 						},
 						5: {
@@ -771,7 +771,7 @@ describe('MM.Progress.Calc', function () {
 			}
 		});
 		mapModel = observable({});
-		underTest = new MM.Progress.Calc('status', 'test-statuses', mapModel);
+		underTest = new MM.Progress.Calc('status', 'test-statuses', 'test-measurement', 'test-measurement-config', mapModel);
 	});
 	describe('projections', function () {
 		var projections;
@@ -780,7 +780,33 @@ describe('MM.Progress.Calc', function () {
 			projections.counts = projections[0].iterator;
 			projections.percent = projections[1].iterator;
 		});
-
+		it('includes projections for measurements in supplied order', function () {
+			projections.length = 4;
+			var names = _.map(projections, function (projection) { return projection.name; });
+			expect(names).toEqual(['Counts', 'Percentages', 'one', 'two']);
+		});
+		describe('measurement projections', function () {
+			beforeEach(function () {
+				projections.one = projections[2].iterator;
+			});
+			it('should return projection value as  argument', function () {
+				var result = projections.one(data),
+					expected = [
+					[ 'Parent', 0 ],
+					[ 'first2', 20 ],
+					[ 'first3', 0 ],
+					[ 'first4', 50 ],
+					[ 'first5', 0 ],
+					[ 'first6', 0 ]
+				];
+				expect(result.length).toEqual(expected.length);
+				_.each(result, function (item, idx) {
+					expect(item.editable).toBeTruthy();
+					expect(item.setValue).not.toBeUndefined();
+					expect(item.slice(0)).toEqual(expected[idx]);
+				});
+			});
+		});
 		describe('counts', function () {
 			it('aggregates by status, replacing the status with description, and orders statuses by priority descending then alphanumeric when publishing', function () {
 				var result = projections.counts(data);

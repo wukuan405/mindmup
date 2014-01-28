@@ -124,12 +124,16 @@ $.fn.calcWidget = function (calcModel) {
 		});
 	});
 };
-MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, mapModel) {
+MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementAttributeName, measurementConfigurationAttributeName, mapModel) {
 	'use strict';
 	var self = this,
 		getConfig = function (activeContent) {
 			return activeContent && activeContent.attr && activeContent.attr[statusConfigAttr] || {};
+		},
+		getMeasurementConfig = function (activeContent) {
+			return activeContent && activeContent.attr && activeContent.attr[measurementConfigurationAttributeName] || [];
 		};
+
 	self.getProjectionsFor = function (activeContent) {
 		var projections = [],
 			statusConfig = getConfig(activeContent),
@@ -174,6 +178,23 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, mapModel) {
 			return sorted;
 		}});
 		projections.push({name: 'Percentages', iterator: buildPercentProjection(projections[0].iterator)});
+		_.each(getMeasurementConfig(activeContent), function (measurement) {
+			projections.push({
+				name: measurement,
+				iterator: function (data) {
+					var processed = _.map(_.sortBy(data, 'title'), function (item) {
+						var val = item.measurements && item.measurements[measurement] || 0,
+							row = [item.title, val];
+						row.editable = true;
+						row.setValue = function (newValue) {
+							activeContent.updateAttr(item.id, measurementAttributeName, {measurement: newValue});
+						};
+						return row;
+					});
+					return processed;
+				}
+			});
+		});
 		return projections;
 	};
 
@@ -625,7 +646,7 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
-		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, mapModel),
+		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapModel),
 		calcModel = new MM.CalcModel(progressCalc),
 		loadUI = function (html) {
 			var parsed = $(html),
