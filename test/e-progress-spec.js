@@ -818,14 +818,15 @@ describe('MM.Progress.Calc', function () {
 					['Z888', 20],
 					['F2', 50]
 				];
-				expect(projectionTotalOne).toEqual(expected);
+				expect(projectionTotalOne.slice(0)).toEqual(expected);
+				expect(projectionOne.total()).toEqual(70);
 			});
 			it('should return totalized projection of measurement where more than one item sums to 0', function () {
 				var expected = [
 					['X777', 0],
 					['F2', 100]
 				];
-				expect(projectionTotalTwo).toEqual(expected);
+				expect(projectionTotalTwo.slice(0)).toEqual(expected);
 			});
 			it('should invoke mergeAttrProperty on activeContent when value is changed', function () {
 				projectionOne[2].setValue(77);
@@ -858,13 +859,14 @@ describe('MM.Progress.Calc', function () {
 		describe('counts', function () {
 			it('aggregates by status, replacing the status with description, and orders statuses by priority descending then alphanumeric when publishing', function () {
 				var result = projections.counts(data);
-				expect(result).toEqual([
+				expect(result.slice(0)).toEqual([
 					['Y999', 1],
 					['Z888', 1],
 					['X777', 2],
 					['F1', 1],
 					['F2', 1]
 				]);
+				expect(result.total()).toEqual(6);
 			});
 		});
 		describe('percent', function () {
@@ -882,6 +884,7 @@ describe('MM.Progress.Calc', function () {
 					['F1', '17%'],
 					['F2', '17%']
 				]);
+				expect(result.total).toBeFalsy();
 			});
 			it('handles no data', function () {
 				expect(projections.percent([])).toEqual([]);
@@ -1448,12 +1451,14 @@ describe('Calc widget', function () {
 					'	</tr>' +
 					'</table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
+					'<div data-mm-role="total"><span data-mm-role="total-value">FLA!</span></div>' +
 					'</div>',
 		openButtonTemplate = '<button data-mm-role="toggle-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
 		toggleButton,
 		calcModel,
 		tableDOM,
+		totalElement,
 		msgDiv,
 		projections,
 		simpleTable,
@@ -1476,6 +1481,7 @@ describe('Calc widget', function () {
 		toggleButton = jQuery(openButtonTemplate).appendTo('body');
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel);
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
+		totalElement = underTest.find('[data-mm-role=total]');
 		msgDiv = underTest.find('[data-mm-role=empty]');
 		simpleTable = [
 			['first', 2],
@@ -1523,6 +1529,43 @@ describe('Calc widget', function () {
 			tableDOM.find('tr:eq(1) td:eq(1) input').change();
 
 			expect(tableDOM.find('tr:eq(1) td:eq(1) input').val()).toEqual('4');
+		});
+	});
+	describe('totals', function () {
+		beforeEach(function () {
+			toggleButton.click();
+		});
+		describe('hiding the total element', function () {
+			beforeEach(function () {
+				totalElement.show();
+			});
+			it('should hide the total element if there is not a total', function () {
+				calcModel.dispatchEvent('dataUpdated', simpleTable);
+				expect(totalElement.css('display')).toBe('none');
+			});
+			it('should hide the total element if the data is empty', function () {
+				calcModel.dispatchEvent('dataUpdated', []);
+				expect(totalElement.css('display')).toBe('none');
+			});
+			it('should hide the total element if the data is undefined', function () {
+				calcModel.dispatchEvent('dataUpdated');
+				expect(totalElement.css('display')).toBe('none');
+			});
+		});
+		describe('when there is a total', function () {
+			var spy;
+			beforeEach(function () {
+				spy = jasmine.createSpy('editor').andReturn(42);
+				simpleTable.total = spy;
+				calcModel.dispatchEvent('dataUpdated', simpleTable);
+			});
+			it('should show the total element ', function () {
+				expect(totalElement.css('display')).not.toBe('none');
+			});
+			it('should set the value of the total element ', function () {
+				expect(totalElement.find('[data-mm-role=total-value]').text()).toBe('42');
+			});
+
 		});
 	});
 	describe('projections', function () {

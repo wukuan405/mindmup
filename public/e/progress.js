@@ -80,6 +80,8 @@ $.fn.calcWidget = function (calcModel) {
 		var self = jQuery(this),
 		    table = self.find('[data-mm-role=calc-table]'),
 		    msgDiv = self.find('[data-mm-role=empty]'),
+		    totalElement = self.find('[data-mm-role=total]'),
+		    totalValueElement = totalElement.find('[data-mm-role=total-value]'),
 		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
 		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
 			readOnlyCellTemplate = calcRowTemplate.find('[data-mm-role=readonly]').detach(),
@@ -89,10 +91,17 @@ $.fn.calcWidget = function (calcModel) {
 				table.empty();
 				if (_.isEmpty(data)) {
 					table.hide();
+					totalElement.hide();
 					msgDiv.show();
 				} else {
 					table.show();
 					msgDiv.hide();
+					if (data.total) {
+						totalValueElement.text(data.total().toLocaleString());
+						totalElement.show();
+					} else {
+						totalElement.hide();
+					}
 					_.each(data, function (row) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
@@ -106,7 +115,7 @@ $.fn.calcWidget = function (calcModel) {
 								cellDOM = editableCellTemplate.clone().appendTo(rowDOM);
 								cellDOM.find('[data-mm-role=value]').val(cell).change(tryToSet);
 							} else {
-								cellDOM = readOnlyCellTemplate.clone().appendTo(rowDOM);
+								cellDOM = readOnlyCellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
 								cellDOM.find('[data-mm-role=value]').text(cell);
 							}
 
@@ -158,6 +167,9 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 	self.getProjectionsFor = function (activeContent) {
 		var projections = [],
 			statusConfig = getConfig(activeContent),
+			dataTotaliser = function () {
+				return _.reduce(this, function (val, row) {return val + row[1]; }, 0);
+			},
 			buildPercentProjection = function (name, wrappedProjection) {
 				return {name: name, iterator: function (originalData, activeContent) {
 					var data = wrappedProjection(originalData, activeContent),
@@ -177,10 +189,10 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 					iterator: function (data) {
 						var processed = _.map(_.sortBy(data, 'title'), function (item) {
 							var val = item.measurements && item.measurements[measurement] || 0,
-								row = [item.title, parseFloat(val)],
-								isNumber = function (n) {
-									return !isNaN(parseFloat(n)) && isFinite(n);
-								};
+							row = [item.title, parseFloat(val)],
+							isNumber = function (n) {
+								return !isNaN(parseFloat(n)) && isFinite(n);
+							};
 							row.setValue = function (newValue) {
 								if (!newValue && newValue !== 0) {
 									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
@@ -192,8 +204,10 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 							};
 							return row;
 						});
+
+						processed.total = dataTotaliser;
 						return processed;
-					}
+					},
 				};
 			},
 			buildSumByStatusProjection = function  (name, itemValue) {
@@ -230,6 +244,7 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 					_.each(sorted, function (row) {
 						row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
 					});
+					sorted.total = dataTotaliser;
 					return sorted;
 				}};
 			};

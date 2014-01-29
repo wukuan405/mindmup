@@ -77,7 +77,7 @@
     <div class='modal-body' >
     <div class="input-prepend">
       <span class="add-on">Measurements</span>
-      <input data-mm-role="measurements" type="text">
+      <input data-mm-role="measurements" type="text" placeholder="A comma separated list">
     </div>
     <table class="table table-striped table-condensed" >
       <thead>
@@ -158,6 +158,14 @@
       </tr>
     </table>
     </div>
-    <div data-mm-role="empty">There is no data for the current map or the active filter. Use the progress menu or toolbar to set node statuses to see the data here, or change the active filter by clicking on the <i class="icon-filter"></i> filter button.</div>
+    <div data-mm-role="total">
+      <span class="calc-total-description">Total</span><span data-mm-role="total-value" ></span>
+    </div>
+
+<!--     <div class="input-prepend" data-mm-role="total">
+      <span class="add-on">Total</span>
+      <input data-mm-role="total-value" type="text"  readonly />
+    </div>
+ -->    <div data-mm-role="empty">There is no data for the current map or the active filter. Use the progress menu or toolbar to set node statuses to see the data here, or change the active filter by clicking on the <i class="icon-filter"></i> filter button.</div>
   </div>
 </div>
