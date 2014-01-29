@@ -63,3 +63,7 @@
 .filter-box input {
   margin: 0px !important;
 }
+#progress-calc-widget input.measure-edit {
+  width: 100%;
+  text-align: right;
+}

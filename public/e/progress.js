@@ -75,6 +75,9 @@ $.fn.calcWidget = function (calcModel) {
 		    table = self.find('[data-mm-role=calc-table]'),
 		    msgDiv = self.find('[data-mm-role=empty]'),
 		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
+		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
+			readOnlyCellTemplate = calcRowTemplate.find('[data-mm-role=readonly]').detach(),
+			editableCellTemplate = calcRowTemplate.find('[data-mm-role=editable]').detach(),
 			repopulateTable = function (data) {
 				showActiveProjection();
 				table.empty();
@@ -85,10 +88,22 @@ $.fn.calcWidget = function (calcModel) {
 					table.show();
 					msgDiv.hide();
 					_.each(data, function (row) {
-						var rowDOM = jQuery('<tr>').appendTo(table);
-						_.each(row, function (cell) {
-							var cellDOM = jQuery('<td>').appendTo(rowDOM);
-							cellDOM.text(cell);
+						var rowDOM = calcRowTemplate.clone().appendTo(table);
+						_.each(row, function (cell, index) {
+							var cellDOM,
+								tryToSet = function () {
+									if (!row.setValue(this.value)) {
+										this.value = cell;
+									}
+								};
+							if (row.setValue && index === 1) {
+								cellDOM = editableCellTemplate.clone().appendTo(rowDOM);
+								cellDOM.find('[data-mm-role=value]').val(cell).change(tryToSet);
+							} else {
+								cellDOM = readOnlyCellTemplate.clone().appendTo(rowDOM);
+								cellDOM.find('[data-mm-role=value]').text(cell);
+							}
+
 						});
 					});
 				}
@@ -184,10 +199,18 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 				iterator: function (data) {
 					var processed = _.map(_.sortBy(data, 'title'), function (item) {
 						var val = item.measurements && item.measurements[measurement] || 0,
-							row = [item.title, val];
-						row.editable = true;
+							row = [item.title, val],
+							isNumber = function (n) {
+								return !isNaN(parseFloat(n)) && isFinite(n);
+							};
 						row.setValue = function (newValue) {
-							activeContent.updateAttr(item.id, measurementAttributeName, {measurement: newValue});
+							if (!isNumber(newValue)) {
+								return false;
+							}
+							var attrValue;
+							attrValue = _.clone(activeContent.getAttrById(item.id, measurementAttributeName) || {});
+							attrValue[measurement] = newValue;
+							return activeContent.updateAttr(item.id, measurementAttributeName, attrValue);
 						};
 						return row;
 					});

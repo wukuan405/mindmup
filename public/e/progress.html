@@ -106,14 +106,12 @@
     </div>
   </div>
   <!-- style="position:absolute; top:50px; left:10px; border:1px solid black; padding:20px; z-index:999; border-radius:10px;" -->
-    <div id="progress-calc-widget"  class="well span3 progress-floating progress-calc" >
+    <div id="progress-calc-widget"  class="well span4 progress-floating progress-calc" >
     <div class="progress-toolbar-header">
 		<button class="close pull-right" data-mm-role="toggle-widget" data-mm-calc-id="progress-calc-widget" data-title="Hide"
       data-placement="left" rel="tooltip" data-original-title="" title=""><i class="toggle icon-resize-small"></i></button>
     <h3 class="icon-table">&nbsp;Progress Stats</h3>
     </div>
-
-
     <div data-mm-role="filter-widget">
       <div class="filter-header">
         <div class="btn-group">
@@ -154,7 +152,10 @@
     </div>
 
     <table data-mm-role="calc-table" class="table table-striped">
-
+      <tr data-mm-role="row-template">
+        <td data-mm-role="readonly"><span data-mm-role="value" /></td>
+        <td data-mm-role="editable" class="measure-edit"><input type="number" data-mm-role="value" class="measure-edit"/></td>
+      </tr>
     </table>
     <div data-mm-role="empty">There is no data for the current map or the active filter. Use the progress menu or toolbar to set node statuses to see the data here, or change the active filter by clicking on the <i class="icon-filter"></i> filter button.</div>
   </div>

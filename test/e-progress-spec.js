@@ -807,7 +807,6 @@ describe('MM.Progress.Calc', function () {
 				];
 				expect(result.length).toEqual(expected.length);
 				_.each(result, function (item, idx) {
-					expect(item.editable).toBeTruthy();
 					expect(item.setValue).not.toBeUndefined();
 					expect(item.slice(0)).toEqual(expected[idx]);
 				});
@@ -1378,7 +1377,12 @@ describe('Calc widget', function () {
 	var template =	'<div id="calcWidget1" class="modal" >' +
 					'<span data-mm-role="active-projection" ></span>' +
 					'<ul data-mm-role="projections"><li data-mm-role="projection-template"><a data-mm-role="projection-name"></a></li></ul>' +
-					'<table data-mm-role="calc-table"></table>' +
+					'<table data-mm-role="calc-table">'	+
+					'	<tr data-mm-role="row-template">' +
+					'		<td data-mm-role="readonly"><span data-mm-role="value" /></td>' +
+					'		<td data-mm-role="editable"><input type="number" data-mm-role="value"/></td>' +
+					'	</tr>' +
+					'</table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
 					'</div>',
 		openButtonTemplate = '<button data-mm-role="toggle-widget" data-mm-calc-id="calcWidget1"></button>',
@@ -1389,16 +1393,13 @@ describe('Calc widget', function () {
 		tableDOM,
 		msgDiv,
 		projections,
-		simpleTable = [
-			['first', 2],
-			['second', 4]
-		],
+		simpleTable,
 		checkContents = function (dataTable) {
 			expect(tableDOM.find('tr').length).toBe(dataTable.length);
 			_.each(dataTable, function (row, rowindex) {
 				expect(tableDOM.find('tr:eq(' + rowindex + ') td').length).toBe(row.length);
 				_.each(row, function (cell, cellindex) {
-					expect(tableDOM.find('tr:eq(' + rowindex + ') td:eq(' + cellindex + ')').text()).toEqual(cell.toString());
+					expect(tableDOM.find('tr:eq(' + rowindex + ') td:eq(' + cellindex + ') span').text()).toEqual(cell.toString());
 				});
 			});
 		};
@@ -1414,6 +1415,10 @@ describe('Calc widget', function () {
 		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, activityLog);
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
 		msgDiv = underTest.find('[data-mm-role=empty]');
+		simpleTable = [
+			['first', 2],
+			['second', 4]
+		];
 	});
 	afterEach(function () {
 		jQuery('#calcWidget1').detach();
@@ -1430,6 +1435,32 @@ describe('Calc widget', function () {
 			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			checkContents(simpleTable);
+		});
+
+	});
+	describe('editable rows', function () {
+		var spy;
+		beforeEach(function () {
+			spy = jasmine.createSpy('editor').andReturn(true);
+			simpleTable[1].setValue = spy;
+			toggleButton.click();
+			calcModel.dispatchEvent('dataUpdated', simpleTable);
+		});
+		it('uses the editable template for the second cell of an editable row', function () {
+			expect(tableDOM.find('tr:eq(0) td:eq(1) span').text()).toEqual('2');
+			expect(tableDOM.find('tr:eq(1) td:eq(1) input').val()).toEqual('4');
+		});
+		it('calls the setValue callback when the field changes', function () {
+			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
+			tableDOM.find('tr:eq(1) td:eq(1) input').change();
+			expect(spy).toHaveBeenCalledWith('6');
+		});
+		it('resets the value to the original if setValue returns false', function () {
+			spy.andReturn(false);
+			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
+			tableDOM.find('tr:eq(1) td:eq(1) input').change();
+
+			expect(tableDOM.find('tr:eq(1) td:eq(1) input').val()).toEqual('4');
 		});
 	});
 	describe('projections', function () {
