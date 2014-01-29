@@ -152,8 +152,8 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 	self.getProjectionsFor = function (activeContent) {
 		var projections = [],
 			statusConfig = getConfig(activeContent),
-			buildPercentProjection = function (wrappedProjection) {
-				return function (originalData, activeContent) {
+			buildPercentProjection = function (name, wrappedProjection) {
+				return {name: name, iterator: function (originalData, activeContent) {
 					var data = wrappedProjection(originalData, activeContent),
 						total = _.reduce(data, function (valueSoFar, item) {return valueSoFar + item[1]; }, 0);
 					if (total === 0) {
@@ -163,60 +163,78 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 						var percent = (100 * item[1] / total).toFixed(0) + '%';
 						return [item[0], percent];
 					});
-				};
-			};
-		projections.push({name: 'Counts', iterator: function (data) {
-			var rawCounts = function () {
-					var currentCounts = {};
-					_.each(data, function (element) {
-						currentCounts[element.status] = (currentCounts[element.status] + 1) || 1;
-					});
-					return currentCounts;
-				},
-				flattened = _.map(rawCounts(), function (v, k) {
-					return [k, v];
-				}),
-				sorted = flattened.sort(function (row1, row2) {
-					var config1 = statusConfig[row1[0]] || {},
-						config2 = statusConfig[row2[0]] || {},
-						priority1 = config1.priority || 0,
-						priority2 = config2.priority || 0;
-					if (priority1 === priority2) {
-						return config1.description.localeCompare(config2.description);
-					} else {
-						return priority2 - priority1;
-					}
-				});
-			_.each(sorted, function (row) {
-				row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
-			});
-			return sorted;
-		}});
-		projections.push({name: 'Percentages', iterator: buildPercentProjection(projections[0].iterator)});
-		_.each(getMeasurementConfig(activeContent), function (measurement) {
-			projections.push({
-				name: measurement,
-				iterator: function (data) {
-					var processed = _.map(_.sortBy(data, 'title'), function (item) {
-						var val = item.measurements && item.measurements[measurement] || 0,
-							row = [item.title, val],
-							isNumber = function (n) {
-								return !isNaN(parseFloat(n)) && isFinite(n);
-							};
-						row.setValue = function (newValue) {
-							if (!newValue && newValue !== 0) {
-								return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
-							} else if (isNumber(newValue)) {
-								return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, newValue);
-							}
-							return false;
+				}};
+			},
+			buildMeasurementListProjection = function (measurement) {
+				return {
+					name: measurement,
+					iterator: function (data) {
+						var processed = _.map(_.sortBy(data, 'title'), function (item) {
+							var val = item.measurements && item.measurements[measurement] || 0,
+								row = [item.title, parseFloat(val)],
+								isNumber = function (n) {
+									return !isNaN(parseFloat(n)) && isFinite(n);
+								};
+							row.setValue = function (newValue) {
+								if (!newValue && newValue !== 0) {
+									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
+								} else if (isNumber(newValue)) {
+									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, newValue);
+								}
+								return false;
 
-						};
-						return row;
+							};
+							return row;
+						});
+						return processed;
+					}
+				};
+			},
+			buildSumByStatusProjection = function  (name, itemValue) {
+				return {name: name, iterator: function (data) {
+					var rawCounts = function () {
+							var currentCounts = {};
+							_.each(data, function (element) {
+								var val = 1,
+									current = currentCounts[element.status] || 0;
+								if  (itemValue) {
+									val = itemValue(element);
+								}
+								if (val) {
+									currentCounts[element.status] = current + val;
+								}
+
+							});
+							return currentCounts;
+						},
+						flattened = _.map(rawCounts(), function (v, k) {
+							return [k, v];
+						}),
+						sorted = flattened.sort(function (row1, row2) {
+							var config1 = statusConfig[row1[0]] || {},
+								config2 = statusConfig[row2[0]] || {},
+								priority1 = config1.priority || 0,
+								priority2 = config2.priority || 0;
+							if (priority1 === priority2) {
+								return config1.description.localeCompare(config2.description);
+							} else {
+								return priority2 - priority1;
+							}
+						});
+					_.each(sorted, function (row) {
+						row[0] = (statusConfig[row[0]] && statusConfig[row[0]].description) || row[0];
 					});
-					return processed;
-				}
-			});
+					return sorted;
+				}};
+			};
+		projections.push(buildSumByStatusProjection('Counts'));
+		projections.push(buildPercentProjection('Percentages', projections[0].iterator));
+		_.each(getMeasurementConfig(activeContent), function (measurement) {
+			projections.push(buildMeasurementListProjection(measurement));
+			projections.push(buildSumByStatusProjection('Total ' +  measurement, function (item) {
+				var val = parseFloat(item.measurements && item.measurements[measurement]) || 0;
+				return val;
+			}));
 		});
 		return projections;
 	};

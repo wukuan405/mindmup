@@ -698,9 +698,9 @@ describe('MM.Progress.Calc', function () {
 	beforeEach(function () {
 		data = [
 			{ status: 'k999', title: 'Parent', id: 1 },
-			{ status: 'k888', title: 'first2', id: 2, measurements: {'one': 20}},
-			{ status: 'k777', title: 'first3', id: 115},
-			{ status: 'kalpha2', title: 'first4', id: 4, measurements: {'one': 50, 'two': 100}},
+			{ status: 'k888', title: 'first2', id: 2, measurements: {'one': '20'}},
+			{ status: 'k777', title: 'first3', id: 115, measurements: {'two': -300}},
+			{ status: 'kalpha2', title: 'first4', id: 4, measurements: {'one': '50', 'two': 100}},
 			{ status: 'k777', title: 'first5', id: 5, measurements: {'two': 300}},
 			{ status: 'kalpha', title: 'first6', id: 6},
 		];
@@ -787,15 +787,16 @@ describe('MM.Progress.Calc', function () {
 			projections.percent = projections[1].iterator;
 		});
 		it('includes projections for measurements in supplied order', function () {
-			projections.length = 4;
 			var names = _.map(projections, function (projection) { return projection.name; });
-			expect(names).toEqual(['Counts', 'Percentages', 'one', 'two']);
+			expect(names).toEqual(['Counts', 'Percentages', 'one', 'Total one',  'two', 'Total two']);
 		});
 		describe('measurement projections', function () {
-			var projectionOne;
+			var projectionOne, projectionTotalOne, projectionTotalTwo;
 			beforeEach(function () {
 				spyOn(activeContent, 'mergeAttrProperty').andCallThrough();
 				projectionOne = projections[2].iterator(data);
+				projectionTotalOne = projections[3].iterator(data);
+				projectionTotalTwo = projections[5].iterator(data);
 			});
 			it('should return projection value as  argument', function () {
 				var expected = [
@@ -811,6 +812,20 @@ describe('MM.Progress.Calc', function () {
 					expect(item.setValue).not.toBeUndefined();
 					expect(item.slice(0)).toEqual(expected[idx]);
 				});
+			});
+			it('should return totalized projection of measurement', function () {
+				var expected = [
+					['Z888', 20],
+					['F2', 50]
+				];
+				expect(projectionTotalOne).toEqual(expected);
+			});
+			it('should return totalized projection of measurement where more than one item sums to 0', function () {
+				var expected = [
+					['X777', 0],
+					['F2', 100]
+				];
+				expect(projectionTotalTwo).toEqual(expected);
 			});
 			it('should invoke mergeAttrProperty on activeContent when value is changed', function () {
 				projectionOne[2].setValue(77);
