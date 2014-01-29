@@ -231,10 +231,12 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 		projections.push(buildPercentProjection('Percentages', projections[0].iterator));
 		_.each(getMeasurementConfig(activeContent), function (measurement) {
 			projections.push(buildMeasurementListProjection(measurement));
-			projections.push(buildSumByStatusProjection('Total ' +  measurement, function (item) {
+			var totalProjection = buildSumByStatusProjection('Total ' +  measurement, function (item) {
 				var val = parseFloat(item.measurements && item.measurements[measurement]) || 0;
 				return val;
-			}));
+			});
+			projections.push(totalProjection);
+			projections.push(buildPercentProjection('Percentage ' + measurement, totalProjection.iterator));
 		});
 		return projections;
 	};

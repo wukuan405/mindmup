@@ -788,7 +788,7 @@ describe('MM.Progress.Calc', function () {
 		});
 		it('includes projections for measurements in supplied order', function () {
 			var names = _.map(projections, function (projection) { return projection.name; });
-			expect(names).toEqual(['Counts', 'Percentages', 'one', 'Total one',  'two', 'Total two']);
+			expect(names).toEqual(['Counts', 'Percentages', 'one', 'Total one', 'Percentage one',  'two', 'Total two', 'Percentage two']);
 		});
 		describe('measurement projections', function () {
 			var projectionOne, projectionTotalOne, projectionTotalTwo;
@@ -796,7 +796,7 @@ describe('MM.Progress.Calc', function () {
 				spyOn(activeContent, 'mergeAttrProperty').andCallThrough();
 				projectionOne = projections[2].iterator(data);
 				projectionTotalOne = projections[3].iterator(data);
-				projectionTotalTwo = projections[5].iterator(data);
+				projectionTotalTwo = projections[6].iterator(data);
 			});
 			it('should return projection value as  argument', function () {
 				var expected = [
