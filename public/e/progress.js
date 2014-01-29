@@ -204,13 +204,13 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 								return !isNaN(parseFloat(n)) && isFinite(n);
 							};
 						row.setValue = function (newValue) {
-							if (!isNumber(newValue)) {
-								return false;
+							if (!newValue && newValue !== 0) {
+								return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
+							} else if (isNumber(newValue)) {
+								return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, newValue);
 							}
-							var attrValue;
-							attrValue = _.clone(activeContent.getAttrById(item.id, measurementAttributeName) || {});
-							attrValue[measurement] = newValue;
-							return activeContent.updateAttr(item.id, measurementAttributeName, attrValue);
+							return false;
+
 						};
 						return row;
 					});
