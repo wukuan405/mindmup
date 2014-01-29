@@ -4,7 +4,7 @@ MM.Progress = {
 	Projections: {}
 };
 
-MM.CalcModel = function (calc) {
+MM.CalcModel = function (calc, activityLog) {
 	'use strict';
 	var self = observable(this),
 		oldAddEventListener = self.addEventListener,
@@ -14,6 +14,9 @@ MM.CalcModel = function (calc) {
 		projectionNames,
 		activeProjectionName,
 		aggregation = calc.dataAdapter,
+		logProjection = function () {
+			activityLog.log('CalcModel', 'Projection:' + activeProjectionName);
+		},
 		projectionByName = function (name) {
 			return _.find(calc.getProjectionsFor(activeContent), function (projection) { return projection.name === name; });
 		},
@@ -26,6 +29,7 @@ MM.CalcModel = function (calc) {
 	self.addEventListener = function (event, listener) {
 		if (activeContent && event === 'dataUpdated' && self.listeners('dataUpdated').length === 0) {
 			currentData = aggregation(activeContent, activeFilter);
+			logProjection();
 		}
 		oldAddEventListener(event, listener);
 		if (activeContent && event === 'dataUpdated') {
@@ -61,8 +65,10 @@ MM.CalcModel = function (calc) {
 		if (activeProjectionName === name) {
 			return;
 		}
+
 		if (projectionByName(name)) {
 			activeProjectionName = name;
+			logProjection();
 			recalcAndPublish();
 		}
 	};
@@ -698,7 +704,7 @@ MM.Extensions.progress = function () {
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
 		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapModel),
-		calcModel = new MM.CalcModel(progressCalc),
+		calcModel = new MM.CalcModel(progressCalc, MM.Extensions.components.activityLog),
 		loadUI = function (html) {
 			var parsed = $(html),
 				menu = parsed.find('[data-mm-role=top-menu]').clone().appendTo($('#mainMenu')),
