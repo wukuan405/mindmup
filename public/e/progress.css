@@ -67,3 +67,23 @@
   width: 100%;
   text-align: right;
 }
+#progress-calc-widget .table-scrollview {
+  overflow-y: scroll;
+  overflow-x: visible;
+  padding-right: 20px;
+}
+@media (max-height: 500px) {
+  #progress-calc-widget .table-scrollview {
+    max-height: 150px;
+  }
+}
+@media (max-height: 1024px) {
+  #progress-calc-widget .table-scrollview {
+    max-height: 500px;
+  }
+}
+@media (min-height: 1024px) {
+  #progress-calc-widget .table-scrollview {
+    max-height: 800px;
+  }
+}
