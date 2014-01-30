@@ -74,7 +74,7 @@ MM.CalcModel = function (calc, activityLog) {
 	};
 };
 
-$.fn.calcWidget = function (calcModel) {
+$.fn.calcWidget = function (calcModel, mapModel) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
@@ -115,6 +115,11 @@ $.fn.calcWidget = function (calcModel) {
 								};
 							cellDOM = cellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
 							cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
+							if (row.id && index === 0) {
+								cellDOM.click(function () {
+									mapModel.selectNode(row.id);
+								}).css('cursor', 'pointer');
+							}
 							if (row.setValue && index === 1) {
 								cellDOM.find('[data-mm-role=value]').tableCellInPlaceEditorWidget(cell).change(tryToSet);
 							}
@@ -192,6 +197,7 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 							isNumber = function (n) {
 								return !isNaN(parseFloat(n)) && isFinite(n);
 							};
+							row.id = item.id;
 							row.setValue = function (newValue) {
 								if (!newValue && newValue !== 0) {
 									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
@@ -744,7 +750,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(calcModel).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, mapModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
