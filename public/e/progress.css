@@ -59,6 +59,9 @@
 .filter-header {
   margin-bottom: 5px;
 }
+.filter-box table {
+    width: 100%;
+}
 .filter-box th {
   text-align: left;
 }

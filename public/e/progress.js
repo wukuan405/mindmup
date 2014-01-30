@@ -335,13 +335,16 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 			filterSection = self.find('[data-mm-role=filter]'),
 			statusList = filterSection.find('[data-mm-role=status-list]'),
 			statusTemplate = statusList.find('[data-mm-role=template]').detach(),
-		    statusCheckboxSelector = 'input[data-mm-role=status-checkbox]',
+			statusCheckboxSelector = 'input[data-mm-role=status-checkbox]',
 			toggleCheckboxSelector = 'input[data-mm-role=toggle-property]',
+			selectAllStatusesButton = self.find('[data-mm-role=select-all-statuses]'),
 			onFilterChanged = function (newFilter) {
 				newFilter = newFilter || calcModel.getFilter;
 				if (!newFilter || !newFilter.statuses) {
+					selectAllStatusesButton.css('visibility', 'hidden');
 					statusList.find(statusCheckboxSelector).prop('checked', true);
 				} else {
+					selectAllStatusesButton.css('visibility', 'visible');
 					statusList.find(statusCheckboxSelector).prop('checked', function () {
 						return _.include(newFilter.statuses, this.value);
 					});
@@ -393,6 +396,10 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 		filterSection.hide();
 		toggleButton.click(function () {
 			setFilterUIVisible(filterSection.css('display') === 'none');
+		});
+		selectAllStatusesButton.click(function () {
+			statusList.find(statusCheckboxSelector).prop('checked', true);
+			changeFilter();
 		});
 		filterSection.find(toggleCheckboxSelector).click(changeFilter);
 	});

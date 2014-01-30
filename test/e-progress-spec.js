@@ -981,6 +981,7 @@ describe('progressFilterWidget', function () {
 					'<div data-mm-role="filter">' +
 						'<input type="checkbox" data-mm-role="toggle-property" value="firstProp" />' +
 						'<input type="checkbox" data-mm-role="toggle-property" value="secondProp" />' +
+						'<button data-mm-role="select-all-statuses"></button>' +
 						'<table data-mm-role="status-list">' +
 							'<tr data-mm-role="template"><td><input type="checkbox" data-mm-role="status-checkbox"/></td><td data-mm-role="status-description"></td></tr>' +
 						'</table>' +
@@ -1089,6 +1090,10 @@ describe('progressFilterWidget', function () {
 			statusCheckboxes.eq(1).click();
 			expect(calcModel.setFilter).toHaveBeenCalledWith({});
 		});
+		it('selects all statuses when select all statuses button is clicked', function () {
+			filterDom.find('[data-mm-role=select-all-statuses]').click();
+			expect(calcModel.setFilter).toHaveBeenCalledWith({});
+		});
 	});
 	describe('updates the ui when the model publishes a changed filter', function () {
 		var newConfig = {passed: {}, failed: {}},
@@ -1122,6 +1127,14 @@ describe('progressFilterWidget', function () {
 			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
 			expect(statusCheckboxes.filter(':checked').length).toBe(1);
 			expect(statusCheckboxes.filter(':checked').prop('value')).toBe('passed');
+		});
+		it('hides the select all button if all the stauses are selected', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {});
+			expect(filterDom.find('[data-mm-role=select-all-statuses]').css('visibility')).toBe('hidden');
+		});
+		it('shows the select all button if some the stauses are deselected', function () {
+			calcModel.dispatchEvent('dataUpdated', [], {statuses: ['passed']});
+			expect(filterDom.find('[data-mm-role=select-all-statuses]').css('visibility')).not.toBe('hidden');
 		});
 		it('checks any data-mm-role=toggle-property checkboxes supplied with the filter', function () {
 			toggleCheckboxes.prop('checked', false);
