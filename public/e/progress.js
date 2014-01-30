@@ -79,14 +79,12 @@ $.fn.calcWidget = function (calcModel) {
 	return this.each(function () {
 		var self = jQuery(this),
 		    table = self.find('[data-mm-role=calc-table]'),
-		    focusid,
 		    msgDiv = self.find('[data-mm-role=empty]'),
 		    totalElement = self.find('[data-mm-role=total]'),
 		    totalValueElement = totalElement.find('[data-mm-role=total-value]'),
 		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
 		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
-			readOnlyCellTemplate = calcRowTemplate.find('[data-mm-role=readonly]').detach(),
-			editableCellTemplate = calcRowTemplate.find('[data-mm-role=editable]').detach(),
+			cellTemplate = calcRowTemplate.find('[data-mm-role=cell]').detach(),
 			repopulateTable = function (data) {
 				showActiveProjection();
 				table.empty();
@@ -103,55 +101,25 @@ $.fn.calcWidget = function (calcModel) {
 					} else {
 						totalElement.hide();
 					}
-					_.each(data, function (row, rowindex) {
+					_.each(data, function (row) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
 							var cellDOM,
 								tryToSet = function () {
-									if (!row.setValue(this.value)) {
-										this.value = cell;
+									if (arguments[0].target !== this) {
+										return;
+									}
+									if (!row.setValue(this.innerText)) {
+										this.innerText = cell.toLocaleString();
 									}
 								};
+							cellDOM = cellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
+							cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
 							if (row.setValue && index === 1) {
-								cellDOM = editableCellTemplate.clone().appendTo(rowDOM);
-								cellDOM.find('[data-mm-role=value]').prop('id', 'mm-progress-calc' + row.id)
-								.focus(function () {focusid = row.id; })
-								.keydown('tab', function (e) {
-									if (data[rowindex + 1] && data[rowindex + 1].id)  {
-										focusid = data[rowindex + 1] && data[rowindex + 1].id;
-									} else {
-										focusid = data[0] && data[0].id;
-									}
-									table.find('#mm-progress-calc' + focusid).focus().select();
-									e.stopPropagation();
-									e.preventDefault();
-								})
-								.keydown('shift+tab', function (e) {
-									if (data[rowindex - 1] && data[rowindex - 1].id)  {
-										focusid = data[rowindex - 1] && data[rowindex - 1].id;
-									} else {
-										focusid = data[data.length - 1] && data[data.length - 1].id;
-									}
-									table.find('#mm-progress-calc' + focusid).focus().select();
-									e.stopPropagation();
-									e.preventDefault();
-								})
-								.blur(function () {
-									focusid = undefined;
-								}).click(function () {
-									focusid = data.id;
-								});
-								cellDOM.find('[data-mm-role=value]').val(cell).change(tryToSet);
-							} else {
-								cellDOM = readOnlyCellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
-								cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
+								cellDOM.find('[data-mm-role=value]').tableCellInPlaceEditorWidget(cell).change(tryToSet);
 							}
-
 						});
 					});
-					if (focusid) {
-						table.find('#mm-progress-calc' + focusid).focus().select();
-					}
 				}
 			},
 			id = self.attr('id'),
@@ -224,7 +192,6 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 							isNumber = function (n) {
 								return !isNaN(parseFloat(n)) && isFinite(n);
 							};
-							row.id = item.id;
 							row.setValue = function (newValue) {
 								if (!newValue && newValue !== 0) {
 									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
@@ -683,7 +650,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 	updateUI();
 	return this;
 };
-jQuery.fn.tableCellInPlaceEditorWidget = function () {
+jQuery.fn.tableCellInPlaceEditorWidget = function (defaultValue) {
 	'use strict';
 
 	this.click(function () {
@@ -692,10 +659,16 @@ jQuery.fn.tableCellInPlaceEditorWidget = function () {
 			input,
 			setContent = function (value) {
 				element.empty().text(value);
+				element.trigger('change');
 			},
 			oldWidth = Math.max(element.innerWidth() - 60, 50);
+		if (element.find('input').length > 0) {
+			return;
+		}
 		element.empty();
-		input = jQuery('<input width="100%">').appendTo(element).val(previousText)
+		input = jQuery('<input width="100%">')
+			.appendTo(element)
+			.val(defaultValue || previousText)
 			.blur(function () {
 				setContent(input.val());
 			}).keydown('esc', function (e) {

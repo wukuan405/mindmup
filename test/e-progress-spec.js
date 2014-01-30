@@ -1459,8 +1459,7 @@ describe('Calc widget', function () {
 					'<ul data-mm-role="projections"><li data-mm-role="projection-template"><a data-mm-role="projection-name"></a></li></ul>' +
 					'<table data-mm-role="calc-table">'	+
 					'	<tr data-mm-role="row-template">' +
-					'		<td data-mm-role="readonly"><span data-mm-role="value" /></td>' +
-					'		<td data-mm-role="editable"><input type="number" data-mm-role="value"/></td>' +
+					'		<td data-mm-role="cell"><span data-mm-role="value" /></td>' +
 					'	</tr>' +
 					'</table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
@@ -1527,21 +1526,22 @@ describe('Calc widget', function () {
 			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 		});
-		it('uses the editable template for the second cell of an editable row', function () {
+		it('populates the editable row with data values', function () {
 			expect(tableDOM.find('tr:eq(0) td:eq(1) span').text()).toEqual('2');
-			expect(tableDOM.find('tr:eq(1) td:eq(1) input').val()).toEqual('4');
+			expect(tableDOM.find('tr:eq(1) td:eq(1) span').text()).toEqual('4');
 		});
 		it('calls the setValue callback when the field changes', function () {
+			tableDOM.find('tr:eq(1) td:eq(1) span').trigger('click');
 			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
-			tableDOM.find('tr:eq(1) td:eq(1) input').change();
+			tableDOM.find('tr:eq(1) td:eq(1) input').blur();
 			expect(spy).toHaveBeenCalledWith('6');
 		});
 		it('resets the value to the original if setValue returns false', function () {
 			spy.andReturn(false);
+			tableDOM.find('tr:eq(1) td:eq(1) span').trigger('click');
 			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
-			tableDOM.find('tr:eq(1) td:eq(1) input').change();
-
-			expect(tableDOM.find('tr:eq(1) td:eq(1) input').val()).toEqual('4');
+			tableDOM.find('tr:eq(1) td:eq(1) input').blur();
+			expect(tableDOM.find('tr:eq(1) td:eq(1) span').text()).toEqual('4');
 		});
 	});
 	describe('totals', function () {
