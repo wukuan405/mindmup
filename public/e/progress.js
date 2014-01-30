@@ -105,12 +105,13 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
 							var cellDOM,
-								tryToSet = function () {
-									if (arguments[0].target !== this) {
+								tryToSet = function (e) {
+									var element = $(this);
+									if (e.target !== this) {
 										return;
 									}
-									if (!row.setValue(this.innerText)) {
-										this.innerText = cell.toLocaleString();
+									if (!row.setValue(element.text())) {
+										element.text(cell.toLocaleString());
 									}
 								};
 							cellDOM = cellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
