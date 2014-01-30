@@ -116,7 +116,7 @@ $.fn.calcWidget = function (calcModel) {
 								cellDOM.find('[data-mm-role=value]').val(cell).change(tryToSet);
 							} else {
 								cellDOM = readOnlyCellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
-								cellDOM.find('[data-mm-role=value]').text(cell);
+								cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
 							}
 
 						});

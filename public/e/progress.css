@@ -87,3 +87,23 @@
     max-height: 800px;
   }
 }
+.calc-total {
+	padding-left: 10px;
+	padding-right: 30px;
+	font-weight: bold;
+	padding-bottom: 30px;
+	padding-top: 10px;
+	border-top: 1px dashed gray;
+}
+.calc-total-description {
+	float: left;
+}
+.calc-total-value {
+	float: right;
+}
+.calc-table .cell0 {
+	text-align:left;
+}
+.calc-table .cell1 {
+	text-align:right;
+}
