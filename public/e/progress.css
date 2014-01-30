@@ -53,6 +53,8 @@
   padding: 5px;
   background-color: white;
   margin-bottom: 5px;
+  max-height: 300px;
+  overflow-y: scroll;
 }
 .filter-header {
   margin-bottom: 5px;
@@ -79,12 +81,12 @@
 }
 @media (max-height: 1024px) {
   #progress-calc-widget .table-scrollview {
-    max-height: 500px;
+    max-height: 300px;
   }
 }
 @media (min-height: 1024px) {
   #progress-calc-widget .table-scrollview {
-    max-height: 800px;
+    max-height: 500px;
   }
 }
 .calc-total {
