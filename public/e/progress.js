@@ -79,6 +79,7 @@ $.fn.calcWidget = function (calcModel) {
 	return this.each(function () {
 		var self = jQuery(this),
 		    table = self.find('[data-mm-role=calc-table]'),
+		    focusid,
 		    msgDiv = self.find('[data-mm-role=empty]'),
 		    totalElement = self.find('[data-mm-role=total]'),
 		    totalValueElement = totalElement.find('[data-mm-role=total-value]'),
@@ -102,7 +103,7 @@ $.fn.calcWidget = function (calcModel) {
 					} else {
 						totalElement.hide();
 					}
-					_.each(data, function (row) {
+					_.each(data, function (row, rowindex) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
 							var cellDOM,
@@ -113,6 +114,33 @@ $.fn.calcWidget = function (calcModel) {
 								};
 							if (row.setValue && index === 1) {
 								cellDOM = editableCellTemplate.clone().appendTo(rowDOM);
+								cellDOM.find('[data-mm-role=value]').prop('id', 'mm-progress-calc' + row.id)
+								.focus(function () {focusid = row.id; })
+								.keydown('tab', function (e) {
+									if (data[rowindex + 1] && data[rowindex + 1].id)  {
+										focusid = data[rowindex + 1] && data[rowindex + 1].id;
+									} else {
+										focusid = data[0] && data[0].id;
+									}
+									table.find('#mm-progress-calc' + focusid).focus().select();
+									e.stopPropagation();
+									e.preventDefault();
+								})
+								.keydown('shift+tab', function (e) {
+									if (data[rowindex - 1] && data[rowindex - 1].id)  {
+										focusid = data[rowindex - 1] && data[rowindex - 1].id;
+									} else {
+										focusid = data[data.length - 1] && data[data.length - 1].id;
+									}
+									table.find('#mm-progress-calc' + focusid).focus().select();
+									e.stopPropagation();
+									e.preventDefault();
+								})
+								.blur(function () {
+									focusid = undefined;
+								}).click(function () {
+									focusid = data.id;
+								});
 								cellDOM.find('[data-mm-role=value]').val(cell).change(tryToSet);
 							} else {
 								cellDOM = readOnlyCellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
@@ -121,6 +149,9 @@ $.fn.calcWidget = function (calcModel) {
 
 						});
 					});
+					if (focusid) {
+						table.find('#mm-progress-calc' + focusid).focus().select();
+					}
 				}
 			},
 			id = self.attr('id'),
@@ -193,6 +224,7 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 							isNumber = function (n) {
 								return !isNaN(parseFloat(n)) && isFinite(n);
 							};
+							row.id = item.id;
 							row.setValue = function (newValue) {
 								if (!newValue && newValue !== 0) {
 									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
