@@ -5,4 +5,4 @@ before_script:
   - npm install  grunt-cli
   - npm install  grunt-contrib-jasmine --save-dev
   - npm install  temporary
-script: bundle exec rspec test &&  grunt jasmine -v
+script: bundle exec rspec test &&  grunt jasmine
