@@ -18,7 +18,6 @@ public/.DS_Store
 public/offline
 
 #grunt and jasmine artificats
-.grunt/
 node_modules/
 
 # YARD artifacts
