@@ -4,22 +4,22 @@ MindMup - Zero Friction Mind Map Canvas
 [![Build Status](https://api.travis-ci.org/mindmup/mindmup.png)](http://travis-ci.org/mindmup/mindmup)
 
 MindMup is a zero-friction mind map canvas. Our aim is to create the most productive mind mapping environment out there, removing
-all the distractions and providing powerful editing shortcuts. 
+all the distractions and providing powerful editing shortcuts.
 
 This git project is the server-side portion of MindMup. It provides a web interface that serves maps, allows users to edit and save them,
-provides menus and feedback forms and links to analytics. You can see an example of this live on http://www.mindmup.com. 
+provides menus and feedback forms and links to analytics. You can see an example of this live on http://www.mindmup.com.
 
 Dependencies
 -------------
 
-- This app is designed to run in the Heroku cloud or as a standalone [Sinatra application](https://github.com/sinatra/sinatra/). 
+- This app is designed to run in the Heroku cloud or as a standalone [Sinatra application](https://github.com/sinatra/sinatra/).
 - It depends on the [MapJS](http://github.com/mindmup/mapjs) javascript canvas for client side rendering, and imports a compiled
 single-file version of that project as /public/mapjs-compiled.js
 - It uses Google Drive and Amazon S3 AWS service to store maps
 - It uses Google analytics to track feature votes, usage patterns and report error rates
 - It uses JotForm to send e-mails and submit user feedback
 - It uses Google URL shortener to produce short links for sharing
-  
+
 Configuration
 -------------
 
@@ -69,10 +69,10 @@ development and testing without an internet connection.
 Executing tests
 ---------------
 
-We do a bunch of exploratory tests and some manual sanity tests before each release, 
+We do a bunch of exploratory tests and some manual sanity tests before each release,
 and use this [ACC Matrix](https://github.com/mindmup/mindmup/wiki/Attribute%2C-Component%2C-Capability-matrix) to guide testing. Most client tests
 are in the MapJS project, so see that as well. This server does very little apart from some basic routing, so there are not many automated tests
-in this project. For server testing, there are a few RSpec tests that should run before commiting. Execute them with: 
+in this project. For server testing, there are a few RSpec tests that should run before commiting. Execute them with:
 
     rspec test/*.rb
 
@@ -80,11 +80,11 @@ The tests don't depend on the .env file intentionally. Supply your own config as
 
 All JavaScript widgets are tested using Jasmine, here are two ways of running tests:
 
-- Visual: Open test/SpecRunner.html in a browser, this will run all Jasmine tests
+- Visual: Open SpecRunner.html in a browser, this will run all Jasmine tests
 
 - Automated: Using [PhantomJs](phantomjs.org), in the test folder, run
 
     sh runtests.sh
 
-Please note that the CI server uses phantomjs, so make sure that tests run with phantom before committing. 
+Please note that the CI server uses phantomjs, so make sure that tests run with phantom before committing.
 

@@ -15,7 +15,7 @@ describe('MM.S3Api', function () {
 		};
 		underTest = new MM.S3Api();
 		ajaxDeferred = jQuery.Deferred();
-		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
+		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
 		oldFormData = window.FormData;
 		window.FormData = function () {
 			this.params = {};
@@ -32,33 +32,33 @@ describe('MM.S3Api', function () {
 			it('posts an AJAX request to the API url defined by the configured bucket', function () {
 				underTest.save('to save', saveConfiguration);
 				expect(jQuery.ajax).toHaveBeenCalled();
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 				expect(ajaxPost.url).toEqual('https://bucket-name.s3.amazonaws.com/');
 				expect(ajaxPost.type).toEqual('POST');
 			});
 			it('posts the content and contenttype', function () {
 				underTest.save('to save', saveConfiguration);
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
-				expect(ajaxPost.data.params).toPartiallyMatch({'file' : 'to save', 'Content-Type': 'text/plain'});
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				expect(ajaxPost.data.params).toEqual(jasmine.objectContaining({'file' : 'to save', 'Content-Type': 'text/plain'}));
 			});
 			it('posts identification signature and policy', function () {
 				underTest.save('to save', saveConfiguration);
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
-				expect(ajaxPost.data.params).toPartiallyMatch({
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				expect(ajaxPost.data.params).toEqual(jasmine.objectContaining({
 					key: 'file key',
 					AWSAccessKeyId: 'aws access key',
 					policy: 'save policy',
 					signature: 'policy signature'
-				});
+				}));
 			});
 			it('posts the acl as public-read is there are no options supplied', function () {
 				underTest.save('to save', saveConfiguration);
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 				expect(ajaxPost.data.params.acl).toEqual('public-read');
 			});
 			it('posts the acl as bucket-owner-read is there private option is true', function () {
 				underTest.save('to save', saveConfiguration, {isPrivate: true});
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 				expect(ajaxPost.data.params.acl).toEqual('bucket-owner-read');
 			});
 
@@ -138,7 +138,7 @@ describe('MM.S3Api', function () {
 		});
 		it('keeps polling if response is empty', function () {
 			underTest.poll('REQUEST');
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withoutFile);
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
@@ -149,7 +149,7 @@ describe('MM.S3Api', function () {
 		});
 		it('stops polling after resolved', function () {
 			underTest.poll('REQUEST');
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withFile);
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
@@ -161,7 +161,7 @@ describe('MM.S3Api', function () {
 		it('stops polling when semaphore function shows stopped', function () {
 			var stopped = false;
 			underTest.poll('REQUEST', {stoppedSemaphore: function () {return stopped; }});
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withoutFile);
 			stopped = true;
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
@@ -169,7 +169,7 @@ describe('MM.S3Api', function () {
 		});
 		it('polls only after sleep period', function () {
 			underTest.poll('REQUEST');
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withoutFile);
 			clock.tick(underTest.pollerDefaults.sleepPeriod - 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
@@ -182,7 +182,7 @@ describe('MM.S3Api', function () {
 		});
 		it('retries if network request fails', function () {
 			underTest.poll('REQUEST');
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			ajaxDeferred.reject();
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
 			expect(jQuery.ajax).toHaveBeenCalledWith({
@@ -210,7 +210,7 @@ describe('MM.S3Api', function () {
 			underTest.poll('REQUEST');
 			clock.tick(underTest.pollerDefaults.timeoutPeriod + 1);
 			ajaxDeferred.resolve(withoutFile);
-			jQuery.ajax.reset();
+			jQuery.ajax.calls.reset();
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});

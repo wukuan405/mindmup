@@ -23,9 +23,9 @@ describe("scoring widget", function () {
 		oldModal = jQuery.fn.modal;
 		jQuery.fn.effect = function () { thisCalls.effect = _.toArray(this); };
 		jQuery.fn.modal = function () { thisCalls.modal = _.toArray(this); };
-		spyOn(jQuery.fn, 'modal').andCallThrough();
-		spyOn(jQuery.fn, 'effect').andCallThrough();
-		spyOn(alert, 'show').andReturn(alertId);
+		spyOn(jQuery.fn, 'modal').and.callThrough();
+		spyOn(jQuery.fn, 'effect').and.callThrough();
+		spyOn(alert, 'show').and.returnValue(alertId);
 	});
 	afterEach(function () {
 		clock.restore();
@@ -55,18 +55,18 @@ describe("scoring widget", function () {
 		expect(jQuery.fn.modal).not.toHaveBeenCalled();
 	});
 	it('does not show alert before the timeout', function () {
-		spyOn(Date, 'now').andReturn(currentDate);
+		spyOn(Date, 'now').and.returnValue(currentDate);
 		clock.tick(timeout * 1000 - 1);
 		expect(alert.show).not.toHaveBeenCalled();
 	});
 	it('shows dialog after the timeout if the user matches current cohort and we have not shown it to him already', function () {
-		spyOn(Date, 'now').andReturn(currentDate);
+		spyOn(Date, 'now').and.returnValue(currentDate);
 		clock.tick(timeout * 1000 + 1);
 		expect(alert.show).toHaveBeenCalledWith('Please help us improve!', '<a data-toggle="modal" data-target="#modalScore">Click here to answer one very quick question</a>, we would appreciate that very much', 'warning');
 		expect(storage[storageKey]).toBeTruthy();
 	});
 	it('does not show the dialog if the user does not match current cohort', function () {
-		spyOn(Date, 'now').andReturn(currentDate + 1000 * 60 * 60 * 24);
+		spyOn(Date, 'now').and.returnValue(currentDate + 1000 * 60 * 60 * 24);
 		clock.tick(timeout * 1000 + 1);
 		expect(alert.show).not.toHaveBeenCalled();
 	});

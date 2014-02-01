@@ -137,7 +137,7 @@ describe('MM.ContentStatusUpdater', function () {
 		});
 		it('should publish a measurementsChanged event when the updater is refreshed', function () {
 			content.updateAttr(1,  'test-measurement-config', ['three', 'four']);
-			listener.reset();
+			listener.calls.reset();
 			underTest.refresh();
 			expect(listener).toHaveBeenCalledWith(['three', 'four']);
 		});
@@ -793,7 +793,7 @@ describe('MM.Progress.Calc', function () {
 		describe('measurement projections', function () {
 			var projectionOne, projectionTotalOne, projectionTotalTwo;
 			beforeEach(function () {
-				spyOn(activeContent, 'mergeAttrProperty').andCallThrough();
+				spyOn(activeContent, 'mergeAttrProperty').and.callThrough();
 				projectionOne = projections[2].iterator(data);
 				projectionTotalOne = projections[3].iterator(data);
 				projectionTotalTwo = projections[6].iterator(data);
@@ -841,7 +841,7 @@ describe('MM.Progress.Calc', function () {
 				expect(activeContent.mergeAttrProperty).toHaveBeenCalledWith(115, 'test-measurement', 'one', false);
 			});
 			it('returns the result of mergeAttrProperty', function () {
-				activeContent.mergeAttrProperty.andReturn('zebra');
+				activeContent.mergeAttrProperty.and.returnValue('zebra');
 
 				var result = projectionOne[2].setValue(666);
 
@@ -912,7 +912,7 @@ describe('MM.Progress.Calc', function () {
 		});
 		describe('filtering by selected node', function () {
 			beforeEach(function () {
-				mapModel.getCurrentlySelectedIdeaId = jasmine.createSpy().andReturn(11);
+				mapModel.getCurrentlySelectedIdeaId = jasmine.createSpy().and.returnValue(11);
 			});
 			it('includes only the selected subtree when selectedSubtree is set', function () {
 				expect(underTest.dataAdapter(activeContent, {selectedSubtree: true})).toEqual([
@@ -1018,7 +1018,7 @@ describe('progressFilterWidget', function () {
 	});
 	describe('when it becomes visible', function () {
 		it('subscribes to the model ', function () {
-			spyOn(calcModel, 'addEventListener').andCallThrough();
+			spyOn(calcModel, 'addEventListener').and.callThrough();
 			toggleButton.click();
 			expect(calcModel.addEventListener).toHaveBeenCalledWith('dataUpdated', jasmine.any(Function));
 		});
@@ -1026,7 +1026,7 @@ describe('progressFilterWidget', function () {
 	describe('when it is hidden', function () {
 		it('unsubscribes from the model', function () {
 			toggleButton.click();
-			spyOn(calcModel, 'removeEventListener').andCallThrough();
+			spyOn(calcModel, 'removeEventListener').and.callThrough();
 			toggleButton.click();
 			expect(calcModel.removeEventListener).toHaveBeenCalledWith('dataUpdated', jasmine.any(Function));
 		});
@@ -1082,7 +1082,7 @@ describe('progressFilterWidget', function () {
 		});
 		it('removes the statuses property if all checkboxes are checked', function () {
 			statusCheckboxes.first().click();
-			calcModel.setFilter.reset();
+			calcModel.setFilter.calls.reset();
 			statusCheckboxes.eq(1).click();
 			expect(calcModel.setFilter).toHaveBeenCalledWith({});
 		});
@@ -1178,7 +1178,7 @@ describe('MM.progressCalcChangeMediator', function () {
 		activeContent = MAPJS.content({id: 1});
 		MM.progressCalcChangeMediator(calcModel, mapController, mapModel, progressConfigUpdater);
 		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
-		calcModel.dataUpdated.reset();
+		calcModel.dataUpdated.calls.reset();
 	});
 	it('calls calcModel.setFilter when progress config changes', function () {
 		progressConfigUpdater.dispatchEvent('configChanged');
@@ -1202,7 +1202,7 @@ describe('MM.progressCalcChangeMediator', function () {
 	describe('does not call calcModel.dataUpdated when', function () {
 		it('a new map has been loaded and the old content changes', function () {
 			mapController.dispatchEvent('mapLoaded', 'testID2', MAPJS.content({id: 1}));
-			calcModel.dataUpdated.reset();
+			calcModel.dataUpdated.calls.reset();
 			activeContent.updateAttr(1, 'status', 'yellow');
 			expect(calcModel.dataUpdated).not.toHaveBeenCalled();
 		});
@@ -1221,12 +1221,12 @@ describe('MM.CalcModel', function () {
 		activeContent = MAPJS.content({id: 1});
 		aggregation = [['foo', 1]];
 		projections = [
-			{name: 'Counts', 'iterator': jasmine.createSpy('counts').andReturn(aggregation)},
-			{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+			{name: 'Counts', 'iterator': jasmine.createSpy('counts').and.returnValue(aggregation)},
+			{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').and.returnValue(aggregation)}
 		];
 		calc = {
-			dataAdapter: jasmine.createSpy('calculate').andReturn(aggregation),
-			getProjectionsFor: jasmine.createSpy('getProjectionsFor').andReturn(projections)
+			dataAdapter: jasmine.createSpy('calculate').and.returnValue(aggregation),
+			getProjectionsFor: jasmine.createSpy('getProjectionsFor').and.returnValue(projections)
 		};
 		underTest = new MM.CalcModel(calc, activityLog);
 		underTest.setFilter(filter);
@@ -1244,34 +1244,34 @@ describe('MM.CalcModel', function () {
 		});
 
 		it('should publish a list of projections when they have changed', function () {
-			calc.getProjectionsFor.andReturn([
-				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)}
+			calc.getProjectionsFor.and.returnValue([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').and.returnValue(aggregation)}
 			]);
-			listener.reset();
+			listener.calls.reset();
 			underTest.dataUpdated(activeContent);
 
 			expect(listener).toHaveBeenCalledWith(['Count1']);
 		});
 		it('should change the active projection to the first name in the list if the current active projection is not valid', function () {
-			calc.getProjectionsFor.andReturn([
-				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)},
-				{name: 'Percentages1', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+			calc.getProjectionsFor.and.returnValue([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').and.returnValue(aggregation)},
+				{name: 'Percentages1', 'iterator': jasmine.createSpy('percentages').and.returnValue(aggregation)}
 			]);
 			underTest.dataUpdated(activeContent);
 			expect(underTest.getActiveProjection()).toEqual('Count1');
 		});
 		it('should retain the current active projection if it is in the list', function () {
 			underTest.setActiveProjection('Percentages');
-			calc.getProjectionsFor.andReturn([
-				{name: 'Count1', 'iterator': jasmine.createSpy('count1').andReturn(aggregation)},
-				{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').andReturn(aggregation)}
+			calc.getProjectionsFor.and.returnValue([
+				{name: 'Count1', 'iterator': jasmine.createSpy('count1').and.returnValue(aggregation)},
+				{name: 'Percentages', 'iterator': jasmine.createSpy('percentages').and.returnValue(aggregation)}
 			]);
 			underTest.dataUpdated(activeContent);
 			expect(underTest.getActiveProjection()).toEqual('Percentages');
 
 		});
 		it('should not publish list of projections if they have not changed', function () {
-			listener.reset();
+			listener.calls.reset();
 			underTest.dataUpdated(activeContent);
 			expect(listener).not.toHaveBeenCalled();
 		});
@@ -1293,8 +1293,8 @@ describe('MM.CalcModel', function () {
 				],
 				listener = jasmine.createSpy('one');
 			beforeEach(function () {
-				projections[0].iterator.andReturn(projectionResults[0]);
-				projections[1].iterator.andReturn(projectionResults[1]);
+				projections[0].iterator.and.returnValue(projectionResults[0]);
+				projections[1].iterator.and.returnValue(projectionResults[1]);
 				underTest.dataUpdated(activeContent);
 			});
 			it(' when a new listener is added', function () {
@@ -1304,15 +1304,15 @@ describe('MM.CalcModel', function () {
 			});
 			it('when the data is recalculated', function () {
 				underTest.addEventListener('dataUpdated', jasmine.createSpy('one'), filter);
-				projections[0].iterator.reset();
+				projections[0].iterator.calls.reset();
 				underTest.dataUpdated(activeContent);
 				expect(projections[0].iterator).toHaveBeenCalledWith(aggregation);
 				expect(listener).toHaveBeenCalledWith(projectionResults[0], filter);
 			});
 			it('when the projection is changed', function () {
 				underTest.addEventListener('dataUpdated', listener, filter);
-				projections[0].iterator.reset();
-				listener.reset();
+				projections[0].iterator.calls.reset();
+				listener.calls.reset();
 				underTest.setActiveProjection('Percentages');
 				expect(projections[1].iterator).toHaveBeenCalledWith(aggregation);
 				expect(listener).toHaveBeenCalledWith(projectionResults[1], filter);
@@ -1321,8 +1321,8 @@ describe('MM.CalcModel', function () {
 		it('should not be called if the activeProjection is changed to the same one as currently set', function () {
 			var listener = jasmine.createSpy('one');
 			underTest.addEventListener('dataUpdated', listener, filter);
-			projections[0].iterator.reset();
-			listener.reset();
+			projections[0].iterator.calls.reset();
+			listener.calls.reset();
 			underTest.setActiveProjection('Counts');
 			expect(projections[1].iterator).not.toHaveBeenCalled();
 			expect(listener).not.toHaveBeenCalled();
@@ -1350,7 +1350,7 @@ describe('MM.CalcModel', function () {
 				expect(activityLog.log).toHaveBeenCalledWith('CalcModel', 'Projection:Counts');
 			});
 			it('does not log the active projection when subsequent listeners are added', function () {
-				activityLog.log.reset();
+				activityLog.log.calls.reset();
 				underTest.addEventListener('dataUpdated', jasmine.createSpy('two'));
 				expect(activityLog.log).not.toHaveBeenCalled();
 			});
@@ -1367,7 +1367,7 @@ describe('MM.CalcModel', function () {
 			describe('when there is activeContent', function () {
 				beforeEach(function () {
 					underTest.dataUpdated(activeContent);
-					listenerOne.reset();
+					listenerOne.calls.reset();
 					underTest.addEventListener('dataUpdated', listenerTwo);
 				});
 
@@ -1382,7 +1382,7 @@ describe('MM.CalcModel', function () {
 			});
 			describe('when there is not activeContent', function () {
 				beforeEach(function () {
-					listenerOne.reset();
+					listenerOne.calls.reset();
 					underTest.addEventListener('dataUpdated', listenerTwo);
 				});
 				it('does not publish if there is no activeContent', function () {
@@ -1412,8 +1412,8 @@ describe('MM.CalcModel', function () {
 				listenerOne = jasmine.createSpy('one');
 				underTest.dataUpdated(activeContent);
 				underTest.addEventListener('dataUpdated', listenerOne);
-				listenerOne.reset();
-				calc.dataAdapter.reset();
+				listenerOne.calls.reset();
+				calc.dataAdapter.calls.reset();
 			});
 			it('published the dataUpdatedEvent if the filter is changed', function () {
 				underTest.setFilter('newFilter');
@@ -1469,7 +1469,7 @@ describe('Calc widget', function () {
 	beforeEach(function () {
 		projections = ['projection1', 'projection2'];
 		calcModel = observable({
-			getProjections: jasmine.createSpy('getProjections').andReturn(projections),
+			getProjections: jasmine.createSpy('getProjections').and.returnValue(projections),
 			getActiveProjection: jasmine.createSpy('getActiveProjection'),
 			setActiveProjection: jasmine.createSpy('setActiveProjection')
 		});
@@ -1503,7 +1503,7 @@ describe('Calc widget', function () {
 	describe('editable rows', function () {
 		var spy;
 		beforeEach(function () {
-			spy = jasmine.createSpy('editor').andReturn(true);
+			spy = jasmine.createSpy('editor').and.returnValue(true);
 			simpleTable[1].setValue = spy;
 			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
@@ -1517,8 +1517,8 @@ describe('Calc widget', function () {
 			tableDOM.find('tr:eq(1) td:eq(1) input').change();
 			expect(spy).toHaveBeenCalledWith('6');
 		});
-		it('resets the value to the original if setValue returns false', function () {
-			spy.andReturn(false);
+		it('calls.resets the value to the original if setValue returns false', function () {
+			spy.and.returnValue(false);
 			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
 			tableDOM.find('tr:eq(1) td:eq(1) input').change();
 
@@ -1550,7 +1550,7 @@ describe('Calc widget', function () {
 			});
 		});
 		it('changes the label to the active projection when a dataUpdated event is recieved', function () {
-			calcModel.getActiveProjection.andReturn('projection2');
+			calcModel.getActiveProjection.and.returnValue('projection2');
 			toggleButton.click();
 			calcModel.dispatchEvent('dataUpdated', simpleTable);
 			expect(underTest.find('[data-mm-role=active-projection]').text()).toEqual('projection2');
@@ -1582,7 +1582,7 @@ describe('Calc widget', function () {
 	it('removes itself as a listener from the model when it is hidden', function () {
 		toggleButton.click();
 		calcModel.dispatchEvent('dataUpdated', simpleTable);
-		spyOn(calcModel, 'removeEventListener').andCallThrough();
+		spyOn(calcModel, 'removeEventListener').and.callThrough();
 		toggleButton.click();
 		calcModel.dispatchEvent('dataUpdated', [[1, 2]]);
 
