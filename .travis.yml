@@ -3,4 +3,5 @@ rvm:
     - "1.9.3"
 before_script:
   - npm install -g grunt-cli
+  - npm install -g grunt-contrib-jasmine
 script: bundle exec rspec test &&  grunt jasmine
