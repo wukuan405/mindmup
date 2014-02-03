@@ -533,3 +533,14 @@ input.noglow {
 	width: 100%;
 	cursor: pointer;
 }
+body .modal.huge {
+  width: 90%; /* desired relative width */
+  height:80%;
+  left: 5%; /* (100%-width)/2 */
+  /* place center */
+  margin-left:auto;
+  margin-right:auto; 
+}
+body .modal.huge .modal-body {
+  width: 100%; /* desired relative width */
+}
