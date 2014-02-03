@@ -20,6 +20,7 @@ public/offline
 #grunt and jasmine artificats
 node_modules/
 SpecRunner.html
+.grunt
 
 # YARD artifacts
 .yardoc
