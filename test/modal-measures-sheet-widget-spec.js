@@ -1,4 +1,4 @@
-/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, fakeBootstrapModal*/
+/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, fakeBootstrapModal, observable*/
 describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
@@ -10,12 +10,17 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		underTest,
 		measuresModel;
 	beforeEach(function () {
-		measuresModel = { };
+		measuresModel = observable({});
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
+		underTest.modal('hide');
 		fakeBootstrapModal(underTest);
 	});
 	afterEach(function () {
 		underTest.detach();
+	});
+	it('shows itself when the measureModel dispatches a measuresEditRequested event', function () {
+		measuresModel.dispatchEvent('measuresEditRequested');
+		expect(underTest.is(':visible')).toBeTruthy();
 	});
 	describe('when loaded', function () {
 		beforeEach(function () {

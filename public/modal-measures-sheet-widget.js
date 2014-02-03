@@ -10,7 +10,9 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 
 		measurementTemplate.detach();
 		ideaTemplate.detach();
-
+		element.on('shown', function () {
+			element.find('.btn-primary').focus();
+		});
 		element.on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();
 			var measures = measuresModel.getMeasures();
@@ -31,5 +33,14 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 		});
 
 		element.modal({keyboard: true, show: false});
+
+		measuresModel.addEventListener('measuresEditRequested', function () {
+			element.modal('show');
+		});
+
+		/*
+		model.editWithFilter(filter)
+
+		*/
 	});
 };

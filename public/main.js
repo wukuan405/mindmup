@@ -105,7 +105,8 @@ MM.main = function (config) {
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
-				jQuery(document).titleUpdateWidget(mapController);
+				jQuery(document).titleUpdateWidget(mapController)
+				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel);
 				jQuery('[data-mm-role=share]').shareWidget();
 				jQuery('#modalShareEmail').shareEmailWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
@@ -141,6 +142,8 @@ MM.main = function (config) {
 				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
 				jQuery('.modal.huge').scalableModalWidget();
 				MM.setImageAlertWidget(stageImageInsertController, alert);
+
+
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
