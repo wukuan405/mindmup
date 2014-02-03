@@ -33,7 +33,8 @@ module.exports = function (grunt) {
 					'public/embedded-map-url-generator.js',
 					'public/e/progress.js',
 					'public/e/github.js',
-					'public/e/dropbox.js'
+					'public/e/dropbox.js',
+					'public/modal-measures-sheet-widget.js'
 				],
 				options: {
 					template: 'test-lib/grunt.tmpl',
