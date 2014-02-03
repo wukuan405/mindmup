@@ -1,5 +1,5 @@
 /*global jQuery, _*/
-jQuery.fn.modalMeasuresSheetWidget = function (measurementModel) {
+jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
@@ -13,12 +13,12 @@ jQuery.fn.modalMeasuresSheetWidget = function (measurementModel) {
 
 		element.on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();
-			var measures = measurementModel.getMeasures();
+			var measures = measuresModel.getMeasures();
 			_.each(measures, function (m) {
 				measurementTemplate.clone().appendTo(measurementContainer).text(m);
 			});
 			ideaContainer.children('[data-mm-role=idea-template]').remove();
-			_.each(measurementModel.getMeasurementValues(), function (mv) {
+			_.each(measuresModel.getMeasurementValues(), function (mv) {
 				var newIdea = ideaTemplate.clone().appendTo(ideaContainer),
 					valueTemplate = newIdea.find('[data-mm-role=value-template]'),
 					valueContainer = valueTemplate.parent();

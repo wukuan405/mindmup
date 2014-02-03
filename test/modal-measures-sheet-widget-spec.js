@@ -8,10 +8,10 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 						'</table>' +
 					'</div>',
 		underTest,
-		measurementModel;
+		measuresModel;
 	beforeEach(function () {
-		measurementModel = { };
-		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measurementModel);
+		measuresModel = { };
+		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
 		fakeBootstrapModal(underTest);
 	});
 	afterEach(function () {
@@ -19,8 +19,8 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 	});
 	describe('when loaded', function () {
 		beforeEach(function () {
-			measurementModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Cost', 'Profit']);
-			measurementModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
+			measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Cost', 'Profit']);
+			measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
 				{id: '77.session1', title: 'ron',	values: { 'Cost': 100 }},
 				{id: 1,				title: 'tom',	values: { 'Cost': 200, 'Profit': 300 }},
 				{id: 2,				title: 'mike',	values: { 'Profit': 22 }}
@@ -50,8 +50,8 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		describe('when reloaded', function () {
 			beforeEach(function () {
 				underTest.modal('hide');
-				measurementModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Profit', 'Fun']);
-				measurementModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
+				measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Profit', 'Fun']);
+				measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
 					{id: '77.session1', title: 'ron',	values: { 'Fun': 100 }},
 					{id: 3,				title: 'mike2',	values: { 'Profit': 22 }}
 				]);

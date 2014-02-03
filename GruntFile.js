@@ -34,6 +34,7 @@ module.exports = function (grunt) {
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
+					'public/measures-model.js',
 					'public/modal-measures-sheet-widget.js'
 				],
 				options: {
