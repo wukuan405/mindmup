@@ -70,6 +70,7 @@ MM.main = function (config) {
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
+			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -137,6 +138,7 @@ MM.main = function (config) {
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
+				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
 
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 			};
