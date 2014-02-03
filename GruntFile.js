@@ -2,6 +2,20 @@
 module.exports = function (grunt) {
 	'use strict';
 	grunt.initConfig({
+		notify: {
+			jasmine: {
+				options: {
+					title: 'Mindmup Jasmine Tests',
+					message: 'jasmine test sucess'
+				}
+			}
+		},
+		watch: {
+			specs: {
+				files: ['test/*.js'],
+				tasks: ['jasmine', 'notify:jasmine']
+			},
+		},
 		jasmine: {
 			all: {
 				src: [
@@ -67,5 +81,9 @@ module.exports = function (grunt) {
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
-
+	grunt.loadNpmTasks('grunt-notify');
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.registerTask('jasminenotify', [
+		'jasmine', 'notify:jasmine'
+	]);
 };
