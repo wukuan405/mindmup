@@ -1,6 +1,9 @@
 /*global jasmine, beforeEach, afterEach, sinon, describe, expect, it, MM, spyOn, localStorage*/
 describe('Local storage ', function () {
 	'use strict';
+	var fail = function (message) {
+		throw new Error(message);
+	};
 	describe('OfflineAdapter', function () {
 		var jsonStorage, underTest;
 		beforeEach(function () {
@@ -24,13 +27,13 @@ describe('Local storage ', function () {
 						expect(mapId).toBe('offline-map-99');
 						expect(mimeType).toBe('application/json');
 					},
-					this.fail.bind(this, 'loadMap should succeed')
+					fail.bind(this, 'loadMap should succeed')
 				);
 			});
 			it('should fail with not-found error if map not found', function () {
 				var errorReason;
 				underTest.loadMap('offline-map-999').then(
-					this.fail.bind(this, 'loadMap should not succeed'),
+					fail.bind(this, 'loadMap should not succeed'),
 					function (reason) {
 						errorReason = reason;
 					}
@@ -47,7 +50,7 @@ describe('Local storage ', function () {
 				).then(function () {
 					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
 					expect(JSON.parse(localStorage.getItem('offline-maps')).nextMapId).toBe(2);
-				}, this.fail.bind(this, 'saveMap should succeed'));
+				}, fail.bind(this, 'saveMap should succeed'));
 			});
 			it('should remove .mup extension from file name', function () {
 				underTest.saveMap(
@@ -73,16 +76,16 @@ describe('Local storage ', function () {
 					'file title.mup'
 				).then(function () {
 					expect(localStorage.getItem('offline-map-1')).toBe('{"map":"file content"}');
-				}, this.fail.bind(this, 'saveMap should succeed'));
+				}, fail.bind(this, 'saveMap should succeed'));
 			});
 			it('should fail with failed-offline when local storage throws an error (like quota exceeded)', function () {
-				spyOn(jsonStorage, 'setItem').andThrow('Quota exceeded');
+				spyOn(jsonStorage, 'setItem').and.throwError('Quota exceeded');
 				underTest.saveMap(
 					'file content',
 					'new',
 					'file title.mup'
 				).then(
-					this.fail.bind(this, 'saveMap should not succeed'),
+					fail.bind(this, 'saveMap should not succeed'),
 					function (reason) {
 						expect(reason).toBe('local-storage-failed');
 					}

@@ -12,7 +12,7 @@ describe("Background Upload Widget", function () {
 	it("wraps the file input into a multi-part form", function () {
 		input.background_upload('http://fakeaction/a');
 		readDeps();
-		expect(parentForm).toBe('form');
+		expect(parentForm).toHaveTagName('form');
 		expect(parentForm.prop('enctype')).toBe('multipart/form-data');
 		expect(parentForm.prop('method')).toBe('post');
 		expect(parentForm.prop('action')).toBe('http://fakeaction/a');

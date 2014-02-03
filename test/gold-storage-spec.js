@@ -9,20 +9,20 @@ describe('MM.GoldStorage', function () {
 		goldExistsDeferred = jQuery.Deferred();
 		goldFileUrlDeferred = jQuery.Deferred();
 		goldApi  = {
-			exists: jasmine.createSpy('exists').andReturn(goldExistsDeferred.promise()),
-			listFiles: jasmine.createSpy('listFiles').andReturn(goldApiListDeferred.promise()),
-			generateSaveConfig: jasmine.createSpy('generateSaveConfig').andReturn(goldSaveConfigDeferred.promise()),
-			fileUrl: jasmine.createSpy('fileUrl').andReturn(goldFileUrlDeferred.promise())
+			exists: jasmine.createSpy('exists').and.returnValue(goldExistsDeferred.promise()),
+			listFiles: jasmine.createSpy('listFiles').and.returnValue(goldApiListDeferred.promise()),
+			generateSaveConfig: jasmine.createSpy('generateSaveConfig').and.returnValue(goldSaveConfigDeferred.promise()),
+			fileUrl: jasmine.createSpy('fileUrl').and.returnValue(goldFileUrlDeferred.promise())
 		};
 		s3SaveDeferred = jQuery.Deferred();
 		s3LoadUrlDeferred = jQuery.Deferred();
 		s3Api = {
-			save: jasmine.createSpy('save').andReturn(s3SaveDeferred.promise()),
-			loadUrl: jasmine.createSpy('loadUrl').andReturn(s3LoadUrlDeferred.promise())
+			save: jasmine.createSpy('save').and.returnValue(s3SaveDeferred.promise()),
+			loadUrl: jasmine.createSpy('loadUrl').and.returnValue(s3LoadUrlDeferred.promise())
 		};
 		showModalToConfirmDeferred = jQuery.Deferred();
 		modalConfirmation = {
-			showModalToConfirm: jasmine.createSpy('showModalToConfirm').andReturn(showModalToConfirmDeferred.promise())
+			showModalToConfirm: jasmine.createSpy('showModalToConfirm').and.returnValue(showModalToConfirmDeferred.promise())
 		};
 		fileList = [
 			{title: 'map1.mup', modifiedDate: '2014-01-07T12:13:41.000Z'},
@@ -227,7 +227,7 @@ describe('MM.GoldStorage', function () {
 			it('rejects when S3 api rejects, preserving the error reason', function () {
 				s3LoadUrlDeferred.reject('a-reason');
 				expect(rejectSpy).toHaveBeenCalledWith('a-reason');
-				expect(s3Api.loadUrl.callCount).toBe(1);
+				expect(s3Api.loadUrl.calls.count()).toBe(1);
 			});
 		});
 		describe('when attempting to load a private map from a public url', function () {
@@ -239,14 +239,14 @@ describe('MM.GoldStorage', function () {
 					privateUrl = 'http://..../freddy/foo.mup?sign=signature';
 
 				resolveSpy = jasmine.createSpy('resolve');
-				s3Api.loadUrl.andCallFake(function (url) {
+				s3Api.loadUrl.and.callFake(function (url) {
 					if (url === publicUrl) {
 						return jQuery.Deferred().reject('map-not-found').promise();
 					} else {
 						return jQuery.Deferred().resolve(content).promise();
 					}
 				});
-				goldApi.fileUrl.andCallFake(function (showDialogs, account, fileKey, isPrivate) {
+				goldApi.fileUrl.and.callFake(function (showDialogs, account, fileKey, isPrivate) {
 					return jQuery.Deferred().resolve(isPrivate ? privateUrl : publicUrl).promise();
 				});
 				underTest.loadMap('b/freddy/foo.mup').then(resolveSpy);
@@ -269,13 +269,13 @@ describe('MM.GoldStorage', function () {
 			});
 		it('proxies saveMap method by adding a prefix', function () {
 			var retVal = 'expected';
-			spyOn(underTest, 'saveMap').andReturn(retVal);
+			spyOn(underTest, 'saveMap').and.returnValue(retVal);
 			expect(underTest.fileSystemFor('b', 'test filesystem').saveMap('content', 'b/jimmy/foo.mup', 'a new map', true)).toEqual(retVal);
 			expect(underTest.saveMap).toHaveBeenCalledWith('b', 'content', 'b/jimmy/foo.mup', 'a new map', true);
 		});
 		it('proxies load method', function () {
 			var retVal = 'expected';
-			spyOn(underTest, 'loadMap').andReturn(retVal);
+			spyOn(underTest, 'loadMap').and.returnValue(retVal);
 			expect(underTest.fileSystemFor('b', 'test filesystem').loadMap('b/jimmy/foo.mup', true)).toEqual(retVal);
 			expect(underTest.loadMap).toHaveBeenCalledWith('b/jimmy/foo.mup', true);
 		});

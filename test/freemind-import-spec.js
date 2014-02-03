@@ -70,7 +70,7 @@ describe("Freemind Import", function () {
 			progress = jasmine.createSpy('progress');
 		MM.freemindImport(complex_xml, start, progress);
 		expect(start).toHaveBeenCalledWith(3);
-		expect(progress.callCount).toEqual(3);
+		expect(progress.calls.count()).toEqual(3);
 	});
 	it('should set formatVersion to current version', function () {
 		var result = MM.freemindImport('<map version="0.7.1"><node ID="1" TEXT="A"></node></map>');

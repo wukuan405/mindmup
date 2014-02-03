@@ -50,7 +50,7 @@ describe('Auto save', function () {
 			var changeCmd = 'updateTitle',
 				changeArgs = [1, 'new'];
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			spyOn(storage, 'setItem').andCallThrough();
+			spyOn(storage, 'setItem').and.callThrough();
 
 			idea.dispatchEvent('changed', changeCmd, changeArgs);
 
@@ -58,7 +58,7 @@ describe('Auto save', function () {
 		});
 		it('should append multiple change events to storage', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			spyOn(storage, 'setItem').andCallThrough();
+			spyOn(storage, 'setItem').and.callThrough();
 
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			idea.dispatchEvent('changed', 'cmd2', [2]);
@@ -70,7 +70,7 @@ describe('Auto save', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId2', idea2);
 			idea2.dispatchEvent('changed', 'cmd1', [1]);
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			spyOn(storage, 'setItem').andCallThrough();
+			spyOn(storage, 'setItem').and.callThrough();
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
@@ -80,7 +80,7 @@ describe('Auto save', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			mapController.dispatchEvent('mapSaved', 'mapId', idea);
-			spyOn(storage, 'setItem').andCallThrough();
+			spyOn(storage, 'setItem').and.callThrough();
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
@@ -105,38 +105,38 @@ describe('Auto save', function () {
 			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
 		});
 		it('should warn when changes could not be saved', function () {
-			spyOn(storage, 'setItem').andThrow('failed');
+			spyOn(storage, 'setItem').and.throwError('failed');
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			expect(alert.show).toHaveBeenCalled();
 		});
 		it('should not warn for the same map twice', function () {
-			spyOn(storage, 'setItem').andThrow('failed');
+			spyOn(storage, 'setItem').and.throwError('failed');
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
-			alert.show.reset();
+			alert.show.calls.reset();
 
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 
 			expect(alert.show).not.toHaveBeenCalled();
 		});
 		it('should show warning after save', function () {
-			spyOn(storage, 'setItem').andThrow('failed');
+			spyOn(storage, 'setItem').and.throwError('failed');
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			mapController.dispatchEvent('mapSaved', 'mapId', idea);
-			alert.show.reset();
+			alert.show.calls.reset();
 
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 
 			expect(alert.show).toHaveBeenCalled();
 		});
 		it('should show warning after load', function () {
-			spyOn(storage, 'setItem').andThrow('failed');
+			spyOn(storage, 'setItem').and.throwError('failed');
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			alert.show.reset();
+			alert.show.calls.reset();
 
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 

@@ -3,6 +3,7 @@
 .bundle
 .config
 .env
+.sublime*
 coverage
 InstalledFiles
 lib/bundler/man
@@ -15,6 +16,11 @@ tmp
 .DS_Store
 public/.DS_Store
 public/offline
+
+#grunt and jasmine artificats
+node_modules/
+SpecRunner.html
+.grunt
 
 # YARD artifacts
 .yardoc

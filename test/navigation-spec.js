@@ -68,7 +68,7 @@ describe('MM.navigation', function () {
 	describe('hash change listener', function () {
 		beforeEach(function () {
 			spyOn(mapController, 'loadMap');
-			spyOn(mapController, 'currentMapId').andReturn('abc');
+			spyOn(mapController, 'currentMapId').and.returnValue('abc');
 		});
 		it('adds map ID to hash after a comma if the hash was not a valid map ID', function () {
 			window.location.hash = 'def';

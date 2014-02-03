@@ -4,19 +4,19 @@ describe('MM.GoldApi', function () {
 	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy, goldLicenseManagerDeferred, resolveSpy, rejectSpy;
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
-		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
+		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
 
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
 		goldLicenseManagerDeferred = jQuery.Deferred();
 		goldLicenseManager = {
-			getLicense: jasmine.createSpy('getLicense').andReturn(license),
-			retrieveLicense: jasmine.createSpy('retrieveLicense').andReturn(goldLicenseManagerDeferred.promise())
+			getLicense: jasmine.createSpy('getLicense').and.returnValue(license),
+			retrieveLicense: jasmine.createSpy('retrieveLicense').and.returnValue(goldLicenseManagerDeferred.promise())
 		};
 
 		activityLog = { log: jasmine.createSpy(), timer: jasmine.createSpy()};
 		endSpy = jasmine.createSpy();
 
-		activityLog.timer.andReturn({end: endSpy});
+		activityLog.timer.and.returnValue({end: endSpy});
 		underTest = new MM.GoldApi(goldLicenseManager, 'API_URL', activityLog, 'gold-bucket-name');
 		resolveSpy = jasmine.createSpy('resolved');
 		rejectSpy = jasmine.createSpy('reject');
@@ -42,7 +42,7 @@ describe('MM.GoldApi', function () {
 		});
 		it('posts an AJAX request to the API url', function () {
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/entity/action');
 			expect(ajaxPost.data.params).toEqual(execArgs);
 			expect(ajaxPost.type).toEqual('POST');
@@ -80,7 +80,7 @@ describe('MM.GoldApi', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.getExpiry();
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/license/expiry');
 			expect(ajaxPost.dataType).toBeUndefined();
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
@@ -90,7 +90,7 @@ describe('MM.GoldApi', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.register('test_name', 'test_email');
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/license/register');
 			expect(ajaxPost.dataType).toEqual('json');
 			expect(ajaxPost.data.params).toEqual({'to_email' : 'test_email', 'account_name' : 'test_name'});
@@ -100,7 +100,7 @@ describe('MM.GoldApi', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.generateExportConfiguration('pdf');
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/export_config');
 			expect(ajaxPost.dataType).toEqual('json');
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'pdf'});
@@ -146,7 +146,7 @@ describe('MM.GoldApi', function () {
 					call();
 					goldLicenseManagerDeferred.resolve(license);
 					expect(jQuery.ajax).toHaveBeenCalled();
-					var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+					var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 					expect(ajaxPost.url).toEqual(expectedUrl);
 					expect(ajaxPost.dataType).toBe(dataType);
 					expect(ajaxPost.data.params.license).toEqual(JSON.stringify(license));
@@ -178,7 +178,7 @@ describe('MM.GoldApi', function () {
 			});
 			it('should pass the file key as a parameter to the server', function () {
 				underTest.fileUrl(true, 'test', 'foo ? mup.mup', true);
-				var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 				/*jshint camelcase:false*/
 				expect(ajaxPost.data.params.file_key).toEqual('foo%20%3F%20mup.mup');
 			});
@@ -191,7 +191,7 @@ describe('MM.GoldApi', function () {
 	});
 	describe('exists', function  () {
 		it('should reject as not-authenticated if the license is not set', function () {
-			goldLicenseManager.getLicense.andReturn(false);
+			goldLicenseManager.getLicense.and.returnValue(false);
 			underTest.exists('foo.mup').fail(rejectSpy);
 			expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
 		});
@@ -208,7 +208,7 @@ describe('MM.GoldApi', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.exists('foo ? mup.mup');
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/exists');
 			expect(ajaxPost.dataType).toBeUndefined();
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'file_key': 'foo%20%3F%20mup.mup'});

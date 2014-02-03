@@ -15,17 +15,17 @@ describe('MM.S3FileSystem', function () {
 			loadUrlDeferred: jQuery.Deferred(),
 			saveDeferred: jQuery.Deferred()
 		};
-		s3Api.loadUrl  = jasmine.createSpy('loadUrl').andReturn(s3Api.loadUrlDeferred.promise());
-		s3Api.save = jasmine.createSpy('save').andReturn(s3Api.saveDeferred.promise());
+		s3Api.loadUrl  = jasmine.createSpy('loadUrl').and.returnValue(s3Api.loadUrlDeferred.promise());
+		s3Api.save = jasmine.createSpy('save').and.returnValue(s3Api.saveDeferred.promise());
 
-		MM.S3Api = jasmine.createSpy('s3Api)').andReturn(s3Api);
+		MM.S3Api = jasmine.createSpy('s3Api)').and.returnValue(s3Api);
 
 		configGenerator  = {
 			generateDeferred: jQuery.Deferred(),
 			buildMapUrlDeferred: jQuery.Deferred(),
 		};
-		configGenerator.generate = jasmine.createSpy('generate').andReturn(configGenerator.generateDeferred.promise());
-		configGenerator.buildMapUrl = jasmine.createSpy('buildMapUrl').andReturn(configGenerator.buildMapUrlDeferred.promise());
+		configGenerator.generate = jasmine.createSpy('generate').and.returnValue(configGenerator.generateDeferred.promise());
+		configGenerator.buildMapUrl = jasmine.createSpy('buildMapUrl').and.returnValue(configGenerator.buildMapUrlDeferred.promise());
 
 		underTest = new MM.S3FileSystem(configGenerator, 'a', 'S3-file-system');
 	});
@@ -121,7 +121,7 @@ describe('MM.S3ConfigGenerator', function () {
 		rejectSpy = jasmine.createSpy('rejected');
 
 		ajaxDeferred = jQuery.Deferred();
-		spyOn(jQuery, 'ajax').andReturn(ajaxDeferred.promise());
+		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
 		s3Url = 'S3_URL/';
 		publishingConfigUrl = '/publishingConfig';
 		folder = 'mapshere/';
@@ -142,7 +142,7 @@ describe('MM.S3ConfigGenerator', function () {
 		});
 		it('posts an AJAX request to the API url', function () {
 			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.mostRecentCall.args[0];
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('/publishingConfig');
 			expect(ajaxPost.type).toEqual('POST');
 			expect(ajaxPost.dataType).toEqual('json');

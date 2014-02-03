@@ -1,4 +1,4 @@
-/*global Color, $, describe, it, expect, MM, MAPJS, jasmine, waitsFor, runs */
+/*global Color, $, describe, it, expect, MM, MAPJS, jasmine, beforeEach, afterEach */
 describe('MM.exportIdeas', function () {
 	'use strict';
 
@@ -101,144 +101,131 @@ describe('MM.htmlTableExporter', function () {
 });
 describe('MM.exportToHtmlDocument', function () {
 	'use strict';
-	it('adds a UTF header', function () {
-		var result;
-		MM.exportToHtmlDocument(MAPJS.content({title: 'z'})).then(function (doc) {
-			result = $(doc).filter('meta');
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result.attr('http-equiv')).toBe('Content-Type');
-			expect(result.attr('content')).toBe('text/html; charset=utf-8');
-		});
+	var result,
+		fail = function (message) {
+			throw new Error(message);
+		};
+	beforeEach(function (done) {
+		result = false;
+		done();
 	});
-	it('transforms the top level idea into a H1 title', function () {
-		var result;
-		MM.exportToHtmlDocument(MAPJS.content({title: 'z'})).then(function (doc) {
-			result = $(doc).filter('h1');
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result.length).toBe(1);
-			expect(result.text()).toBe('z');
-		});
+	afterEach(function (done) {
+		expect(result).toBeTruthy();
+		done();
 	});
-	it('transforms the first level subideas into UL/LI list, sorted by child rank', function () {
-		var result;
+	it('adds a UTF header', function (done) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z'}))
+		.then(
+			function (doc) {
+				result = $(doc).filter('meta');
+				expect(result.attr('http-equiv')).toBe('Content-Type');
+				expect(result.attr('content')).toBe('text/html; charset=utf-8');
+				done();
+			},
+			fail.bind(this, 'exportToHtmlDocument failed')
+		);
+	});
+	it('transforms the top level idea into a H1 title', function (done) {
+		MM.exportToHtmlDocument(MAPJS.content({title: 'z'}))
+		.then(
+			function (doc) {
+				result = $(doc).filter('h1');
+				expect(result.length).toBe(1);
+				expect(result.text()).toBe('z');
+				done();
+			},
+			fail.bind(this, 'exportToHtmlDocument failed')
+		);
+	});
+	it('transforms the first level subideas into UL/LI list, sorted by child rank', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}})).then(function (doc) {
 			result = $(doc).filter('ul');
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
 			expect(result.length).toBe(1);
 			expect(result.children().length).toBe(2);
-			expect(result.children().first()).toBe('li');
+			expect(result.children().first()).toHaveTagName('li');
 			expect(result.children().first().text()).toBe('sub5');
-			expect(result.children().last()).toBe('li');
+			expect(result.children().last()).toHaveTagName('li');
 			expect(result.children().last().text()).toBe('sub6');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('transforms the lower level subideas into UL/LI lists, sorted by child rank, recursively', function () {
-		var result;
+	it('transforms the lower level subideas into UL/LI lists, sorted by child rank, recursively', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 1: { title: '2', ideas: { 6 : {title: 'sub6' }, 5: {title: 'sub5'}}}}})).then(function (doc) {
 			result = $(doc).filter('ul');
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
 			expect(result.length).toBe(1);
 			expect(result.children().length).toBe(1);
-			expect(result.children().first()).toBe('li');
+			expect(result.children().first()).toHaveTagName('li');
 			expect(result.children().first().clone().children().remove().end().text()).toBe('2');// have to do this uglyness to avoid matching subelements
 			expect(result.children().first().children('ul').length).toBe(1);
 			expect(result.children().first().children('ul').children('li').length).toBe(2);
 			expect(result.children().first().children('ul').children('li').first().text()).toBe('sub5');
 			expect(result.children().first().children('ul').children('li').last().text()).toBe('sub6');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('paints the background color according to node', function () {
+	it('paints the background color according to node', function (done) {
 		/*jslint newcap:true*/
-		var result;
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: { 6 : {title: 's', attr : { style : { background: '#FF0000' }}}}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
 			expect(Color(result.css('background-color'))).toEqual(Color('#FF0000'));
 			expect(Color(result.css('color'))).toEqual(Color(MAPJS.contrastForeground('#FF0000')));
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('converts ideas with URLs into hyperlinks', function () {
-		var result;
+	it('converts ideas with URLs into hyperlinks', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
 			6 : {title: 'zoro http://www.google.com'}
 		}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first().children().first();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result).toBe('a');
+			expect(result).toHaveTagName('a');
 			expect(result.attr('href')).toBe('http://www.google.com');
 			expect(result.text()).toBe('zoro ');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('converts ideas with only URLs into hyperlinks using hyperlink as text', function () {
-		var result;
+	it('converts ideas with only URLs into hyperlinks using hyperlink as text', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
 			6 : {title: 'http://www.google.com'}
 		}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first().children().first();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result).toBe('a');
+			expect(result).toHaveTagName('a');
 			expect(result.attr('href')).toBe('http://www.google.com');
 			expect(result.text()).toBe('http://www.google.com');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('root idea with URL is converted into a hyperlink', function () {
-		var result;
+	it('root idea with URL is converted into a hyperlink', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'zoro http://www.google.com'})).then(function (doc) {
 			result = $(doc).filter('h1').children();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result).toBe('a');
+			expect(result).toHaveTagName('a');
 			expect(result.attr('href')).toBe('http://www.google.com');
 			expect(result.text()).toBe('zoro ');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('root idea with only URL is converted into a hyperlink using link text', function () {
-		var result;
+	it('root idea with only URL is converted into a hyperlink using link text', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'http://www.google.com'})).then(function (doc) {
 			result = $(doc).filter('h1').children();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
-			expect(result).toBe('a');
+			expect(result).toHaveTagName('a');
 			expect(result.attr('href')).toBe('http://www.google.com');
 			expect(result.text()).toBe('http://www.google.com');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('exports HTML attachments', function () {
-		var result;
+	it('exports HTML attachments', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
 			6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}},
 		}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first().children('div').first();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
 			expect(result.html()).toBe('<b>Bold</b>');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
-	it('exports HTML attachments to root nodes', function () {
-		var result;
+	it('exports HTML attachments to root nodes', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}})).then(function (doc) {
 			result = $(doc).filter('div').first();
-		});
-		waitsFor(function () {return result; });
-		runs(function () {
 			expect(result.html()).toBe('<b>Bold</b>');
-		});
+			done();
+		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
 });
