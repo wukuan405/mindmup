@@ -6,15 +6,26 @@ module.exports = function (grunt) {
 			jasmine: {
 				options: {
 					title: 'Mindmup Jasmine Tests',
-					message: 'jasmine test sucess'
+					message: 'jasmine test success'
 				}
 			}
 		},
 		watch: {
 			specs: {
 				files: ['test/*.js'],
-				tasks: ['jasmine', 'notify:jasmine']
+				tasks: ['jasmine', 'notify:jasmine'],
+				options: {
+					spawn: false
+				}
 			},
+			src: {
+				files: ['public/**/*.js'],
+				tasks: ['jasmine', 'notify:jasmine'],
+				options: {
+					spawn: false
+				}
+
+			}
 		},
 		jasmine: {
 			all: {
@@ -83,7 +94,15 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
 	grunt.loadNpmTasks('grunt-notify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.registerTask('jasminenotify', [
-		'jasmine', 'notify:jasmine'
-	]);
+	grunt.event.on('watch', function (action, filepath, target) {
+		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
+		var options = grunt.config(['jasmine', 'all']);
+		if (target === 'specs') {
+			options.options.specs = [filepath];
+		} else {
+			options.options.specs = ['test/*.js'];
+		}
+		grunt.config(['jasmine', 'all'], options);
+
+	});
 };
