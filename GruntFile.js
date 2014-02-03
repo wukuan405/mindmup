@@ -40,10 +40,7 @@ module.exports = function (grunt) {
 					outfile: 'SpecRunner.html',
 					keepRunner: true,
 					specs: [
-						'test/jasmine-tagname-match.js',
-						'test/*-spec.js',
-						'test/e-github.js',
-						'test/e-dropbox.js',
+						'test/*.js',
 					],
 					vendor: [
 						'http://mindmup.s3.amazonaws.com/lib/jquery-1.9.1.min.js',
@@ -58,6 +55,7 @@ module.exports = function (grunt) {
 						'test-lib/sinon-1.5.2.js',
 						'test-lib/describe-batch.js',
 						'test-lib/fake-bootstrap-modal.js',
+						'test-lib/jasmine-tagname-match.js',
 						'public/mapjs-compiled.js',
 					]
 				}
@@ -67,4 +65,5 @@ module.exports = function (grunt) {
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
+
 };
