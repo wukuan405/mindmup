@@ -539,5 +539,8 @@ body .modal.huge {
   left: 5%; /* (100%-width)/2 */
   /* place center */
   margin-left:auto;
-  margin-right:auto; 
+  margin-right:auto;
+}
+#modalMeasuresSheet td,  #modalMeasuresSheet th + th {
+	text-align: right;
 }

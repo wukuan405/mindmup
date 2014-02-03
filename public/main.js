@@ -139,7 +139,7 @@ MM.main = function (config) {
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
-
+				jQuery('.modal.huge').scalableModalWidget();
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
