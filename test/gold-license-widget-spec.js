@@ -64,7 +64,7 @@ describe('Gold License Widget', function () {
 		});
 		registerDeferred = jQuery.Deferred();
 		expiryDeferred = jQuery.Deferred();
-		goldApi = { register: jasmine.createSpy('register').andReturn(registerDeferred.promise()), getExpiry: jasmine.createSpy('register').andReturn(expiryDeferred.promise()) };
+		goldApi = { register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()), getExpiry: jasmine.createSpy('register').and.returnValue(expiryDeferred.promise()) };
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
 		/*jshint camelcase: false */
@@ -81,12 +81,12 @@ describe('Gold License Widget', function () {
 			expect(underTest.modal).toHaveBeenCalledWith('show');
 		});
 		it('shows only the license-required section if the license manager does not contain a license', function () {
-			licenseManager.getLicense.andReturn(undefined);
+			licenseManager.getLicense.and.returnValue(undefined);
 			licenseManager.dispatchEvent('license-entry-required');
 			checkSectionShown('license-required');
 		});
 		it('shows only the unauthorised-license section if the license manager contains a license', function () {
-			licenseManager.getLicense.andReturn({a: 1});
+			licenseManager.getLicense.and.returnValue({a: 1});
 			licenseManager.dispatchEvent('license-entry-required');
 			checkSectionShown('unauthorised-license');
 		});
@@ -98,17 +98,17 @@ describe('Gold License Widget', function () {
 	});
 	describe('when invoked by menu directly', function () {
 		it('shows only the no-license section if the license manager does not contain a license', function () {
-			licenseManager.getLicense.andReturn(undefined);
+			licenseManager.getLicense.and.returnValue(undefined);
 			underTest.modal('show');
 			checkSectionShown('no-license');
 		});
 		it('shows only the view-license section if the license manager contains a license', function () {
-			licenseManager.getLicense.andReturn({a: 1});
+			licenseManager.getLicense.and.returnValue({a: 1});
 			underTest.modal('show');
 			checkSectionShown('view-license');
 		});
 		it('shows the correct section even if previously invoked by license manager [regression bug check]', function () {
-			licenseManager.getLicense.andReturn({a: 1});
+			licenseManager.getLicense.and.returnValue({a: 1});
 			licenseManager.dispatchEvent('license-entry-required');
 			underTest.modal('hide');
 			underTest.modal('show');
@@ -130,28 +130,28 @@ describe('Gold License Widget', function () {
 		});
 		it('changes the license if valid license uploaded and shows the view-license section', function () {
 			underTest.modal('show');
-			licenseManager.storeLicense.andReturn(true);
+			licenseManager.storeLicense.and.returnValue(true);
 
-			fileReader.mostRecentCall.args[1]('some text');
+			fileReader.calls.mostRecent().args[1]('some text');
 
 			expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('view-license');
 		});
 		it('automatically closes the dialog when valid license is uploaded if loaded from the license manager', function () {
-			licenseManager.storeLicense.andReturn(true);
+			licenseManager.storeLicense.and.returnValue(true);
 			licenseManager.dispatchEvent('license-entry-required');
 
-			fileReader.mostRecentCall.args[1]('some text');
+			fileReader.calls.mostRecent().args[1]('some text');
 
 			expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
 			expect(underTest.is(':visible')).toBeFalsy();
 		});
 		it('shows a validation error and keeps the dialog open if invalid license is uploaded', function () {
 			underTest.modal('show');
-			licenseManager.storeLicense.andReturn(false);
+			licenseManager.storeLicense.and.returnValue(false);
 
-			fileReader.mostRecentCall.args[1]('some text');
+			fileReader.calls.mostRecent().args[1]('some text');
 
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('invalid-license');
@@ -167,7 +167,7 @@ describe('Gold License Widget', function () {
 			it('changes the license if valid license saved and shows the view-license section', function () {
 				underTest.modal('show');
 				underTest.find('textarea[data-mm-role=license-text]').val('some text');
-				licenseManager.storeLicense.andReturn(true);
+				licenseManager.storeLicense.and.returnValue(true);
 
 
 				underTest.find('[data-mm-role=save-license]').click();
@@ -177,7 +177,7 @@ describe('Gold License Widget', function () {
 				checkSectionShown('view-license');
 			});
 			it('automatically closes the dialog when valid license is uploaded if loaded from the license manager', function () {
-				licenseManager.storeLicense.andReturn(true);
+				licenseManager.storeLicense.and.returnValue(true);
 				licenseManager.dispatchEvent('license-entry-required');
 				underTest.find('textarea[data-mm-role=license-text]').val('some text');
 
@@ -189,7 +189,7 @@ describe('Gold License Widget', function () {
 			it('shows a validation error and keeps the dialog open if invalid license is uploaded', function () {
 				underTest.modal('show');
 				underTest.find('textarea[data-mm-role=license-text]').val('some text');
-				licenseManager.storeLicense.andReturn(false);
+				licenseManager.storeLicense.and.returnValue(false);
 
 				underTest.find('[data-mm-role=save-license]').click();
 
@@ -204,7 +204,7 @@ describe('Gold License Widget', function () {
 		var currentLicense;
 		beforeEach(function () {
 			currentLicense = {account: 'test-acc'};
-			licenseManager.getLicense.andReturn(currentLicense);
+			licenseManager.getLicense.and.returnValue(currentLicense);
 		});
 		it('fills in input fields data-mm-role=account-name with the current license account name', function () {
 			underTest.modal('show');
@@ -224,7 +224,7 @@ describe('Gold License Widget', function () {
 			});
 		});
 		it('clears in anything with data-mm-role=license-text, expiry-date and account-name if the license is not defined, and hides anything with data-mm-role=expired', function () {
-			licenseManager.getLicense = jasmine.createSpy('getLicense').andReturn(false);
+			licenseManager.getLicense = jasmine.createSpy('getLicense').and.returnValue(false);
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=expiry-date]').val()).toEqual('');
 			expect(underTest.find('input[data-mm-role~=account-name]').val()).toEqual('');
@@ -238,7 +238,7 @@ describe('Gold License Widget', function () {
 	describe('handling invalid or expired licenses when view-license is showing', function () {
 		describe('when view-license is showing', function () {
 			beforeEach(function () {
-				licenseManager.getLicense.andReturn({a: 1});
+				licenseManager.getLicense.and.returnValue({a: 1});
 				underTest.modal('show'); // this will show view-license because license manager contains a license
 			});
 			afterEach(function () {
@@ -263,7 +263,7 @@ describe('Gold License Widget', function () {
 		});
 		describe('when something else is showing', function () {
 			beforeEach(function () {
-				licenseManager.getLicense.andReturn({a: 1});
+				licenseManager.getLicense.and.returnValue({a: 1});
 				licenseManager.dispatchEvent('license-entry-required');
 			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
@@ -354,8 +354,8 @@ describe('Gold License Widget', function () {
 			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-show');
 		});
 		it('logs setting the license', function () {
-			licenseManager.storeLicense.andReturn(true);
-			fileReader.mostRecentCall.args[1]('some text');
+			licenseManager.storeLicense.and.returnValue(true);
+			fileReader.calls.mostRecent().args[1]('some text');
 			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-set');
 		});
 		it('logs clicks on every link by the link href', function () {

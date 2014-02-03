@@ -26,7 +26,7 @@ describe('MM.RetriableMapSourceDecorator', function () {
 	describe('loadMap', function () {
 
 		it('should use retry', function () {
-			spyOn(MM, 'retry').andCallThrough();
+			spyOn(MM, 'retry').and.callThrough();
 
 			underTest.loadMap('foo');
 
@@ -56,7 +56,7 @@ describe('MM.RetriableMapSourceDecorator', function () {
 	});
 	describe('saveMap', function () {
 		it('should use retry', function () {
-			spyOn(MM, 'retry').andCallThrough();
+			spyOn(MM, 'retry').and.callThrough();
 
 			underTest.saveMap();
 

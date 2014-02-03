@@ -4,7 +4,7 @@ describe('LayoutExport', function () {
 	describe('LayoutExportController', function () {
 		var configurationGenerator, mapModel, currentLayout, underTest, requestId, storageApi, activityLog, saveConfiguration, saveOptions,
 			laststorageApiCallFor = function (url) {
-				return _.find(storageApi.poll.calls, function (call) {
+				return _.find(storageApi.poll.calls.all(), function (call) {
 					return call.args[0] === url;
 				});
 			};
@@ -20,7 +20,7 @@ describe('LayoutExport', function () {
 					}
 				};
 				storageApi.save = jasmine.createSpy('save');
-				storageApi.save.andReturn(
+				storageApi.save.and.returnValue(
 					jQuery.Deferred().resolve().promise());
 				return storageApi;
 			};
@@ -32,13 +32,13 @@ describe('LayoutExport', function () {
 			activityLog = {};
 			currentLayout = { 'a': 'b' };
 			configurationGenerator.generateExportConfiguration = jasmine.createSpy('saveMap');
-			configurationGenerator.generateExportConfiguration.andReturn(
+			configurationGenerator.generateExportConfiguration.and.returnValue(
 				jQuery.Deferred().resolve(saveConfiguration).promise()
 			);
 			activityLog.log = jasmine.createSpy('log');
 
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
-			mapModel.getCurrentLayout.andReturn(currentLayout);
+			mapModel.getCurrentLayout.and.returnValue(currentLayout);
 			storageApi = buildStorageApi();
 			underTest = new MM.LayoutExportController(mapModel, configurationGenerator, storageApi, activityLog);
 
@@ -54,19 +54,19 @@ describe('LayoutExport', function () {
 			expect(currentLayout).toEqual({'a': 'b'});
 		});
 		it('polls for result and error when the request is started', function () {
-			spyOn(storageApi, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').and.callThrough();
 			underTest.startExport();
 			expect(storageApi.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Object));
 			expect(storageApi.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Object));
 		});
 
 		it('export is marked as not stopped until deferred object is resolved', function () {
-			spyOn(storageApi, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').and.callThrough();
 			underTest.startExport();
 			expect(laststorageApiCallFor('outputlisturl').args[1].stoppedSemaphore()).toBeFalsy();
 		});
 		it('export is marked as stopped after promise is resolved', function () {
-			spyOn(storageApi, 'poll').andCallThrough();
+			spyOn(storageApi, 'poll').and.callThrough();
 			underTest.startExport();
 			storageApi.deferred.outputlisturl.resolve('foo');
 			expect(laststorageApiCallFor('errorlisturl').args[1].stoppedSemaphore()).toBeTruthy();
@@ -82,8 +82,8 @@ describe('LayoutExport', function () {
 		it('rejects if the configuationGenerator fails', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i cant get the config';
-			configurationGenerator.generateExportConfiguration.andReturn(jQuery.Deferred().reject(reason).promise());
-			spyOn(storageApi, 'poll').andCallThrough();
+			configurationGenerator.generateExportConfiguration.and.returnValue(jQuery.Deferred().reject(reason).promise());
+			spyOn(storageApi, 'poll').and.callThrough();
 
 			underTest.startExport().fail(fail);
 
@@ -115,8 +115,8 @@ describe('LayoutExport', function () {
 		it('rejects promise if the file system rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
-			storageApi.save.andReturn(jQuery.Deferred().reject(reason).promise());
-			spyOn(storageApi, 'poll').andCallThrough();
+			storageApi.save.and.returnValue(jQuery.Deferred().reject(reason).promise());
+			spyOn(storageApi, 'poll').and.callThrough();
 
 			underTest.startExport().fail(fail);
 

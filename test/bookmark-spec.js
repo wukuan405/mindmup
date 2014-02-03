@@ -213,7 +213,7 @@ describe('Bookmarks', function () {
 			storage.getItem = function () {
 				return '{"a": "b"}';
 			};
-			//spyOn(storage, 'getItem').andCallThrough();
+			//spyOn(storage, 'getItem').and.callThrough();
 			var result = json.getItem('bla');
 			expect(result).toEqual({a: 'b'});
 		});
@@ -245,7 +245,7 @@ describe('Bookmarks', function () {
 		it('removes previous content if the list is not empty', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));
 			expect(list.children('li').length).toBe(1);
-			expect(list.children('li').first().children().first()).toBe('a');
+			expect(list.children('li').first().children().first()).toHaveTagName('a');
 		});
 		it('adds repository class to hyperlinks based on map ID', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([{mapId: 'xabc', title: 'y'}]));
@@ -297,7 +297,7 @@ describe('Bookmarks', function () {
 		});
 		it('preserves any children in the link', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([{mapId: 'x', title: 'y'}]));
-			expect(list.children('li').first().children().first().children()).toBe('span');
+			expect(list.children('li').first().children().first().children()).toHaveTagName('span');
 		});
 		it('preserves any elements without data-mm-role=bookmark', function () {
 			var list = jQuery(ulTemplate).prepend('<li>Keep me</li><li data-mm-role="bookmark">Do not keep me</li>');
@@ -307,7 +307,7 @@ describe('Bookmarks', function () {
 		it('hides parent of elements with data-mm-role=bookmark-pin if map is not pinnable', function () {
 			var list = jQuery(ulTemplate).prepend('<li>Keep me</li><li id="bkm"><a data-mm-role="bookmark-pin">Pin me</a></li>'),
 				bookmark = wrap([{mapId: 'x', title: 'y'}]);
-			spyOn(bookmark, 'canPin').andReturn(false);
+			spyOn(bookmark, 'canPin').and.returnValue(false);
 			list.bookmarkWidget(bookmark);
 			expect(list.children("li[id=bkm]").css('display')).toBe('none');
 		});
@@ -315,7 +315,7 @@ describe('Bookmarks', function () {
 			var list = jQuery(ulTemplate).prepend('<li>Keep me</li><li id="bkm"><a data-mm-role="bookmark-pin">Pin me</a></li>'),
 				repo = observable({}),
 				bookmark = wrap([{mapId: 'x', title: 'y'}], repo);
-			spyOn(bookmark, 'canPin').andReturn(false);
+			spyOn(bookmark, 'canPin').and.returnValue(false);
 			list.bookmarkWidget(bookmark);
 			repo.dispatchEvent('mapLoaded', 'another', {title: 'z'});
 			expect(list.children("li[id=bkm]").css('display')).toBe('none');
@@ -324,7 +324,7 @@ describe('Bookmarks', function () {
 		it('attaches a click event on any links inside data-mm-role=bookmark-pin that call bookmark.pin', function () {
 			var list = jQuery(ulTemplate).prepend('<li><a data-mm-role="bookmark-pin" href="#">Pin Me</a></li>'),
 				bookmark = wrap([{mapId: 'x', title: 'y'}]);
-			spyOn(bookmark, 'canPin').andReturn(true);
+			spyOn(bookmark, 'canPin').and.returnValue(true);
 			list.bookmarkWidget(bookmark);
 			spyOn(bookmark, 'pin');
 			list.children('li').first().find('a').click();

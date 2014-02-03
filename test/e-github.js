@@ -18,12 +18,12 @@ describe('Github integration', function () {
 		beforeEach(function () {
 			underTest = MM.GitHub.popupWindowLoginLauncher;
 			fakeFrame = {};
-			spyOn(window, 'open').andReturn(fakeFrame);
+			spyOn(window, 'open').and.returnValue(fakeFrame);
 		});
 		it('opens a login dialog in a separate frame if allowed to do so', function () {
 			underTest().then(done, rejected);
 			expect(window.open).toHaveBeenCalled();
-			expect(window.open.calls[0].args[0]).toBe('/github/login');
+			expect(window.open.calls.first().args[0]).toBe('/github/login');
 		});
 		it('attaches a message listener to window.MMGithubCallBack, resolving when the message with an auth token comes back and setting the session token', function () {
 			underTest().then(done, rejected);
@@ -69,12 +69,12 @@ describe('Github integration', function () {
 		var sessionStorage, loginLauncher;
 		beforeEach(function () {
 			sessionStorage = {github_auth_token: 'x'};
-			loginLauncher = jasmine.createSpy('login').andReturn(jQuery.Deferred().promise());
+			loginLauncher = jasmine.createSpy('login').and.returnValue(jQuery.Deferred().promise());
 			underTest = new MM.GitHub.GithubAPI(loginLauncher, sessionStorage);
 		});
 		describe('loadFile', function () {
 			it('sends a request to Github V3 API URL using auth token and base64 decodes file contents', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().resolve({
 					content: window.Base64.encode('hey there'),
 					name: 'test.mup',
 					encoding: 'base64'
@@ -87,7 +87,7 @@ describe('Github integration', function () {
 				expect(rejected).not.toHaveBeenCalled();
 			});
 			it('attaches branch as a ?ref= to the URL if defined', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().promise());
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().promise());
 				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
 				expect(jQuery.ajax).toHaveBeenCalledWith(
 					{ url : 'https://api.github.com/repos/r/contents/test.mup?ref=bbb', type : 'GET', headers : { Authorization : 'bearer x' } }
@@ -100,25 +100,25 @@ describe('Github integration', function () {
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
 			});
 			it('rejects with not-authenticated and clears session auth if ajax error is 403', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 403, statusText: 'Pink'}));
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().reject({status: 403, statusText: 'Pink'}));
 				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
 				expect(sessionStorage.github_auth_token).toBeFalsy();
 			});
 			it('rejects with not-authenticated and clears session auth if ajax error is 401', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 401, statusText: 'Pink'}));
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().reject({status: 401, statusText: 'Pink'}));
 				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
 				expect(sessionStorage.github_auth_token).toBeFalsy();
 			});
 			it('rejects with not-found and does not clears session auth if ajax error is 404', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().reject({status: 404, statusText: 'Pink'}));
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().reject({status: 404, statusText: 'Pink'}));
 				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
 				expect(rejected).toHaveBeenCalledWith('not-found');
 				expect(sessionStorage.github_auth_token).toBe('x');
 			});
 			it('rejects with format-error if encoding is not base64', function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().resolve({
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().resolve({
 					content: window.Base64.encode('hey there'),
 					name: 'test.mm',
 					encoding: 'base65'
@@ -130,10 +130,10 @@ describe('Github integration', function () {
 		});
 		describe('saveFile', function () {
 			beforeEach(function () {
-				spyOn(jQuery, 'ajax').andReturn(jQuery.Deferred().promise());
+				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().promise());
 			});
 			it('commits a new file without a SHA tag using PUT', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().reject({status: 404}).promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().reject({status: 404}).promise());
 				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt'}, 'commit msg');
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt',
@@ -144,13 +144,13 @@ describe('Github integration', function () {
 				});
 			});
 			it('commits a new file without a SHA tag using PUT', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().reject({status: 503}, 'burp').promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().reject({status: 503}, 'burp').promise());
 				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt'}, 'commit msg').then(done, rejected);
-				expect(jQuery.ajax.callCount).toBe(1);
+				expect(jQuery.ajax.calls.count()).toBe(1);
 				expect(rejected).toHaveBeenCalledWith('network-error', 'burp');
 			});
 			it('commits an existing file with the previous sha tag SHA tag using PUT', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
 				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt'}, 'commit msg');
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt',
@@ -161,7 +161,7 @@ describe('Github integration', function () {
 				});
 			});
 			it('asks for an existing file using ?ref as a branch', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
 				underTest.saveFile('abcd', {repo: 'r', path: 'p.txt', branch: 'br'}, 'commit msg');
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt?ref=br',
@@ -170,7 +170,7 @@ describe('Github integration', function () {
 				});
 			});
 			it('attaches the branch to PUT request as a branch data arg if defined', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
 				underTest.saveFile('abcd', {repo: 'r', branch: 'someb', path: 'p.txt'}, 'commit msg');
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt',
@@ -181,13 +181,13 @@ describe('Github integration', function () {
 				});
 			});
 			it('resolves successful completion', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().resolve({sha: 'oldsha'}).promise());
 				underTest.saveFile('abcd', {repo: 'r', branch: 'someb', path: 'p.txt'}, 'commit msg').then(done, rejected);
 				expect(done).toHaveBeenCalled();
 				expect(rejected).not.toHaveBeenCalled();
 			});
 			it('rejects unsuccessful completion', function () {
-				jQuery.ajax.andReturn(jQuery.Deferred().reject().promise());
+				jQuery.ajax.and.returnValue(jQuery.Deferred().reject().promise());
 				underTest.saveFile('abcd', {repo: 'r', branch: 'someb', path: 'p.txt'}, 'commit msg').then(done, rejected);
 				expect(rejected).toHaveBeenCalled();
 				expect(done).not.toHaveBeenCalled();
@@ -226,14 +226,14 @@ describe('Github integration', function () {
 					expect(loginLauncher).toHaveBeenCalled();
 				});
 				it('stores token and resolves when login launcher resolves', function () {
-					loginLauncher.andReturn(jQuery.Deferred().resolve('tkn').promise());
+					loginLauncher.and.returnValue(jQuery.Deferred().resolve('tkn').promise());
 					underTest.login(true).then(done, rejected);
 					expect(done).toHaveBeenCalled();
 					expect(rejected).not.toHaveBeenCalled();
 					expect(sessionStorage.github_auth_token).toBe('tkn');
 				});
 				it('rejects when login launcher rejects', function () {
-					loginLauncher.andReturn(jQuery.Deferred().reject().promise());
+					loginLauncher.and.returnValue(jQuery.Deferred().reject().promise());
 					underTest.login(true).then(done, rejected);
 					expect(rejected).toHaveBeenCalled();
 					expect(done).not.toHaveBeenCalled();
@@ -245,7 +245,7 @@ describe('Github integration', function () {
 			var ajaxCall;
 			beforeEach(function () {
 				ajaxCall = jQuery.Deferred();
-				spyOn(jQuery, 'ajax').andReturn(ajaxCall.promise());
+				spyOn(jQuery, 'ajax').and.returnValue(ajaxCall.promise());
 			});
 			describe('general error control', function () {
 				var ajaxGetters = _.functions(new MM.GitHub.GithubAPI()).filter(function (name) {return (/^get/).test(name); });
@@ -367,13 +367,13 @@ describe('Github integration', function () {
 			promptForCommitCall = jQuery.Deferred();
 			promptForFileNameCall = jQuery.Deferred();
 			api = {
-				login: jasmine.createSpy('login').andReturn(loginCall.promise()),
-				loadFile: jasmine.createSpy('loadFile').andReturn(loadFileCall.promise()),
-				saveFile: jasmine.createSpy('saveFile').andReturn(saveFileCall.promise())
+				login: jasmine.createSpy('login').and.returnValue(loginCall.promise()),
+				loadFile: jasmine.createSpy('loadFile').and.returnValue(loadFileCall.promise()),
+				saveFile: jasmine.createSpy('saveFile').and.returnValue(saveFileCall.promise())
 			};
 			prompters = {
-				commit: jasmine.createSpy('promptForComit').andReturn(promptForCommitCall.promise()),
-				fileName: jasmine.createSpy('promptForFileName').andReturn(promptForFileNameCall.promise())
+				commit: jasmine.createSpy('promptForComit').and.returnValue(promptForCommitCall.promise()),
+				fileName: jasmine.createSpy('promptForFileName').and.returnValue(promptForFileNameCall.promise())
 			};
 			mapId = 'h1REPO:BRANCH:PATH';
 			underTest = new MM.GitHub.GithubFileSystem(api, prompters);

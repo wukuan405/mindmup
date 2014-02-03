@@ -1,7 +1,7 @@
 /* global spyOn */
 function fakeBootstrapModal(jQueryObject) {
 	'use strict';
-	spyOn(jQueryObject, 'modal').andCallFake(function (bootstrapOp) {
+	spyOn(jQueryObject, 'modal').and.callFake(function (bootstrapOp) {
 		if (bootstrapOp === 'show') {
 			jQueryObject.show();
 			jQueryObject.trigger('show');
