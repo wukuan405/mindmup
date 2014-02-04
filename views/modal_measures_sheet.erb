@@ -2,14 +2,36 @@
 	<div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 	  <h3>Measurements</h3>
+
 	</div>
 	<div class="modal-body">
 		<table data-mm-role="measurements-table" class="table table-striped">
-			<thead><tr><th>Name</th><th data-mm-role="measurement-template"></th></tr></thead>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th data-mm-role="measurement-template">
+						<div class="btn-group">
+						  <a class="btn btn-link dropdown-toggle" data-toggle="dropdown" href="#" >
+						    <span data-mm-role="measurement-name"></span>
+						    <span class="caret"></span>
+						  </a>
+						  <ul class="dropdown-menu pull-right">
+						  	<li><a data-mm-role="clear-measure-values">Clear all values</a></li>
+						  	<li><a data-mm-role="remove-measure">Remove measure</a></li>
+						  </ul>
+						</div>
+					</th>
+				</tr>
+			</thead>
 			<tbody><tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr></tbody>
 		</table>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" tabindex="1" data-dismiss="modal" >Close</button>
+		<div class="input-append pull-left">
+	    		<input type="text" data-mm-role="measure-to-add"/>
+	    		<button class="btn btn-primary" data-mm-role="add-measure">Add Measure</button>
+	  	</div>
+		<button class="btn" tabindex="1" data-dismiss="modal" >Close</button>
 	</div>
+<!-- </div> -->
 </div>

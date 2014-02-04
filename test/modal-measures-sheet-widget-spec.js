@@ -3,7 +3,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
 						'<table data-mm-role="measurements-table">' +
-							'<thead><tr><th>Name</th><th data-mm-role="measurement-template"></th></tr></thead>' +
+							'<thead><tr><th>Name</th><th data-mm-role="measurement-template"><span data-mm-role="measurement-name"></span></th></tr></thead>' +
 							'<tbody><tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr></tbody>' +
 						'</table>' +
 					'</div>',
@@ -16,7 +16,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				});
 			});
 		},
-		tableRowNames = function () {
+		tableColumnNames = function () {
 			var headerRow = underTest.find('thead tr');
 			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
 		};
@@ -35,6 +35,25 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		measuresModel.dispatchEvent('measuresEditRequested');
 		expect(underTest.is(':visible')).toBeTruthy();
 	});
+	describe('when loaded from a map with no measures', function () {
+		beforeEach(function () {
+			measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue([]);
+			measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
+				{id: '77.session1', title: 'ron'},
+				{id: 1,				title: 'tom'},
+				{id: 2,				title: 'mike'}
+			]);
+			underTest.modal('show');
+		});
+		it('shows an empty table', function () {
+			expect(tableValues()).toEqual([
+				[],
+				[],
+				[]
+			]);
+			expect(tableColumnNames()).toEqual(['Name']);
+		});
+	});
 	describe('when loaded', function () {
 		beforeEach(function () {
 			measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Cost', 'Profit']);
@@ -47,7 +66,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		});
 		it('shows a table with measurements in the first row, keeping any non template elements', function () {
 
-			expect(tableRowNames()).toEqual(['Name', 'Cost', 'Profit']);
+			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Profit']);
 		});
 		it('shows active idea titles in the first column', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
@@ -60,25 +79,43 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				['0',	'22']
 			]);
 		});
-		describe('when measurements are changed', function () {
-			it('a measurement value is changed', function () {
-				measuresModel.dispatchEvent('measureValueChanged', 2, 'Profit', 33);
-				expect(tableValues()).toEqual([
-					['100',	'0'],
-					['200',	'300'],
-					['0',	'33']
-				]);
-			});
-			it('when a measure is added', function () {
-				measuresModel.dispatchEvent('measureAdded', 'Lucre');
-				expect(tableValues()).toEqual([
-					['100', '0', '0'],
-					['200', '300', '0'],
-					['0', '22', '0']
-				]);
-				expect(tableRowNames()).toEqual(['Name', 'Cost', 'Profit', 'Lucre']);
-			});
+		it('value cells are updated for the changed measurement value', function () {
+			measuresModel.dispatchEvent('measureValueChanged', 2, 'Profit', 33);
+			expect(tableValues()).toEqual([
+				['100',	'0'],
+				['200',	'300'],
+				['0',	'33']
+			]);
 		});
+		it('a new column is added at the correct index when a measure is added', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Lucre', 1);
+			expect(tableValues()).toEqual([
+				['100', '0', '0'],
+				['200', '0', '300'],
+				['0', '0', '22']
+			]);
+			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Lucre', 'Profit']);
+		});
+		it('the column for the measure is removed when the measure is removed', function () {
+			measuresModel.dispatchEvent('measureRemoved', 'Cost');
+			expect(tableValues()).toEqual([
+				['0'],
+				['300'],
+				['22']
+			]);
+			expect(tableColumnNames()).toEqual(['Name', 'Profit']);
+		});
+		it('the becomes empty when the last measure is removed', function () {
+			measuresModel.dispatchEvent('measureRemoved', 'Cost');
+			measuresModel.dispatchEvent('measureRemoved', 'Profit');
+			expect(tableValues()).toEqual([
+				[],
+				[],
+				[]
+			]);
+			expect(tableColumnNames()).toEqual(['Name']);
+		});
+
 		describe('when reloaded', function () {
 			beforeEach(function () {
 				underTest.modal('hide');
