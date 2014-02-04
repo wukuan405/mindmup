@@ -14,21 +14,26 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			},
 			getColumnIndexForMeasure = function (measureName) {
 				return _.reduce(measurementContainer.children(), function (count, th) {
-					var elem = jQuery(th);
+					var elem = jQuery(th).find('[data-mm-role=measurement-name]');
 					if (elem.text() === measureName) {
-						return elem.index();
+						return jQuery(th).index();
 					} else {
 						return count;
 					}
-				}, 0);
+				}, -1);
 			},
 			appendMeasure = function (measureName, index) {
-				var current = measurementContainer.children('[data-mm-role=measurement-template]').eq(index);
+				var current = measurementContainer.children('[data-mm-role=measurement-template]').eq(index),
+					measurement = measurementTemplate.clone();
 				if (current.length) {
-					measurementTemplate.clone().insertBefore(current).find('[data-mm-role=measurement-name]').text(measureName);
+					measurement.insertBefore(current);
 				} else {
-					measurementTemplate.clone().appendTo(measurementContainer).find('[data-mm-role=measurement-name]').text(measureName);
+					measurement.appendTo(measurementContainer);
 				}
+				measurement.find('[data-mm-role=measurement-name]').text(measureName);
+				measurement.find('[data-mm-role=remove-measure]').click(function () {
+					measuresModel.removeMeasure(measureName);
+				});
 			},
 			appendMeasureValue = function (container, value, index) {
 				var current = container.children('[data-mm-role=value-template]').eq(index);

@@ -3,8 +3,12 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
 						'<table data-mm-role="measurements-table">' +
-							'<thead><tr><th>Name</th><th data-mm-role="measurement-template"><span data-mm-role="measurement-name"></span></th></tr></thead>' +
-							'<tbody><tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr></tbody>' +
+							'<thead>' +
+							'	<tr><th>Name</th><th data-mm-role="measurement-template"><a data-mm-role="remove-measure"/><span data-mm-role="measurement-name"></span></th></tr>' +
+							'</thead>' +
+							'<tbody>' +
+							'	<tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr>' +
+							'</tbody>' +
 						'</table>' +
 						'<form><input data-mm-role="measure-to-add"/><button type="submit" data-mm-role="add-measure"></button></form>' +
 					'</div>',
@@ -23,7 +27,8 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		};
 	beforeEach(function () {
 		measuresModel = observable({
-			addMeasure: jasmine.createSpy('addMeasure')
+			addMeasure: jasmine.createSpy('addMeasure'),
+			removeMeasure: jasmine.createSpy('removeMeasure')
 		});
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
 		underTest.modal('hide');
@@ -84,6 +89,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		});
 		it('value cells are updated for the changed measurement value', function () {
 			measuresModel.dispatchEvent('measureValueChanged', 2, 'Profit', 33);
+			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Profit']);
 			expect(tableValues()).toEqual([
 				['100',	'0'],
 				['200',	'300'],
@@ -128,6 +134,12 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				underTest.find('[data-mm-role=measure-to-add]').val('moolah');
 				underTest.find('[data-mm-role=add-measure]').click();
 				expect(underTest.find('[data-mm-role=measure-to-add]').val()).toBeFalsy();
+			});
+		});
+		describe('removing measures', function () {
+			it('should call the model to remove the measure', function () {
+				underTest.find('[data-mm-role=remove-measure]').first().click();
+				expect(measuresModel.removeMeasure).toHaveBeenCalledWith('Cost');
 			});
 		});
 		describe('when reloaded', function () {

@@ -14,7 +14,11 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		},
 		onActiveContentChange = function () {
 			var latestMeasures = getActiveContentMeasures(),
-				added = _.difference(latestMeasures, measures);
+				added = _.difference(latestMeasures, measures),
+				removed = _.difference(measures, latestMeasures);
+			_.each(removed, function (measure) {
+				self.dispatchEvent('measureRemoved', measure);
+			});
 			_.each(added, function (measure) {
 				self.dispatchEvent('measureAdded', measure, latestMeasures.indexOf(measure));
 			});
@@ -52,14 +56,22 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		if (!measureName || measureName.trim() === '') {
 			return false;
 		}
-		var measures = self.getMeasures();
 		measureName = measureName.trim();
 
 		if (_.find(measures, function (measure) { return measure.toUpperCase() === measureName.toUpperCase(); })) {
 			return false;
 		}
-		measures.push(measureName);
-		activeContent.updateAttr(activeContent.id, configAttributeName, measures);
+		activeContent.updateAttr(activeContent.id, configAttributeName, measures.concat([measureName]));
+	};
+	self.removeMeasure = function (measureName) {
+		if (!measureName || measureName.trim() === '') {
+			return false;
+		}
+		var updated = _.without(measures, measureName);
+		if (_.isEqual(updated, measures)) {
+			return;
+		}
+		activeContent.updateAttr(activeContent.id, configAttributeName, updated);
 	};
 };
 

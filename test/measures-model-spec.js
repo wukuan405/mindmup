@@ -102,22 +102,56 @@ describe('MM.MeasuresModel', function () {
 		});
 	});
 	describe('activeContent changes', function () {
-		var addMeasureListener;
+		var listener;
 		beforeEach(function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			addMeasureListener = jasmine.createSpy('addMeasureListener');
-			underTest.addEventListener('measureAdded', addMeasureListener);
+			listener = jasmine.createSpy('listener');
 		});
-		it('should dispatch an event if a measure is added', function () {
-			activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'Efficiency']);
-			expect(addMeasureListener).toHaveBeenCalledWith('readies', 1);
+		describe('when measures are added', function () {
+			beforeEach(function () {
+				underTest.addEventListener('measureAdded', listener);
+			});
+
+			it('should dispatch an event', function () {
+				activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'Efficiency']);
+				expect(listener).toHaveBeenCalledWith('readies', 1);
+			});
+			it('should dispatch muptiple events', function () {
+				activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'pretty green', 'Efficiency', 'change']);
+				expect(listener.calls.count()).toBe(3);
+				expect(listener.calls.argsFor(0)).toEqual(['readies', 1]);
+				expect(listener.calls.argsFor(1)).toEqual(['pretty green', 2]);
+				expect(listener.calls.argsFor(2)).toEqual(['change', 4]);
+			});
 		});
-		it('should dispatch muptiple events', function () {
-			activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'pretty green', 'Efficiency', 'change']);
-			expect(addMeasureListener.calls.count()).toBe(3);
-			expect(addMeasureListener.calls.argsFor(0)).toEqual(['readies', 1]);
-			expect(addMeasureListener.calls.argsFor(1)).toEqual(['pretty green', 2]);
-			expect(addMeasureListener.calls.argsFor(2)).toEqual(['change', 4]);
+		describe('when measures are removed', function () {
+			beforeEach(function () {
+				underTest.addEventListener('measureRemoved', listener);
+			});
+			it('should dispatch an event', function () {
+				activeContent.updateAttr(activeContent.id, 'measurement-names', ['Efficiency']);
+				expect(listener).toHaveBeenCalledWith('Speed');
+			});
+			it('should dispatch multiple events', function () {
+				activeContent.updateAttr(activeContent.id, 'measurement-names', []);
+				expect(listener.calls.count()).toBe(2);
+				expect(listener).toHaveBeenCalledWith('Speed');
+				expect(listener).toHaveBeenCalledWith('Efficiency');
+			});
+			it('should dispatch multiple events when set to false', function () {
+				activeContent.updateAttr(activeContent.id, 'measurement-names', false);
+				expect(listener.calls.count()).toBe(2);
+				expect(listener).toHaveBeenCalledWith('Speed');
+				expect(listener).toHaveBeenCalledWith('Efficiency');
+			});
+
+		});
+		it('when measures have been added and removed', function () {
+			underTest.addEventListener('measureAdded measureRemoved', listener);
+			activeContent.updateAttr(activeContent.id, 'measurement-names', ['Efficiency', 'Wedge']);
+			expect(listener.calls.count()).toBe(2);
+			expect(listener.calls.argsFor(0)).toEqual(['Speed']);
+			expect(listener.calls.argsFor(1)).toEqual(['Wedge', 1]);
 		});
 	});
 	describe('addMeasure', function () {
@@ -134,5 +168,22 @@ describe('MM.MeasuresModel', function () {
 				expect(activeContent.attr['measurement-names']).toEqual(['Speed', 'Efficiency']);
 			});
 		});
+	});
+	describe('remove measure', function () {
+		beforeEach(function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+		});
+		it('should remove the measure from the attributes of the root node', function () {
+			underTest.removeMeasure('Speed');
+			expect(activeContent.attr['measurement-names']).toEqual(['Efficiency']);
+		});
+		it('does nothing if the measure is non-existent', function () {
+			var emptyContent = MAPJS.content({});
+			mapController.dispatchEvent('mapLoaded', 'mapId', emptyContent);
+			underTest.removeMeasure('Speed');
+			expect(emptyContent.attr).toBeFalsy();
+		});
+
+
 	});
 });
