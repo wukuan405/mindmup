@@ -1,4 +1,20 @@
 /*global module*/
+
+/*
+Installing Grunt and associated contributions
+
+- once only per machine
+install node and npm:
+	http://nodejs.org/download/
+install grunt cli:
+	npm install -g grunt-cli
+
+- per project
+npm install grunt-contrib-jasmine --save-dev
+npm install grunt-notify --save-dev
+npm install grunt-contrib-watch --save-dev
+
+*/
 module.exports = function (grunt) {
 	'use strict';
 	grunt.initConfig({
@@ -92,8 +108,11 @@ module.exports = function (grunt) {
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
+
 	grunt.loadNpmTasks('grunt-notify');
+
 	grunt.loadNpmTasks('grunt-contrib-watch');
+
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);
