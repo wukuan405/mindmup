@@ -544,3 +544,7 @@ body .modal.huge {
 #modalMeasuresSheet td,  #modalMeasuresSheet th + th {
 	text-align: right;
 }
+
+#modalMeasuresSheet form {
+	margin: 0px !important;
+}

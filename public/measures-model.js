@@ -3,16 +3,30 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 	'use strict';
 	var self = observable(this),
 		activeContent,
-		filter;
+		measures = [],
+		filter,
+		getActiveContentMeasures = function () {
+			var value = activeContent && activeContent.getAttr(configAttributeName);
+			if (!_.isArray(value)) {
+				return [];
+			}
+			return value;
+		},
+		onActiveContentChange = function () {
+			var latestMeasures = getActiveContentMeasures(),
+				added = _.difference(latestMeasures, measures);
+			_.each(added, function (measure) {
+				self.dispatchEvent('measureAdded', measure, latestMeasures.indexOf(measure));
+			});
+			measures = latestMeasures;
+		};
 	mapController.addEventListener('mapLoaded', function (id, content) {
 		activeContent = content;
+		measures = getActiveContentMeasures();
+		activeContent.addEventListener('changed', onActiveContentChange);
 	});
 	self.getMeasures = function () {
-		var value = activeContent && activeContent.getAttr(configAttributeName);
-		if (_.isArray(value)) {
-			return value;
-		}
-		return [];
+		return measures.slice(0);
 	};
 	self.editWithFilter = function (newFilter) {
 		filter = newFilter;
@@ -33,6 +47,19 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 			}
 		});
 		return result;
+	};
+	self.addMeasure = function (measureName) {
+		if (!measureName || measureName.trim() === '') {
+			return false;
+		}
+		var measures = self.getMeasures();
+		measureName = measureName.trim();
+
+		if (_.find(measures, function (measure) { return measure.toUpperCase() === measureName.toUpperCase(); })) {
+			return false;
+		}
+		measures.push(measureName);
+		activeContent.updateAttr(activeContent.id, configAttributeName, measures);
 	};
 };
 

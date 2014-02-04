@@ -1,4 +1,4 @@
-/*global describe, MM, MAPJS, beforeEach, observable, it, expect, jasmine*/
+/*global describe, MM, MAPJS, beforeEach, observable, it, expect, jasmine, _*/
 describe('MM.MeasuresModel', function () {
 	'use strict';
 	var underTest,
@@ -98,6 +98,40 @@ describe('MM.MeasuresModel', function () {
 					{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
 				]);
 
+			});
+		});
+	});
+	describe('activeContent changes', function () {
+		var addMeasureListener;
+		beforeEach(function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			addMeasureListener = jasmine.createSpy('addMeasureListener');
+			underTest.addEventListener('measureAdded', addMeasureListener);
+		});
+		it('should dispatch an event if a measure is added', function () {
+			activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'Efficiency']);
+			expect(addMeasureListener).toHaveBeenCalledWith('readies', 1);
+		});
+		it('should dispatch muptiple events', function () {
+			activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'pretty green', 'Efficiency', 'change']);
+			expect(addMeasureListener.calls.count()).toBe(3);
+			expect(addMeasureListener.calls.argsFor(0)).toEqual(['readies', 1]);
+			expect(addMeasureListener.calls.argsFor(1)).toEqual(['pretty green', 2]);
+			expect(addMeasureListener.calls.argsFor(2)).toEqual(['change', 4]);
+		});
+	});
+	describe('addMeasure', function () {
+		beforeEach(function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+		});
+		it('should add the measure to the attributes of the root node', function () {
+			underTest.addMeasure('moolah');
+			expect(activeContent.attr['measurement-names']).toEqual(['Speed', 'Efficiency', 'moolah']);
+		});
+		_.each(['', 'speed', 'SPEED', undefined, ' Speed', ' Speed ', 'Speed ', ' '], function (arg) {
+			it('should not allow duplicate or empty measure names such as "' + arg + '"', function () {
+				underTest.addMeasure(arg);
+				expect(activeContent.attr['measurement-names']).toEqual(['Speed', 'Efficiency']);
 			});
 		});
 	});

@@ -85,8 +85,10 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				jQuery(idea).children().eq(col).remove();
 			});
 		});
-		element.find('[data-mm-role=add-measure]').click(function () {
+		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {
 			measuresModel.addMeasure(addMeasureInput.val());
+			addMeasureInput.val('');
+			return false;
 		});
 	});
 };

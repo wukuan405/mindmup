@@ -6,7 +6,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 							'<thead><tr><th>Name</th><th data-mm-role="measurement-template"><span data-mm-role="measurement-name"></span></th></tr></thead>' +
 							'<tbody><tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr></tbody>' +
 						'</table>' +
-						'<input data-mm-role="measure-to-add"/><a data-mm-role="add-measure"></a>' +
+						'<form><input data-mm-role="measure-to-add"/><button type="submit" data-mm-role="add-measure"></button></form>' +
 					'</div>',
 		underTest,
 		measuresModel,
@@ -118,10 +118,17 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			]);
 			expect(tableColumnNames()).toEqual(['Name']);
 		});
-		it('should call the model to add a new measure', function () {
-			underTest.find('[data-mm-role=measure-to-add]').val('moolah');
-			underTest.find('[data-mm-role=add-measure]').click();
-			expect(measuresModel.addMeasure).toHaveBeenCalledWith('moolah');
+		describe('adding a new measure', function () {
+			it('should call the model to add a new measure', function () {
+				underTest.find('[data-mm-role=measure-to-add]').val('moolah');
+				underTest.find('[data-mm-role=add-measure]').click();
+				expect(measuresModel.addMeasure).toHaveBeenCalledWith('moolah');
+			});
+			it('should clear the input field', function () {
+				underTest.find('[data-mm-role=measure-to-add]').val('moolah');
+				underTest.find('[data-mm-role=add-measure]').click();
+				expect(underTest.find('[data-mm-role=measure-to-add]').val()).toBeFalsy();
+			});
 		});
 		describe('when reloaded', function () {
 			beforeEach(function () {
