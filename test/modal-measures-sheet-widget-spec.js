@@ -1,4 +1,4 @@
-/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, fakeBootstrapModal, observable*/
+/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, fakeBootstrapModal, observable, spyOn*/
 describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
@@ -30,6 +30,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			addMeasure: jasmine.createSpy('addMeasure'),
 			removeMeasure: jasmine.createSpy('removeMeasure')
 		});
+		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
 		underTest.modal('hide');
 		fakeBootstrapModal(underTest);
@@ -60,6 +61,33 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				[]
 			]);
 			expect(tableColumnNames()).toEqual(['Name']);
+		});
+	});
+	describe('listening for measureModel Events', function () {
+		it('only subscribes to measuresEditRequested before show', function () {
+			expect(measuresModel.addEventListener.calls.count()).toBe(1);
+			expect(measuresModel.addEventListener).toHaveBeenCalledWith('measuresEditRequested', jasmine.any(Function));
+		});
+		describe('when shown', function () {
+			beforeEach(function () {
+				measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue([]);
+				measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([]);
+
+				measuresModel.addEventListener.calls.reset();
+				underTest.modal('show');
+			});
+			it('subscribes to measureValueChanged, measureAdded, measureRemoved when shown', function () {
+				expect(measuresModel.addEventListener.calls.count()).toBe(3);
+				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureValueChanged', jasmine.any(Function));
+				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureAdded', jasmine.any(Function));
+				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureRemoved', jasmine.any(Function));
+			});
+			it('when hidden again measureValueChanged, measureAdded, measureRemoved are unsubscribed', function () {
+				underTest.modal('hide');
+				expect(measuresModel.listeners('measureValueChanged')).toEqual([]);
+				expect(measuresModel.listeners('measureAdded')).toEqual([]);
+				expect(measuresModel.listeners('measureRemoved')).toEqual([]);
+			});
 		});
 	});
 	describe('when loaded', function () {

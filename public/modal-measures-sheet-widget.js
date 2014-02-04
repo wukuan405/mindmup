@@ -38,6 +38,28 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					valueTemplate.clone().appendTo(container).text(value || '0');
 				}
 
+			},
+			onMeasureValueChanged = function (nodeId, measureChanged, newValue) {
+				var row = getRowForNodeId(nodeId),
+					col = getColumnIndexForMeasure(measureChanged);
+				row.children().eq(col).text(newValue);
+			},
+			onMeasureAdded = function (measureName, index) {
+				appendMeasure(measureName, index);
+
+				_.each(ideaContainer.children(), function (idea) {
+					appendMeasureValue(jQuery(idea), '0', index);
+				});
+			},
+			onMeasureRemoved = function (measureName) {
+				var col = getColumnIndexForMeasure(measureName);
+				if (col < 0) {
+					return;
+				}
+				measurementContainer.children().eq(col).remove();
+				_.each(ideaContainer.children(), function (idea) {
+					jQuery(idea).children().eq(col).remove();
+				});
 			};
 
 		measurementTemplate.detach();
@@ -59,35 +81,22 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					appendMeasureValue(newIdea, mv.values[measure]);
 				});
 			});
+			measuresModel.addEventListener('measureValueChanged', onMeasureValueChanged);
+			measuresModel.addEventListener('measureAdded', onMeasureAdded);
+			measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
 		});
-
+		element.on('hide', function () {
+			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
+			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
+			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
+		});
 		element.modal({keyboard: true, show: false});
 
 		measuresModel.addEventListener('measuresEditRequested', function () {
 			element.modal('show');
 		});
-		measuresModel.addEventListener('measureValueChanged', function (nodeId, measureChanged, newValue) {
-			var row = getRowForNodeId(nodeId),
-				col = getColumnIndexForMeasure(measureChanged);
-			row.children().eq(col).text(newValue);
-		});
-		measuresModel.addEventListener('measureAdded', function (measureName, index) {
-			appendMeasure(measureName, index);
 
-			_.each(ideaContainer.children(), function (idea) {
-				appendMeasureValue(jQuery(idea), '0', index);
-			});
-		});
-		measuresModel.addEventListener('measureRemoved', function (measureName) {
-			var col = getColumnIndexForMeasure(measureName);
-			if (col < 0) {
-				return;
-			}
-			measurementContainer.children().eq(col).remove();
-			_.each(ideaContainer.children(), function (idea) {
-				jQuery(idea).children().eq(col).remove();
-			});
-		});
+
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {
 			measuresModel.addMeasure(addMeasureInput.val());
 			addMeasureInput.val('');

@@ -13,16 +13,19 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 			return value;
 		},
 		onActiveContentChange = function () {
-			var latestMeasures = getActiveContentMeasures(),
-				added = _.difference(latestMeasures, measures),
-				removed = _.difference(measures, latestMeasures);
-			measures = latestMeasures;
-			_.each(removed, function (measure) {
-				self.dispatchEvent('measureRemoved', measure);
-			});
-			_.each(added, function (measure) {
-				self.dispatchEvent('measureAdded', measure, latestMeasures.indexOf(measure));
-			});
+			var measuresBefore = measures;
+			measures = getActiveContentMeasures();
+
+			if (self.listeners('measureRemoved').length > 0) {
+				_.each(_.difference(measuresBefore, measures), function (measure) {
+					self.dispatchEvent('measureRemoved', measure);
+				});
+			}
+			if (self.listeners('measureAdded').length > 0) {
+				_.each(_.difference(measures, measuresBefore), function (measure) {
+					self.dispatchEvent('measureAdded', measure, measures.indexOf(measure));
+				});
+			}
 
 		};
 	mapController.addEventListener('mapLoaded', function (id, content) {
