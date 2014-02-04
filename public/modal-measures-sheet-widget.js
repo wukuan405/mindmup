@@ -13,14 +13,9 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				return element.find('[data-mm-nodeid=' + nodeId + ']');
 			},
 			getColumnIndexForMeasure = function (measureName) {
-				return _.reduce(measurementContainer.children(), function (count, th) {
-					var elem = jQuery(th).find('[data-mm-role=measurement-name]');
-					if (elem.text() === measureName) {
-						return jQuery(th).index();
-					} else {
-						return count;
-					}
-				}, -1);
+				return _.map(measurementContainer.children(), function (column) {
+					return jQuery(column).find('[data-mm-role=measurement-name]').text();
+				}).indexOf(measureName);
 			},
 			appendMeasure = function (measureName, index) {
 				var current = measurementContainer.children('[data-mm-role=measurement-template]').eq(index),
@@ -85,6 +80,9 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 		});
 		measuresModel.addEventListener('measureRemoved', function (measureName) {
 			var col = getColumnIndexForMeasure(measureName);
+			if (col < 0) {
+				return;
+			}
 			measurementContainer.children().eq(col).remove();
 			_.each(ideaContainer.children(), function (idea) {
 				jQuery(idea).children().eq(col).remove();

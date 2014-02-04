@@ -16,13 +16,14 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 			var latestMeasures = getActiveContentMeasures(),
 				added = _.difference(latestMeasures, measures),
 				removed = _.difference(measures, latestMeasures);
+			measures = latestMeasures;
 			_.each(removed, function (measure) {
 				self.dispatchEvent('measureRemoved', measure);
 			});
 			_.each(added, function (measure) {
 				self.dispatchEvent('measureAdded', measure, latestMeasures.indexOf(measure));
 			});
-			measures = latestMeasures;
+
 		};
 	mapController.addEventListener('mapLoaded', function (id, content) {
 		activeContent = content;

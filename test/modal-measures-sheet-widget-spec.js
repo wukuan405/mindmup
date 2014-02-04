@@ -117,6 +117,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		it('the becomes empty when the last measure is removed', function () {
 			measuresModel.dispatchEvent('measureRemoved', 'Cost');
 			measuresModel.dispatchEvent('measureRemoved', 'Profit');
+			measuresModel.dispatchEvent('measureRemoved', 'Another');
 			expect(tableValues()).toEqual([
 				[],
 				[],
