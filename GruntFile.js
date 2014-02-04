@@ -108,9 +108,7 @@ module.exports = function (grunt) {
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
-
 	grunt.loadNpmTasks('grunt-notify');
-
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
 	grunt.event.on('watch', function (action, filepath, target) {

@@ -8,7 +8,18 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 						'</table>' +
 					'</div>',
 		underTest,
-		measuresModel;
+		measuresModel,
+		tableValues = function () {
+			return _.map(underTest.find('tbody tr'), function (row) {
+				return _.map(jQuery(row).find('td'), function (cell) {
+					return jQuery(cell).text();
+				});
+			});
+		},
+		tableRowNames = function () {
+			var headerRow = underTest.find('thead tr');
+			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
+		};
 	beforeEach(function () {
 		measuresModel = observable({});
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
@@ -35,24 +46,38 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			underTest.modal('show');
 		});
 		it('shows a table with measurements in the first row, keeping any non template elements', function () {
-			var headerRow = underTest.find('thead tr');
-			expect(_.map(headerRow.children(), function (cell) { return jQuery(cell).text(); })).toEqual(['Name', 'Cost', 'Profit']);
+
+			expect(tableRowNames()).toEqual(['Name', 'Cost', 'Profit']);
 		});
 		it('shows active idea titles in the first column', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
 			expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'tom', 'mike']);
 		});
 		it('shows measurement values for ideas in the table cells, mapping values to the right columns', function () {
-			var result = _.map(underTest.find('tbody tr'), function (row) {
-				return _.map(jQuery(row).find('td'), function (cell) {
-					return jQuery(cell).text();
-				});
-			});
-			expect(result).toEqual([
+			expect(tableValues()).toEqual([
 				['100',	'0'],
 				['200',	'300'],
 				['0',	'22']
 			]);
+		});
+		describe('when measurements are changed', function () {
+			it('a measurement value is changed', function () {
+				measuresModel.dispatchEvent('measureValueChanged', 2, 'Profit', 33);
+				expect(tableValues()).toEqual([
+					['100',	'0'],
+					['200',	'300'],
+					['0',	'33']
+				]);
+			});
+			it('when a measure is added', function () {
+				measuresModel.dispatchEvent('measureAdded', 'Lucre');
+				expect(tableValues()).toEqual([
+					['100', '0', '0'],
+					['200', '300', '0'],
+					['0', '22', '0']
+				]);
+				expect(tableRowNames()).toEqual(['Name', 'Cost', 'Profit', 'Lucre']);
+			});
 		});
 		describe('when reloaded', function () {
 			beforeEach(function () {
@@ -73,12 +98,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'mike2']);
 			});
 			it('clears out previous values before adding new ones', function () {
-				var result = _.map(underTest.find('tbody tr'), function (row) {
-					return _.map(jQuery(row).find('td'), function (cell) {
-						return jQuery(cell).text();
-					});
-				});
-				expect(result).toEqual([
+				expect(tableValues()).toEqual([
 					['0',	'100'],
 					['22',	'0']
 				]);
