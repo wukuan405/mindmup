@@ -6,6 +6,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 							'<thead><tr><th>Name</th><th data-mm-role="measurement-template"><span data-mm-role="measurement-name"></span></th></tr></thead>' +
 							'<tbody><tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr></tbody>' +
 						'</table>' +
+						'<input data-mm-role="measure-to-add"/><a data-mm-role="add-measure"></a>' +
 					'</div>',
 		underTest,
 		measuresModel,
@@ -21,7 +22,9 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
 		};
 	beforeEach(function () {
-		measuresModel = observable({});
+		measuresModel = observable({
+			addMeasure: jasmine.createSpy('addMeasure')
+		});
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
 		underTest.modal('hide');
 		fakeBootstrapModal(underTest);
@@ -115,7 +118,11 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			]);
 			expect(tableColumnNames()).toEqual(['Name']);
 		});
-
+		it('should call the model to add a new measure', function () {
+			underTest.find('[data-mm-role=measure-to-add]').val('moolah');
+			underTest.find('[data-mm-role=add-measure]').click();
+			expect(measuresModel.addMeasure).toHaveBeenCalledWith('moolah');
+		});
 		describe('when reloaded', function () {
 			beforeEach(function () {
 				underTest.modal('hide');

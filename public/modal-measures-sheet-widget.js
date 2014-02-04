@@ -8,6 +8,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			ideaTemplate = element.find('[data-mm-role=idea-template]'),
 			valueTemplate = ideaTemplate.find('[data-mm-role=value-template]').detach(),
 			ideaContainer = ideaTemplate.parent(),
+			addMeasureInput = element.find('[data-mm-role=measure-to-add]'),
 			getRowForNodeId = function (nodeId) {
 				return element.find('[data-mm-nodeid=' + nodeId + ']');
 			},
@@ -83,6 +84,9 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			_.each(ideaContainer.children(), function (idea) {
 				jQuery(idea).children().eq(col).remove();
 			});
+		});
+		element.find('[data-mm-role=add-measure]').click(function () {
+			measuresModel.addMeasure(addMeasureInput.val());
 		});
 	});
 };
