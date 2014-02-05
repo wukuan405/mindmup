@@ -137,6 +137,10 @@ get '/'+settings.cache_prevention_key+'/:fname' do
   send_file File.join(settings.public_folder, params[:fname])
 end
 
+get '/'+settings.cache_prevention_key+'/lib/:fname' do
+  send_file File.join(settings.public_folder, 'lib/'+params[:fname])
+end
+
 get '/'+settings.cache_prevention_key+'/e/:fname' do
   send_file File.join(settings.public_folder, 'e/'+params[:fname])
 end

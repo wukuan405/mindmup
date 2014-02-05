@@ -15,11 +15,11 @@
         requirejs(
           [
             "<%=settings.cache_prevention_key%>/mapjs-compiled",
-            "<%=settings.cache_prevention_key%>/s3-api",
-            "<%=settings.cache_prevention_key%>/s3-file-system",
-            "<%=settings.cache_prevention_key%>/file-system-map-source",
-            "<%=settings.cache_prevention_key%>/embedded-map-url-generator",
-            "<%=settings.cache_prevention_key%>/retriable-map-source-decorator"
+            "<%=settings.cache_prevention_key%>/lib/s3-api",
+            "<%=settings.cache_prevention_key%>/lib/s3-file-system",
+            "<%=settings.cache_prevention_key%>/lib/file-system-map-source",
+            "<%=settings.cache_prevention_key%>/lib/embedded-map-url-generator",
+            "<%=settings.cache_prevention_key%>/lib/retriable-map-source-decorator"
         ], success, failure);
       },
       failure
