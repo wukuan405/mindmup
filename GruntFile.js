@@ -86,7 +86,6 @@ module.exports = function (grunt) {
 					],
 					helpers: [
 						'test-lib/mm.js',
-						'test-lib/console-runner.js',
 						'test-lib/sinon-1.5.2.js',
 						'test-lib/describe-batch.js',
 						'test-lib/fake-bootstrap-modal.js',
