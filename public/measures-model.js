@@ -4,6 +4,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 	var self = observable(this),
 		activeContent,
 		measures = [],
+		latestMeasurementValues = [],
 		filter,
 		getActiveContentMeasures = function () {
 			var value = activeContent && activeContent.getAttr(configAttributeName);
@@ -12,10 +13,54 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 			}
 			return value;
 		},
+		mapMeasurements = function (measurements) {
+			var map = {};
+			_.each(measurements, function (measurement) {
+				map[measurement.id] = measurement;
+			});
+			return map;
+		},
+		measurementValueDifferences = function (measurement, baseline) {
+			var difference = [];
+			_.each(measurement.values, function (value, key) {
+				var baselineValue = (baseline && baseline.values && baseline.values[key]) || 0;
+				if (value !== baselineValue) {
+					difference.push(['measureValueChanged', measurement.id, key, value]);
+				}
+			});
+			if (baseline) {
+				_.each(baseline.values, function (value, key) {
+					var noNewValue = !measurement || !measurement.values || !measurement.values[key];
+					if (noNewValue) {
+						difference.push(['measureValueChanged', baseline.id, key, false]);
+					}
+				});
+			}
+			return difference;
+		},
+		measurementDifferences = function (measurements, baslineMeasurements) {
+			/*{id: 11, title: 'with values', values: {'Speed': 1, 'Efficiency': 2}}*/
+			var baslineMeasurementsMap = mapMeasurements(baslineMeasurements),
+				differences = [];
+			_.each(measurements, function (measurement) {
+				var baseline = baslineMeasurementsMap[measurement.id];
+				differences = differences.concat(measurementValueDifferences(measurement, baseline));
+			});
+			return differences;
+		},
+		dispatchMeasurementChangedEvents = function () {
+			if (self.listeners('measureValueChanged').length === 0) {
+				return;
+			}
+			var oldMeasurementValues = latestMeasurementValues,
+				differences = measurementDifferences(self.getMeasurementValues(), oldMeasurementValues);
+			_.each(differences, function (changeArgs) {
+				self.dispatchEvent.apply(self, changeArgs);
+			});
+		},
 		onActiveContentChange = function () {
 			var measuresBefore = measures;
 			measures = getActiveContentMeasures();
-
 			if (self.listeners('measureRemoved').length > 0) {
 				_.each(_.difference(measuresBefore, measures), function (measure) {
 					self.dispatchEvent('measureRemoved', measure);
@@ -26,9 +71,12 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 					self.dispatchEvent('measureAdded', measure, measures.indexOf(measure));
 				});
 			}
-
+			dispatchMeasurementChangedEvents();
 		};
 	mapController.addEventListener('mapLoaded', function (id, content) {
+		if (activeContent) {
+			activeContent.removeEventListener('changed', onActiveContentChange);
+		}
 		activeContent = content;
 		measures = getActiveContentMeasures();
 		activeContent.addEventListener('changed', onActiveContentChange);
@@ -38,6 +86,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 	};
 	self.editWithFilter = function (newFilter) {
 		filter = newFilter;
+		dispatchMeasurementChangedEvents();
 		self.dispatchEvent('measuresEditRequested');
 	};
 	self.getMeasurementValues = function () {
@@ -54,6 +103,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 				});
 			}
 		});
+		latestMeasurementValues = result.slice(0);
 		return result;
 	};
 	self.addMeasure = function (measureName) {

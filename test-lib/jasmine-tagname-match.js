@@ -1,4 +1,4 @@
-/*global jasmine, beforeEach,  describe, it , expect, jQuery*/
+/*global jasmine, beforeEach,  describe, it , expect, jQuery, afterEach*/
 beforeEach(function () {
 	'use strict';
 	jasmine.addMatchers({
@@ -11,7 +11,7 @@ beforeEach(function () {
 					tag = tag && tag.toLowerCase();
 					result.pass = util.equals(tag, expectedTag.toLowerCase(), customEqualityTesters);
 					if (!result.pass) {
-						result.message = 'Expected  ' + tag + 'to match  ' + expectedTag;
+						result.message = 'Expected  ' + tag + ' to match  ' + expectedTag;
 					}
 					return result;
 				}
@@ -21,9 +21,21 @@ beforeEach(function () {
 });
 describe('toHaveTagName', function () {
 	'use strict';
+	var container;
+	beforeEach(function () {
+		container = jQuery('<span>').appendTo('body');
+	});
+	afterEach(function () {
+		container.remove();
+	});
 	it('should compare objects using their tag name', function () {
-		expect(jQuery('a').prop('href', 'b')).toHaveTagName('a');
-		expect(jQuery('p').prop('href', 'a')).not.toHaveTagName('a');
+		jQuery('<a id="elem1" href="a"/>').appendTo(container);
+		jQuery('<a id="elem2" href="b"/>').appendTo(container);
+		jQuery('<span id="elem3" data-mm-role="a"/>').appendTo(container);
+		expect(jQuery('#elem1')).toHaveTagName('a');
+		expect(jQuery('#elem2')).toHaveTagName('a');
+		expect(jQuery('#elem3')).not.toHaveTagName('a');
+		expect(jQuery('#elem4')).not.toHaveTagName('a');
 	});
 });
 

@@ -18,25 +18,17 @@ npm install grunt-contrib-watch --save-dev
 module.exports = function (grunt) {
 	'use strict';
 	grunt.initConfig({
-		notify: {
-			jasmine: {
-				options: {
-					title: 'Mindmup Jasmine Tests',
-					message: 'jasmine test success'
-				}
-			}
-		},
 		watch: {
 			specs: {
 				files: ['test/*.js'],
-				tasks: ['jasmine', 'notify:jasmine'],
+				tasks: ['jasmine'],
 				options: {
 					spawn: false
 				}
 			},
 			src: {
 				files: ['public/**/*.js'],
-				tasks: ['jasmine', 'notify:jasmine'],
+				tasks: ['jasmine'],
 				options: {
 					spawn: false
 				}

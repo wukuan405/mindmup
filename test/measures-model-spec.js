@@ -1,13 +1,14 @@
-/*global describe, MM, MAPJS, beforeEach, observable, it, expect, jasmine, _*/
+/*global describe, MM, MAPJS, beforeEach, observable, it, expect, jasmine, _, spyOn*/
 describe('MM.MeasuresModel', function () {
 	'use strict';
 	var underTest,
 		mapController,
-		activeContent;
+		activeContent,
+		content;
 	beforeEach(function () {
 		mapController = observable({});
 		underTest = new MM.MeasuresModel('measurement-names', 'measurement-vals', mapController);
-		activeContent = MAPJS.content({
+		content = {
 			id: 1,
 			title: 'one',
 			attr:	{
@@ -34,7 +35,8 @@ describe('MM.MeasuresModel', function () {
 				}
 			}
 
-		});
+		};
+		activeContent = MAPJS.content(JSON.parse(JSON.stringify(content)));
 	});
 	describe('getMeasures', function () {
 		it('returns an empty array when there is no active content', function () {
@@ -123,6 +125,13 @@ describe('MM.MeasuresModel', function () {
 				expect(listener.calls.argsFor(1)).toEqual(['pretty green', 2]);
 				expect(listener.calls.argsFor(2)).toEqual(['change', 4]);
 			});
+			it('should not dispatch events when the old content is changed', function () {
+				mapController.dispatchEvent('mapLoaded', 'mapId', MAPJS.content(content));
+				listener.calls.reset();
+				activeContent.updateAttr(activeContent.id, 'measurement-names', ['Speed', 'readies', 'Efficiency']);
+				expect(listener).not.toHaveBeenCalled();
+				expect(activeContent.listeners('changed').length).toBe(0);
+			});
 		});
 		describe('when measures are removed', function () {
 			beforeEach(function () {
@@ -144,7 +153,13 @@ describe('MM.MeasuresModel', function () {
 				expect(listener).toHaveBeenCalledWith('Speed');
 				expect(listener).toHaveBeenCalledWith('Efficiency');
 			});
-
+			it('should not dispatch events when the old content is changed', function () {
+				mapController.dispatchEvent('mapLoaded', 'mapId', MAPJS.content(content));
+				listener.calls.reset();
+				activeContent.updateAttr(activeContent.id, 'measurement-names', ['Efficiency']);
+				expect(listener).not.toHaveBeenCalled();
+				expect(activeContent.listeners('changed').length).toBe(0);
+			});
 		});
 		it('when measures have been added and removed', function () {
 			underTest.addEventListener('measureAdded measureRemoved', listener);
@@ -152,6 +167,62 @@ describe('MM.MeasuresModel', function () {
 			expect(listener.calls.count()).toBe(2);
 			expect(listener.calls.argsFor(0)).toEqual(['Speed']);
 			expect(listener.calls.argsFor(1)).toEqual(['Wedge', 1]);
+		});
+		describe('when the value of measurements change', function () {
+			beforeEach(function () {
+				underTest.addEventListener('measureValueChanged', listener);
+				underTest.getMeasurementValues();
+			});
+
+			it('dispatches an event when filter does not have a restriction on ideas', function () {
+				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', 100);
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', 100);
+			});
+			it('dispatches an event when the property is removed', function () {
+				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', false);
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', false);
+			});
+			it('dispatches an event when the idea is in the current filter', function () {
+				underTest.editWithFilter({
+					nodeIds: [11]
+				});
+				listener.calls.reset();
+				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', 100);
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', 100);
+			});
+			it('does not dispatch an event when the idea is excluded by the current filter', function () {
+				underTest.editWithFilter({
+					nodeIds: [11]
+				});
+				listener.calls.reset();
+				activeContent.mergeAttrProperty(1, 'measurement-vals', 'Speed', 100);
+				expect(listener).not.toHaveBeenCalled();
+			});
+			it('dispatches individual events for each value change in the same idea', function () {
+				underTest.addMeasure('Defficiency');
+				activeContent.updateAttr(11, 'measurement-vals', {'Speed': 100, 'Defficiency': 500});
+
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', 100);
+				expect(listener).toHaveBeenCalledWith(11, 'Efficiency', false);
+				expect(listener).toHaveBeenCalledWith(11, 'Defficiency', 500);
+			});
+			it('does not traverse the content if there are no listeners', function () {
+				underTest.removeEventListener('measureValueChanged', listener);
+				activeContent.updateAttr(11, 'measurement-vals', {'Speed': 100, 'Defficiency': 500});
+				spyOn(activeContent, 'getAttrById');
+				spyOn(activeContent, 'traverse');
+				spyOn(activeContent, 'findSubIdeaById');
+				activeContent.dispatchEvent('changed');
+				expect(activeContent.getAttrById).not.toHaveBeenCalled();
+				expect(activeContent.traverse).not.toHaveBeenCalled();
+				expect(activeContent.findSubIdeaById).not.toHaveBeenCalled();
+			});
+			it('should not dispatch events when the old content is changed', function () {
+				mapController.dispatchEvent('mapLoaded', 'mapId', MAPJS.content(content));
+				listener.calls.reset();
+				activeContent.updateAttr(11, 'measurement-vals', {'Speed': 100, 'Defficiency': 500});
+				expect(listener).not.toHaveBeenCalled();
+			});
 		});
 	});
 	describe('addMeasure', function () {
