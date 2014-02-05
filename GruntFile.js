@@ -87,7 +87,7 @@ module.exports = function (grunt) {
 					helpers: [
 						'test-lib/mm.js',
 						'test-lib/sinon-1.5.2.js',
-						'test-lib/describe-batch.js',
+						'test-lib/jasmine-describe-batch.js',
 						'test-lib/fake-bootstrap-modal.js',
 						'test-lib/jasmine-tagname-match.js',
 						'public/mapjs-compiled.js',
