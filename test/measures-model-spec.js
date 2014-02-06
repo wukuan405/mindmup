@@ -180,7 +180,11 @@ describe('MM.MeasuresModel', function () {
 			});
 			it('dispatches an event when the property is removed', function () {
 				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', false);
-				expect(listener).toHaveBeenCalledWith(11, 'Speed', false);
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', 0);
+			});
+			it('dispatches an event when the property is set to 0', function () {
+				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', 0);
+				expect(listener).toHaveBeenCalledWith(11, 'Speed', 0);
 			});
 			it('dispatches an event when the idea is in the current filter', function () {
 				underTest.editWithFilter({
@@ -203,7 +207,7 @@ describe('MM.MeasuresModel', function () {
 				activeContent.updateAttr(11, 'measurement-vals', {'Speed': 100, 'Defficiency': 500});
 
 				expect(listener).toHaveBeenCalledWith(11, 'Speed', 100);
-				expect(listener).toHaveBeenCalledWith(11, 'Efficiency', false);
+				expect(listener).toHaveBeenCalledWith(11, 'Efficiency', 0);
 				expect(listener).toHaveBeenCalledWith(11, 'Defficiency', 500);
 			});
 			it('does not traverse the content if there are no listeners', function () {

@@ -25,14 +25,14 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 			_.each(measurement.values, function (value, key) {
 				var baselineValue = (baseline && baseline.values && baseline.values[key]) || 0;
 				if (value !== baselineValue) {
-					difference.push(['measureValueChanged', measurement.id, key, value]);
+					difference.push(['measureValueChanged', measurement.id, key, value || 0]);
 				}
 			});
 			if (baseline) {
 				_.each(baseline.values, function (value, key) {
 					var noNewValue = !measurement || !measurement.values || !measurement.values[key];
 					if (noNewValue) {
-						difference.push(['measureValueChanged', baseline.id, key, false]);
+						difference.push(['measureValueChanged', baseline.id, key, 0]);
 					}
 				});
 			}
@@ -86,7 +86,6 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 	};
 	self.editWithFilter = function (newFilter) {
 		filter = newFilter;
-		dispatchMeasurementChangedEvents();
 		self.dispatchEvent('measuresEditRequested');
 	};
 	self.getMeasurementValues = function () {
