@@ -244,6 +244,47 @@ describe('MM.MeasuresModel', function () {
 			});
 		});
 	});
+	describe('changingValues', function () {
+		beforeEach(function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+		});
+
+		var validValues = [12, '12', '-12', -12, '12.1',  '.1', 0.1, '0', 0],
+			invalidValues = ['120,000', '', 'a1', '1a', 'hello', undefined, {}, []];
+		describe('validate', function () {
+			var doCase = function (arg, expectation) {
+				it('should return [' + expectation + '] for [' + arg + ']', function () {
+					expect(underTest.validate(arg)).toEqual(expectation);
+				});
+			};
+			_.each(validValues,  function (arg) { doCase(arg, true); });
+			_.each(invalidValues,  function (arg) { doCase(arg, false); });
+		});
+		describe('setValue', function () {
+
+			_.each(validValues,
+			function (arg) {
+				it('should send change to activeContent when a valid value like [' + arg + '] is supplied and return the result from the activeContentCall', function () {
+					spyOn(activeContent, 'mergeAttrProperty').and.returnValue('hello');
+					expect(underTest.setValue(11, 'Speed', arg)).toEqual('hello');
+					expect(activeContent.mergeAttrProperty).toHaveBeenCalledWith(11, 'measurement-vals', 'Speed', arg);
+				});
+			});
+
+			_.each(invalidValues,
+			function (arg) {
+				it('should return false for [' + arg + ']', function () {
+					expect(underTest.setValue(11, 'Speed', arg)).toEqual(false);
+				});
+				it('should not send change to activeContent when an invalid value like [' + arg + '] is supplied', function () {
+					spyOn(activeContent, 'mergeAttrProperty');
+					underTest.setValue(11, 'Speed', arg);
+					expect(activeContent.mergeAttrProperty).not.toHaveBeenCalled();
+				});
+			});
+		});
+
+	});
 	describe('remove measure', function () {
 		beforeEach(function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);

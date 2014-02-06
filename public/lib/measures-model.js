@@ -126,6 +126,15 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		activeContent.updateAttr(activeContent.id, configAttributeName, updated);
 	};
+	self.validate = function (value) {
+		return !isNaN(parseFloat(value)) && isFinite(value);
+	};
+	self.setValue = function (nodeId, measureName, value) {
+		if (!self.validate(value)) {
+			return false;
+		}
+		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
+	};
 };
 
 

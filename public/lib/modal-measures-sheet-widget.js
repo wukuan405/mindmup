@@ -30,14 +30,21 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					measuresModel.removeMeasure(measureName);
 				});
 			},
-			appendMeasureValue = function (container, value, index) {
-				var current = container.children('[data-mm-role=value-template]').eq(index);
-				if (current.length) {
-					valueTemplate.clone().insertBefore(current).text(value || '0');
-				} else {
-					valueTemplate.clone().appendTo(container).text(value || '0');
-				}
+			appendMeasureValue = function (container, value, nodeId, measureName, index) {
+				var current = container.children('[data-mm-role=value-template]').eq(index),
+					valueCell = valueTemplate.clone();
+				valueCell
+				.text(value || '0')
+				.on('change', function (evt, newValue) {
+					return measuresModel.setValue(nodeId, measureName, newValue);
+				});
 
+				if (current.length) {
+					valueCell.insertBefore(current);
+				} else {
+					valueCell.appendTo(container);
+				}
+				return valueCell;
 			},
 			onMeasureValueChanged = function (nodeId, measureChanged, newValue) {
 				var row = getRowForNodeId(nodeId),
@@ -48,7 +55,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				appendMeasure(measureName, index);
 
 				_.each(ideaContainer.children(), function (idea) {
-					appendMeasureValue(jQuery(idea), '0', index);
+					appendMeasureValue(jQuery(idea), '0', idea.id, measureName, index);
 				});
 			},
 			onMeasureRemoved = function (measureName) {
@@ -64,6 +71,13 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 
 		measurementTemplate.detach();
 		ideaTemplate.detach();
+		element.find('[data-mm-role=measurements-table]')
+		.editableTableWidget()
+		.on('validate', function (evt, value) {
+			return measuresModel.validate(value);
+		});
+
+
 		element.on('shown', function () {
 			element.find('[data-dismiss=modal]').focus();
 		});
@@ -78,7 +92,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				var newIdea = ideaTemplate.clone().appendTo(ideaContainer).attr('data-mm-nodeid', mv.id);
 				newIdea.find('[data-mm-role=idea-title]').text(mv.title);
 				_.each(measures, function (measure) {
-					appendMeasureValue(newIdea, mv.values[measure]);
+					appendMeasureValue(newIdea, mv.values[measure], mv.id, measure);
 				});
 			});
 			measuresModel.addEventListener('measureValueChanged', onMeasureValueChanged);

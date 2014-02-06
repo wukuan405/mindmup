@@ -64,6 +64,7 @@ module.exports = function (grunt) {
 						'test-lib/fake-bootstrap-modal.js',
 						'test-lib/jasmine-tagname-match.js',
 						'public/mapjs-compiled.js',
+						'public/mindmup-editabletable.js'
 					]
 				}
 			}

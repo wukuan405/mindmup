@@ -28,7 +28,9 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 	beforeEach(function () {
 		measuresModel = observable({
 			addMeasure: jasmine.createSpy('addMeasure'),
-			removeMeasure: jasmine.createSpy('removeMeasure')
+			removeMeasure: jasmine.createSpy('removeMeasure'),
+			validate: jasmine.createSpy('validate'),
+			setValue: jasmine.createSpy('setValue')
 		});
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
@@ -195,6 +197,30 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 					['22',	'0']
 				]);
 
+			});
+		});
+		describe('measure value validation', function () {
+			var active;
+			beforeEach(function () {
+				active = underTest.find('tbody tr td').first();
+			});
+			it('asks the model to validate changed measure values, sets the event result to validation result', function () {
+				var evt = jQuery.Event('validate');
+				measuresModel.validate.and.returnValue('mike');
+
+				active.text('text').trigger(evt, 'text');
+
+				expect(measuresModel.validate).toHaveBeenCalledWith('text');
+				expect(evt.result).toBe('mike');
+			});
+			it('asks the model to changed measure value, passing the element id and ', function () {
+				var evt = jQuery.Event('change');
+				measuresModel.setValue.and.returnValue('mike');
+
+				active.text('text').trigger(evt, 'text');
+
+				expect(measuresModel.setValue).toHaveBeenCalledWith('77.session1', 'Cost', 'text');
+				expect(evt.result).toBe('mike');
 			});
 		});
 	});
