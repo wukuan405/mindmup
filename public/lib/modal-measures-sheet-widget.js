@@ -10,7 +10,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			ideaContainer = ideaTemplate.parent(),
 			addMeasureInput = element.find('[data-mm-role=measure-to-add]'),
 			getRowForNodeId = function (nodeId) {
-				return element.find('[data-mm-nodeid=' + nodeId + ']');
+				return element.find('[data-mm-nodeid="' + nodeId + '""]');
 			},
 			getColumnIndexForMeasure = function (measureName) {
 				return _.map(measurementContainer.children(), function (column) {
