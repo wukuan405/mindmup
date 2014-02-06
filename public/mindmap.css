@@ -541,10 +541,19 @@ body .modal.huge {
   margin-left:auto;
   margin-right:auto;
 }
-#modalMeasuresSheet td,  #modalMeasuresSheet th + th {
+#modalMeasuresSheet td {
+	text-align: right;
+	width: 20%;
+}
+#modalMeasuresSheet th + th {
 	text-align: right;
 }
-
+#modalMeasuresSheet table thead tr th {
+	border-bottom: 3px gray solid !important;
+}
+#modalMeasuresSheet table tfoot tr th{
+	border-top: 3px gray solid !important;
+}
 #modalMeasuresSheet form {
 	margin: 0px !important;
 }
@@ -569,3 +578,6 @@ body .modal.huge {
 	outline-offset: 0px;
 	border: none;
 }
+
+
+
