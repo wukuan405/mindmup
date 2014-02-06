@@ -9,6 +9,9 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 							'<tbody>' +
 							'	<tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr>' +
 							'</tbody>' +
+							'<tfoot> ' +
+							'	<tr><th>SUMMARY</th><th data-mm-role="summary-template" data-mm-function="add"><span data-mm-role="summary-value"></span></th></tr>' +
+							'</tfoot>' +
 						'</table>' +
 						'<form><input data-mm-role="measure-to-add"/><button type="submit" data-mm-role="add-measure"></button></form>' +
 					'</div>',
@@ -23,6 +26,10 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		},
 		tableColumnNames = function () {
 			var headerRow = underTest.find('thead tr');
+			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
+		},
+		tableFooterContent = function () {
+			var headerRow = underTest.find('tfoot tr');
 			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
 		};
 	beforeEach(function () {
@@ -103,8 +110,10 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			underTest.modal('show');
 		});
 		it('shows a table with measurements in the first row, keeping any non template elements', function () {
-
 			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Profit']);
+		});
+		it('creates summary cells in the footer, keeping any non template elements', function () {
+			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '322']);
 		});
 		it('shows active idea titles in the first column', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
@@ -125,6 +134,17 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				['200',	'300'],
 				['0',	'33']
 			]);
+			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '333']);
+		});
+		it('value cells are untouched if the measurement is not displayed', function () {
+			measuresModel.dispatchEvent('measureValueChanged', 2, 'XProfit', 33);
+			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Profit']);
+			expect(tableValues()).toEqual([
+				['100',	'0'],
+				['200',	'300'],
+				['0',	'22']
+			]);
+			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '322']);
 		});
 		it('a new column is added at the correct index when a measure is added', function () {
 			measuresModel.dispatchEvent('measureAdded', 'Lucre', 1);
@@ -134,6 +154,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				['0', '0', '22']
 			]);
 			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Lucre', 'Profit']);
+			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '0', '322']);
 		});
 		it('the column for the measure is removed when the measure is removed', function () {
 			measuresModel.dispatchEvent('measureRemoved', 'Cost');
@@ -143,6 +164,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				['22']
 			]);
 			expect(tableColumnNames()).toEqual(['Name', 'Profit']);
+			expect(tableFooterContent()).toEqual(['SUMMARY', '322']);
 		});
 		it('the becomes empty when the last measure is removed', function () {
 			measuresModel.dispatchEvent('measureRemoved', 'Cost');
@@ -154,6 +176,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				[]
 			]);
 			expect(tableColumnNames()).toEqual(['Name']);
+			expect(tableFooterContent()).toEqual(['SUMMARY']);
 		});
 		describe('adding a new measure', function () {
 			it('should call the model to add a new measure', function () {
@@ -186,6 +209,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			it('clears out previous measures before adding new ones', function () {
 				var headerRow = underTest.find('thead tr');
 				expect(_.map(headerRow.children(), function (cell) { return jQuery(cell).text(); })).toEqual(['Name', 'Profit', 'Fun']);
+				expect(tableFooterContent()).toEqual(['SUMMARY', '22', '100']);
 			});
 			it('clears out previous titles before adding new ones', function () {
 				var ideaNames = underTest.find('[data-mm-role=idea-title]');
