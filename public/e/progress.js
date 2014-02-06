@@ -603,8 +603,6 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			element.find('[data-mm-role=save]').click(function () {
 				var config = {},
 					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
-					measurementsElement = element.find('[data-mm-role=measurements]'),
-					measurements =  _.reject(_.map(measurementsElement.val().split(','), function (t) { return t.trim(); }), function (v) {return !v || v.length === 0; }),
 					existing = _.reject(
 						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
 						function (x) {return isNaN(x); }
@@ -637,22 +635,11 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 					config[key] = statusConfig;
 				});
 				updater.setStatusConfig(config);
-
-				updater.setMeasurements(measurements);
 			});
 		};
 	bindGenericFunctions();
 	updater.addEventListener('configChanged', function (config) {
 		updateUI(config);
-	});
-	updater.addEventListener('measurementsChanged', function (measurements) {
-		var measurementElement = element.find('[data-mm-role=measurements]');
-		if (measurements) {
-			measurementElement.val(measurements.join(','));
-		}
-		else {
-			measurementElement.val('');
-		}
 	});
 	updateUI();
 	return this;

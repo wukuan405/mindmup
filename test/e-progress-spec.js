@@ -563,42 +563,6 @@ describe('progressStatusUpdateWidget', function () {
 				}
 			});
 		});
-		describe('saving measurements', function () {
-			it('when there are measurements', function () {
-				domElement.find('[data-mm-role=measurements]').val('Cost,Effort');
-				domElement.find('[data-mm-role=save]').click();
-				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
-			});
-			it('when there are no measurements', function () {
-				domElement.find('[data-mm-role=measurements]').val('');
-				domElement.find('[data-mm-role=save]').click();
-				expect(updater.setMeasurements).toHaveBeenCalledWith([]);
-			});
-			it('when the measurements are surrounded with spaces', function () {
-				domElement.find('[data-mm-role=measurements]').val(' Cost , Effort ');
-				domElement.find('[data-mm-role=save]').click();
-				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
-			});
-			it('when the measurements contain empty elements', function () {
-				domElement.find('[data-mm-role=measurements]').val('Cost, ,,Effort');
-				domElement.find('[data-mm-role=save]').click();
-				expect(updater.setMeasurements).toHaveBeenCalledWith(['Cost', 'Effort']);
-			});
-		});
-		describe('populating measurements', function () {
-			it('when there are  measurements', function () {
-				updater.dispatchEvent('measurementsChanged', ['Man Days', 'Profit']);
-				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('Man Days,Profit');
-			});
-			it('when there are not  measurements', function () {
-				updater.dispatchEvent('measurementsChanged', []);
-				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('');
-			});
-			it('when there are undefined measurements', function () {
-				updater.dispatchEvent('measurementsChanged', false);
-				expect(domElement.find('[data-mm-role=measurements]').val()).toEqual('');
-			});
-		});
 		it('ignores transparent color when reading background', function () {
 			var newStatusHtml = '<li data-mm-role="progress" data-mm-progress-key="Key 1">'
 				+ '<input data-mm-role="status-color" value="transparent"/>'
