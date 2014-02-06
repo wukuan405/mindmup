@@ -80,6 +80,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 
 		element.on('shown', function () {
 			element.find('[data-dismiss=modal]').focus();
+			element.find('[data-mm-role=measurements-table] td').first().focus();
 		});
 		element.on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();

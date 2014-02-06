@@ -293,13 +293,26 @@ describe('MM.MeasuresModel', function () {
 			underTest.removeMeasure('Speed');
 			expect(activeContent.attr['measurement-names']).toEqual(['Efficiency']);
 		});
+		it('should remove all the measure values from all nodes', function () {
+			underTest.removeMeasure('Speed');
+			expect(activeContent.getAttrById(1, 'measurement-vals')).toBeFalsy();
+			expect(activeContent.getAttrById(11, 'measurement-vals')).toEqual({'Efficiency': 2});
+			expect(activeContent.getAttrById(121, 'measurement-vals')).toEqual({'Efficiency': -1});
+		});
 		it('does nothing if the measure is non-existent', function () {
 			var emptyContent = MAPJS.content({});
 			mapController.dispatchEvent('mapLoaded', 'mapId', emptyContent);
 			underTest.removeMeasure('Speed');
 			expect(emptyContent.attr).toBeFalsy();
 		});
-
+		it('undo remove measure should reinstate measure and values', function () {
+			underTest.removeMeasure('Speed');
+			activeContent.undo();
+			expect(activeContent.attr['measurement-names']).toEqual(['Speed', 'Efficiency']);
+			expect(activeContent.getAttrById(1, 'measurement-vals')).toEqual({'Speed': 100});
+			expect(activeContent.getAttrById(11, 'measurement-vals')).toEqual({'Speed': 1, 'Efficiency': 2});
+			expect(activeContent.getAttrById(121, 'measurement-vals')).toEqual({'Efficiency': -1});
+		});
 
 	});
 });

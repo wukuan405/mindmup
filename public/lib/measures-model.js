@@ -124,7 +124,13 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		if (_.isEqual(updated, measures)) {
 			return;
 		}
+
+		activeContent.startBatch();
 		activeContent.updateAttr(activeContent.id, configAttributeName, updated);
+		activeContent.traverse(function (idea) {
+			activeContent.mergeAttrProperty(idea.id, valueAttrName, measureName,  false);
+		});
+		activeContent.endBatch();
 	};
 	self.validate = function (value) {
 		return !isNaN(parseFloat(value)) && isFinite(value);
