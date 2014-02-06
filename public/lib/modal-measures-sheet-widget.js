@@ -55,7 +55,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				appendMeasure(measureName, index);
 
 				_.each(ideaContainer.children(), function (idea) {
-					appendMeasureValue(jQuery(idea), '0', idea.id, measureName, index);
+					appendMeasureValue(jQuery(idea), '0', jQuery(idea).data('mm-nodeid'), measureName, index);
 				});
 			},
 			onMeasureRemoved = function (measureName) {

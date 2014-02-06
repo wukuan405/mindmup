@@ -204,6 +204,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			beforeEach(function () {
 				active = underTest.find('tbody tr td').first();
 			});
+
 			it('asks the model to validate changed measure values, sets the event result to validation result', function () {
 				var evt = jQuery.Event('validate');
 				measuresModel.validate.and.returnValue('mike');
@@ -221,6 +222,18 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 
 				expect(measuresModel.setValue).toHaveBeenCalledWith('77.session1', 'Cost', 'text');
 				expect(evt.result).toBe('mike');
+			});
+			it('asks the model to added and changedmeasure value, passing the element id and ', function () {
+				measuresModel.dispatchEvent('measureAdded', 'Hello', 2);
+				active = underTest.find('tbody tr td').last();
+				var evt = jQuery.Event('change');
+				measuresModel.setValue.and.returnValue('mike');
+
+				active.text('text').trigger(evt, 'text');
+
+				expect(measuresModel.setValue).toHaveBeenCalledWith(2, 'Hello', 'text');
+				expect(evt.result).toBe('mike');
+
 			});
 		});
 	});
