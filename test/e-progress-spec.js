@@ -752,30 +752,14 @@ describe('MM.Progress.Calc', function () {
 		});
 		it('includes projections for measurements in supplied order', function () {
 			var names = _.map(projections, function (projection) { return projection.name; });
-			expect(names).toEqual(['Counts', 'Percentages', 'one', 'Total one', 'Percentage one',  'two', 'Total two', 'Percentage two']);
+			expect(names).toEqual(['Counts', 'Percentages', 'Total one', 'Percentage one',  'Total two', 'Percentage two']);
 		});
 		describe('measurement projections', function () {
-			var projectionOne, projectionTotalOne, projectionTotalTwo;
+			var projectionTotalOne, projectionTotalTwo;
 			beforeEach(function () {
 				spyOn(activeContent, 'mergeAttrProperty').and.callThrough();
-				projectionOne = projections[2].iterator(data);
-				projectionTotalOne = projections[3].iterator(data);
-				projectionTotalTwo = projections[6].iterator(data);
-			});
-			it('should return projection value as  argument', function () {
-				var expected = [
-					[ 'Parent', 0 ],
-					[ 'first2', 20 ],
-					[ 'first3', 0 ],
-					[ 'first4', 50 ],
-					[ 'first5', 0 ],
-					[ 'first6', 0 ]
-				];
-				expect(projectionOne.length).toEqual(expected.length);
-				_.each(projectionOne, function (item, idx) {
-					expect(item.setValue).not.toBeUndefined();
-					expect(item.slice(0)).toEqual(expected[idx]);
-				});
+				projectionTotalOne = projections[2].iterator(data);
+				projectionTotalTwo = projections[4].iterator(data);
 			});
 			it('should return totalized projection of measurement', function () {
 				var expected = [
@@ -783,7 +767,6 @@ describe('MM.Progress.Calc', function () {
 					['F2', 50]
 				];
 				expect(projectionTotalOne.slice(0)).toEqual(expected);
-				expect(projectionOne.total()).toEqual(70);
 			});
 			it('should return totalized projection of measurement where more than one item sums to 0', function () {
 				var expected = [
@@ -791,33 +774,6 @@ describe('MM.Progress.Calc', function () {
 					['F2', 100]
 				];
 				expect(projectionTotalTwo.slice(0)).toEqual(expected);
-			});
-			it('should invoke mergeAttrProperty on activeContent when value is changed', function () {
-				projectionOne[2].setValue(77);
-				expect(activeContent.mergeAttrProperty).toHaveBeenCalledWith(115, 'test-measurement', 'one', 77);
-			});
-			it('should fail and not pass non-numeric values', function () {
-				var result = projectionOne[2].setValue('aaa');
-				expect(result).toBeFalsy();
-				expect(activeContent.mergeAttrProperty).not.toHaveBeenCalled();
-			});
-			it('should pass empty value as false', function () {
-				projectionOne[2].setValue('');
-				expect(activeContent.mergeAttrProperty).toHaveBeenCalledWith(115, 'test-measurement', 'one', false);
-			});
-			it('returns the result of mergeAttrProperty', function () {
-				activeContent.mergeAttrProperty.and.returnValue('zebra');
-
-				var result = projectionOne[2].setValue(666);
-
-				expect(result).toBe('zebra');
-			});
-			_.each(['0', '0.0', '-1', '435678.1', '111', '.89273448'], function (val) {
-				it('works for numerics (' + val + ')', function () {
-					var result = projectionOne[2].setValue(val);
-					expect(result).toBeTruthy();
-					expect(activeContent.mergeAttrProperty).toHaveBeenCalledWith(115, 'test-measurement', 'one', val);
-				});
 			});
 		});
 		describe('counts', function () {
@@ -1497,32 +1453,6 @@ describe('Calc widget', function () {
 			checkContents(simpleTable);
 		});
 
-	});
-	describe('editable rows', function () {
-		var spy;
-		beforeEach(function () {
-			spy = jasmine.createSpy('editor').and.returnValue(true);
-			simpleTable[1].setValue = spy;
-			toggleButton.click();
-			calcModel.dispatchEvent('dataUpdated', simpleTable);
-		});
-		it('populates the editable row with data values', function () {
-			expect(tableDOM.find('tr:eq(0) td:eq(1) span').text()).toEqual('2');
-			expect(tableDOM.find('tr:eq(1) td:eq(1) span').text()).toEqual('4');
-		});
-		it('calls the setValue callback when the field changes', function () {
-			tableDOM.find('tr:eq(1) td:eq(1) span').trigger('click');
-			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
-			tableDOM.find('tr:eq(1) td:eq(1) input').blur();
-			expect(spy).toHaveBeenCalledWith('6');
-		});
-		it('resets the value to the original if setValue returns false', function () {
-			spy.and.returnValue(false);
-			tableDOM.find('tr:eq(1) td:eq(1) span').trigger('click');
-			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
-			tableDOM.find('tr:eq(1) td:eq(1) input').blur();
-			expect(tableDOM.find('tr:eq(1) td:eq(1) span').text()).toEqual('4');
-		});
 	});
 	describe('open in measurements', function () {
 		it('triggers the measures model and sets the filter to the predicate from calc model', function () {

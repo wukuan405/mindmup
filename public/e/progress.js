@@ -80,7 +80,7 @@ MM.CalcModel = function (calc, activityLog) {
 	};
 };
 
-$.fn.calcWidget = function (calcModel, measureModel, mapModel) {
+$.fn.calcWidget = function (calcModel, measureModel) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
@@ -113,26 +113,9 @@ $.fn.calcWidget = function (calcModel, measureModel, mapModel) {
 					_.each(data, function (row) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
-							var cellDOM,
-								tryToSet = function (e) {
-									var element = $(this);
-									if (e.target !== this) {
-										return;
-									}
-									if (!row.setValue(element.text())) {
-										element.text(cell.toLocaleString());
-									}
-								};
+							var cellDOM;
 							cellDOM = cellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
 							cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
-							if (row.id && index === 0) {
-								cellDOM.click(function () {
-									mapModel.selectNode(row.id);
-								}).css('cursor', 'pointer');
-							}
-							if (row.setValue && index === 1) {
-								cellDOM.find('[data-mm-role=value]').tableCellInPlaceEditorWidget(cell).change(tryToSet);
-							}
 						});
 					});
 				}
@@ -201,34 +184,6 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 					});
 				}};
 			},
-			buildMeasurementListProjection = function (measurement) {
-				return {
-					name: measurement,
-					iterator: function (data) {
-						var processed = _.map(_.sortBy(data, 'title'), function (item) {
-							var val = item.measurements && item.measurements[measurement] || 0,
-							row = [item.title, parseFloat(val)],
-							isNumber = function (n) {
-								return !isNaN(parseFloat(n)) && isFinite(n);
-							};
-							row.id = item.id;
-							row.setValue = function (newValue) {
-								if (!newValue && newValue !== 0) {
-									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
-								} else if (isNumber(newValue)) {
-									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, newValue);
-								}
-								return false;
-
-							};
-							return row;
-						});
-
-						processed.total = dataTotaliser;
-						return processed;
-					},
-				};
-			},
 			buildSumByStatusProjection = function  (name, itemValue) {
 				return {name: name, iterator: function (data) {
 					var rawCounts = function () {
@@ -270,7 +225,6 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 		projections.push(buildSumByStatusProjection('Counts'));
 		projections.push(buildPercentProjection('Percentages', projections[0].iterator));
 		_.each(getMeasurementConfig(activeContent), function (measurement) {
-			projections.push(buildMeasurementListProjection(measurement));
 			var totalProjection = buildSumByStatusProjection('Total ' +  measurement, function (item) {
 				var val = parseFloat(item.measurements && item.measurements[measurement]) || 0;
 				return val;
@@ -752,7 +706,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel, mapModel).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
