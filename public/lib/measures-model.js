@@ -141,6 +141,30 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
 	};
+	self.getRawData = function () {
+		var data = [];
+		if (!activeContent) {
+			return data;
+		}
+		data.push(['Name'].concat(measures));
+		activeContent.traverse(function (idea) {
+			if (!filter || filter(idea)) {
+				data.push(
+					[idea.title].concat(_.map(measures,
+							function (measure) {
+								var ideaMeasures = idea.getAttr(valueAttrName) || {};
+								return ideaMeasures[measure];
+							})
+						)
+				);
+			}
+		});
+
+		return data;
+	};
+	self.removeFilter = function () {
+		filter = undefined;
+	};
 };
 MM.MeasuresModel.filterByIds = function (ids) {
 	'use strict';

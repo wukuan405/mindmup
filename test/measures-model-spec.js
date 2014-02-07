@@ -38,6 +38,41 @@ describe('MM.MeasuresModel', function () {
 		};
 		activeContent = MAPJS.content(JSON.parse(JSON.stringify(content)));
 	});
+	describe('getRawData', function () {
+		it('returns an empty array when no active content', function () {
+			expect(underTest.getRawData()).toEqual([]);
+		});
+		it('retrieves all data in a two-dim array when no filter is used', function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			expect(underTest.getRawData()).toEqual([
+				['Name', 'Speed', 'Efficiency'],
+				['one', 100, undefined],
+				['with values', 1, 2],
+				['no values', undefined, undefined],
+				['one twenty one', undefined, -1]
+			]);
+		});
+		it('retrieves only filtered data in a two-dim array when filter is used', function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			underTest.editWithFilter(function (idea) { return idea.id === 121; });
+			expect(underTest.getRawData(true)).toEqual([
+				['Name', 'Speed', 'Efficiency'],
+				['one twenty one', undefined, -1]
+			]);
+		});
+		it('returns a list of titles when there are no measures defined', function () {
+			activeContent.attr['measurement-names'] = false;
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			expect(underTest.getRawData()).toEqual([
+				['Name'],
+				['one'],
+				['with values'],
+				['no values'],
+				['one twenty one']
+			]);
+
+		});
+	});
 	describe('getMeasures', function () {
 		it('returns an empty array when there is no active content', function () {
 			expect(underTest.getMeasures()).toEqual([]);
@@ -82,6 +117,29 @@ describe('MM.MeasuresModel', function () {
 				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
 			]);
 		});
+	});
+	describe('removeFilter', function () {
+		var listener;
+		beforeEach(function () {
+			listener = jasmine.createSpy('listener');
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			underTest.addEventListener('measuresEditRequested', listener);
+			underTest.editWithFilter(MM.MeasuresModel.filterByIds([1, 121]));
+			listener.calls.reset();
+			underTest.removeFilter();
+		});
+		it('should not dispatch a measuresEditRequested event', function () {
+			expect(listener).not.toHaveBeenCalled();
+		});
+		it('returns entire map when measurements are retrieved', function () {
+			expect(underTest.getMeasurementValues()).toEqual([
+				{id: 1, title: 'one', values: {'Speed': 100}},
+				{id: 11, title: 'with values', values: {'Speed': 1, 'Efficiency': 2}},
+				{id: 12, title: 'no values', values: {}},
+				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
+			]);
+		});
+
 	});
 
 	describe('getMeasurementValues', function () {

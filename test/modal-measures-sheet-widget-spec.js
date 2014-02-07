@@ -34,12 +34,9 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
 		};
 	beforeEach(function () {
-		measuresModel = observable({
-			addMeasure: jasmine.createSpy('addMeasure'),
-			removeMeasure: jasmine.createSpy('removeMeasure'),
-			validate: jasmine.createSpy('validate'),
-			setValue: jasmine.createSpy('setValue')
-		});
+		measuresModel = observable(jasmine.createSpyObj('measuresModel',
+			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter']
+		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
 		underTest.modal('hide');
@@ -98,6 +95,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				expect(measuresModel.listeners('measureValueChanged')).toEqual([]);
 				expect(measuresModel.listeners('measureAdded')).toEqual([]);
 				expect(measuresModel.listeners('measureRemoved')).toEqual([]);
+				expect(measuresModel.removeFilter).toHaveBeenCalled();
 			});
 		});
 	});

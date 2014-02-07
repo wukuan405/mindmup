@@ -173,6 +173,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
+			measuresModel.removeFilter();
 		});
 		element.modal({keyboard: true, show: false});
 
