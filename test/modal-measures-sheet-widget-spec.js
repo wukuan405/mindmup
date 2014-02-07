@@ -13,6 +13,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 							'	<tr><th>SUMMARY</th><th data-mm-role="summary-template" data-mm-function="add"><span data-mm-role="summary-value"></span></th></tr>' +
 							'</tfoot>' +
 						'</table>' +
+						'<div data-mm-role="no-measures">AAA</div>' +
 						'<form><input data-mm-role="measure-to-add"/><button type="submit" data-mm-role="add-measure"></button></form>' +
 					'</div>',
 		underTest,
@@ -63,13 +64,14 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			]);
 			underTest.modal('show');
 		});
-		it('shows an empty table', function () {
-			expect(tableValues()).toEqual([
-				[],
-				[],
-				[]
-			]);
-			expect(tableColumnNames()).toEqual(['Name']);
+		it('shows the no-measures div instead of the table', function () {
+			expect(underTest.find('[data-mm-role=measurements-table]').css('display')).toEqual('none');
+			expect(underTest.find('[data-mm-role=no-measures]').css('display')).toEqual('block');
+		});
+		it('shows the table and hides the no-measures div after the first measure is added', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Lucre', 0);
+			expect(underTest.find('[data-mm-role=measurements-table]').css('display')).toEqual('table');
+			expect(underTest.find('[data-mm-role=no-measures]').css('display')).toEqual('none');
 		});
 	});
 	describe('listening for measureModel Events', function () {
@@ -110,7 +112,11 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			underTest.modal('show');
 		});
 		it('shows a table with measurements in the first row, keeping any non template elements', function () {
+			expect(underTest.find('[data-mm-role=measurements-table]').css('display')).not.toEqual('none');
 			expect(tableColumnNames()).toEqual(['Name', 'Cost', 'Profit']);
+		});
+		it('hides the no-measures div', function () {
+			expect(underTest.find('[data-mm-role=no-measures]').css('display')).toEqual('none');
 		});
 		it('creates summary cells in the footer, keeping any non template elements', function () {
 			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '322']);
