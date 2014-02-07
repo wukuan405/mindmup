@@ -1211,6 +1211,19 @@ describe('MM.CalcModel', function () {
 		underTest = new MM.CalcModel(calc, activityLog);
 		underTest.setFilter(filter);
 	});
+	describe('getFilterPredicate', function () {
+		it('retrieves a list of IDs from the active data adapter and converts into a predicate function that returns true for contained IDs', function () {
+			calc.dataAdapter.and.returnValue([
+				{ status: 'k888', id: 1, title: 'one'},
+				{ status: 'k777', id: 114, title: 'one hundred and fourteen'}
+			]);
+			underTest.dataUpdated(activeContent);
+			var result = underTest.getFilterPredicate();
+			expect(result({id: 1})).toBe(true);
+			expect(result({id: 114})).toBe(true);
+			expect(result({id: 2})).toBe(false);
+		});
+	});
 	describe('projections', function () {
 		var listener;
 		beforeEach(function () {
@@ -1428,6 +1441,7 @@ describe('Calc widget', function () {
 					'</table>' +
 					'<div data-mm-role="empty">BLA!</div>' +
 					'<div data-mm-role="total"><span data-mm-role="total-value">FLA!</span></div>' +
+					'<button data-mm-role="open-measurements"></button>' +
 					'</div>',
 		openButtonTemplate = '<button data-mm-role="toggle-widget" data-mm-calc-id="calcWidget1"></button>',
 		underTest,
@@ -1438,6 +1452,7 @@ describe('Calc widget', function () {
 		msgDiv,
 		projections,
 		simpleTable,
+		measureModel,
 		checkContents = function (dataTable) {
 			expect(tableDOM.find('tr').length).toBe(dataTable.length);
 			_.each(dataTable, function (row, rowindex) {
@@ -1454,8 +1469,9 @@ describe('Calc widget', function () {
 			getActiveProjection: jasmine.createSpy('getActiveProjection'),
 			setActiveProjection: jasmine.createSpy('setActiveProjection')
 		});
+		measureModel = jasmine.createSpyObj('measureModel', ['editWithFilter']);
 		toggleButton = jQuery(openButtonTemplate).appendTo('body');
-		underTest = jQuery(template).appendTo('body').calcWidget(calcModel);
+		underTest = jQuery(template).appendTo('body').calcWidget(calcModel, measureModel);
 		tableDOM = underTest.find('[data-mm-role=calc-table]');
 		totalElement = underTest.find('[data-mm-role=total]');
 		msgDiv = underTest.find('[data-mm-role=empty]');
@@ -1506,6 +1522,13 @@ describe('Calc widget', function () {
 			tableDOM.find('tr:eq(1) td:eq(1) input').val('6');
 			tableDOM.find('tr:eq(1) td:eq(1) input').blur();
 			expect(tableDOM.find('tr:eq(1) td:eq(1) span').text()).toEqual('4');
+		});
+	});
+	describe('open in measurements', function () {
+		it('triggers the measures model and sets the filter to the predicate from calc model', function () {
+			calcModel.getFilterPredicate = jasmine.createSpy('getFilterIterator').and.returnValue('PREDICATE1');
+			underTest.find('[data-mm-role=open-measurements]').click();
+			expect(measureModel.editWithFilter).toHaveBeenCalledWith('PREDICATE1');
 		});
 	});
 	describe('totals', function () {

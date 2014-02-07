@@ -78,7 +78,8 @@ MM.main = function (config) {
 				'activityLog': activityLog,
 				'mapModel': mapModel,
 				'container': jQuery('#container'),
-				'iconEditor': iconEditor
+				'iconEditor': iconEditor,
+				'measuresModel' : measuresModel
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');

@@ -72,9 +72,15 @@ MM.CalcModel = function (calc, activityLog) {
 			recalcAndPublish();
 		}
 	};
+	self.getFilterPredicate = function () {
+		var data = _.map(currentData || aggregation(activeContent, activeFilter), function (item) { return item.id; });
+		return function (idea) {
+			return _.include(data, idea.id);
+		};
+	};
 };
 
-$.fn.calcWidget = function (calcModel, mapModel) {
+$.fn.calcWidget = function (calcModel, measureModel, mapModel) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
@@ -85,6 +91,7 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
 		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
 			cellTemplate = calcRowTemplate.find('[data-mm-role=cell]').detach(),
+			measurements = self.find('[data-mm-role=open-measurements]'),
 			repopulateTable = function (data) {
 				showActiveProjection();
 				table.empty();
@@ -92,9 +99,11 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 					table.hide();
 					totalElement.hide();
 					msgDiv.show();
+					measurements.attr('disabled', true);
 				} else {
 					table.show();
 					msgDiv.hide();
+					measurements.attr('disabled', false);
 					if (data.total) {
 						totalValueElement.text(data.total().toLocaleString());
 						totalElement.show();
@@ -149,6 +158,9 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 			},
 			showActiveProjection = function () {
 				self.find('[data-mm-role=active-projection]').text(calcModel.getActiveProjection());
+			},
+			openInMeasurements = function () {
+				measureModel.editWithFilter(calcModel.getFilterPredicate());
 			};
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
 		setWidgetVisible(false);
@@ -157,6 +169,7 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 		toggleButtons.click(function () {
 			setWidgetVisible(!self.is(':visible'));
 		});
+		measurements.click(openInMeasurements);
 	});
 };
 MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementAttributeName, measurementConfigurationAttributeName, mapModel) {
@@ -724,6 +737,7 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
+		measuresModel = MM.Extensions.components.measuresModel,
 		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapModel),
 		calcModel = new MM.CalcModel(progressCalc, MM.Extensions.components.activityLog),
 		loadUI = function (html) {
@@ -738,7 +752,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, mapModel).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel, mapModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
