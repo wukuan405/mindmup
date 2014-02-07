@@ -76,9 +76,7 @@ describe('MM.MeasuresModel', function () {
 		});
 		it('sets filter with node ids', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			underTest.editWithFilter({
-				nodeIds: [1, 121]
-			});
+			underTest.editWithFilter(MM.MeasuresModel.filterByIds([1, 121]));
 			expect(underTest.getMeasurementValues()).toEqual([
 				{id: 1, title: 'one', values: {'Speed': 100}},
 				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
@@ -187,17 +185,13 @@ describe('MM.MeasuresModel', function () {
 				expect(listener).toHaveBeenCalledWith(11, 'Speed', 0);
 			});
 			it('dispatches an event when the idea is in the current filter', function () {
-				underTest.editWithFilter({
-					nodeIds: [11]
-				});
+				underTest.editWithFilter(MM.MeasuresModel.filterByIds([11]));
 				listener.calls.reset();
 				activeContent.mergeAttrProperty(11, 'measurement-vals', 'Speed', 100);
 				expect(listener).toHaveBeenCalledWith(11, 'Speed', 100);
 			});
 			it('does not dispatch an event when the idea is excluded by the current filter', function () {
-				underTest.editWithFilter({
-					nodeIds: [11]
-				});
+				underTest.editWithFilter(MM.MeasuresModel.filterByIds([11]));
 				listener.calls.reset();
 				activeContent.mergeAttrProperty(1, 'measurement-vals', 'Speed', 100);
 				expect(listener).not.toHaveBeenCalled();

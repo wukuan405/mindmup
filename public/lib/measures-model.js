@@ -94,7 +94,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		var result = [];
 		activeContent.traverse(function (idea) {
-			if (!filter || !filter.nodeIds || _.include(filter.nodeIds, idea.id)) {
+			if (!filter || filter(idea)) {
 				result.push({
 					id: idea.id,
 					title: idea.title,
@@ -142,7 +142,12 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
 	};
 };
-
+MM.MeasuresModel.filterByIds = function (ids) {
+	'use strict';
+	return function (idea) {
+		return _.include(ids, idea.id);
+	};
+};
 
 
 jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresModel) {
@@ -151,7 +156,7 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 		var element = jQuery(this),
 			showModal = function () {
 				if (mapModel.getInputEnabled()) {
-					measuresModel.editWithFilter({nodeIds: mapModel.getActivatedNodeIds()});
+					measuresModel.editWithFilter(MM.MeasuresModel.filterByIds(mapModel.getActivatedNodeIds()));
 				}
 			};
 
