@@ -121,7 +121,10 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 		summaryTemplate.detach();
 		ideaTemplate.detach();
 		measurementsTable
-		.editableTableWidget()
+		.editableTableWidget({
+			editor: element.find('[data-mm-role=measures-editor]'),
+			cloneProperties: jQuery.fn.editableTableWidget.defaultOptions.cloneProperties.concat(['outline', 'box-shadow', '-webkit-box-shadow', '-moz-box-shadow'])
+		})
 		.on('validate', function (evt, value) {
 			return measuresModel.validate(value);
 		}).numericTotaliser();
@@ -140,7 +143,13 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			ideaContainer.children('[data-mm-role=idea-template]').remove();
 			_.each(measuresModel.getMeasurementValues(), function (mv) {
 				var newIdea = ideaTemplate.clone().appendTo(ideaContainer).attr('data-mm-nodeid', mv.id);
-				newIdea.find('[data-mm-role=idea-title]').text(mv.title);
+				newIdea.find('[data-mm-role=idea-title]').text(function () {
+					var truncLength = jQuery(this).data('mm-truncate');
+					if (truncLength && mv.title.length > truncLength) {
+						return mv.title.substring(0, truncLength) + '...';
+					}
+					return mv.title;
+				});
 				_.each(measures, function (measure) {
 					appendMeasureValue(newIdea, mv.values[measure], mv.id, measure);
 				});

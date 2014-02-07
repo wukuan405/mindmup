@@ -7,7 +7,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 							'	<tr><th>Name</th><th data-mm-role="measurement-template"><a data-mm-role="remove-measure"/><span data-mm-role="measurement-name"></span></th></tr>' +
 							'</thead>' +
 							'<tbody>' +
-							'	<tr data-mm-role="idea-template"><th data-mm-role="idea-title"></th><td data-mm-role="value-template"></td></tr>' +
+							'	<tr data-mm-role="idea-template"><th data-mm-role="idea-title" data-mm-truncate="4"></th><td data-mm-role="value-template"></td></tr>' +
 							'</tbody>' +
 							'<tfoot> ' +
 							'	<tr><th>SUMMARY</th><th data-mm-role="summary-template" data-mm-function="add"><span data-mm-role="summary-value"></span></th></tr>' +
@@ -105,7 +105,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
 				{id: '77.session1', title: 'ron',	values: { 'Cost': 100 }},
 				{id: 1,				title: 'tom',	values: { 'Cost': 200, 'Profit': 300 }},
-				{id: 2,				title: 'mike',	values: { 'Profit': 22 }}
+				{id: 2,				title: 'mike is long',	values: { 'Profit': 22 }}
 			]);
 			underTest.modal('show');
 		});
@@ -115,9 +115,9 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		it('creates summary cells in the footer, keeping any non template elements', function () {
 			expect(tableFooterContent()).toEqual(['SUMMARY', '300', '322']);
 		});
-		it('shows active idea titles in the first column', function () {
+		it('shows active idea titles in the first column, truncating if needed', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
-			expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'tom', 'mike']);
+			expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'tom', 'mike...']);
 		});
 		it('shows measurement values for ideas in the table cells, mapping values to the right columns', function () {
 			expect(tableValues()).toEqual([
@@ -202,7 +202,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Profit', 'Fun']);
 				measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
 					{id: '77.session1', title: 'ron',	values: { 'Fun': 100 }},
-					{id: 3,				title: 'mike2',	values: { 'Profit': 22 }}
+					{id: 3,				title: 'non',	values: { 'Profit': 22 }}
 				]);
 				underTest.modal('show');
 			});
@@ -213,7 +213,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			});
 			it('clears out previous titles before adding new ones', function () {
 				var ideaNames = underTest.find('[data-mm-role=idea-title]');
-				expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'mike2']);
+				expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'non']);
 			});
 			it('clears out previous values before adding new ones', function () {
 				expect(tableValues()).toEqual([
