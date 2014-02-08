@@ -51,6 +51,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 		    measurementsTable = element.find('[data-mm-role=measurements-table]'),
+		    noMeasuresDiv = element.find('[data-mm-role=no-measures]'),
 			measurementTemplate = element.find('[data-mm-role=measurement-template]'),
 			measurementContainer = measurementTemplate.parent(),
 			ideaTemplate = element.find('[data-mm-role=idea-template]'),
@@ -74,6 +75,8 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					measuresModel.removeMeasure(measureName);
 				});
 				summaryTemplate.clone().addToRowAtIndex(summaryContainer, index).text('0');
+				measurementsTable.show();
+				noMeasuresDiv.hide();
 			},
 			appendMeasureValue = function (container, value, nodeId, measureName, index) {
 				var current = container.children('[data-mm-role=value-template]').eq(index),
@@ -121,26 +124,42 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 		summaryTemplate.detach();
 		ideaTemplate.detach();
 		measurementsTable
-		.editableTableWidget()
+		.editableTableWidget({
+			editor: element.find('[data-mm-role=measures-editor]'),
+			cloneProperties: jQuery.fn.editableTableWidget.defaultOptions.cloneProperties.concat(['outline', 'box-shadow', '-webkit-box-shadow', '-moz-box-shadow'])
+		})
 		.on('validate', function (evt, value) {
 			return measuresModel.validate(value);
 		}).numericTotaliser();
 
 		element.on('shown', function () {
-			element.find('[data-dismiss=modal]').focus();
+			element.find('[data-mm-role=measure-to-add]').focus();
 			element.find('[data-mm-role=measurements-table] td').first().focus();
 		});
 		element.on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();
 			summaryContainer.children('[data-mm-role=summary-template]').remove();
 			var measures = measuresModel.getMeasures();
+			if (measures && measures.length > 0) {
+				measurementsTable.show();
+				noMeasuresDiv.hide();
+			} else {
+				measurementsTable.hide();
+				noMeasuresDiv.show();
+			}
 			_.each(measures, function (m) {
 				appendMeasure(m);
 			});
 			ideaContainer.children('[data-mm-role=idea-template]').remove();
 			_.each(measuresModel.getMeasurementValues(), function (mv) {
 				var newIdea = ideaTemplate.clone().appendTo(ideaContainer).attr('data-mm-nodeid', mv.id);
-				newIdea.find('[data-mm-role=idea-title]').text(mv.title);
+				newIdea.find('[data-mm-role=idea-title]').text(function () {
+					var truncLength = jQuery(this).data('mm-truncate');
+					if (truncLength && mv.title.length > truncLength) {
+						return mv.title.substring(0, truncLength) + '...';
+					}
+					return mv.title;
+				});
 				_.each(measures, function (measure) {
 					appendMeasureValue(newIdea, mv.values[measure], mv.id, measure);
 				});
@@ -154,6 +173,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
+			measuresModel.removeFilter();
 		});
 		element.modal({keyboard: true, show: false});
 

@@ -1,5 +1,5 @@
 /*global $, jQuery, MM, document, MAPJS, window, atob, ArrayBuffer, Uint8Array*/
-jQuery.fn.remoteExportWidget = function (mapController, alert) {
+jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel) {
 	'use strict';
 	var loadedIdea,
 		downloadLink = ('download' in document.createElement('a')) ? $('<a>').addClass('hide').appendTo('body') : undefined,
@@ -39,13 +39,17 @@ jQuery.fn.remoteExportWidget = function (mapController, alert) {
 				'mm' : toPromise(MM.freemindExport, 'text/xml'),
 				'html': MM.exportToHtmlDocument,
 				'png': MAPJS.pngExport,
-				'txt': toPromise(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), 'text/plain')
+				'txt': toPromise(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), 'text/plain'),
+				'measures': toPromise(function () {
+						return MM.exportTableToText(measureModel.getRawData());
+					}, 'text/tab-separated-values')
 			},
 			format = $(this).data('mm-format'),
+			extension = $(this).data('mm-extension') || format,
 			title,
 			elem,
 			alertId;
-		title = loadedIdea.title + '.' + format;
+		title = loadedIdea.title + '.' + extension;
 		if (alert) {
 			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Exporting map to ' + title, 'This may take a few seconds for larger maps', 'info');
 		}

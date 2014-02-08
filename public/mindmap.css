@@ -554,6 +554,9 @@ body .modal.huge {
 #modalMeasuresSheet table tfoot tr th{
 	border-top: 3px gray solid !important;
 }
+#modalMeasuresSheet table tbody th{
+	width: 30%;
+}
 #modalMeasuresSheet form {
 	margin: 0px !important;
 }
@@ -564,20 +567,13 @@ body .modal.huge {
 	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
 	outline: rgb(91, 157, 217) auto 5px;
 }
-#modalMeasuresSheet .modal-body input.error {
-	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
-	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
-	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red;
-	outline: thin auto red;
-}
-#modalMeasuresSheet .modal-body input {
-	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
-	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
-	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
-	outline: rgb(91, 157, 217) auto 5px;
-	outline-offset: 0px;
-	border: none;
+.measures-editor.error {
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red !important;
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red !important;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px red !important;
+	outline: thin auto red !important;
 }
 
-
-
+#modalMeasuresSheet .modal-footer a {
+	margin-right:20px; margin-left:20px; line-height: 30px;
+}

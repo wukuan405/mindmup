@@ -94,7 +94,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		var result = [];
 		activeContent.traverse(function (idea) {
-			if (!filter || !filter.nodeIds || _.include(filter.nodeIds, idea.id)) {
+			if (!filter || filter(idea)) {
 				result.push({
 					id: idea.id,
 					title: idea.title,
@@ -141,8 +141,37 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
 	};
-};
+	self.getRawData = function () {
+		var data = [];
+		if (!activeContent) {
+			return data;
+		}
+		data.push(['Name'].concat(measures));
+		activeContent.traverse(function (idea) {
+			if (!filter || filter(idea)) {
+				data.push(
+					[idea.title].concat(_.map(measures,
+							function (measure) {
+								var ideaMeasures = idea.getAttr(valueAttrName) || {};
+								return ideaMeasures[measure];
+							})
+						)
+				);
+			}
+		});
 
+		return data;
+	};
+	self.removeFilter = function () {
+		filter = undefined;
+	};
+};
+MM.MeasuresModel.filterByIds = function (ids) {
+	'use strict';
+	return function (idea) {
+		return _.include(ids, idea.id);
+	};
+};
 
 
 jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresModel) {
@@ -151,7 +180,7 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 		var element = jQuery(this),
 			showModal = function () {
 				if (mapModel.getInputEnabled()) {
-					measuresModel.editWithFilter({nodeIds: mapModel.getActivatedNodeIds()});
+					measuresModel.editWithFilter(MM.MeasuresModel.filterByIds(mapModel.getActivatedNodeIds()));
 				}
 			};
 

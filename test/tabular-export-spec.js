@@ -229,3 +229,33 @@ describe('MM.exportToHtmlDocument', function () {
 		}, fail.bind(this, 'exportToHtmlDocument failed'));
 	});
 });
+describe('MM.exportTableToTabText', function () {
+	'use strict';
+
+	it('dumps a table into a tab-separated text file', function () {
+		expect(MM.exportTableToText([
+				['Name', 'Speed', 'Efficiency'],
+				['one', 100, undefined],
+				['with values', 1, 2],
+				['no values', undefined, undefined],
+				['one twenty one', undefined, -1]
+			]))
+			.toEqual(
+				'Name\tSpeed\tEfficiency\n' +
+				'one\t100\t\n' +
+				'with values\t1\t2\n' +
+				'no values\t\t\n' +
+				'one twenty one\t\t-1'
+			);
+	});
+	it('replaces newlines and tabs with a single space', function () {
+		expect(MM.exportTableToText([
+				['Na\tme', 'Sp\t\teed', 'Effic\t\niency'],
+				['on\ne', 100, undefined],
+			]))
+			.toEqual(
+				'Na me\tSp  eed\tEffic  iency\n' +
+				'on e\t100\t'
+			);
+	});
+});

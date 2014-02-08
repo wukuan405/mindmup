@@ -103,3 +103,15 @@ MM.exportToHtmlDocument = function (idea) {
 	MAPJS.pngExport(idea).then(createContent);
 	return deferred.promise();
 };
+MM.exportTableToText = function (table) {
+	'use strict';
+	return _.map(table, function (row) {
+		return _.map(row, function (cell) {
+			if (!cell) {
+				return '';
+			}
+			return cell.toString().replace(/\t|\n|\r/g, ' ');
+		}).join('\t');
+	})
+		.join('\n');
+};

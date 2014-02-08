@@ -78,7 +78,8 @@ MM.main = function (config) {
 				'activityLog': activityLog,
 				'mapModel': mapModel,
 				'container': jQuery('#container'),
-				'iconEditor': iconEditor
+				'iconEditor': iconEditor,
+				'measuresModel' : measuresModel
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
@@ -105,8 +106,8 @@ MM.main = function (config) {
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
-				jQuery(document).titleUpdateWidget(mapController)
-				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel);
+				jQuery(document).titleUpdateWidget(mapController);
+
 				jQuery('[data-mm-role=share]').shareWidget();
 				jQuery('#modalShareEmail').shareEmailWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
@@ -114,7 +115,7 @@ MM.main = function (config) {
 				jQuery('#modalImport').importWidget(activityLog, mapController);
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
-				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert);
+				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
@@ -142,7 +143,7 @@ MM.main = function (config) {
 				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
 				jQuery('.modal.huge').scalableModalWidget();
 				MM.setImageAlertWidget(stageImageInsertController, alert);
-
+				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel);
 
 			};
 		jQuery.fn.colorPicker.defaults.colors = [

@@ -72,9 +72,15 @@ MM.CalcModel = function (calc, activityLog) {
 			recalcAndPublish();
 		}
 	};
+	self.getFilterPredicate = function () {
+		var data = _.map(currentData || aggregation(activeContent, activeFilter), function (item) { return item.id; });
+		return function (idea) {
+			return _.include(data, idea.id);
+		};
+	};
 };
 
-$.fn.calcWidget = function (calcModel, mapModel) {
+$.fn.calcWidget = function (calcModel, measureModel) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
@@ -85,6 +91,7 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
 		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
 			cellTemplate = calcRowTemplate.find('[data-mm-role=cell]').detach(),
+			measurements = self.find('[data-mm-role=open-measurements]'),
 			repopulateTable = function (data) {
 				showActiveProjection();
 				table.empty();
@@ -92,9 +99,11 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 					table.hide();
 					totalElement.hide();
 					msgDiv.show();
+					measurements.attr('disabled', true);
 				} else {
 					table.show();
 					msgDiv.hide();
+					measurements.attr('disabled', false);
 					if (data.total) {
 						totalValueElement.text(data.total().toLocaleString());
 						totalElement.show();
@@ -104,26 +113,9 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 					_.each(data, function (row) {
 						var rowDOM = calcRowTemplate.clone().appendTo(table);
 						_.each(row, function (cell, index) {
-							var cellDOM,
-								tryToSet = function (e) {
-									var element = $(this);
-									if (e.target !== this) {
-										return;
-									}
-									if (!row.setValue(element.text())) {
-										element.text(cell.toLocaleString());
-									}
-								};
+							var cellDOM;
 							cellDOM = cellTemplate.clone().addClass('cell' + index).appendTo(rowDOM);
 							cellDOM.find('[data-mm-role=value]').text(cell.toLocaleString());
-							if (row.id && index === 0) {
-								cellDOM.click(function () {
-									mapModel.selectNode(row.id);
-								}).css('cursor', 'pointer');
-							}
-							if (row.setValue && index === 1) {
-								cellDOM.find('[data-mm-role=value]').tableCellInPlaceEditorWidget(cell).change(tryToSet);
-							}
 						});
 					});
 				}
@@ -149,6 +141,9 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 			},
 			showActiveProjection = function () {
 				self.find('[data-mm-role=active-projection]').text(calcModel.getActiveProjection());
+			},
+			openInMeasurements = function () {
+				measureModel.editWithFilter(calcModel.getFilterPredicate());
 			};
 		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
 		setWidgetVisible(false);
@@ -157,6 +152,7 @@ $.fn.calcWidget = function (calcModel, mapModel) {
 		toggleButtons.click(function () {
 			setWidgetVisible(!self.is(':visible'));
 		});
+		measurements.click(openInMeasurements);
 	});
 };
 MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementAttributeName, measurementConfigurationAttributeName, mapModel) {
@@ -187,34 +183,6 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 						return [item[0], percent];
 					});
 				}};
-			},
-			buildMeasurementListProjection = function (measurement) {
-				return {
-					name: measurement,
-					iterator: function (data) {
-						var processed = _.map(_.sortBy(data, 'title'), function (item) {
-							var val = item.measurements && item.measurements[measurement] || 0,
-							row = [item.title, parseFloat(val)],
-							isNumber = function (n) {
-								return !isNaN(parseFloat(n)) && isFinite(n);
-							};
-							row.id = item.id;
-							row.setValue = function (newValue) {
-								if (!newValue && newValue !== 0) {
-									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, false);
-								} else if (isNumber(newValue)) {
-									return activeContent.mergeAttrProperty(item.id, measurementAttributeName, measurement, newValue);
-								}
-								return false;
-
-							};
-							return row;
-						});
-
-						processed.total = dataTotaliser;
-						return processed;
-					},
-				};
 			},
 			buildSumByStatusProjection = function  (name, itemValue) {
 				return {name: name, iterator: function (data) {
@@ -257,7 +225,6 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 		projections.push(buildSumByStatusProjection('Counts'));
 		projections.push(buildPercentProjection('Percentages', projections[0].iterator));
 		_.each(getMeasurementConfig(activeContent), function (measurement) {
-			projections.push(buildMeasurementListProjection(measurement));
 			var totalProjection = buildSumByStatusProjection('Total ' +  measurement, function (item) {
 				var val = parseFloat(item.measurements && item.measurements[measurement]) || 0;
 				return val;
@@ -724,6 +691,7 @@ MM.Extensions.progress = function () {
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
+		measuresModel = MM.Extensions.components.measuresModel,
 		progressCalc = new MM.Progress.Calc(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapModel),
 		calcModel = new MM.CalcModel(progressCalc, MM.Extensions.components.activityLog),
 		loadUI = function (html) {
@@ -738,7 +706,7 @@ MM.Extensions.progress = function () {
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
-			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, mapModel).floatingToolbarWidget();
+			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
