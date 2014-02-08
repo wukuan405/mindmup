@@ -13,6 +13,7 @@ install grunt cli:
 npm install grunt-contrib-jasmine --save-dev
 npm install grunt-notify --save-dev
 npm install grunt-contrib-watch --save-dev
+npm install grunt-contrib-concat --save-dev
 
 */
 module.exports = function (grunt) {
@@ -34,6 +35,14 @@ module.exports = function (grunt) {
 				}
 
 			}
+		},
+		concat: {
+			options: {
+			},
+			lib: {
+				src: ['public/lib/*.js'],
+				dest: 'public/compiled/mm-lib.js',
+			},
 		},
 		jasmine: {
 			all: {
@@ -75,7 +84,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
 	grunt.loadNpmTasks('grunt-notify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
-
+	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);
