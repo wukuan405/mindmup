@@ -1,4 +1,4 @@
-/*global MM, jQuery*/
+/*global MM, jQuery, setTimeout*/
 MM.retry = function (task, shouldRetry, backoff) {
 	'use strict';
 	var deferred = jQuery.Deferred(),
