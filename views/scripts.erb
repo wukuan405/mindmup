@@ -18,8 +18,7 @@
             window.mmtimestamp.log('remote scripts loaded');
             requirejs(
               <%= join_scripts [
-                "mapjs-compiled",
-                "compiled/mm-lib",
+                "compiled/mm-compiled#{settings.compiled_postfix}",
                 "maps",
                 "modal-confirmation-widget",
                 'scalable-modal-widget',

@@ -14,6 +14,7 @@ npm install grunt-contrib-jasmine --save-dev
 npm install grunt-notify --save-dev
 npm install grunt-contrib-watch --save-dev
 npm install grunt-contrib-concat --save-dev
+npm install grunt-contrib-uglify --save-dev
 
 */
 module.exports = function (grunt) {
@@ -29,20 +30,26 @@ module.exports = function (grunt) {
 			},
 			src: {
 				files: ['public/**/*.js'],
-				tasks: ['jasmine'],
+				tasks: ['jasmine', 'concat:lib', 'uglify:lib'],
 				options: {
 					spawn: false
 				}
-
 			}
 		},
 		concat: {
 			options: {
 			},
 			lib: {
-				src: ['public/lib/*.js'],
-				dest: 'public/compiled/mm-lib.js',
+				src: ['public/mapjs-compiled.js', 'public/lib/*.js'],
+				dest: 'public/compiled/mm-compiled.js',
 			},
+		},
+		uglify: {
+			lib: {
+				files: {
+					'public/compiled/mm-compiled.min.js': ['public/compiled/mm-compiled.js']
+				}
+			}
 		},
 		jasmine: {
 			all: {
@@ -79,12 +86,15 @@ module.exports = function (grunt) {
 			}
 		}
 	});
+	grunt.registerTask('build', ['jasmine', 'concat', 'uglify']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
 	grunt.loadNpmTasks('grunt-notify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
+
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);

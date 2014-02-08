@@ -51,6 +51,7 @@ configure do
   set :last_news_id, ""
   set :last_news_title, ""
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
+  set :compiled_postfix, ENV['COMPILED_SCRIPT_POSTFIX'] || ''
   cache_last_news
 end
 get '/' do
