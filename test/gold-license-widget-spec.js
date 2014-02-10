@@ -214,7 +214,7 @@ describe('Gold License Widget', function () {
 			expiryDeferred.resolve('1417132800');
 			underTest.modal('show');
 			var stringInField = underTest.find('input[data-mm-role~=expiry-date]').val();
-			expect(Date.parse(stringInField) / 1000).toEqual(1417132800);
+			expect(stringInField).toEqual(new Date(1417132800000).toDateString());
 		});
 		it('fills in anything with the data-mm-role=license-text with the current license text formatted as JSON', function () {
 			underTest.modal('show');
