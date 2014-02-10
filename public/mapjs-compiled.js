@@ -1884,8 +1884,9 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	};
 	self.search = function (query) {
 		var result = [];
+		query = query.toLocaleLowerCase();
 		idea.traverse(function (contentIdea) {
-			if (contentIdea.title && contentIdea.title.indexOf(query) >= 0) {
+			if (contentIdea.title && contentIdea.title.toLocaleLowerCase().indexOf(query) >= 0) {
 				result.push({id: contentIdea.id, title: contentIdea.title});
 			}
 		});
