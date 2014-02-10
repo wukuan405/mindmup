@@ -17,7 +17,7 @@ tmp
 public/.DS_Store
 public/offline
 compiled
-
+downloads
 #grunt and jasmine artificats
 node_modules/
 SpecRunner.html

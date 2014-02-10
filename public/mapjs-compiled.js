@@ -1,4 +1,4 @@
-var MAPJS = {};
+var MAPJS = MAPJS || {};
 /*global console*/
 var observable = function (base) {
 	'use strict';
@@ -1871,6 +1871,26 @@ MAPJS.MapModel = function (layoutCalculator, titlesToRandomlyChooseFrom, interme
 	self.getSelectedNodeId = function () {
 		return getCurrentlySelectedIdeaId();
 	};
+	self.centerOnNode = function (nodeId) {
+		if (!currentLayout.nodes[nodeId]) {
+			idea.startBatch();
+			_.each(idea.calculatePath(nodeId), function (parent) {
+				idea.updateAttr(parent.id, 'collapsed', false);
+			});
+			idea.endBatch();
+		}
+		self.dispatchEvent('nodeFocusRequested', nodeId);
+		self.selectNode(nodeId);
+	};
+	self.search = function (query) {
+		var result = [];
+		idea.traverse(function (contentIdea) {
+			if (contentIdea.title && contentIdea.title.indexOf(query) >= 0) {
+				result.push({id: contentIdea.id, title: contentIdea.title});
+			}
+		});
+		return result;
+	};
 	//node activation and selection
 	(function () {
 			var isRootOrRightHalf = function (id) {
@@ -3086,7 +3106,7 @@ Kinetic.Idea.prototype.setIsDroppable = function (isDroppable) {
 };
 
 Kinetic.Util.extend(Kinetic.Idea, Kinetic.Group);
-/*global _, Kinetic, MAPJS*/
+/*global _, Kinetic, MAPJS */
 if (Kinetic.Stage.prototype.isRectVisible) {
 	throw ('isRectVisible already exists, should not mix in our methods');
 }
@@ -3147,7 +3167,6 @@ Kinetic.Stage.prototype.isRectVisible = function (rect, offset) {
 
 MAPJS.KineticMediator = function (mapModel, stage) {
 	'use strict';
-	window.stage = stage;
 	var layer = new Kinetic.Layer(),
 		nodeByIdeaId = {},
 		connectorByFromIdeaIdToIdeaId = {},
@@ -3285,6 +3304,14 @@ MAPJS.KineticMediator = function (mapModel, stage) {
 			return;
 		}
 		ensureSelectedNodeVisible(node);
+	});
+	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
+		var node = nodeByIdeaId[ideaId];
+		stage.setScale(1);
+		stage.setX((stage.getWidth() / 2) - (0.5 * node.getWidth()) - node.getX());
+		stage.setY((stage.getHeight() / 2) - (0.5 * node.getHeight()) - node.getY());
+		stage.draw();
+		stage.fire(':scaleChangeComplete');
 	});
 	mapModel.addEventListener('nodeAttrChanged', function (n) {
 		var node = nodeByIdeaId[n.id];

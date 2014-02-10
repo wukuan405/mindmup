@@ -121,7 +121,8 @@ MM.main = function (config) {
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
-					.commandLineWidget('Shift+Space Ctrl+Space', mapModel);
+					.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
+					.searchWidget('Meta+F Ctrl+F', mapModel);
 				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch);
 				jQuery('#modalAutoSave').autoSaveWidget(autoSave);
 				jQuery('#modalEmbedMap').embedMapWidget(mapController);
