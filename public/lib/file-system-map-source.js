@@ -51,9 +51,14 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem) {
 		return deferred.promise();
 	};
 	self.saveMap = function (map, mapId, showAuth) {
-		var deferred = jQuery.Deferred(),
+		var cleanUp = function (str) {
+				if (str) {
+					return str.replace(/\/|\t|\n|\r/g, ' ');
+				}
+			},
+			deferred = jQuery.Deferred(),
 			contentToSave = JSON.stringify(map, null, 2),
-			fileName = MM.navigationEscape(map.title) + '.mup';
+			fileName = MM.navigationEscape(cleanUp(map.title)) + '.mup';
 		fileSystem.saveMap(contentToSave, mapId, fileName, !!showAuth).then(deferred.resolve, deferred.reject, deferred.notify);
 		return deferred.promise();
 	};

@@ -150,6 +150,22 @@ describe('MM.FileSystemMapSource', function () {
 			underTest.saveMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('ABC');
 		});
+		it('uses the map title with .mup as the default title to pass to file systems', function () {
+			var fs = fakeFS(),
+				map = {title: 'abc'},
+				underTest = new MM.FileSystemMapSource(fs);
+			spyOn(fs, 'saveMap').and.callThrough();
+			underTest.saveMap(map);
+			expect(fs.saveMap.calls.mostRecent().args[2]).toBe('abc.mup');
+		});
+		it('replaces slashes, CR, LF, and tabs with spaces from the map the default map title to prevent problems with file systems', function () {
+			var fs = fakeFS(),
+				map = {title: 'ab/c\nde\rf\tg'},
+				underTest = new MM.FileSystemMapSource(fs);
+			spyOn(fs, 'saveMap').and.callThrough();
+			underTest.saveMap(map);
+			expect(fs.saveMap.calls.mostRecent().args[2]).toBe('ab c de f g.mup');
+		});
 	});
 	it('delegates calls to recognises()', function () {
 		var fs = fakeFS(),
