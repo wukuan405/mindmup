@@ -41,13 +41,13 @@ module.exports = function (grunt) {
 			},
 			lib: {
 				src: ['public/mapjs-compiled.js', 'public/lib/*.js'],
-				dest: 'public/compiled/mm-compiled.js',
+				dest: 'compiled/mm-compiled.js',
 			},
 		},
 		uglify: {
 			lib: {
 				files: {
-					'public/compiled/mm-compiled.min.js': ['public/compiled/mm-compiled.js']
+					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js']
 				}
 			}
 		},
@@ -67,11 +67,7 @@ module.exports = function (grunt) {
 						'test/*.js',
 					],
 					vendor: [
-						'downloads/jquery-1.9.1.min.js',
-						'downloads/bootstrap-2.3.1.min.js',
-						'downloads/jquery-ui-1.10.0.custom.min.js',
-						'downloads/kinetic-v4.5.4.min.js',
-						'downloads/color-0.4.1.min.js'
+						'http://static.mindmup.com/20131204091534/external.js'
 					],
 					helpers: [
 						'test-lib/mm.js',
@@ -86,7 +82,7 @@ module.exports = function (grunt) {
 			}
 		}
 	});
-	grunt.registerTask('build', ['jasmine', 'concat', 'uglify']);
+	grunt.registerTask('compile', ['jasmine', 'concat', 'uglify']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
