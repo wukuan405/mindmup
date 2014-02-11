@@ -206,11 +206,11 @@ helpers do
       return result
   end
   def join_scripts script_url_array
-    files = expand_directories script_url_array
-    return files if (development? || test?)
+    return expand_directories(script_url_array) if (development? || test?)
 
     target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js"
     if (!File.exists? target_file) then
+      files = expand_directories script_url_array
       files.each do |input_file|
         infile = "#{settings.public_folder}/#{input_file}.js"
         if !File.exists? infile then
