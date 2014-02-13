@@ -155,13 +155,16 @@
       };
 
     _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
-    window.mmtimestamp.log('remote scripts loaded');
 
-    try{
-      initMM();
-    } catch (e){
-      scriptError(e);
-    };
+    window.mmtimestamp.log('script init');
+    window.onload = function () {
+	  window.mmtimestamp.log('remote scripts loaded');
+	  try{
+	    initMM();
+	  } catch (e){
+		scriptError(e);
+	  };
+	};
     (function() {
       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';

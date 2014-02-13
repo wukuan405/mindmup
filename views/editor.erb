@@ -31,15 +31,15 @@ SOFTWARE.
     <meta name="keywords" content="mind mapping, mind map, mindmap, mindmapping, free online mindmapping, free online mind mapping, mindmup" />
     <meta name="description" content="Mind Map in the cloud. Zero-friction, free online mind mapping. Opensource mindmapping software. The most productive online mind map canvas on the Web. Supports Freemind mindmap import/export." />
     <link rel="shortcut icon" href="<%=settings.static_image_host%>/favicon.ico" >
-	<link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
-	<link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
+  <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
+  <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
       <link href="<%=settings.public_url%>/mindmap.css" rel="stylesheet" />
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
-	<%= erb :timetrack %>
+  <%= erb :timetrack %>
   </head>
   <body class="map-unchanged <%=browser.body_class %>">
-	  <%=erb :topbar %>
-	<div id="floating-toolbar" class="floating span-toolbar well well-small hidden-phone hidden-touch hidden-collapsed-toolbar">
+    <%=erb :topbar %>
+  <div id="floating-toolbar" class="floating span-toolbar well well-small hidden-phone hidden-touch hidden-collapsed-toolbar">
       <button class="close pull-right" data-category="Toolbar Click" data-mm-key="ctrl+b meta+b" data-event-type="Expand/Collapse" data-mm-target="body" data-mm-class='collapsed-toolbar' data-mm-role="toggle-class" data-title="Hide toolbar (Ctrl+b)" data-placement='left' rel='tooltip'><i class="toggle icon-remove"></i></button>
       <div class="toolbar-inner">
         <div class="btn-toolbar" id="toolbarEdit">
@@ -74,18 +74,18 @@ SOFTWARE.
                 <button class="btn " rel="tooltip" data-title="Node color (Shift+Spacebar)" data-category="Toolbar Click" data-event-type="Node Color">
                   <input data-mm-target-property='background' class='updateStyle hide' type="hidden" value="" />&nbsp;
                 </button>
-				<button rel="tooltip" data-placement="bottom" data-title="Icon/Image (I)" data-category="Toolbar Click" data-event-type="Edit Icon" class="btn editIcon"><i class="icon-picture"></i></button>
+        <button rel="tooltip" data-placement="bottom" data-title="Icon/Image (I)" data-category="Toolbar Click" data-event-type="Edit Icon" class="btn editIcon"><i class="icon-picture"></i></button>
                 <button rel="tooltip" data-placement="bottom" data-title="Connect (Alt+click)" data-category="Toolbar Click" data-event-type="Link" class="btn toggleAddLinkMode"><i class="toggle icon-resize-horizontal"></i></button>
               </div>
-			  <div class="btn-group">
-				<button rel="tooltip" data-placement="bottom" data-title="Attachment (A)" data-category="Toolbar Click" data-event-type="Open Attachment" class="btn openAttachment"><i class="icon-paper-clip"></i></button>
-				<button rel="tooltip" data-placement="bottom" data-title="Measurements (M)" data-category="Toolbar Click" data-event-type="Open Measurements" class="btn" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table"></i></button>
+        <div class="btn-group">
+        <button rel="tooltip" data-placement="bottom" data-title="Attachment (A)" data-category="Toolbar Click" data-event-type="Open Attachment" class="btn openAttachment"><i class="icon-paper-clip"></i></button>
+        <button rel="tooltip" data-placement="bottom" data-title="Measurements (M)" data-category="Toolbar Click" data-event-type="Open Measurements" class="btn" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table"></i></button>
 
 
-			  </div>
+        </div>
           </div>
                 <a class="pull-right small" data-title="Keyboard shortcuts" data-category="Toolbar Click" data-event-type="Keyboard shortcuts" target="_blank" href="http://blog.mindmup.com/p/keyboard-shortcuts.html">
-					Hotkeys
+          Hotkeys
                 </a>
 
       </div>
@@ -103,12 +103,12 @@ SOFTWARE.
     <%= erb :extensions %>
     <%= erb :share_email %>
     <%= erb :embed_map %>
-	<%= erb :key_actions %>
-	<%= erb :modal_confirm %>
+  <%= erb :key_actions %>
+  <%= erb :modal_confirm %>
   <%= erb :modal_pdf_export %>
-	<%= erb :modal_gold_license %>
-	<%= erb :icon_editor %>
-	<%= erb :modal_measures_sheet %>
+  <%= erb :modal_gold_license %>
+  <%= erb :icon_editor %>
+  <%= erb :modal_measures_sheet %>
     <div id="container"></div>
     <div id="linkEditWidget">
       <div class="btn-group">
@@ -129,10 +129,10 @@ SOFTWARE.
       </div>
       <button type="button" class="btn btn-danger delete"><i class="icon-remove"></i></button>
     </div>
-	<form method="post" id="formExport" action="/echo" class="hide">
-		<input type="hidden" name="map" />
-		<input type="hidden" name="title" />
-	</form>
+  <form method="post" id="formExport" action="/echo" class="hide">
+    <input type="hidden" name="map" />
+    <input type="hidden" name="title" />
+  </form>
   <%= erb :scripts %>
   <script id="main">
     var _gaq = _gaq || [],
@@ -159,29 +159,32 @@ SOFTWARE.
         document.getElementsByTagName("body")[0].appendChild(c);
         tryToNotifyGoogleAnalytics();
       };
+    window.mmtimestamp.log('script init');
+    window.onload = function () {
       window.mmtimestamp.log('remote scripts loaded');
       try {
         MM.main({
-              googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
-              s3Url: 'http://<%= settings.s3_website %>/',
-              s3Folder: '<%= settings.s3_upload_folder %>/',
-              googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
-              googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
-              googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
-              publishingConfigUrl: '<%= settings.publishing_config_url %>',
-              baseUrl: '<%= settings.base_url%>',
-              scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
-              networkTimeoutMillis: <%= settings.network_timeout_millis %>,
-              userCohort: '<%= user_cohort %>',
-              dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
-              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
-              goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
-              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
-              publicUrl: '<%=settings.public_url %>'
+          googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
+          s3Url: 'http://<%= settings.s3_website %>/',
+          s3Folder: '<%= settings.s3_upload_folder %>/',
+          googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
+          googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
+          googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
+          publishingConfigUrl: '<%= settings.publishing_config_url %>',
+          baseUrl: '<%= settings.base_url%>',
+          scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
+          networkTimeoutMillis: <%= settings.network_timeout_millis %>,
+          userCohort: '<%= user_cohort %>',
+          dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
+          corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
+          goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
+          goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
+          publicUrl: '<%=settings.public_url %>'
         });
-      } catch (e) {
+       } catch (e) {
         scriptError(e);
       }
+    }
   </script>
   </body>
 </html>
