@@ -43,12 +43,17 @@ module.exports = function (grunt) {
 			lib: {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js',
-			},
+			}
 		},
 		uglify: {
 			lib: {
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js']
+				}
+			},
+			embedded: {
+				files: {
+					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js']
 				}
 			},
 		},

@@ -1,28 +1,12 @@
-<script>
- var MM = MM || {};
- <%= erb :require_js %>
-  function loadScripts(success, failure) {
-    requirejs.config({
-      baseUrl: "/",
-      paths: {
-        "embedded_external": '<%=settings.static_host%>/embedded_external',
-      },
-      waitSeconds: 120
-    });
-    requirejs(
-      ["embedded_external"],
-      function () {
-        requirejs(
-          [
-            "<%=settings.cache_prevention_key%>/mapjs-compiled",
-            "<%=settings.cache_prevention_key%>/lib/s3-api",
-            "<%=settings.cache_prevention_key%>/lib/s3-file-system",
-            "<%=settings.cache_prevention_key%>/lib/file-system-map-source",
-            "<%=settings.cache_prevention_key%>/lib/embedded-map-url-generator",
-            "<%=settings.cache_prevention_key%>/lib/retriable-map-source-decorator"
-        ], success, failure);
-      },
-      failure
-    );
-  }
-</script>
+<script src="<%=settings.static_host%>/embedded_external.js"></script>
+<% if production? then %>
+    <script src="<%=settings.public_url%>/mm-embedded.min.js" ></script>
+<% else %>
+  <script src="/mapjs-compiled.js"></script>
+  <script src="/mm.js"></script>
+  <script src="/lib/s3-api.js"></script>
+  <script src="/lib/s3-file-system.js"></script>
+  <script src="/lib/file-system-map-source.js"></script>
+  <script src="/lib/embedded-map-url-generator.js"></script>
+  <script src="/lib/retriable-map-source-decorator.js"></script>
+<% end%>

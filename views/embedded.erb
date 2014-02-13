@@ -89,60 +89,54 @@
     </div>
   <%= erb :embedded_scripts %>
   <script id="main">
+    var _gaq = _gaq || [],
+      initMM = function () {
+      var mapId = decodeURI(document.location.pathname.replace(/^\/embedded\//,'')),
+              isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
+              activityLog = console,
+              s3FileSystem = new MM.S3FileSystem(new MM.EmbeddedMapUrlGenerator({'a': {prefix: 'http://<%= settings.s3_website %>/<%= settings.s3_upload_folder %>/'  , postfix: '.json'}, 'b': {prefix: 'https://<%= ENV['GOLD_BUCKET_NAME'] %>.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
+              mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3FileSystem)),
+              mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
+            jQuery('#container').mapWidget(activityLog, mapModel, isTouch, observable({}));
+            jQuery('.close.attachment').click(function () {
+              jQuery('.attachment').hide();
+              jQuery('.map').show();
+            });
+  		  jQuery('a.mindmup').click(function () {
+              _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', mapId]);
+  		  });
+            jQuery(document).keydown('Esc backspace', function (){
+              jQuery('.attachment').hide();
+              jQuery('.map').show();
+            });
+  		  jQuery('.attachment').hide();
+            mapModel.setEditingEnabled(false);
 
-
-        _gaq = _gaq || [];
-    _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
-	window.mmtimestamp.log('script init');
-    loadScripts(
-      function() {
-		window.mmtimestamp.log('scripts loaded');
-        var mapId = decodeURI(document.location.pathname.replace(/^\/embedded\//,'')),
-            isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
-            activityLog = console,
-            s3FileSystem = new MM.S3FileSystem(new MM.EmbeddedMapUrlGenerator({'a': {prefix: 'http://<%= settings.s3_website %>/<%= settings.s3_upload_folder %>/'  , postfix: '.json'}, 'b': {prefix: 'https://<%= ENV['GOLD_BUCKET_NAME'] %>.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
-            mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3FileSystem)),
-            mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
-          jQuery('#container').mapWidget(activityLog, mapModel, isTouch, observable({}));
-          jQuery('.close.attachment').click(function () {
-            jQuery('.attachment').hide();
-            jQuery('.map').show();
-          });
-		  jQuery('a.mindmup').click(function () {
-            _gaq.push(['_trackEvent','Embedded Map', 'Go to MindMup', mapId]);
-		  });
-          jQuery(document).keydown('Esc backspace', function (){
-            jQuery('.attachment').hide();
-            jQuery('.map').show();
-          });
-		  jQuery('.attachment').hide();
-          mapModel.setEditingEnabled(false);
-
-          mapModel.addEventListener('attachmentOpened', function (nodeId, attachment) {
-            $('#attachment').html(attachment.content);
-            jQuery('.map').hide();
-            jQuery('.attachment').show();
-          });
-          _gaq.push(['_trackEvent','Embedded Map', 'View', mapId]);
-      jQuery('#rightmenu').hide();
-      jQuery('#container').hide();
-      jQuery('#loading').show();
-		  window.mmtimestamp.log('embedded ui loaded');
-      mapLoader.loadMap(mapId).then(function (idea) {
-        jQuery('#loading').hide();
-        jQuery('#container').show();
-        var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
-        jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
-        mapModel.setIdea(idea);
-        _gaq.push(['_trackEvent','Embedded Map', 'Loaded', mapId]);
-      }, function (reason) {
-        jQuery('#loading').hide();
-        jQuery('#error').show();
-        jQuery('#error-mapid').val(mapId);
-        _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
-      });
+            mapModel.addEventListener('attachmentOpened', function (nodeId, attachment) {
+              $('#attachment').html(attachment.content);
+              jQuery('.map').hide();
+              jQuery('.attachment').show();
+            });
+            _gaq.push(['_trackEvent','Embedded Map', 'View', mapId]);
+        jQuery('#rightmenu').hide();
+        jQuery('#container').hide();
+        jQuery('#loading').show();
+  		  window.mmtimestamp.log('embedded ui loaded');
+        mapLoader.loadMap(mapId).then(function (idea) {
+          jQuery('#loading').hide();
+          jQuery('#container').show();
+          var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
+          jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
+          mapModel.setIdea(idea);
+          _gaq.push(['_trackEvent','Embedded Map', 'Loaded', mapId]);
+        }, function (reason) {
+          jQuery('#loading').hide();
+          jQuery('#error').show();
+          jQuery('#error-mapid').val(mapId);
+          _gaq.push(['_trackEvent','Embedded Map', 'Error - Load', reason]);
+        });
       },
-      function (err) {
+      scriptError = function (err) {
         var d=document.createElement("div"),
             c=document.createElement('div'),
             tryToNotifyGoogleAnalytics=function(){
@@ -158,14 +152,21 @@
         c.appendChild(d);
         document.getElementsByTagName("body")[0].appendChild(c);
         tryToNotifyGoogleAnalytics();
-      }
-    );
+      };
+
+    _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
+    window.mmtimestamp.log('remote scripts loaded');
+
+    try{
+      initMM();
+    } catch (e){
+      scriptError(e);
+    };
     (function() {
       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
-
   </script>
   </body>
 </html>

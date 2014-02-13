@@ -1,6 +1,9 @@
 #!/bin/bash
 # run with --dryrun to see what will happen
-rm -rf compiled 
+rm -rf compiled
+mkdir compiled
+cat `grep 'src="/' views/embedded_scripts.erb | sed 's/.*"\/\([^"]*\)".*/public\/\1/'` > compiled/mm-embedded.js
+
 grunt compile
 rc=$?
 if [[ $rc != 0 ]] ; then
