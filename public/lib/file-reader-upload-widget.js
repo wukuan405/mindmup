@@ -6,6 +6,7 @@ $.fn.file_reader_upload = function (start, complete, fail, formats) {
 		fileName,
 		fileType,
 		formats = formats || ['mup', 'mm'];
+	if (!oFReader) return element;
 	start = start || function (name) { console.log('Reading', name); };
 	complete = complete || function (content) { console.log('Read', content); };
 	fail = fail || function (error) { console.log('Read error', error); };
