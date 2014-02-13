@@ -2,7 +2,7 @@
 $.fn.file_reader_upload = function (start, complete, fail, formats) {
 	'use strict';
 	var element = this,
-		oFReader = new FileReader(),
+		oFReader = window.FileReader && new FileReader(),
 		fileName,
 		fileType,
 		formats = formats || ['mup', 'mm'];
