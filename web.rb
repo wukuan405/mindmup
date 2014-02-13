@@ -52,7 +52,7 @@ configure do
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
   if production? then
     require File.dirname(__FILE__) +'/compiled_ts.rb'
-    set :public_url, "http://static.mindmup.com/compiled/#{settings.compiled_ts}"
+    set :public_url, "http://static.mindmup.net/compiled/#{settings.compiled_ts}"
   else
     set :public_url, ''
   end
