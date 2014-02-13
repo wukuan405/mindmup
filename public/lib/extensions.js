@@ -34,7 +34,7 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		var optional = this.requiredExtension(optionalMapId),
 			loading = optional ? _.union(active, optional) : active,
 			scriptArray = getScriptsForExtensions(loading);
-		return _.map(scriptArray, function (script) { if ((/^http[s]?:/).test(script)) { return script; } return '/' + config.cachePreventionKey + script; });
+		return _.map(scriptArray, function (script) { if ((/^http[s]?:/).test(script)) { return script; } return config.publicUrl + script; });
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);

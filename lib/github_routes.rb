@@ -1,16 +1,19 @@
 module MindMup
   module GithubRoutes
+    configure do
+      set :github_key, UUID.new.generate(:compact)
+    end
     get '/github/login' do
-      redirect "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{settings.cache_prevention_key}"
+      redirect "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{settings.github_key}"
     end
     get '/github/postback' do
       if params[:error]
         erb :github_response, :locals => { :response => {"error" => params[:error] } }
       elsif params[:code].nil?
         erb :github_response, :locals => { :response => {"error" => "Invalid response from Github" } }
-      elsif (params[:state]!= settings.cache_prevention_key) then
+      elsif (params[:state]!= settings.github_key) then
         redirect "/github/login"
-      else 
+      else
         begin
           uri = URI('https://github.com/login/oauth/access_token')
           https = Net::HTTP.start(uri.host, uri.port, :use_ssl=>uri.scheme =='https')

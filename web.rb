@@ -43,7 +43,6 @@ configure do
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
   set :root, File.dirname(__FILE__)
-  set :cache_prevention_key, settings.key_id_generator.generate(:compact)
   set :static, true
   Rack::Mime::MIME_TYPES['.mup'] = 'application/json'
   Rack::Mime::MIME_TYPES['.mm'] = 'text/xml'
@@ -134,10 +133,6 @@ end
 
 get "/un" do
   erb :unsupported
-end
-
-get '/'+settings.cache_prevention_key+'/e/:fname' do
-  send_file File.join(settings.public_folder, 'e/'+params[:fname])
 end
 
 get '/cache_news' do

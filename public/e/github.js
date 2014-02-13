@@ -673,8 +673,8 @@ MM.Extensions.GitHub = function () {
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
-	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.html', loadUI);
-	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/github.css" />').appendTo($('body'));
+	$.get(MM.Extensions.mmConfig.publicUrl + '/e/github.html', loadUI);
+	$('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/e/github.css" />').appendTo($('body'));
 
 };
 if (!window.jasmine) {

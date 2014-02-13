@@ -173,11 +173,11 @@ SOFTWARE.
               scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
               networkTimeoutMillis: <%= settings.network_timeout_millis %>,
               userCohort: '<%= user_cohort %>',
-              cachePreventionKey: '<%= settings.cache_prevention_key %>',
               dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
               corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
               goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
-              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>'
+              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
+              publicUrl: '<%=settings.public_url %>'
         });
       } catch (e) {
         scriptError(e);

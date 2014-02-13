@@ -406,7 +406,7 @@ MM.Extensions.googleCollaboration = function () {
 			alert.show('Network error: ' + errorMessage + '!', 'If the error persists, please refresh the page', 'flash');
 		}
 	});
-	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.html', loadUI);
-	$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/google-collaboration.css" />').appendTo($('body'));
+	$.get(MM.Extensions.mmConfig.publicUrl + '/e/google-collaboration.html', loadUI);
+	$('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/e/google-collaboration.css" />').appendTo($('body'));
 };
 MM.Extensions.googleCollaboration();

@@ -532,7 +532,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 			generateStatuses(config);
 		},
 		urlForStatusConfigFile = function (configName) {
-			return '/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/' + configName;
+			return MM.Extensions.mmConfig.publicUrl + '/e/' + configName;
 		},
 		bindGenericFunctions = function () {
 			element.find('[data-mm-role=start]').click(function () {
@@ -710,8 +710,8 @@ MM.Extensions.progress = function () {
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
 		};
-	$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.html', loadUI);
-	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.cachePreventionKey + '/e/progress.css" />').appendTo($('body'));
+	$.get(MM.Extensions.mmConfig.publicUrl + '/e/progress.html', loadUI);
+	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.publicUrl + '/e/progress.css" />').appendTo($('body'));
 };
 MM.Extensions.progress.updateIcon = function (selector, icon) {
 	'use strict';

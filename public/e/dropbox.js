@@ -1,4 +1,5 @@
 /*global MM, window, jQuery, $, Dropbox, _ */
+/*jshint camelcase: false*/
 $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 	'use strict';
 	var modal = this,
@@ -22,7 +23,7 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 						}).reverse();
 					statusDiv.empty();
 					if (parentPath) {
-						added = template.filter("[data-mm-type=dir]").clone().appendTo(parent);
+						added = template.filter('[data-mm-type=dir]').clone().appendTo(parent);
 						added.find('a[data-mm-role=dir-link]')
 							.text('..')
 							.click(function () {
@@ -32,7 +33,7 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 					_.each(sorted, function (file) {
 
 						if (file.mapId) {
-							added = template.filter("[data-mm-type=file]").clone().appendTo(parent);
+							added = template.filter('[data-mm-type=file]').clone().appendTo(parent);
 							added.find('a[data-mm-role=file-link]')
 								.text(file.name)
 								.click(function () {
@@ -41,7 +42,7 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 								});
 							added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedAt).toLocaleString());
 						} else {
-							added = template.filter("[data-mm-type=dir]").clone().appendTo(parent);
+							added = template.filter('[data-mm-type=dir]').clone().appendTo(parent);
 							added.find('a[data-mm-role=dir-link]')
 								.text(file.name)
 								.click(function () {
@@ -75,8 +76,7 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 MM.Extensions.Dropbox = {
 	popupLogin: function () {
 		'use strict';
-		var context = {},
-			deferred = jQuery.Deferred(),
+		var deferred = jQuery.Deferred(),
             https = window.location.origin.replace(/^http:/, 'https:'),
 			popupFrame = window.open(https + '/dropbox', '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 			onMessage = function (message) {
@@ -250,8 +250,8 @@ MM.Extensions.Dropbox = {
 				mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 			};
 		mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));
-		$.get('/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.html', loadUI);
-		$('<link rel="stylesheet" href="/' + MM.Extensions.mmConfig.cachePreventionKey + '/e/dropbox.css" />').appendTo($('body'));
+		$.get(MM.Extensions.mmConfig.publicUrl + '/e/dropbox.html', loadUI);
+		$('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/e/dropbox.css" />').appendTo($('body'));
 	}
 };
 if (!window.jasmine) {
