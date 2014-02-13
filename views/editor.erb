@@ -162,7 +162,7 @@ SOFTWARE.
     window.mmtimestamp.log('script init');
     window.onload = function () {
       window.mmtimestamp.log('remote scripts loaded');
-      try {
+//      try {
         MM.main({
           googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
           s3Url: 'http://<%= settings.s3_website %>/',
@@ -181,9 +181,9 @@ SOFTWARE.
           goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
           publicUrl: '<%=settings.public_url %>'
         });
-       } catch (e) {
-        scriptError(e);
-      }
+//       } catch (e) {
+//        scriptError(e);
+//      }
     }
   </script>
   </body>
