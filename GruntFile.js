@@ -46,13 +46,9 @@ module.exports = function (grunt) {
 			}
 		},
 		uglify: {
-			lib: {
+			compiled: {
 				files: {
-					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js']
-				}
-			},
-			embedded: {
-				files: {
+					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js']
 				}
 			},
