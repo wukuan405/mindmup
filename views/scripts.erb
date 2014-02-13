@@ -1,32 +1,21 @@
+<script src="<%=settings.static_host%>/external.js" ></script>
+<% if production? then %>
+    <script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
+<% else %>
+      <script src="/mm.js" ></script>
+      <script src="/mapjs-compiled.js" ></script>
+      <% development_lib.each do |script| %>
+          <script src="<%=script%>" ></script>
+      <% end %>
+      <script src="/main.js" ></script>
+<% end%>
 <script>
-  var MM = MM || {};
-  <%= erb :require_js %>
   function loadScripts(success, failure) {
-    requirejs.config({
-      baseUrl: "/",
-      paths: {
-        "external": '<%=settings.static_host%>/external',
-      },
-      enforceDefine: false,
-      waitSeconds: 60 <% if development? then %> ,
-      urlArgs: "version=" + (new Date()).getTime()
-    <% end %>
-    });
-    requirejs(
-          ["external"],
-          function () {
-            window.mmtimestamp.log('remote scripts loaded');
-            requirejs(
-              <%= join_scripts [
-                "mapjs-compiled",
-                "lib",
-                "main"
-              ] %>,
-              success,
-              failure
-            );
-          },
-          failure
-        );
+    if (window.MAPJS && window.jQuery) {
+      window.mmtimestamp.log('remote scripts loaded');
+      success();
+    } else {
+      failure ();
+    }
   }
 </script>

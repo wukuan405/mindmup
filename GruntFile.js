@@ -15,6 +15,7 @@ npm install grunt-notify --save-dev
 npm install grunt-contrib-watch --save-dev
 npm install grunt-contrib-concat --save-dev
 npm install grunt-contrib-uglify --save-dev
+npm install grunt-contrib-cssmin --save-dev
 
 */
 module.exports = function (grunt) {
@@ -40,7 +41,7 @@ module.exports = function (grunt) {
 			options: {
 			},
 			lib: {
-				src: ['public/mapjs-compiled.js', 'public/lib/*.js', 'public/main.js'],
+				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js',
 			},
 		},
@@ -48,6 +49,13 @@ module.exports = function (grunt) {
 			lib: {
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js']
+				}
+			},
+		},
+		cssmin: {
+			combine: {
+				files: {
+					'compiled/mindmap.css': ['public/*.css']
 				}
 			}
 		},
@@ -70,19 +78,18 @@ module.exports = function (grunt) {
 						'http://static.mindmup.com/20131204091534/external.js'
 					],
 					helpers: [
-						'test-lib/mm.js',
 						'test-lib/sinon-1.5.2.js',
 						'test-lib/jasmine-describe-batch.js',
 						'test-lib/fake-bootstrap-modal.js',
 						'test-lib/jasmine-tagname-match.js',
+						'public/mm.js',
 						'public/mapjs-compiled.js',
-						'public/mindmup-editabletable.js'
 					]
 				}
 			}
 		}
 	});
-	grunt.registerTask('compile', ['jasmine', 'concat', 'uglify']);
+	grunt.registerTask('compile', ['jasmine', 'concat', 'uglify', 'cssmin:combine']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
@@ -90,6 +97,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.loadNpmTasks('grunt-contrib-cssmin');
 
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);

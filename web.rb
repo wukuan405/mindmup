@@ -51,7 +51,12 @@ configure do
   set :last_news_id, ""
   set :last_news_title, ""
   set :gold_pdf_max_size, ENV['GOLD_PDF_MAX_SIZE'] || 100*1024*1024
-  set :compiled_postfix, ENV['COMPILED_SCRIPT_POSTFIX'] || ''
+  if production? then
+    require File.dirname(__FILE__) +'/compiled_ts.rb'
+    set :public_url, "http://static.mindmup.com/compiled/#{settings.compiled_ts}"
+  else
+    set :public_url, ''
+  end
   cache_last_news
 end
 get '/' do
@@ -186,46 +191,9 @@ helpers do
      session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
      session["cohort"]
   end
-  def external_script_path script_name
-    if (!settings.online) then
-      return script_name.sub "//", "/offline/"
-    end
-    script_name
-  end
-  def expand_directories file_array
-      result = []
-      file_array.each do |input_file|
-        infile = "#{settings.public_folder}/#{input_file}.js"
-        if (!File.exists? infile) then
-          files = Dir.entries("#{settings.public_folder}/#{input_file}").reject{|d| File.extname(d) != '.js' }
-          result.concat(files.map {|f| "#{input_file}/#{File.basename(f, '.js')}"})
-        else
-          result.push(input_file);
-        end
-      end
-      return result
-  end
-  def join_scripts script_url_array
-    return expand_directories(script_url_array) if (development? || test?)
-
-    target_file="#{settings.public_folder}/#{settings.cache_prevention_key}.js"
-    if (!File.exists? target_file) then
-      files = expand_directories script_url_array
-      files.each do |input_file|
-        infile = "#{settings.public_folder}/#{input_file}.js"
-        if !File.exists? infile then
-          halt 503, "Script file not found! #{input_file}"
-        end
-      end
-      File.open(target_file,"w") do |output_file|
-        files.each do |input_file|
-          infile = "#{settings.public_folder}/#{input_file}.js"
-          content= File.readlines(infile)
-          output_file.puts content
-        end
-      end
-    end
-    return [settings.cache_prevention_key]
+  def development_lib
+      files = Dir.entries("#{settings.public_folder}/lib").reject{|d| File.extname(d) != '.js' }
+      return files.map {|f| "/lib/#{f}"}
   end
   def load_prefix
     if (!settings.online) then
