@@ -31,7 +31,7 @@ module.exports = function (grunt) {
 			},
 			src: {
 				files: ['public/**/*.js'],
-				tasks: ['jasmine', 'concat:lib', 'uglify:lib'],
+				tasks: ['jasmine'],
 				options: {
 					spawn: false
 				}
