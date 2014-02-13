@@ -106,6 +106,16 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'pdf'});
 		});
 	});
+	describe('generateEchoConfiguration', function () {
+		it('posts an AJAX request to the API url', function () {
+			underTest.generateEchoConfiguration('html', 'text/html');
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+			expect(ajaxPost.url).toEqual('API_URL/file/echo_config');
+			expect(ajaxPost.dataType).toEqual('json');
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'html', 'contenttype': 'text/html'});
+		});
+	});
 	describe('listFiles', function () {
 		it('converts the response into a list of objects from xml', function () {
 			var example = '<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>mindmup-gold</Name><Prefix>dave/</Prefix><Marker></Marker><MaxKeys>100</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>jimbo/a map / with funny chars?.mup</Key><LastModified>2014-01-10T12:13:41.000Z</LastModified><ETag>&quot;62d3c2c0501f69bfe616b56936afb458&quot;</ETag><Size>79</Size><Owner><ID>b682c8bf07ef378a2566ba81eff11b58a1298ec117b94ec3a9cb591b67392584</ID><DisplayName>gojkoadzic</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents><Contents><Key>jimbo/foo.mup</Key><LastModified>2014-01-09T15:08:08.000Z</LastModified><ETag>&quot;b11d3862989dc5dda7c7f2ea692b6c17&quot;</ETag><Size>2018</Size><Owner><ID>b682c8bf07ef378a2566ba81eff11b58a1298ec117b94ec3a9cb591b67392584</ID><DisplayName>gojkoadzic</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>',

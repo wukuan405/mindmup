@@ -36,7 +36,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			},
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
-			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json'};
+			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json'};
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
@@ -62,6 +62,10 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	self.generateExportConfiguration = function (format) {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('file/export_config', {'license': JSON.stringify(license), 'format': format});
+	};
+	self.generateEchoConfiguration = function (format, contentType) {
+		var license = goldLicenseManager.getLicense();
+		return self.exec('file/echo_config', {'license': JSON.stringify(license), 'format': format, 'contenttype': contentType});
 	};
 	self.listFiles = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
