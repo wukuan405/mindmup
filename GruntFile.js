@@ -40,7 +40,7 @@ module.exports = function (grunt) {
 			options: {
 			},
 			lib: {
-				src: ['public/mapjs-compiled.js', 'public/lib/*.js'],
+				src: ['public/mapjs-compiled.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js',
 			},
 		},
