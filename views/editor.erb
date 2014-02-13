@@ -135,31 +135,8 @@ SOFTWARE.
 	</form>
   <%= erb :scripts %>
   <script id="main">
-    var _gaq = _gaq || [];
-	window.mmtimestamp.log('script init');
-    loadScripts(
-      function() {
-		window.mmtimestamp.log('scripts loaded');
-        MM.main({
-              googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
-              s3Url: 'http://<%= settings.s3_website %>/',
-              s3Folder: '<%= settings.s3_upload_folder %>/',
-              googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
-              googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
-              googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
-              publishingConfigUrl: '<%= settings.publishing_config_url %>',
-              baseUrl: '<%= settings.base_url%>',
-              scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
-              networkTimeoutMillis: <%= settings.network_timeout_millis %>,
-              userCohort: '<%= user_cohort %>',
-              cachePreventionKey: '<%= settings.cache_prevention_key %>',
-              dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
-              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
-              goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
-              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>'
-        });
-      },
-      function (err) {
+    var _gaq = _gaq || [],
+      scriptError = function (err) {
         var d=document.createElement("div"),
             c=document.createElement('div'),
             tryToNotifyGoogleAnalytics=function(){
@@ -181,8 +158,30 @@ SOFTWARE.
         c.appendChild(d);
         document.getElementsByTagName("body")[0].appendChild(c);
         tryToNotifyGoogleAnalytics();
+      };
+      window.mmtimestamp.log('remote scripts loaded');
+      try {
+        MM.main({
+              googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
+              s3Url: 'http://<%= settings.s3_website %>/',
+              s3Folder: '<%= settings.s3_upload_folder %>/',
+              googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
+              googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
+              googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
+              publishingConfigUrl: '<%= settings.publishing_config_url %>',
+              baseUrl: '<%= settings.base_url%>',
+              scriptsToLoadAsynchronously: '<%= settings.async_scripts %>',
+              networkTimeoutMillis: <%= settings.network_timeout_millis %>,
+              userCohort: '<%= user_cohort %>',
+              cachePreventionKey: '<%= settings.cache_prevention_key %>',
+              dropboxAppKey: '<%=ENV['DROPBOX_APP_KEY']%>',
+              corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
+              goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
+              goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>'
+        });
+      } catch (e) {
+        scriptError(e);
       }
-    );
   </script>
   </body>
 </html>

@@ -9,13 +9,3 @@
       <% end %>
       <script src="/main.js" ></script>
 <% end%>
-<script>
-  function loadScripts(success, failure) {
-    if (window.MAPJS && window.jQuery) {
-      window.mmtimestamp.log('remote scripts loaded');
-      success();
-    } else {
-      failure ();
-    }
-  }
-</script>
