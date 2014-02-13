@@ -3,7 +3,8 @@
 rm -rf compiled
 mkdir compiled
 cat `grep 'src="/' views/embedded_scripts.erb | sed 's/.*"\/\([^"]*\)".*/public\/\1/'` > compiled/mm-embedded.js
-
+mkdir compiled/e
+cp public/e/* compiled/e/
 grunt compile
 rc=$?
 if [[ $rc != 0 ]] ; then
