@@ -1,7 +1,8 @@
 /*global $, jQuery, MM, document, MAPJS, window, atob, ArrayBuffer, Uint8Array*/
 jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, configurationGenerator, storageApi) {
 	'use strict';
-	var loadedIdea,
+	var alertId,
+		loadedIdea,
 		downloadLink = ('download' in document.createElement('a')) ? $('<a>').addClass('hide').appendTo('body') : undefined,
 		dataUriToBlob = function (dataURI) {
 			var byteString = atob(dataURI.split(',')[1]),
@@ -44,10 +45,16 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, con
 			extension = $(this).data('mm-extension') || format,
 			title,
 			elem,
-			alertId;
+			hideAlert = function () {
+				if (alert && alertId) {
+					alert.hide(alertId);
+					alertId = undefined;
+				}
+			};
 		title = loadedIdea.title + '.' + extension;
 		if (alert) {
-			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Exporting map to ' + title, 'This may take a few seconds for larger maps', 'info');
+			hideAlert();
+			alertId = alert.show('<i class="icon-spinner icon-spin"></i>&nbsp;Exporting map', 'This may take a few seconds for larger maps', 'info');
 		}
 		elem = $(this);
 		if (exportFunctions[format]) {
@@ -57,24 +64,25 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, con
 					if (!toSend) {
 						return false;
 					}
-					if (alert && alertId) {
-						alert.hide(alertId);
-						alertId = undefined;
-					}
+
 					if (downloadLink && (!$('body').hasClass('force-remote'))) {
+						hideAlert();
 						downloadLink.attr('download', title).attr('href', toObjectURL(toSend, mimeType));
 						downloadLink[0].click();
 					} else {
 						if (/^data:[a-z]*\/[a-z]*/.test(toSend)) {
 							toSend = dataUriToBlob(toSend);
 							mimeType = toSend.type;
+						} else {
+							mimeType = 'application/octet-stream';
 						}
 						configurationGenerator.generateEchoConfiguration(extension, mimeType).then(
 							function (exportConfig) {
 								storageApi.save(toSend, exportConfig, {isPrivate: true}).then(
 									function () {
+										hideAlert();
 										alertId = alert.show('Your map was exported.',
-											' <a href="' + exportConfig.signedOutputUrl + '" target="_blank">Click here to download it</a>',
+											' <a href="' + exportConfig.signedOutputUrl + '" target="_blank">Click here to open the file, or right-click and choose "save link as"</a>',
 											'success');
 									});
 							});
