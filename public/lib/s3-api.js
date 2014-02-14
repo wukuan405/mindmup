@@ -35,7 +35,7 @@ MM.S3Api = function () {
 			formData.append(parameter, saveConfiguration[parameter]);
 		});
 		formData.append('acl', savePolicy);
-		formData.append('Content-Type', 'text/plain');
+		formData.append('Content-Type', saveConfiguration['Content-Type'] || 'text/plain');
 		formData.append('file', contentToSave);
 		jQuery.ajax({
 			url: 'https://' + saveConfiguration.s3BucketName + '.s3.amazonaws.com/',

@@ -1,11 +1,8 @@
 /*global $, jQuery, MM, document, MAPJS, window, atob, ArrayBuffer, Uint8Array*/
-jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel) {
+jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, configurationGenerator, storageApi) {
 	'use strict';
 	var loadedIdea,
 		downloadLink = ('download' in document.createElement('a')) ? $('<a>').addClass('hide').appendTo('body') : undefined,
-		joinLines = function (string) {
-			return string.replace(/\n/g, ' ').replace(/\r/g, ' ');
-		},
 		dataUriToBlob = function (dataURI) {
 			var byteString = atob(dataURI.split(',')[1]),
 				mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0],
@@ -28,8 +25,7 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel) {
 		loadedIdea = idea;
 	});
 	return this.click(function () {
-		var exportForm = $($(this).data('mm-target')),
-			toPromise = function (fn, mimeType) {
+		var toPromise = function (fn, mimeType) {
 				return function () {
 					return jQuery.Deferred().resolve(fn.apply(undefined, arguments), mimeType).promise();
 				};
@@ -57,7 +53,8 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel) {
 		if (exportFunctions[format]) {
 			exportFunctions[format](loadedIdea).then(
 				function (contents, mimeType) {
-					if (!contents) {
+					var toSend = contents;
+					if (!toSend) {
 						return false;
 					}
 					if (alert && alertId) {
@@ -65,12 +62,22 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel) {
 						alertId = undefined;
 					}
 					if (downloadLink && (!$('body').hasClass('force-remote'))) {
-						downloadLink.attr('download', title).attr('href', toObjectURL(contents, mimeType));
+						downloadLink.attr('download', title).attr('href', toObjectURL(toSend, mimeType));
 						downloadLink[0].click();
 					} else {
-						exportForm.find('[name=title]').val(joinLines(title));
-						exportForm.find('[name=map]').val(contents);
-						exportForm.submit();
+						if (/^data:[a-z]*\/[a-z]*/.test(toSend)) {
+							toSend = dataUriToBlob(toSend);
+							mimeType = toSend.type;
+						}
+						configurationGenerator.generateEchoConfiguration(extension, mimeType).then(
+							function (exportConfig) {
+								storageApi.save(toSend, exportConfig, {isPrivate: true}).then(
+									function () {
+										alertId = alert.show('Your map was exported.',
+											' <a href="' + exportConfig.signedOutputUrl + '" target="_blank">Click here to download it</a>',
+											'success');
+									});
+							});
 					}
 				}
 			);

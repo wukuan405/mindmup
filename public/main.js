@@ -115,7 +115,7 @@ MM.main = function (config) {
 				jQuery('#modalImport').importWidget(activityLog, mapController);
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
-				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel);
+				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
