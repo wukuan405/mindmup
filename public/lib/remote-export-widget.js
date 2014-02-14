@@ -50,6 +50,10 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, con
 					alert.hide(alertId);
 					alertId = undefined;
 				}
+			},
+			showErrorAlert = function (title, message) {
+				hideAlert();
+				alertId = alert.show(title, message, 'error');
 			};
 		title = loadedIdea.title + '.' + extension;
 		if (alert) {
@@ -85,7 +89,11 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, con
 											' <a href="' + exportConfig.signedOutputUrl + '" target="_blank">Click here to open the file, or right-click and choose "save link as"</a>',
 											'success');
 									});
-							});
+							},
+							function () {
+								showErrorAlert('Unfortunately, there was a problem exporting the map.', 'Please try again later. We have sent an error report and we will look into this as soon as possible');
+							}
+						);
 					}
 				}
 			);
