@@ -1,4 +1,4 @@
-/*global jQuery,document, _*/
+/*global jQuery, _, document, window*/
 jQuery.fn.contextMenuWidget = function (mapModel) {
 	'use strict';
 	var content = this.find('[data-mm-context-menu]').clone(),
@@ -51,5 +51,6 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 		});
 		jQuery(document).on('touch keydown', hide);
 	});
+	element.on('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); return false; });
 	return element;
 };
