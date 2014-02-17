@@ -50,6 +50,20 @@
 		<div data-mm-section="license-server-unavailable">
 			<p>This license server is unavailable at the moment. Please try again later. If the problem persists, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
 		</div>
+		<div data-mm-section="license-purchase-required">
+			<p class="alert alert-error alert-block">A subscription has not been purchased for this license</p>
+			<form class="form-horizontal">
+			  <div class="control-group">
+				<label class="control-label" for="gold-view-account-name">Account name</label>
+				<div class="controls">
+				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
+				</div>
+			  </div>
+			 </form>
+			<p>Click on <strong>Remove License</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		</div>
+
 		<div data-mm-section="expired-license">
 			<p class="alert alert-error alert-block">This license has expired</p>
 			<p>Click on <strong>Change License</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current license. </p>
@@ -62,7 +76,6 @@
 			  </div>
 			 </form>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
-
 		</div>
 		<div data-mm-section="view-license">
 			<p>This browser profile is using the following MindMup Gold account:</p>
@@ -155,6 +168,8 @@
       <button data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="no-license license-required invalid-license registration-success" class="btn btn-primary" tabstop="3">Set License</button>
       <button data-mm-role="save-license" data-mm-section="license-details" class="btn btn-primary" tabstop="3">Save License</button>
       <button data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
+      <button data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
+
       <button data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="view-license expired-license unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
 	  <input type="file" name="file" />
 
@@ -164,9 +179,9 @@
       </form>
 
       <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
-      <button data-mm-role="remove" data-mm-section="view-license license-details  expired-license invalid-license" class="btn btn-danger" tabstop="8">Remove License</button>
+      <button data-mm-role="remove" data-mm-section="view-license license-details  expired-license invalid-license license-purchase-required" class="btn btn-danger" tabstop="8">Remove License</button>
       <button data-dismiss="modal" data-mm-section="no-license license-required unauthorised-license registration-fail registration-progress register" class="btn" tabstop="9">Cancel</button>
-      <button data-dismiss="modal" data-mm-section="view-license registration-success invalid-license license-server-unavailable  expired-license license-details" class="btn" tabstop="10">Close</button>
+      <button data-dismiss="modal" data-mm-section="view-license registration-success invalid-license license-server-unavailable  expired-license license-details license-purchase-required" class="btn" tabstop="10">Close</button>
     </div>
   </div>
 
