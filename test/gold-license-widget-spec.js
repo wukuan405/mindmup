@@ -38,6 +38,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="registration-progress"></span>' +
 					'<span data-mm-section="registration-success">' +
 					'<span data-mm-role="license-capacity"/>' +
+					'<span data-mm-role="license-has-grace-period"/>' +
 					'<span data-mm-role="license-grace-period"/>' +
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
@@ -350,13 +351,26 @@ describe('Gold License Widget', function () {
 			});
 			checkSectionShown('registration-success');
 			expect(underTest.find('[data-mm-role=license-capacity]').text()).toEqual('cap');
+			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeTruthy();
 			expect(underTest.find('[data-mm-role=license-grace-period]').text()).toEqual('grace');
 			expect(underTest.find('[data-mm-role=license-expiry]').text()).toEqual('Thu Dec 26 2013');
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
 			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
+		it('hides grace period wording if license does not have grace period', function () {
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.resolve({
+				'capacity': 'cap',
+				'expiry': -1,
+				'email': 'em',
+				'payment-url': 'purl'
+			});
+			checkSectionShown('registration-success');
+			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
 
+		});
 	});
+
 	describe('event logging', function () {
 		it('logs opening of the dialog', function () {
 			underTest.modal('show');
