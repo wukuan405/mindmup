@@ -1,4 +1,4 @@
-/*global jQuery, console*/
+/*global jQuery*/
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog) {
 	'use strict';
 	var self = this,
@@ -21,7 +21,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					if (currentSection === 'view-license') {
 						if (reason === 'not-authenticated') {
 							showSection('invalid-license');
-						}  else {
+						}  else if (reason ===  'license-purchase-required') {
+							showSection('license-purchase-required');
+						} else {
 							showSection('license-server-unavailable');
 						}
 					}
@@ -29,7 +31,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				showExpiry = function (expiryString) {
 					var expiryTs = expiryString && parseInt(expiryString, 10),
 						expiryDate = new Date(expiryTs * 1000);
-					if (expiryTs === 0)  {
+					if (expiryTs === -1)  {
+						failExpiry('license-purchase-required');
+					} else if (expiryTs === 0)  {
 						failExpiry('not-authenticated');
 					} else if (expiryDate && expiryDate < new Date()) {
 						if (currentSection === 'view-license') {
@@ -174,7 +178,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	self.modal({keyboard: true, show: false});
 	fileInput.css('opacity', 0).hide();
 	/*jshint camelcase: false*/
-	fileInput.file_reader_upload(undefined, setLicense, function () {console.log('fail', arguments); showSection('invalid-license'); }, ['txt']);
+	fileInput.file_reader_upload(undefined, setLicense, function () {showSection('invalid-license'); }, ['txt']);
 	self.find('a').click(function () { audit('license-click', this.href); });
 	self.find('button').click(function () { audit('license-click', jQuery(this).text()); });
 	return self;

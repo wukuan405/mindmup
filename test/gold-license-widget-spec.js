@@ -5,6 +5,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="license-required"></span>' +
 					'<span data-mm-section="unauthorised-license"></span>' +
 					'<span data-mm-section="invalid-license"></span>' +
+					'<span data-mm-section="license-purchase-required"></span>' +
 					'<span data-mm-section="expired-license"></span>' +
 					'<span data-mm-section="license-server-unavailable"></span>' +
 					'<span data-mm-section="license-details"></span>' +
@@ -244,6 +245,10 @@ describe('Gold License Widget', function () {
 			afterEach(function () {
 				underTest.modal('hide');
 			});
+			it('switches to license-purchase-required section if the expiry date comes back with -1', function () {
+				expiryDeferred.resolve('-1');
+				checkSectionShown('license-purchase-required');
+			});
 			it('switches to invalid-license section if the expiry date comes back with 0', function () {
 				expiryDeferred.resolve('0');
 				checkSectionShown('invalid-license');
@@ -265,6 +270,10 @@ describe('Gold License Widget', function () {
 			beforeEach(function () {
 				licenseManager.getLicense.and.returnValue({a: 1});
 				licenseManager.dispatchEvent('license-entry-required');
+			});
+			it('does not switch to license-purchase-required section if the expiry date comes back with -1', function () {
+				expiryDeferred.resolve('-1');
+				checkSectionShown('unauthorised-license');
 			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
 				expiryDeferred.resolve('0');
