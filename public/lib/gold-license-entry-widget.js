@@ -92,7 +92,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		regSuccess = function (apiResponse) {
 			/*jshint sub: true*/
 			self.find('[data-mm-role=license-capacity]').text(apiResponse['capacity']);
-			self.find('[data-mm-role=license-grace-period]').text(apiResponse['grace-period']);
+			if (apiResponse['grace-period']) {
+				self.find('[data-mm-role=license-grace-period]').text(apiResponse['grace-period']);
+				self.find('[data-mm-role=license-has-grace-period]').show();
+			} else {
+				self.find('[data-mm-role=license-has-grace-period]').hide();
+			}
+
 			self.find('[data-mm-role=license-expiry]').text(new Date(parseInt(apiResponse['expiry'], 10) * 1000).toDateString());
 			self.find('[data-mm-role=license-email]').text(apiResponse['email']);
 			self.find('[data-mm-role=license-payment-url]').attr('href', apiResponse['payment-url']);
