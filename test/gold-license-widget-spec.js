@@ -271,9 +271,9 @@ describe('Gold License Widget', function () {
 				licenseManager.getLicense.and.returnValue({a: 1});
 				licenseManager.dispatchEvent('license-entry-required');
 			});
-			it('does not switch to license-purchase-required section if the expiry date comes back with -1', function () {
+			it('does switch to license-purchase-required section if the expiry date comes back with -1', function () {
 				expiryDeferred.resolve('-1');
-				checkSectionShown('unauthorised-license');
+				checkSectionShown('license-purchase-required');
 			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
 				expiryDeferred.resolve('0');

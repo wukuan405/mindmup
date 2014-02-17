@@ -18,12 +18,12 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
 				failExpiry = function (reason) {
-					if (currentSection === 'view-license') {
+					if (reason ===  'license-purchase-required') {
+						showSection('license-purchase-required');
+					} else if (currentSection === 'view-license') {
 						if (reason === 'not-authenticated') {
 							showSection('invalid-license');
-						}  else if (reason ===  'license-purchase-required') {
-							showSection('license-purchase-required');
-						} else {
+						}  else {
 							showSection('license-server-unavailable');
 						}
 					}
