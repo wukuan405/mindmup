@@ -12,6 +12,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="no-license"></span>' +
 					'<span data-mm-section="view-license"></span>' +
 					'<input type="text" data-mm-role="expiry-date" value="dirty"/>' +
+					'<input type="text" data-mm-role="subscription-name" value="dirty"/>' +
 					'<input type="text" data-mm-role="license-text" value="dirty"/>' +
 					'<textarea data-mm-role="license-text" >dirty</textarea>' +
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
@@ -51,7 +52,7 @@ describe('Gold License Widget', function () {
 		fileReader,
 		goldApi,
 		registerDeferred,
-		expiryDeferred,
+		subscriptionDeferred,
 		checkSectionShown = function (sectionName) {
 			expect(underTest.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').css('display')).toBe('none');
 			expect(underTest.find('[data-mm-section~=' + sectionName + ']').length > 0).toBeTruthy();
@@ -65,8 +66,11 @@ describe('Gold License Widget', function () {
 			storeLicense: jasmine.createSpy('storeLicense')
 		});
 		registerDeferred = jQuery.Deferred();
-		expiryDeferred = jQuery.Deferred();
-		goldApi = { register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()), getExpiry: jasmine.createSpy('register').and.returnValue(expiryDeferred.promise()) };
+		subscriptionDeferred = jQuery.Deferred();
+		goldApi = {
+			register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()),
+			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise())
+		};
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
 		/*jshint camelcase: false */
@@ -212,12 +216,18 @@ describe('Gold License Widget', function () {
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=account-name]').val()).toBe('test-acc');
 		});
-		it('fills in anything with data-mm-role=expiry-date with the current license expiry date, formatted as date', function () {
-			expiryDeferred.resolve('1417132800');
+		it('fills in anything with data-mm-role=expiry-date with the current license expiry date, formatted as date, set', function () {
+			subscriptionDeferred.resolve({expiry: '1417132800', subscription: '1 year'});
 			underTest.modal('show');
 			var stringInField = underTest.find('input[data-mm-role~=expiry-date]').val();
 			expect(stringInField).toEqual(new Date(1417132800000).toDateString());
 		});
+		it('fills in anything with data-mm-role=subscription-name with the current license subscription name', function () {
+			subscriptionDeferred.resolve({expiry: '1417132800', subscription: '1 year'});
+			underTest.modal('show');
+			expect(underTest.find('input[data-mm-role~=subscription-name]').val()).toEqual('1 year');
+		});
+
 		it('fills in anything with the data-mm-role=license-text with the current license text formatted as JSON', function () {
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=license-text]').val()).toBe('{"account":"test-acc"}');
@@ -225,10 +235,11 @@ describe('Gold License Widget', function () {
 				expect(jQuery(this).val()).toEqual('{"account":"test-acc"}');
 			});
 		});
-		it('clears in anything with data-mm-role=license-text, expiry-date and account-name if the license is not defined, and hides anything with data-mm-role=expired', function () {
+		it('clears in anything with data-mm-role=license-text, expiry-date, subscription name and account-name if the license is not defined, and hides anything with data-mm-role=expired', function () {
 			licenseManager.getLicense = jasmine.createSpy('getLicense').and.returnValue(false);
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=expiry-date]').val()).toEqual('');
+			expect(underTest.find('input[data-mm-role~=subscription-name]').val()).toEqual('');
 			expect(underTest.find('input[data-mm-role~=account-name]').val()).toEqual('');
 			underTest.find('[data-mm-role~=license-text]').each(function () {
 				expect(jQuery(this).val()).toEqual('');
@@ -247,23 +258,23 @@ describe('Gold License Widget', function () {
 				underTest.modal('hide');
 			});
 			it('switches to license-purchase-required section if the expiry date comes back with -1', function () {
-				expiryDeferred.resolve('-1');
+				subscriptionDeferred.resolve({expiry: -1, subscription: 'none'});
 				checkSectionShown('license-purchase-required');
 			});
 			it('switches to invalid-license section if the expiry date comes back with 0', function () {
-				expiryDeferred.resolve('0');
+				subscriptionDeferred.resolve({expiry: 0, subscription: 'none'});
 				checkSectionShown('invalid-license');
 			});
 			it('switches to invalid-license section if the expiry date retrieval fails with not-authenticated', function () {
-				expiryDeferred.reject('not-authenticated');
+				subscriptionDeferred.reject('not-authenticated');
 				checkSectionShown('invalid-license');
 			});
 			it('switches to expired-license section if the expiry date comes back with a past date (>0)', function () {
-				expiryDeferred.resolve('1');
+				subscriptionDeferred.resolve({expiry: 1, subscription: '1 Year'});
 				checkSectionShown('expired-license');
 			});
 			it('switches to license-server-unavailable section if the expiry date retrieval fails with something else', function () {
-				expiryDeferred.reject('something else');
+				subscriptionDeferred.reject('something else');
 				checkSectionShown('license-server-unavailable');
 			});
 		});
@@ -273,15 +284,15 @@ describe('Gold License Widget', function () {
 				licenseManager.dispatchEvent('license-entry-required');
 			});
 			it('does switch to license-purchase-required section if the expiry date comes back with -1', function () {
-				expiryDeferred.resolve('-1');
+				subscriptionDeferred.resolve({expiry: -1, subscription: 'none'});
 				checkSectionShown('license-purchase-required');
 			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
-				expiryDeferred.resolve('0');
+				subscriptionDeferred.resolve({expiry: 0, subscription: 'none'});
 				checkSectionShown('unauthorised-license');
 			});
 			it('does not switch to invalid-license section if the expiry date fails', function () {
-				expiryDeferred.reject('something else');
+				subscriptionDeferred.reject('something else');
 				checkSectionShown('unauthorised-license');
 			});
 		});

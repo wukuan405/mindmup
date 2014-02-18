@@ -28,8 +28,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 						}
 					}
 				},
-				showExpiry = function (expiryString) {
-					var expiryTs = expiryString && parseInt(expiryString, 10),
+				showSubscription = function (subscription) {
+					var expiryTs = subscription && subscription.expiry,
 						expiryDate = new Date(expiryTs * 1000);
 					if (expiryTs === -1)  {
 						failExpiry('license-purchase-required');
@@ -41,16 +41,19 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 						}
 					} else {
 						self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
+						self.find('input[data-mm-role~=subscription-name]').val(subscription.subscription);
 					}
 				};
 			self.find('input[data-mm-role~=account-name]').val((license && license.account) || '');
 			if (license) {
 				self.find('[data-mm-role~=license-text]').val(JSON.stringify(license));
 				self.find('input[data-mm-role~=expiry-date]').val('getting expiry date...');
-				goldApi.getExpiry().then(showExpiry, failExpiry);
+				self.find('input[data-mm-role~=subscription-name]').val('getting subscription type...');
+				goldApi.getSubscription().then(showSubscription, failExpiry);
 			}  else {
 				self.find('[data-mm-role~=license-text]').val('');
 				self.find('input[data-mm-role~=expiry-date]').val('');
+				self.find('input[data-mm-role~=subscription-name]').val('');
 			}
 		},
 		setLicense = function (licenseText) {

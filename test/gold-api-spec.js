@@ -86,6 +86,16 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
 		});
 	});
+	describe('getSubscription', function () {
+		it('posts an AJAX request to the API url', function () {
+			underTest.getSubscription();
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+			expect(ajaxPost.url).toEqual('API_URL/license/subscription');
+			expect(ajaxPost.dataType).toEqual('json');
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
+		});
+	});
 	describe('register', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.register('test_name', 'test_email');

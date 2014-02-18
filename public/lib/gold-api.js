@@ -36,7 +36,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			},
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
-			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json'};
+			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json'};
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
@@ -58,6 +58,10 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	self.getExpiry = function () {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('license/expiry', {'license': JSON.stringify(license)});
+	};
+	self.getSubscription = function () {
+		var license = goldLicenseManager.getLicense();
+		return self.exec('license/subscription', {'license': JSON.stringify(license)});
 	};
 	self.generateExportConfiguration = function (format) {
 		var license = goldLicenseManager.getLicense();
