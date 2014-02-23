@@ -242,9 +242,10 @@ describe('Github integration', function () {
 			});
 		});
 		describe('ajax requests', function () {
-			var ajaxCall;
+			var ajaxCall, fakeXhr;
 			beforeEach(function () {
 				ajaxCall = jQuery.Deferred();
+				fakeXhr = jasmine.createSpyObj('fakeXhr', ['getResponseHeader']);
 				spyOn(jQuery, 'ajax').and.returnValue(ajaxCall.promise());
 			});
 			describe('general error control', function () {
@@ -287,22 +288,67 @@ describe('Github integration', function () {
 						headers : { Authorization : 'bearer x' }
 					});
 				});
+				it('ignores the first two arguments and retrieves the list of repos from a fixed link if the third arg is provided', function () {
+					underTest.getRepositories('my', 'org', 'http://www.xkkkk.com/1/2/3').then(done, rejected);
+					expect(jQuery.ajax).toHaveBeenCalledWith({
+						url : 'http://www.xkkkk.com/1/2/3',
+						type : 'GET',
+						headers : { Authorization : 'bearer x' }
+					});
+				});
 				it('transforms resulting github data into a list of repos', function () {
 					var githubData = [
 						{ full_name: 'n1', default_branch: 'b1'},
 						{ full_name: 'n2', default_branch: 'b2'}
 					];
-					ajaxCall.resolve(githubData);
+					ajaxCall.resolve(githubData, 200, fakeXhr);
 					underTest.getRepositories().then(done, rejected);
 					expect(done).toHaveBeenCalledWith([
 						{ type: 'repo', name: 'n1', defaultBranch: 'b1' },
 						{ type: 'repo', name: 'n2', defaultBranch: 'b2' }
 					]);
 				});
+				it('includes links if any from the header', function () {
+					var githubData = [
+							{ full_name: 'n1', default_branch: 'b1'},
+							{ full_name: 'n2', default_branch: 'b2'}
+						],
+						links = '<https://api.github.com/user/repos?page=3&per_page=100>; rel="next", '+
+								'<https://api.github.com/user/repos?page=50&per_page=100>; rel="last"';
+					fakeXhr.getResponseHeader.and.returnValue(links);
+					ajaxCall.resolve(githubData, 200, fakeXhr);
+					underTest.getRepositories().then(done, rejected);
+					expect(done).toHaveBeenCalledWith([
+							{ type: 'repo', name: 'n1', defaultBranch: 'b1' },
+							{ type: 'repo', name: 'n2', defaultBranch: 'b2' }
+						], [
+							{name:'next', link: 'https://api.github.com/user/repos?page=3&per_page=100'},
+							{name:'last', link: 'https://api.github.com/user/repos?page=50&per_page=100'}
+						]);
+					expect(fakeXhr.getResponseHeader).toHaveBeenCalledWith('Link');
+				});
+				it('does not double-add same link', function () {
+					var githubData = [
+							{ full_name: 'n1', default_branch: 'b1'},
+							{ full_name: 'n2', default_branch: 'b2'}
+						],
+						links = '<https://api.github.com/user/repos?page=5&per_page=100>; rel="next", '+
+								'<https://api.github.com/user/repos?page=5&per_page=100>; rel="last"';
+					fakeXhr.getResponseHeader.and.returnValue(links);
+					ajaxCall.resolve(githubData, 200, fakeXhr);
+					underTest.getRepositories().then(done, rejected);
+					expect(done).toHaveBeenCalledWith([
+							{ type: 'repo', name: 'n1', defaultBranch: 'b1' },
+							{ type: 'repo', name: 'n2', defaultBranch: 'b2' }
+						], [
+							{name:'next', link: 'https://api.github.com/user/repos?page=5&per_page=100'}
+						]);
+					expect(fakeXhr.getResponseHeader).toHaveBeenCalledWith('Link');
+				});
 			});
 			describe('getBranches', function () {
 				it('flattens the list of branches into an array of branch names', function () {
-					ajaxCall.resolve([{name: 'a' }, {name: 'b'}]);
+					ajaxCall.resolve([{name: 'a' }, {name: 'b'}], 200, fakeXhr);
 					underTest.getBranches('repo1').then(done, rejected);
 					expect(jQuery.ajax).toHaveBeenCalledWith({
 						url: 'https://api.github.com/repos/repo1/branches',
@@ -318,7 +364,7 @@ describe('Github integration', function () {
 						{type: 'file', name: 'a.txt', path: '/a.txt' },
 						{type: 'dir', name: 'b', path: '/b'}
 					];
-					ajaxCall.resolve(dirList);
+					ajaxCall.resolve(dirList, 200, fakeXhr);
 					underTest.getFiles({repo: 'repo1', branch: 'branch1', path: 'path1'}).then(done, rejected);
 					expect(jQuery.ajax).toHaveBeenCalledWith({
 						url: 'https://api.github.com/repos/repo1/contents/path1?ref=branch1',
@@ -330,7 +376,7 @@ describe('Github integration', function () {
 			});
 			describe('getOrgs', function () {
 				it('retrieves a list of organisations for the current user', function () {
-					ajaxCall.resolve([{login: 'a'}, {login: 'b'}]);
+					ajaxCall.resolve([{login: 'a'}, {login: 'b'}], 200, fakeXhr);
 					underTest.getOrgs().then(done, rejected);
 					expect(jQuery.ajax).toHaveBeenCalledWith({
 						url: 'https://api.github.com/user/orgs',
@@ -345,7 +391,7 @@ describe('Github integration', function () {
 			});
 			describe('getUser', function () {
 				it('retrieves current user', function () {
-					ajaxCall.resolve({login: 'a'});
+					ajaxCall.resolve({login: 'a'}, 200, fakeXhr);
 					underTest.getUser().then(done, rejected);
 					expect(jQuery.ajax).toHaveBeenCalledWith({
 						url: 'https://api.github.com/user',

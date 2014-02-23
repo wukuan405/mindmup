@@ -132,11 +132,27 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		setAuthToken = function (tokenString) {
 			sessionStorage[SESSION_AUTH_CACHE_KEY] = tokenString;
 		},
+		parseLinks = function (githubLinkString) {
+			if (!githubLinkString) {
+				return false;
+			}
+			var result = [],
+				regex = /<([^>]*)>; rel="([^"]*)"/g,
+				matchArr,
+				added = {};
+			while ((matchArr = regex.exec(githubLinkString)) !== null) {
+				if (!added[matchArr[1]]) {
+					result.push({name:matchArr[2], link:matchArr[1]})
+					added[matchArr[1]] = true;
+				}
+			}
+			return result;
+		},
 		sendRequest = function (url, resultParser, requestType, requestData) {
 			var baseUrl = 'https://api.github.com',
 				result = jQuery.Deferred(),
 				request = {
-					url: baseUrl + url,
+					url: /http:\/\/|https:\/\//.test(url)? url : baseUrl + url,
 					type: requestType || 'GET',
 					headers: {'Authorization': 'bearer ' + authToken()}
 				};
@@ -148,15 +164,20 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 				return result.reject('not-authenticated').promise();
 			}
 			jQuery.ajax(request).then(
-				function (githubData) {
+				function (githubData, textStatus, jxhr) {
+					var parsed = githubData,
+						links = jxhr && jxhr.getResponseHeader('Link');
 					if (resultParser) {
 						if (_.isArray(githubData)) {
-							result.resolve(_.map(githubData, resultParser));
+							parsed = _.map(githubData, resultParser);
 						} else {
-							result.resolve(resultParser(githubData));
+							parsed = resultParser(githubData);
 						}
+					}
+					if (!links) {
+						result.resolve(parsed);
 					} else {
-						result.resolve(githubData);
+						result.resolve(parsed, parseLinks(links));
 					}
 				},
 				function (xhr, problem) {
@@ -259,7 +280,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		);
 		return deferred.promise();
 	};
-	self.getRepositories = function (owner, ownerType) {
+	self.getRepositories = function (owner, ownerType, urlOverride) {
 		var repoParser = function (githubData) {
 				return {
 					type: 'repo',
@@ -275,7 +296,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		} else {
 			url = '/user/repos';
 		}
-		return sendRequest(url, repoParser);
+		return sendRequest(urlOverride || url, repoParser);
 	};
 	self.getBranches = function (repository) {
 		var branchParser = function (githubData) {
@@ -423,7 +444,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		},
 		fileRetrieval = function (showPopup, query) {
 			query = query || {};
-			var	filesLoaded = function (result) {
+			var	filesLoaded = function (result, links) {
 					statusDiv.empty();
 					if (query.repo) {
 						currentLoc.text(query.repo + (query.branch ? '(' + query.branch + ')' : '') + "/" +  (query.path || ''));
@@ -433,7 +454,11 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 					var sorted = _.sortBy(result, function (item) {
 							return item && item.type + ':' + item.name;
 						}),
-						added;
+						added,
+						linkContainer,
+						linkItem,
+						linkParent;
+
 					if (query.back) {
 						added = template.filter('[data-mm-type=dir]').clone().appendTo(fileList);
 						added.find('[data-mm-role=dir-link]').click(function () {
@@ -448,7 +473,6 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 						newFile.hide();
 					}
 					_.each(sorted, function (item) {
-
 						if (item) {
 							if (item.type === 'repo') {
 								added = template.filter('[data-mm-type=repo]').clone().appendTo(fileList);
@@ -485,6 +509,18 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 
 						}
 					});
+					if (links) {
+						linkContainer = template.filter('[data-mm-type=links]').clone();
+						linkItem = linkContainer.find('[data-mm-role=link-item]');
+						linkParent = linkItem.parent();
+						linkItem.detach();
+						linkContainer.appendTo(fileList);
+						_.each(links, function (link) {
+							linkItem.clone().appendTo(linkParent).find('[data-mm-role=link-action]').text(link.name).click(function () {
+								fileRetrieval(false, { 'link': link.link, back: query});
+							});
+						});
+					}
 				},
 				showError = function (reason) {
 					if (reason === 'failed-authentication') {
@@ -509,6 +545,8 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 					api.getRepositories(query.owner, query.ownerType).then(filesLoaded, showError);
 				} else if (query.repo) {
 					api.getFiles(query).then(filesLoaded, showError);
+				} else if (query.link) {
+					api.getRepositories(false, false, query.link).then(filesLoaded, showError);
 				} else {
 					api.getRepositories().then(filesLoaded, showError);
 				}
