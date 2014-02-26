@@ -20,7 +20,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				failExpiry = function (reason) {
 					if (reason ===  'license-purchase-required') {
 						showSection('license-purchase-required');
-					} else if (currentSection === 'view-license') {
+					} else if (currentSection === 'view-license' || currentSection === 'loading-subscription') {
 						if (reason === 'not-authenticated') {
 							showSection('invalid-license');
 						}  else {
@@ -36,24 +36,39 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					} else if (expiryTs === 0)  {
 						failExpiry('not-authenticated');
 					} else if (expiryDate && expiryDate < new Date()) {
-						if (currentSection === 'view-license') {
+						if (currentSection === 'view-license' || currentSection === 'loading-subscription') {
 							showSection('expired-license');
 						}
 					} else {
+						if (subscription.subscription === 'cancelled') {
+							showSection('cancelled-subscription');
+						} else {
+							showSection('view-license');
+						}
 						self.find('input[data-mm-role~=expiry-date]').val((expiryDate && expiryDate.toDateString()) || '');
+						self.find('span[data-mm-role~=expiry-date]').text((expiryDate && expiryDate.toDateString()) || '');
 						self.find('input[data-mm-role~=subscription-name]').val(subscription.subscription);
+						self.find('span[data-mm-role~=subscription-name]').text(subscription.subscription);
+						self.find('input[data-mm-role~=renewal-price]').val(subscription.renewalPrice);
+						self.find('span[data-mm-role~=renewal-price]').text(subscription.renewalPrice);
 					}
 				};
 			self.find('input[data-mm-role~=account-name]').val((license && license.account) || '');
+			self.find('span[data-mm-role~=account-name]').text((license && license.account) || '');
 			if (license) {
+				if (currentSection === 'view-license') {
+					showSection('loading-subscription');
+				}
 				self.find('[data-mm-role~=license-text]').val(JSON.stringify(license));
-				self.find('input[data-mm-role~=expiry-date]').val('getting expiry date...');
-				self.find('input[data-mm-role~=subscription-name]').val('getting subscription type...');
 				goldApi.getSubscription().then(showSubscription, failExpiry);
 			}  else {
 				self.find('[data-mm-role~=license-text]').val('');
 				self.find('input[data-mm-role~=expiry-date]').val('');
+				self.find('span[data-mm-role~=expiry-date]').text('');
 				self.find('input[data-mm-role~=subscription-name]').val('');
+				self.find('span[data-mm-role~=subscription-name]').text('');
+				self.find('input[data-mm-role~=renewal-price]').val('');
+				self.find('span[data-mm-role~=renewal-price]').text('');
 			}
 		},
 		setLicense = function (licenseText) {
@@ -63,8 +78,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				if (openFromLicenseManager) {
 					self.modal('hide');
 				} else {
+					showSection('loading-subscription');
 					fillInFields();
-					showSection('view-license');
 				}
 			} else {
 				showSection('invalid-license');
@@ -90,7 +105,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			if (wasEntryRequired) {
 				return hasLicense ? 'unauthorised-license' : 'license-required';
 			}
-			return hasLicense ? 'view-license' : 'no-license';
+			return hasLicense ? 'loading-subscription' : 'no-license';
 		},
 		regSuccess = function (apiResponse) {
 			/*jshint sub: true*/

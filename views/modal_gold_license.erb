@@ -77,32 +77,17 @@
 			 </form>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
 		</div>
-		<div data-mm-section="view-license">
-			<p>This browser profile is using the following MindMup Gold account:</p>
-			<form class="form-horizontal">
-			<div class="control-group">
-				<label class="control-label" for="gold-view-account-name">Account name</label>
-				<div class="controls">
-				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="gold-view-account-expiry">Valid until</label>
-				<div class="controls">
-					<input type="text" data-mm-role="expiry-date" id="gold-view-account-expiry" readonly="true"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="gold-view-account-subscription-name">Subscription Type:</label>
-				<div class="controls">
-					<input type="text" data-mm-role="subscription-name" id="gold-view-account-subscription-name" readonly="true"/>
-				</div>
-			</div>
-
-
-			</form>
+		<div data-mm-section="cancelled-subscription">
+			<p>You have cancelled automatic renewal for your subscription as <strong><span data-mm-role="account-name"></span></strong> </p>
+			<p>Your current subscription will expire on <strong><span data-mm-role="expiry-date"></span></strong><span data-mm-role="subscription-expiry"></span></p>
 		</div>
-
+		<div data-mm-section="view-license">
+			<p>You are currently subscribed  as <strong><span data-mm-role="account-name"></span></strong> with a <strong><span data-mm-role="subscription-name"></span></strong> billing cycle.</p>
+			<p>Your next  payment of <strong><span data-mm-role="renewal-price"></span></strong> will be automatically charged on <strong><span data-mm-role="expiry-date"></span></strong></p>
+		</div>
+		<div data-mm-section="loading-subscription">
+			<p>We are loading the subscription information for <strong><span data-mm-role="account-name"></span></strong>, please wait ...</p>
+		</div>
 		<div data-mm-section="register">
 			<p>Please enter your desired account name and e-mail address to obtain a Gold license.
 			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, start with a letter and
@@ -179,7 +164,7 @@
       <button data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
       <button data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
 
-      <button data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="view-license expired-license unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
+      <button data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="view-license loading-subscription cancelled-subscription expired-license unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
 	  <input type="file" name="file" />
 
       <button data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
@@ -188,9 +173,9 @@
       </form>
 
       <button data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
-      <button data-mm-role="remove" data-mm-section="view-license license-details  expired-license invalid-license license-purchase-required" class="btn btn-danger" tabstop="8">Remove License</button>
+      <button data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription license-details  expired-license invalid-license license-purchase-required" class="btn btn-danger" tabstop="8">Remove License</button>
       <button data-dismiss="modal" data-mm-section="no-license license-required unauthorised-license registration-fail registration-progress register" class="btn" tabstop="9">Cancel</button>
-      <button data-dismiss="modal" data-mm-section="view-license registration-success invalid-license license-server-unavailable  expired-license license-details license-purchase-required" class="btn" tabstop="10">Close</button>
+      <button data-dismiss="modal" data-mm-section="view-license loading-subscription cancelled-subscription registration-success invalid-license license-server-unavailable  expired-license license-details license-purchase-required" class="btn" tabstop="10">Close</button>
     </div>
   </div>
 
