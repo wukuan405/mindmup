@@ -13,6 +13,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="view-license"></span>' +
 					'<span data-mm-section="loading-subscription"></span>' +
 					'<span data-mm-section="cancelled-subscription"></span>' +
+					'<span data-mm-section="cancelling-subscription"></span>' +
 					'<span data-mm-role="expiry-date"></span>' +
 					'<span data-mm-role="subscription-name"></span>' +
 					'<span data-mm-role="account-name"></span>' +
@@ -22,6 +23,7 @@ describe('Gold License Widget', function () {
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="cancel-subscription"/>' +
 					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
 					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
@@ -57,6 +59,7 @@ describe('Gold License Widget', function () {
 		goldApi,
 		registerDeferred,
 		subscriptionDeferred,
+		cancelSubscriptionDeferred,
 		futureTs,
 		checkSectionShown = function (sectionName) {
 			var visibleSections = [];
@@ -78,9 +81,11 @@ describe('Gold License Widget', function () {
 		});
 		registerDeferred = jQuery.Deferred();
 		subscriptionDeferred = jQuery.Deferred();
+		cancelSubscriptionDeferred = jQuery.Deferred();
 		goldApi = {
 			register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()),
-			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise())
+			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise()),
+			cancelSubscription: jasmine.createSpy('cancelSubscription').and.returnValue(cancelSubscriptionDeferred.promise())
 		};
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
@@ -190,6 +195,27 @@ describe('Gold License Widget', function () {
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('license-details');
 		});
+		describe('when cancel-subscription button clicked', function () {
+			beforeEach(function () {
+				licenseManager.getLicense.and.returnValue({a: 1});
+				underTest.modal('show');
+				underTest.find('button[data-mm-role=cancel-subscription]').click();
+			});
+			it('shows cancelling-subscription section', function () {
+				checkSectionShown('cancelling-subscription');
+			});
+			it('calls goldApi.cancelSubscription ', function () {
+				expect(goldApi.cancelSubscription).toHaveBeenCalled();
+			});
+			it('shows the cancelled section if cancelellation returns ok', function () {
+				cancelSubscriptionDeferred.resolve('ok');
+				checkSectionShown('cancelled-subscription');
+			});
+			it('shows the view-license section if cancelellation fails', function () {
+				cancelSubscriptionDeferred.reject('error');
+				checkSectionShown('view-license');
+			});
+		});
 
 		describe('edit license text', function () {
 			it('changes the license if valid license saved and shows the view-license section', function () {
@@ -273,8 +299,6 @@ describe('Gold License Widget', function () {
 				expect(jQuery(this).val()).toEqual('');
 			});
 		});
-
-
 	});
 	describe('handling invalid or expired licenses when view-license or loading-subscription is showing', function () {
 		describe('when view-license is showing', function () {

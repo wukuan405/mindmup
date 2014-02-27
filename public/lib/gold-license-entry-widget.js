@@ -170,7 +170,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		hasAction = false;
 		var license = licenseManager.getLicense();
 		showSection(initialSection(license, openFromLicenseManager));
-		fillInFields(license);
+		fillInFields();
 	});
 	self.on('shown', setFileUploadButton);
 
@@ -192,6 +192,17 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		showSection(jQuery(this).data('mm-target-section'));
 	});
 	self.find('button[data-mm-role~=register]').click(register);
+	self.find('button[data-mm-role~=cancel-subscription]').click(function () {
+		showSection('cancelling-subscription');
+		goldApi.cancelSubscription().then(
+			function () {
+				showSection('cancelled-subscription');
+			},
+			function () {
+				showSection('view-license');
+			}
+		);
+	});
 	licenseManager.addEventListener('license-entry-required', function () {
 		openFromLicenseManager = true;
 		self.modal('show');
