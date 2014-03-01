@@ -89,22 +89,6 @@ get "/s3/:mapid" do
   redirect "/#m:#{params[:mapid]}"
 end
 
-post "/echo" do
-  attachment params[:title]
-  contents = params[:map]
-  if (contents.start_with?('data:')) then
-    data = contents.split(',')
-    meta = data[0].split(':')[1].split(';')
-    content_type meta[0]
-    if (meta[1] != 'base64') then
-      halt 503, "Unsupported encoding " + meta [1]
-    end
-    Base64.decode64 data[1]
-  else
-    content_type 'application/octet-stream'
-    contents
-  end
-end
 get %r{/embedded/(.*)} do |mapid|
   @mapid = mapid
   erb :embedded
