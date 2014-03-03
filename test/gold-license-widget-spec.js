@@ -49,7 +49,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-grace-period"/>' +
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
-					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank"/>' +
+					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank">Payment</a>' +
 					'</span>' +
 					'</div>',
 		licenseManager,
@@ -455,7 +455,7 @@ describe('Gold License Widget', function () {
 		});
 		it('logs clicks on every link by the link href', function () {
 			underTest.find('a[data-mm-role=license-payment-url]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'http://payment/');
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'Payment');
 		});
 		it('logs clicks on every button by the button text', function () {
 			underTest.find('button[data-mm-role=register]').click();
