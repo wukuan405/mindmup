@@ -144,6 +144,7 @@ MM.main = function (config) {
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
 				jQuery('.modal.huge').scalableModalWidget();
+				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel);
 
