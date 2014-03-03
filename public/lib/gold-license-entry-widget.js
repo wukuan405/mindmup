@@ -159,8 +159,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		onWindowMessage = function (windowMessageEvt) {
 			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
 				audit('license-message', windowMessageEvt.data.goldApi);
-				showSection('view-license');
-				fillInFields();
+				if (licenseManager.getLicense()) {
+					showSection('view-license');
+					fillInFields();
+				}
 			}
 		};
 	self.find('form').submit(function () {return this.action; });
