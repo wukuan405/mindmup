@@ -46,6 +46,7 @@ MM.main = function (config) {
 			alert = new MM.Alert(),
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = MM.jsonStorage(browserStorage),
+			objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard'),
 			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.S3ConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
@@ -64,7 +65,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
-			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, ['Press Space or double-click to edit']),
+			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 			layoutExportController = new MM.LayoutExportController(mapModel, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
