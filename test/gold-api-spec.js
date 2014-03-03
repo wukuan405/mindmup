@@ -96,6 +96,16 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
 		});
 	});
+	describe('cancelSubscription', function () {
+		it('posts an AJAX request to the API url', function () {
+			underTest.cancelSubscription();
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+			expect(ajaxPost.url).toEqual('API_URL/license/cancel_subscription');
+			expect(ajaxPost.dataType).toBeUndefined();
+			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
+		});
+	});
 	describe('register', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.register('test_name', 'test_email');
