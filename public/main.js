@@ -64,7 +64,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
-			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']),
+			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, ['Press Space or double-click to edit']),
 			layoutExportController = new MM.LayoutExportController(mapModel, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
