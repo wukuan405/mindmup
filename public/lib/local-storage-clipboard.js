@@ -17,17 +17,24 @@ jQuery.fn.newFromClipboardWidget = function (clipboard, mapController) {
 	'use strict';
 	var elements = jQuery(this);
 	elements.click(function () {
-		var map = clipboard.get();
+		var map = clipboard.get(),
+			content;
 		if (!map) {
 			return;
 		}
-		if (_.isArray(map)) {
-			map = map[0];
+		if (_.isArray(map) && map.length > 1) {
+			content = MAPJS.content(JSON.parse(JSON.stringify(MM.Maps.default)));
+			content.pasteMultiple(1, map);
+		} else {
+			if (_.isArray(map)) {
+				map = map[0];
+			}
+			if (map.attr && map.attr.style) {
+				map.attr.style = undefined;
+			}
+			content = MAPJS.content(map);
 		}
-		if (map.attr && map.attr.style) {
-			map.attr.style = undefined;
-		}
-		mapController.setMap(MAPJS.content(map));
+		mapController.setMap(content);
 	});
 	return elements;
 };
