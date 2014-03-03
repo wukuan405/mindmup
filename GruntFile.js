@@ -76,7 +76,7 @@ module.exports = function (grunt) {
 						'test/*.js',
 					],
 					vendor: [
-						'http://static.mindmup.com/20131204091534/external.js'
+						grunt.option('external-scripts') || 'http://static.mindmup.com/20131204091534/external.js'
 					],
 					helpers: [
 						'test-lib/sinon-1.5.2.js',

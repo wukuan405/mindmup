@@ -11,13 +11,19 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="license-details"></span>' +
 					'<span data-mm-section="no-license"></span>' +
 					'<span data-mm-section="view-license"></span>' +
-					'<input type="text" data-mm-role="expiry-date" value="dirty"/>' +
-					'<input type="text" data-mm-role="subscription-name" value="dirty"/>' +
-					'<input type="text" data-mm-role="license-text" value="dirty"/>' +
+					'<span data-mm-section="loading-subscription"></span>' +
+					'<span data-mm-section="cancelled-subscription"></span>' +
+					'<span data-mm-section="cancelling-subscription"></span>' +
+					'<span data-mm-role="expiry-date"></span>' +
+					'<span data-mm-role="subscription-name"></span>' +
+					'<span data-mm-role="account-name"></span>' +
+					'<span data-mm-role="renewal-price"></span>' +
+					'<input type="text" data-mm-role="license-text"></span>' +
 					'<textarea data-mm-role="license-text" >dirty</textarea>' +
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="cancel-subscription"/>' +
 					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
 					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
@@ -43,7 +49,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-grace-period"/>' +
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
-					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank"/>' +
+					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank">Payment</a>' +
 					'</span>' +
 					'</div>',
 		licenseManager,
@@ -53,12 +59,20 @@ describe('Gold License Widget', function () {
 		goldApi,
 		registerDeferred,
 		subscriptionDeferred,
+		cancelSubscriptionDeferred,
+		futureTs,
 		checkSectionShown = function (sectionName) {
-			expect(underTest.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').css('display')).toBe('none');
-			expect(underTest.find('[data-mm-section~=' + sectionName + ']').length > 0).toBeTruthy();
-			expect(underTest.find('[data-mm-section~=' + sectionName + ']').css('display')).not.toBe('none');
+			var visibleSections = [];
+			_.each(underTest.find('[data-mm-section]'), function (sectionDom) {
+				var section = jQuery(sectionDom);
+				if (section.css('display') !== 'none') {
+					visibleSections.push(section.data('mm-section'));
+				}
+			});
+			expect(visibleSections).toEqual([sectionName]);
 		};
 	beforeEach(function () {
+		futureTs = ((new Date()).getTime() + 100000) / 1000;
 		licenseManager = observable({
 			getLicense: jasmine.createSpy('getLicense'),
 			cancelLicenseEntry: jasmine.createSpy('cancelLicenseEntry'),
@@ -67,9 +81,11 @@ describe('Gold License Widget', function () {
 		});
 		registerDeferred = jQuery.Deferred();
 		subscriptionDeferred = jQuery.Deferred();
+		cancelSubscriptionDeferred = jQuery.Deferred();
 		goldApi = {
 			register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()),
-			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise())
+			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise()),
+			cancelSubscription: jasmine.createSpy('cancelSubscription').and.returnValue(cancelSubscriptionDeferred.promise())
 		};
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
@@ -93,6 +109,7 @@ describe('Gold License Widget', function () {
 		});
 		it('shows only the unauthorised-license section if the license manager contains a license', function () {
 			licenseManager.getLicense.and.returnValue({a: 1});
+			subscriptionDeferred.resolve({expiry: 1, subscription: 'none'});
 			licenseManager.dispatchEvent('license-entry-required');
 			checkSectionShown('unauthorised-license');
 		});
@@ -103,6 +120,9 @@ describe('Gold License Widget', function () {
 		});
 	});
 	describe('when invoked by menu directly', function () {
+		beforeEach(function () {
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+		});
 		it('shows only the no-license section if the license manager does not contain a license', function () {
 			licenseManager.getLicense.and.returnValue(undefined);
 			underTest.modal('show');
@@ -111,6 +131,7 @@ describe('Gold License Widget', function () {
 		it('shows only the view-license section if the license manager contains a license', function () {
 			licenseManager.getLicense.and.returnValue({a: 1});
 			underTest.modal('show');
+
 			checkSectionShown('view-license');
 		});
 		it('shows the correct section even if previously invoked by license manager [regression bug check]', function () {
@@ -127,6 +148,9 @@ describe('Gold License Widget', function () {
 		});
 	});
 	describe('button actions', function () {
+		beforeEach(function () {
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+		});
 		it('removes the license and shows no-license when remove is clicked', function () {
 			underTest.modal('show');
 			underTest.find('[data-mm-role~=remove]').click();
@@ -137,11 +161,14 @@ describe('Gold License Widget', function () {
 		it('changes the license if valid license uploaded and shows the view-license section', function () {
 			underTest.modal('show');
 			licenseManager.storeLicense.and.returnValue(true);
-
+			licenseManager.getLicense.and.returnValue({a: 1});
 			fileReader.calls.mostRecent().args[1]('some text');
 
 			expect(licenseManager.storeLicense).toHaveBeenCalledWith('some text');
 			expect(underTest.is(':visible')).toBeTruthy();
+
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+
 			checkSectionShown('view-license');
 		});
 		it('automatically closes the dialog when valid license is uploaded if loaded from the license manager', function () {
@@ -168,13 +195,35 @@ describe('Gold License Widget', function () {
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('license-details');
 		});
+		describe('when cancel-subscription button clicked', function () {
+			beforeEach(function () {
+				licenseManager.getLicense.and.returnValue({a: 1});
+				underTest.modal('show');
+				underTest.find('button[data-mm-role=cancel-subscription]').click();
+			});
+			it('shows cancelling-subscription section', function () {
+				checkSectionShown('cancelling-subscription');
+			});
+			it('calls goldApi.cancelSubscription ', function () {
+				expect(goldApi.cancelSubscription).toHaveBeenCalled();
+			});
+			it('shows the cancelled section if cancelellation returns ok', function () {
+				cancelSubscriptionDeferred.resolve('ok');
+				checkSectionShown('cancelled-subscription');
+			});
+			it('shows the view-license section if cancelellation fails', function () {
+				cancelSubscriptionDeferred.reject('error');
+				checkSectionShown('view-license');
+			});
+		});
 
 		describe('edit license text', function () {
 			it('changes the license if valid license saved and shows the view-license section', function () {
 				underTest.modal('show');
 				underTest.find('textarea[data-mm-role=license-text]').val('some text');
 				licenseManager.storeLicense.and.returnValue(true);
-
+				licenseManager.getLicense.and.returnValue({a: 1});
+				subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
 
 				underTest.find('[data-mm-role=save-license]').click();
 
@@ -214,18 +263,23 @@ describe('Gold License Widget', function () {
 		});
 		it('fills in input fields data-mm-role=account-name with the current license account name', function () {
 			underTest.modal('show');
-			expect(underTest.find('input[data-mm-role~=account-name]').val()).toBe('test-acc');
+			expect(underTest.find('span[data-mm-role~=account-name]').text()).toBe('test-acc');
 		});
 		it('fills in anything with data-mm-role=expiry-date with the current license expiry date, formatted as date, set', function () {
-			subscriptionDeferred.resolve({expiry: '1417132800', subscription: '1 year'});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 year'});
 			underTest.modal('show');
-			var stringInField = underTest.find('input[data-mm-role~=expiry-date]').val();
-			expect(stringInField).toEqual(new Date(1417132800000).toDateString());
+			var stringInField = underTest.find('span[data-mm-role~=expiry-date]').text();
+			expect(stringInField).toEqual(new Date(futureTs * 1000).toDateString());
 		});
 		it('fills in anything with data-mm-role=subscription-name with the current license subscription name', function () {
-			subscriptionDeferred.resolve({expiry: '1417132800', subscription: '1 year'});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 year', renewalPrice: '1 million dollars mwahahaha'});
 			underTest.modal('show');
-			expect(underTest.find('input[data-mm-role~=subscription-name]').val()).toEqual('1 year');
+			expect(underTest.find('span[data-mm-role~=subscription-name]').text()).toEqual('1 year');
+		});
+		it('fills in anything with data-mm-role=renewal-price with the current license renewalPrice', function () {
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 year', renewalPrice: '1 million dollars mwahahaha'});
+			underTest.modal('show');
+			expect(underTest.find('span[data-mm-role~=renewal-price]').text()).toEqual('1 million dollars mwahahaha');
 		});
 
 		it('fills in anything with the data-mm-role=license-text with the current license text formatted as JSON', function () {
@@ -238,17 +292,15 @@ describe('Gold License Widget', function () {
 		it('clears in anything with data-mm-role=license-text, expiry-date, subscription name and account-name if the license is not defined, and hides anything with data-mm-role=expired', function () {
 			licenseManager.getLicense = jasmine.createSpy('getLicense').and.returnValue(false);
 			underTest.modal('show');
-			expect(underTest.find('input[data-mm-role~=expiry-date]').val()).toEqual('');
-			expect(underTest.find('input[data-mm-role~=subscription-name]').val()).toEqual('');
-			expect(underTest.find('input[data-mm-role~=account-name]').val()).toEqual('');
+			expect(underTest.find('span[data-mm-role~=expiry-date]').text()).toEqual('');
+			expect(underTest.find('span[data-mm-role~=subscription-name]').text()).toEqual('');
+			expect(underTest.find('span[data-mm-role~=account-name]').text()).toEqual('');
 			underTest.find('[data-mm-role~=license-text]').each(function () {
 				expect(jQuery(this).val()).toEqual('');
 			});
 		});
-
-
 	});
-	describe('handling invalid or expired licenses when view-license is showing', function () {
+	describe('handling invalid or expired licenses when view-license or loading-subscription is showing', function () {
 		describe('when view-license is showing', function () {
 			beforeEach(function () {
 				licenseManager.getLicense.and.returnValue({a: 1});
@@ -256,6 +308,10 @@ describe('Gold License Widget', function () {
 			});
 			afterEach(function () {
 				underTest.modal('hide');
+			});
+			it('switches to cancelled-subscription section if the subscription is cancelled', function () {
+				subscriptionDeferred.resolve({expiry: futureTs, subscription: 'cancelled'});
+				checkSectionShown('cancelled-subscription');
 			});
 			it('switches to license-purchase-required section if the expiry date comes back with -1', function () {
 				subscriptionDeferred.resolve({expiry: -1, subscription: 'none'});
@@ -270,7 +326,7 @@ describe('Gold License Widget', function () {
 				checkSectionShown('invalid-license');
 			});
 			it('switches to expired-license section if the expiry date comes back with a past date (>0)', function () {
-				subscriptionDeferred.resolve({expiry: 1, subscription: '1 Year'});
+				subscriptionDeferred.resolve({expiry: 1, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
 				checkSectionShown('expired-license');
 			});
 			it('switches to license-server-unavailable section if the expiry date retrieval fails with something else', function () {
@@ -288,6 +344,11 @@ describe('Gold License Widget', function () {
 				checkSectionShown('license-purchase-required');
 			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
+				subscriptionDeferred.resolve({expiry: 0, subscription: 'none'});
+				checkSectionShown('unauthorised-license');
+			});
+
+			it('does not switch to cancelled-subscription section if the expiry date comes back with 0', function () {
 				subscriptionDeferred.resolve({expiry: 0, subscription: 'none'});
 				checkSectionShown('unauthorised-license');
 			});
@@ -391,14 +452,6 @@ describe('Gold License Widget', function () {
 			licenseManager.storeLicense.and.returnValue(true);
 			fileReader.calls.mostRecent().args[1]('some text');
 			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-set');
-		});
-		it('logs clicks on every link by the link href', function () {
-			underTest.find('a[data-mm-role=license-payment-url]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'http://payment/');
-		});
-		it('logs clicks on every button by the button text', function () {
-			underTest.find('button[data-mm-role=register]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'Register');
 		});
 		it('logs showing each section', function () {
 			underTest.find('[name=btntest]').click();

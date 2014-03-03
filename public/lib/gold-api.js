@@ -63,6 +63,10 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		var license = goldLicenseManager.getLicense();
 		return self.exec('license/subscription', {'license': JSON.stringify(license)});
 	};
+	self.cancelSubscription = function () {
+		var license = goldLicenseManager.getLicense();
+		return self.exec('license/cancel_subscription', {'license': JSON.stringify(license)});
+	};
 	self.generateExportConfiguration = function (format) {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('file/export_config', {'license': JSON.stringify(license), 'format': format});
