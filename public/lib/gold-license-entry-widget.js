@@ -218,8 +218,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	fileInput.css('opacity', 0).hide();
 	/*jshint camelcase: false*/
 	fileInput.file_reader_upload(undefined, setLicense, function () {showSection('invalid-license'); }, ['txt']);
-	self.find('a').click(function () { audit('license-click', jQuery(this).text()); });
-	self.find('button').click(function () { audit('license-click', jQuery(this).text()); });
 
 	window.addEventListener('message', onWindowMessage, false);
 
