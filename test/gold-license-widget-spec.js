@@ -453,14 +453,6 @@ describe('Gold License Widget', function () {
 			fileReader.calls.mostRecent().args[1]('some text');
 			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-set');
 		});
-		it('logs clicks on every link by the link href', function () {
-			underTest.find('a[data-mm-role=license-payment-url]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'Payment');
-		});
-		it('logs clicks on every button by the button text', function () {
-			underTest.find('button[data-mm-role=register]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-click', 'Register');
-		});
 		it('logs showing each section', function () {
 			underTest.find('[name=btntest]').click();
 			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-section', 'license-details');
