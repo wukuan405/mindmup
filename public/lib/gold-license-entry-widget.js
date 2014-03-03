@@ -1,4 +1,4 @@
-/*global jQuery*/
+/*global jQuery, window*/
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog) {
 	'use strict';
 	var self = this,
@@ -155,6 +155,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 			goldApi.register(accountNameField.val(), emailField.val()).then(regSuccess, regFail);
 			showSection('registration-progress');
+		},
+		onWindowMessage = function (windowMessageEvt) {
+			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
+				audit('license-message', windowMessageEvt.data.goldApi);
+				showSection('view-license');
+				fillInFields();
+			}
 		};
 	self.find('form').submit(function () {return this.action; });
 	self.find('[data-mm-role~=form-submit]').click(function () {
@@ -213,6 +220,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	fileInput.file_reader_upload(undefined, setLicense, function () {showSection('invalid-license'); }, ['txt']);
 	self.find('a').click(function () { audit('license-click', jQuery(this).text()); });
 	self.find('button').click(function () { audit('license-click', jQuery(this).text()); });
+
+	window.addEventListener('message', onWindowMessage, false);
+
 	return self;
 };
 
