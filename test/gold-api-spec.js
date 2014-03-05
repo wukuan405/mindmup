@@ -76,16 +76,6 @@ describe('MM.GoldApi', function () {
 			expect(endSpy).toHaveBeenCalled();
 		});
 	});
-	describe('getExpiry', function () {
-		it('posts an AJAX request to the API url', function () {
-			underTest.getExpiry();
-			expect(jQuery.ajax).toHaveBeenCalled();
-			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
-			expect(ajaxPost.url).toEqual('API_URL/license/expiry');
-			expect(ajaxPost.dataType).toBeUndefined();
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
-		});
-	});
 	describe('getSubscription', function () {
 		it('posts an AJAX request to the API url', function () {
 			underTest.getSubscription();

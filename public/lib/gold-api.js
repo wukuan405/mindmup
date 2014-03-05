@@ -55,10 +55,6 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	self.register = function (accountName, email) {
 		return self.exec('license/register', {'to_email': email, 'account_name' : accountName});
 	};
-	self.getExpiry = function () {
-		var license = goldLicenseManager.getLicense();
-		return self.exec('license/expiry', {'license': JSON.stringify(license)});
-	};
 	self.getSubscription = function () {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('license/subscription', {'license': JSON.stringify(license)});
