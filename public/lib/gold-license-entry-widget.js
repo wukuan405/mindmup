@@ -32,7 +32,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					var expiryTs = subscription && subscription.expiry,
 						expiryDate = new Date(expiryTs * 1000),
 						renewalDescription = (expiryDate && expiryDate.toDateString()) || '';
-					if (expiryTs === -1)  {
+					if (expiryTs === -1 || expiryTs === undefined)  {
 						failExpiry('license-purchase-required');
 					} else if (expiryTs === 0)  {
 						failExpiry('not-authenticated');

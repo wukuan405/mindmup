@@ -343,6 +343,10 @@ describe('Gold License Widget', function () {
 				subscriptionDeferred.resolve({expiry: -1, subscription: 'none'});
 				checkSectionShown('license-purchase-required');
 			});
+			it('does switch to license-purchase-required section if the expiry date comes back undefined', function () {
+				subscriptionDeferred.resolve({subscription: 'none'});
+				checkSectionShown('license-purchase-required');
+			});
 			it('does not switch to invalid-license section if the expiry date comes back with 0', function () {
 				subscriptionDeferred.resolve({expiry: 0, subscription: 'none'});
 				checkSectionShown('unauthorised-license');
@@ -429,7 +433,7 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
 			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
-		it('hides grace period wording if license does not have grace period', function () {
+		it('hides grace period wording if license does not have grace period because expiry is -1', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
@@ -439,8 +443,19 @@ describe('Gold License Widget', function () {
 			});
 			checkSectionShown('registration-success');
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
+		});
+		it('hides grace period wording if license does not have grace period because expiry undefined', function () {
+			underTest.find('[data-mm-role=register]').click();
+			registerDeferred.resolve({
+				'capacity': 'cap',
+				'email': 'em',
+				'payment-url': 'purl'
+			});
+			checkSectionShown('registration-success');
+			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
 
 		});
+
 	});
 
 	describe('event logging', function () {
