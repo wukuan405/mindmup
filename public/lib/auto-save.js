@@ -47,8 +47,7 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		}
 	});
 	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
-
-		if (!properties || !properties.autoSave) {
+		if (mapId && (!properties || !properties.autoSave)) {
 			currentMapId = mapId;
 			currentIdea = idea;
 			isWarningShown = false;

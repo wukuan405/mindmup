@@ -96,7 +96,7 @@
               activityLog = console,
               s3FileSystem = new MM.S3FileSystem(new MM.EmbeddedMapUrlGenerator({'a': {prefix: 'http://<%= settings.s3_website %>/<%= settings.s3_upload_folder %>/'  , postfix: '.json'}, 'b': {prefix: 'https://<%= ENV['GOLD_BUCKET_NAME'] %>.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
               mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3FileSystem)),
-              mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, [''], ['']);
+              mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, ['']);
             jQuery('#container').mapWidget(activityLog, mapModel, isTouch, observable({}));
             jQuery('.close.attachment').click(function () {
               jQuery('.attachment').hide();
