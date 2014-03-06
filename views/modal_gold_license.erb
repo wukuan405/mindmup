@@ -1,7 +1,7 @@
   <div class="modal hide fade" id='modalGoldLicense'>
     <div class="modal-header">
 		<button data-event-type="x" data-category="Gold Click" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h3>MindMup Gold License</h3>
+      <h3>MindMup Gold</h3>
     </div>
     <div class="modal-body">
 
@@ -60,7 +60,7 @@
 				</div>
 			  </div>
 			 </form>
-			<p>Click on <strong>Remove License</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
+			<p class="hidden-phone">Click on <strong>Remove License</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
 		</div>
 
@@ -92,18 +92,18 @@
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, we are loading the subscription information for <strong><span data-mm-role="account-name"></span></strong></p>
 		</div>
 		<div data-mm-section="register">
-			<p>Please enter your desired account name and e-mail address to obtain a Gold license.
-			The account name will be shown in the URL of your maps, and must be between 4 and 20 characters long, start with a letter and
-			contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</p>
+      <p><span class="hidden-phone">Please enter your desired account name and e-mail address to obtain a Gold license.</span>
+      The account name <span class="hidden-phone">will be shown in the URL of your maps, and</span> must be 4-20 characters, start with a letter and
+      contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</span></p>
 			<form class="form-horizontal">
 			  <div class="control-group">
-				<label class="control-label" for="gold-register-account-name">Account name</label>
+				<label class="control-label hidden-phone" for="gold-register-account-name">Account name</label>
 				<div class="controls">
-				  <input type="text" id="gold-register-account-name" name="account-name"/>
+				  <input type="text" id="gold-register-account-name" placeholder="Account name" name="account-name"/>
 				</div>
 			  </div>
 			  <div class="control-group">
-				<label class="control-label" for="gold-register-email">E-mail</label>
+				<label class="control-label hidden-phone" for="gold-register-email">E-mail</label>
 				<div class="controls">
 				  <input type="text" id="gold-register-email" placeholder="youremail@server.com" name="email"/>
 				</div>
@@ -117,7 +117,7 @@
 				</div>
 			  </div>
 			</form>
-			<p>MindMup Gold currently costs $25 USD  yearly or $2.99 USD monthly per gigabyte of storage, and we accept all major credit cards. </p>
+			<p class="hidden-phone">MindMup Gold currently costs $25 USD  yearly or $2.99 USD monthly per gigabyte of storage, and we accept all major credit cards. </p>
 		</div>
 
 		<div data-mm-section="registration-fail">
@@ -139,24 +139,16 @@
 			<h4>You have successfully registered for MindMup Gold</h4>
 			<ul>
 			</ul>
-			<dl class="dl-horizontal">
+			<dl class="dl-horizontal hidden-phone">
 			  <dt>E-mail:</dt>
 			  <dd data-mm-role="license-email"></dd>
 			  <dt>Capacity:</dt>
 			  <dd data-mm-role="license-capacity"></dd>
-			  <dt>Valid until:</dt>
-			  <dd data-mm-role="license-expiry"></dd>
 			</dl>
 			<p>
-			The license has been sent to you by e-mail from <strong>contact@mindmup.com</strong>, so please ensure that this sender
-			is not blocked by your spam filters. Once you receive the e-mail, please click on <strong>Set License</strong> below to configure
+      The license has been sent to you by e-mail from <strong>contact@mindmup.com</strong><span class="hidden-phone">, so please ensure that this sender
+        is not blocked by your spam filters</span>. Once you receive the e-mail, please click on <strong>Set License</strong> below to configure
 			the current browser profile for Gold access.</p>
-
-			<p data-mm-role="license-has-grace-period">
-			You can use your license immediately, and have <strong data-mm-role="license-grace-period"></strong> to try it out and pay for it.
-			</p>
-			<p data-mm-role="license-has-grace-period">If, for any reason, you would not like to keep using Gold after the trial period, you do not need to take any action to cancel it - we will do it automatically. Note, however,
-			that any data stored on Gold will also be removed without a backup in that case. </p>
 		</div>
 	</div>
     <div class="modal-footer">
