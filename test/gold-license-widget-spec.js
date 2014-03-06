@@ -416,12 +416,11 @@ describe('Gold License Widget', function () {
 			registerDeferred.resolve({});
 			checkSectionShown('registration-success');
 		});
-		it('fills in license-capacity, grace-period, expiry, email and payment-url when registration succeeds', function () {
+		it('fills in license-capacity, grace-period, email and payment-url when registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
 				'grace-period': 'grace',
-				'expiry': 1388029193,
 				'email': 'em',
 				'payment-url': 'purl'
 			});
@@ -429,7 +428,6 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role=license-capacity]').text()).toEqual('cap');
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeTruthy();
 			expect(underTest.find('[data-mm-role=license-grace-period]').text()).toEqual('grace');
-			expect(underTest.find('[data-mm-role=license-expiry]').text()).toEqual('Thu Dec 26 2013');
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
 			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
