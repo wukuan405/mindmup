@@ -1,11 +1,11 @@
 /* global describe, it, expect, MM, beforeEach, jasmine, jQuery, spyOn, window, afterEach, _ */
 describe('MM.GoldApi', function () {
 	'use strict';
-	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy, goldLicenseManagerDeferred, resolveSpy, rejectSpy;
+	var goldLicenseManager, underTest, activityLog, oldFormData, ajaxDeferred, license, endSpy, goldLicenseManagerDeferred, resolveSpy, rejectSpy, commonPostArgs;
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
-
+		commonPostArgs = {'api_version': '2'};
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
 		goldLicenseManagerDeferred = jQuery.Deferred();
 		goldLicenseManager = {
@@ -40,14 +40,14 @@ describe('MM.GoldApi', function () {
 			execArgs = {'name': 'test_name'};
 			result = underTest.exec('entity/action', execArgs).then(resolved, rejected);
 		});
-		it('posts an AJAX request to the API url', function () {
+		it('posts an AJAX request to the API url, supplying the version', function () {
 			expect(jQuery.ajax).toHaveBeenCalled();
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/entity/action');
-			expect(ajaxPost.data.params).toEqual(execArgs);
+
+			expect(ajaxPost.data.params).toEqual(_.extend({}, execArgs, commonPostArgs));
 			expect(ajaxPost.type).toEqual('POST');
 		});
-
 		it('returns a pending promise, waiting on ajax to resolve', function () {
 			expect(result.state()).toBe('pending');
 		});
@@ -83,7 +83,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/license/subscription');
 			expect(ajaxPost.dataType).toEqual('json');
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license)}));
 		});
 	});
 	describe('cancelSubscription', function () {
@@ -93,7 +93,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/license/cancel_subscription');
 			expect(ajaxPost.dataType).toBeUndefined();
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license)});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license)}));
 		});
 	});
 	describe('register', function () {
@@ -103,7 +103,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/license/register');
 			expect(ajaxPost.dataType).toEqual('json');
-			expect(ajaxPost.data.params).toEqual({'to_email' : 'test_email', 'account_name' : 'test_name'});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'to_email' : 'test_email', 'account_name' : 'test_name'}));
 		});
 	});
 	describe('generateExportConfiguration', function () {
@@ -113,7 +113,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/export_config');
 			expect(ajaxPost.dataType).toEqual('json');
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'pdf'});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license), 'format': 'pdf'}));
 		});
 	});
 	describe('generateEchoConfiguration', function () {
@@ -123,7 +123,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/echo_config');
 			expect(ajaxPost.dataType).toEqual('json');
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'format': 'html', 'contenttype': 'text/html'});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license), 'format': 'html', 'contenttype': 'text/html'}));
 		});
 	});
 	describe('listFiles', function () {
@@ -231,7 +231,7 @@ describe('MM.GoldApi', function () {
 			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 			expect(ajaxPost.url).toEqual('API_URL/file/exists');
 			expect(ajaxPost.dataType).toBeUndefined();
-			expect(ajaxPost.data.params).toEqual({'license' : JSON.stringify(license), 'file_key': 'foo%20%3F%20mup.mup'});
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license), 'file_key': 'foo%20%3F%20mup.mup'}));
 		});
 	});
 

@@ -37,6 +37,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
 			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json'};
+		formData.append('api_version', '2');
 		if (args) {
 			_.each(args, function (value, key) {
 				formData.append(key, value);
