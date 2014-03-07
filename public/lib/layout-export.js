@@ -19,12 +19,25 @@ MM.LayoutExportController = function (mapModel, configurationGenerator, storageA
 				var fileId = exportConfig.s3UploadIdentifier;
 				storageApi.save(JSON.stringify(layout), exportConfig, {isPrivate: true}).then(
 					function () {
-						var resolve = function () {
-							activityLog.log(category, eventType + ' completed');
-							deferred.resolve(exportConfig.signedOutputUrl);
-						};
-						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped}).then(function () { reject('generation-error', fileId); });
-						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped}).then(resolve, function (reason) { reject(reason, fileId); });
+						var pollTimer = activityLog.timer(category, eventType + ':polling-completed'),
+							pollTimeoutTimer = activityLog.timer(category, eventType + ':polling-timeout'),
+							pollErrorTimer = activityLog.timer(category, eventType + ':polling-error'),
+							resolve = function () {
+								pollTimer.end();
+								activityLog.log(category, eventType + ' completed');
+								deferred.resolve(exportConfig.signedOutputUrl);
+							};
+						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped}).then(
+							function () {
+								pollErrorTimer.end();
+								reject('generation-error', fileId);
+							});
+						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped}).then(
+							resolve,
+							function (reason) {
+								pollTimeoutTimer.end();
+								reject(reason, fileId);
+							});
 					},
 					reject
 				);
