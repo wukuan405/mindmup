@@ -8,9 +8,9 @@ describe('LayoutExport', function () {
 					return call.args[0] === url;
 				});
 			};
-
 		beforeEach(function () {
-			var buildStorageApi = function () {
+			var timer = jasmine.createSpyObj('timer', ['end']),
+				buildStorageApi = function () {
 				var storageApi = {
 					deferred: {}, //jQuery.Deferred(),
 					poll: function (url) {
@@ -19,6 +19,7 @@ describe('LayoutExport', function () {
 						return deferred.promise();
 					}
 				};
+
 				storageApi.save = jasmine.createSpy('save');
 				storageApi.save.and.returnValue(
 					jQuery.Deferred().resolve().promise());
@@ -29,13 +30,13 @@ describe('LayoutExport', function () {
 			saveOptions = {isPrivate: true};
 			configurationGenerator = {};
 			mapModel = {};
-			activityLog = {};
+			activityLog = jasmine.createSpyObj('activityLog', ['log', 'timer']);
+			activityLog.timer.and.returnValue(timer);
 			currentLayout = { 'a': 'b' };
 			configurationGenerator.generateExportConfiguration = jasmine.createSpy('saveMap');
 			configurationGenerator.generateExportConfiguration.and.returnValue(
 				jQuery.Deferred().resolve(saveConfiguration).promise()
 			);
-			activityLog.log = jasmine.createSpy('log');
 
 			mapModel.getCurrentLayout = jasmine.createSpy('getCurrentLayout');
 			mapModel.getCurrentLayout.and.returnValue(currentLayout);
