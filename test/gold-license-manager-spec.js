@@ -1,7 +1,8 @@
 /* global describe, it, expect, MM, beforeEach, jasmine */
 describe('MM.GoldLicenseManager', function () {
 	'use strict';
-	var storage, underTest, listener;
+	var storage, underTest, listener,
+		validFormat = '{"version":"2","accountType":"mindmup-gold","account":"dave.local","signature":"s","expiry":"1419429344"}';
 	beforeEach(function () {
 		storage = { getItem: function (s) { return storage[s]; }, setItem: jasmine.createSpy('setItem') };
 		underTest = new MM.GoldLicenseManager(storage, 'license');
@@ -42,7 +43,7 @@ describe('MM.GoldLicenseManager', function () {
 		});
 	});
 	describe('storeLicense', function () {
-		var validFormat = '{"version":"2","accountType":"mindmup-gold","account":"dave.local","signature":"s","expiry":"1419429344"}';
+
 		it('should set the current license from a JSON string', function () {
 			var result;
 			result = underTest.storeLicense(validFormat);
@@ -73,12 +74,15 @@ describe('MM.GoldLicenseManager', function () {
 			expect(result).toBeFalsy();
 			expect(storage.setItem).not.toHaveBeenCalled();
 		});
+	});
+	describe('completeLicenseEntry', function () {
 		it('should resolve any pending deferred objects that asked for a license', function () {
 			var resolved, promise;
 			resolved = jasmine.createSpy();
 			promise = underTest.retrieveLicense().then(resolved);
+			storage.license = JSON.parse(validFormat);
 
-			underTest.storeLicense(validFormat);
+			underTest.completeLicenseEntry();
 
 			expect(promise.state()).toEqual('resolved');
 			expect(resolved).toHaveBeenCalledWith(JSON.parse(validFormat));

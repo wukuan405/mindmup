@@ -60,7 +60,7 @@
 				</div>
 			  </div>
 			 </form>
-			<p class="hidden-phone">Click on <strong>Remove License</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
+			<p class="hidden-phone">Click on <strong>Log Out</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
 		</div>
 
@@ -88,13 +88,17 @@
 			<p>You are currently subscribed  as <strong><span data-mm-role="account-name"></span></strong> with a <strong><span data-mm-role="subscription-name"></span></strong> billing cycle.</p>
 			<p>Your next  payment of <strong><span data-mm-role="renewal-price"></span></strong> will be automatically taken on <strong><span data-mm-role="expiry-date"></span></strong></p>
 		</div>
+		<div data-mm-section="payment-complete">
+			<p>Thank you for your payment. You are now ready to start using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong> with a <strong><span data-mm-role="subscription-name"></span></strong> billing cycle.</p>
+			<p>Your next  payment of <strong><span data-mm-role="renewal-price"></span></strong> will be automatically taken on <strong><span data-mm-role="expiry-date"></span></strong></p>
+		</div>
 		<div data-mm-section="loading-subscription">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, we are loading the subscription information for <strong><span data-mm-role="account-name"></span></strong></p>
 		</div>
 		<div data-mm-section="register">
       <p><span class="hidden-phone">Please enter your desired account name and e-mail address to obtain a Gold license.</span>
       The account name <span class="hidden-phone">will be shown in the URL of your maps, and</span> must be 4-20 characters, start with a letter and
-      contain only lowercase (latin) letters and numbers. The license will be sent to your e-mail.</span></p>
+      contain only lowercase (latin) letters and numbers.</span></p>
 			<form class="form-horizontal">
 			  <div class="control-group">
 				<label class="control-label hidden-phone" for="gold-register-account-name">Account name</label>
@@ -145,20 +149,21 @@
 			  <dt>Capacity:</dt>
 			  <dd data-mm-role="license-capacity"></dd>
 			</dl>
-			<p>
-      The license has been sent to you by e-mail from <strong>contact@mindmup.com</strong><span class="hidden-phone">, so please ensure that this sender
-        is not blocked by your spam filters</span>. Once you receive the e-mail, please click on <strong>Set License</strong> below to configure
-			the current browser profile for Gold access.</p>
+			<p>Please click on <strong>Proceed to payment</strong> and select a subscription using our secure payment page.</p>
 		</div>
 	</div>
     <div class="modal-footer">
+      <button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription license-details  expired-license invalid-license license-purchase-required" class="btn pull-left" tabstop="8">Log Out</button>
+      <button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
+	  
+	  
 	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign Up</button>
       <a data-category="Gold Click" data-event-type="Proceed to payment" target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>
-      <button data-category="Gold Click" data-event-type="Set License"  data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="no-license license-required invalid-license registration-success" class="btn btn-primary" tabstop="3">Set License</button>
+      <button data-category="Gold Click" data-event-type="Set License"  data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="no-license license-required invalid-license" class="btn btn-primary" tabstop="3">Set License</button>
       <button data-category="Gold Click" data-event-type="Save License" data-mm-role="save-license" data-mm-section="license-details" class="btn btn-primary" tabstop="3">Save License</button>
       <button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
       <button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
-      <button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn btn-success" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
+
 
       <button data-category="Gold Click" data-event-type="Change License" data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
 	  <input type="file" name="file" />
@@ -169,9 +174,9 @@
       </form>
 
       <button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
-      <button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription license-details  expired-license invalid-license license-purchase-required" class="btn btn-danger" tabstop="8">Remove License</button>
-      <button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="no-license license-required unauthorised-license registration-fail registration-progress register" class="btn" tabstop="9">Cancel</button>
-      <button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="view-license loading-subscription cancelled-subscription registration-success invalid-license license-server-unavailable  expired-license license-details license-purchase-required" class="btn" tabstop="10">Close</button>
+
+      <button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="no-license loading-subscription license-required unauthorised-license registration-fail registration-progress register" class="btn" tabstop="9">Cancel</button>
+      <button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="payment-complete view-license cancelled-subscription license-server-unavailable" class="btn" tabstop="10">Close</button>
     </div>
   </div>
 

@@ -13,6 +13,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="view-license"></span>' +
 					'<span data-mm-section="loading-subscription"></span>' +
 					'<span data-mm-section="cancelled-subscription"></span>' +
+					'<span data-mm-section="payment-complete"></span>' +
 					'<span data-mm-section="cancelling-subscription"></span>' +
 					'<span data-mm-role="expiry-date"></span>' +
 					'<span data-mm-role="subscription-name"></span>' +
@@ -61,6 +62,7 @@ describe('Gold License Widget', function () {
 		subscriptionDeferred,
 		cancelSubscriptionDeferred,
 		futureTs,
+		mockWindow,
 		checkSectionShown = function (sectionName) {
 			var visibleSections = [];
 			_.each(underTest.find('[data-mm-section]'), function (sectionDom) {
@@ -72,13 +74,9 @@ describe('Gold License Widget', function () {
 			expect(visibleSections).toEqual([sectionName]);
 		};
 	beforeEach(function () {
+		mockWindow = observable({});
 		futureTs = ((new Date()).getTime() + 100000) / 1000;
-		licenseManager = observable({
-			getLicense: jasmine.createSpy('getLicense'),
-			cancelLicenseEntry: jasmine.createSpy('cancelLicenseEntry'),
-			removeLicense: jasmine.createSpy('removeLicense'),
-			storeLicense: jasmine.createSpy('storeLicense')
-		});
+		licenseManager = observable(jasmine.createSpyObj('licenseManager', ['getLicense', 'cancelLicenseEntry', 'completeLicenseEntry', 'removeLicense', 'storeLicense']));
 		registerDeferred = jQuery.Deferred();
 		subscriptionDeferred = jQuery.Deferred();
 		cancelSubscriptionDeferred = jQuery.Deferred();
@@ -91,7 +89,7 @@ describe('Gold License Widget', function () {
 		fileReader = jasmine.createSpy('fileReaderWidget');
 		/*jshint camelcase: false */
 		jQuery.fn.file_reader_upload = fileReader;
-		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog);
+		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog, mockWindow);
 		fakeBootstrapModal(underTest);
 	});
 	afterEach(function () {
@@ -360,6 +358,21 @@ describe('Gold License Widget', function () {
 				subscriptionDeferred.reject('something else');
 				checkSectionShown('unauthorised-license');
 			});
+		});
+	});
+	describe('payment workflow', function () {
+		it('shows payment complete and completes license entry when a payment is triggered and the license is valid', function () {
+			mockWindow.dispatchEvent('message', {data: {goldApi: 'reload'}});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+
+			checkSectionShown('payment-complete');
+			expect(licenseManager.completeLicenseEntry).toHaveBeenCalled();
+		});
+		it('does not complete license entry if license is expired', function () {
+			mockWindow.dispatchEvent('message', {data: {goldApi: 'reload'}});
+			subscriptionDeferred.resolve({expiry: -1, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+
+			expect(licenseManager.completeLicenseEntry).not.toHaveBeenCalled();
 		});
 	});
 	describe('registration workflow', function () {

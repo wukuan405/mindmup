@@ -20,7 +20,7 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		return currentDeferred.promise();
 	};
 	this.storeLicense = function (licenseArg) {
-		var deferred = currentDeferred, license = licenseArg;
+		var license = licenseArg;
 		if (_.isString(licenseArg)) {
 			try {
 				license = JSON.parse(licenseArg);
@@ -31,12 +31,7 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		if (!validFormat(license)) {
 			return false;
 		}
-
 		storage.setItem(storageKey, license);
-		if (currentDeferred) {
-			currentDeferred = undefined;
-			deferred.resolve(license);
-		}
 		return true;
 	};
 	this.removeLicense = function () {
@@ -47,6 +42,13 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		if (currentDeferred) {
 			currentDeferred = undefined;
 			deferred.reject('user-cancel');
+		}
+	};
+	this.completeLicenseEntry = function () {
+		var deferred = currentDeferred;
+		if (currentDeferred) {
+			currentDeferred = undefined;
+			deferred.resolve(self.getLicense());
 		}
 	};
 };

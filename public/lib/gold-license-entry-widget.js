@@ -1,6 +1,7 @@
 /*global jQuery, window*/
-jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog) {
+jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget) {
 	'use strict';
+	messageTarget = messageTarget || window;
 	var self = this,
 		openFromLicenseManager = false,
 		hasAction = false,
@@ -14,6 +15,18 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			} else {
 				activityLog.log('Gold', action);
 			}
+		},
+		displaySubscription = function (subscription, sectionName) {
+			var expiryTs = subscription && subscription.expiry,
+				expiryDate = new Date(expiryTs * 1000),
+				renewalDescription = (expiryDate && expiryDate.toDateString()) || '',
+				license = licenseManager.getLicense(),
+				accountName = (license && license.account) || '';
+			showSection(sectionName);
+			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
+			self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
+			self.find('[data-mm-role~=subscription-name]').val(subscription.subscription).text(subscription.subscription);
+			self.find('[data-mm-role~=renewal-price]').val(subscription.renewalPrice).text(subscription.renewalPrice);
 		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
@@ -29,26 +42,21 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					}
 				},
 				showSubscription = function (subscription) {
-					var expiryTs = subscription && subscription.expiry,
-						expiryDate = new Date(expiryTs * 1000),
-						renewalDescription = (expiryDate && expiryDate.toDateString()) || '';
+					var expiryTs = subscription && subscription.expiry;
 					if (expiryTs === -1 || expiryTs === undefined)  {
 						failExpiry('license-purchase-required');
 					} else if (expiryTs === 0)  {
 						failExpiry('not-authenticated');
-					} else if (expiryDate && expiryDate < new Date()) {
+					} else if (expiryTs < Date.now() / 1000) {
 						if (currentSection === 'view-license' || currentSection === 'loading-subscription') {
 							showSection('expired-license');
 						}
 					} else {
 						if (subscription.subscription === 'cancelled') {
-							showSection('cancelled-subscription');
+							displaySubscription(subscription, 'cancelled-subscription');
 						} else {
-							showSection('view-license');
+							displaySubscription(subscription, 'view-license');
 						}
-						self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
-						self.find('[data-mm-role~=subscription-name]').val(subscription.subscription).text(subscription.subscription);
-						self.find('[data-mm-role~=renewal-price]').val(subscription.renewalPrice).text(subscription.renewalPrice);
 					}
 				},
 				accountName = (license && license.account) || '';
@@ -74,6 +82,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				hasAction = true;
 				if (openFromLicenseManager) {
 					self.modal('hide');
+					licenseManager.completeLicenseEntry();
 				} else {
 					showSection('view-license');
 					fillInFields();
@@ -157,10 +166,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		onWindowMessage = function (windowMessageEvt) {
 			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
 				audit('license-message', windowMessageEvt.data.goldApi);
-				if (licenseManager.getLicense()) {
-					showSection('view-license');
-					fillInFields();
-				}
+				goldApi.getSubscription().then(function (subscription) {
+					var expiryTs = subscription && subscription.expiry;
+					if (expiryTs > Date.now() / 1000) {
+						licenseManager.completeLicenseEntry();
+						displaySubscription(subscription, 'payment-complete');
+					}
+				});
 			}
 		};
 	self.find('form').submit(function () {return this.action; });
@@ -218,9 +230,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	fileInput.css('opacity', 0).hide();
 	/*jshint camelcase: false*/
 	fileInput.file_reader_upload(undefined, setLicense, function () {showSection('invalid-license'); }, ['txt']);
-
-	window.addEventListener('message', onWindowMessage, false);
-
+	messageTarget.addEventListener('message', onWindowMessage, false);
 	return self;
 };
 
