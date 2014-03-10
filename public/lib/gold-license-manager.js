@@ -1,4 +1,4 @@
-/* global MM, observable, jQuery */
+/* global MM, observable, jQuery, _ */
 MM.GoldLicenseManager = function (storage, storageKey) {
 	'use strict';
 	var self = this,
@@ -19,12 +19,14 @@ MM.GoldLicenseManager = function (storage, storageKey) {
 		self.dispatchEvent('license-entry-required');
 		return currentDeferred.promise();
 	};
-	this.storeLicense = function (licenseString) {
-		var deferred = currentDeferred, license;
-		try {
-			license = JSON.parse(licenseString);
-		} catch (e) {
-			return false;
+	this.storeLicense = function (licenseArg) {
+		var deferred = currentDeferred, license = licenseArg;
+		if (_.isString(licenseArg)) {
+			try {
+				license = JSON.parse(licenseArg);
+			} catch (e) {
+				return false;
+			}
 		}
 		if (!validFormat(license)) {
 			return false;

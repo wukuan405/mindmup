@@ -10,7 +10,8 @@ describe('MM.GoldApi', function () {
 		goldLicenseManagerDeferred = jQuery.Deferred();
 		goldLicenseManager = {
 			getLicense: jasmine.createSpy('getLicense').and.returnValue(license),
-			retrieveLicense: jasmine.createSpy('retrieveLicense').and.returnValue(goldLicenseManagerDeferred.promise())
+			retrieveLicense: jasmine.createSpy('retrieveLicense').and.returnValue(goldLicenseManagerDeferred.promise()),
+			storeLicense: jasmine.createSpy('storeLicense')
 		};
 
 		activityLog = { log: jasmine.createSpy(), timer: jasmine.createSpy()};
@@ -104,6 +105,13 @@ describe('MM.GoldApi', function () {
 			expect(ajaxPost.url).toEqual('API_URL/license/register');
 			expect(ajaxPost.dataType).toEqual('json');
 			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'to_email' : 'test_email', 'account_name' : 'test_name'}));
+		});
+		it('sets the license with the license manager if successful', function () {
+			underTest.register('test_name', 'test_email');
+
+			ajaxDeferred.resolve({'license': {'somekey': 'someval'}});
+
+			expect(goldLicenseManager.storeLicense).toHaveBeenCalledWith({'somekey': 'someval'});
 		});
 	});
 	describe('generateExportConfiguration', function () {

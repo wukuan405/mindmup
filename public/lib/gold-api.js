@@ -54,7 +54,17 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		return deferred.promise();
 	};
 	self.register = function (accountName, email) {
-		return self.exec('license/register', {'to_email': email, 'account_name' : accountName});
+		var result = jQuery.Deferred();
+		self.exec('license/register', {'to_email': email, 'account_name' : accountName})
+			.then(function (jsonResponse) {
+				if (jsonResponse.license) {
+					goldLicenseManager.storeLicense(jsonResponse.license);
+				}
+				result.resolve(jsonResponse);
+			},
+			result.reject,
+			result.notify);
+		return result.promise();
 	};
 	self.getSubscription = function () {
 		var license = goldLicenseManager.getLicense();

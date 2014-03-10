@@ -61,6 +61,18 @@ describe('MM.GoldLicenseManager', function () {
 			expect(result).toBeFalsy();
 			expect(storage.setItem).not.toHaveBeenCalled();
 		});
+		it('should accept an already parsed JSON object', function () {
+			var result;
+			result = underTest.storeLicense(JSON.parse(validFormat));
+			expect(result).toBeTruthy();
+			expect(storage.setItem).toHaveBeenCalledWith('license', JSON.parse(validFormat));
+		});
+		it('should reject parsed JSON that is not a license', function () {
+			var result;
+			result = underTest.storeLicense({a: 1});
+			expect(result).toBeFalsy();
+			expect(storage.setItem).not.toHaveBeenCalled();
+		});
 		it('should resolve any pending deferred objects that asked for a license', function () {
 			var resolved, promise;
 			resolved = jasmine.createSpy();
