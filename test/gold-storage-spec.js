@@ -114,7 +114,8 @@ describe('MM.GoldStorage', function () {
 					['map id is not set', 'b'],
 					// ['map id does not match this provider', 'p/jimbo/foo.mup'],
 					['mapid is for another user', 'b/jonny/foo.mup'],
-					['map is not in the provider format', 'a1jhkdshkfdshfkdsfhfd']
+					['map is not in the provider format', 'a1jhkdshkfdshfkdsfhfd'],
+					['map id is undefined (imported maps)', undefined]
 				], function (args) {
 					it(args[0], function () {
 						var resolveSpy = jasmine.createSpy('resolved');

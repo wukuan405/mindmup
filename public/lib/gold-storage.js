@@ -10,7 +10,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 		},
 		goldMapIdComponents = function (mapId) {
 			var mapIdComponents = mapId && mapId.split('/');
-			if (mapIdComponents && mapIdComponents.length < 3) {
+			if (!mapIdComponents || mapIdComponents.length < 3) {
 				return false;
 			}
 			if (!isRelatedPrefix(mapIdComponents[0])) {
