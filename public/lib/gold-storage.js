@@ -36,7 +36,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 			recognises: function (mapId) {
 				return mapId && mapId[0] === prefix;
 			},
-			description: description,
+			description: description || 'MindMup Gold',
 			saveMap: function (contentToSave, mapId, fileName, showAuthenticationDialog) {
 				return self.saveMap(prefix, contentToSave, mapId, fileName, showAuthenticationDialog);
 			},

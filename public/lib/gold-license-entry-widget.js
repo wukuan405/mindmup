@@ -63,10 +63,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
 			if (license) {
 				self.find('[data-mm-role~=license-text]').val(JSON.stringify(license));
-				if (currentSection === 'view-license' || currentSection === 'unauthorised-license') {
-					if (currentSection === 'view-license') {
-						showSection('loading-subscription');
-					}
+				if (currentSection === 'view-license') {// || currentSection === 'unauthorised-license') {
+					showSection('loading-subscription');
 					goldApi.getSubscription().then(showSubscription, failExpiry);
 				}
 			}  else {
