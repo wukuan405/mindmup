@@ -190,6 +190,65 @@ describe('MM.GoldApi', function () {
 			expect(resolveSpy).toHaveBeenCalledWith({x: 'a'}, license.account);
 		});
 	});
+	describe('getting an existing license ', function () {
+		beforeEach(function () {
+			spyOn(MM, 'onetimePassword').and.returnValue('justthisonce');
+		});
+		describe('requestCode', function () {
+			it('posts an AJAX request to the API url', function () {
+
+				underTest.requestCode('for_me');
+
+				expect(jQuery.ajax).toHaveBeenCalled();
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				expect(ajaxPost.url).toEqual('API_URL/license/request_code');
+				expect(ajaxPost.dataType).toBeUndefined();
+				expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'identifier' : 'for_me', 'one_time_pw': 'justthisonce'}));
+			});
+		});
+		describe('restoreLicenseWithCode', function () {
+			describe('when called after requestCode', function () {
+				beforeEach(function () {
+					underTest.requestCode('for_me');
+					MM.onetimePassword.and.returnValue('itsdifferent');
+					jQuery.ajax.calls.reset();
+				});
+				it('posts an AJAX request to the API url', function () {
+					underTest.restoreLicenseWithCode('itssecret');
+
+					expect(jQuery.ajax).toHaveBeenCalled();
+					var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+					expect(ajaxPost.url).toEqual('API_URL/license/request_license_using_code');
+					expect(ajaxPost.dataType).toEqual('json');
+					expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'identifier' : 'for_me', 'one_time_pw': 'justthisonce', 'code': 'itssecret'}));
+				});
+				it('sets the license with the license manager if successful', function () {
+					underTest.restoreLicenseWithCode('itssecret');
+
+					ajaxDeferred.resolve({'somekey': 'someval'});
+
+					expect(goldLicenseManager.storeLicense).toHaveBeenCalledWith({'somekey': 'someval'});
+				});
+				it('does not store license if rejected', function () {
+					underTest.restoreLicenseWithCode('itssecret');
+					ajaxDeferred.reject('ohdear');
+					expect(goldLicenseManager.storeLicense).not.toHaveBeenCalled();
+				});
+			});
+			it('rejects if not called after requestCode', function () {
+				var rejectWasCalled = false;
+				underTest.restoreLicenseWithCode('itssecret').then(
+					function () {
+						throw new Error('should not resolve');
+					},
+					function () {
+						rejectWasCalled = true;
+					}
+				);
+				expect(rejectWasCalled).toBeTruthy();
+			});
+		});
+	});
 	describe('fileUrl', function  () {
 		it('should return unsigned url immediately', function () {
 			underTest.fileUrl(true, 'jimmy', 'foo ? mup.mup', false).then(resolveSpy);

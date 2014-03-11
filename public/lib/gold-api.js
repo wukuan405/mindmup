@@ -2,6 +2,8 @@
 MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketName) {
 	'use strict';
 	var self = this,
+		currentOnetimePassword,
+		currentIdentifier,
 		LOG_CATEGORY = 'GoldApi',
 		apiError = function (serverResult) {
 			var recognisedErrors = ['not-authenticated', 'invalid-args', 'server-error', 'user-exists', 'email-exists'];
@@ -36,7 +38,7 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			},
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
 		var formData = new FormData(),
-			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json'};
+			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json', 'license/request_license_using_code': 'json'};
 		formData.append('api_version', '2');
 		if (args) {
 			_.each(args, function (value, key) {
@@ -81,6 +83,25 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 	self.generateEchoConfiguration = function (format, contentType) {
 		var license = goldLicenseManager.getLicense();
 		return self.exec('file/echo_config', {'license': JSON.stringify(license), 'format': format, 'contenttype': contentType});
+	};
+	self.requestCode = function (identifier) {
+		currentOnetimePassword = MM.onetimePassword();
+		currentIdentifier = identifier;
+		return self.exec('license/request_code', {'identifier': identifier, 'one_time_pw': currentOnetimePassword});
+	};
+	self.restoreLicenseWithCode = function (code) {
+		var deferred = jQuery.Deferred();
+		if (currentOnetimePassword && currentIdentifier) {
+			self.exec('license/request_license_using_code', {'identifier': currentIdentifier, 'one_time_pw': currentOnetimePassword, 'code': code}).then(
+				function (license) {
+					goldLicenseManager.storeLicense(license);
+					deferred.resolve();
+				},
+				deferred.reject);
+		} else {
+			deferred.reject('no-code-requested');
+		}
+		return deferred.promise();
 	};
 	self.listFiles = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
@@ -128,4 +149,13 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		}
 		return deferred.promise();
 	};
+};
+MM.onetimePassword = function () {
+	'use strict';
+	var s4 = function () {
+		var rand = (1 + Math.random());
+		return ((rand * 0x10000) || 0).toString(16).substring(1);
+	};
+
+	return s4() + '-' + s4();
 };

@@ -241,7 +241,41 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		} else {
 			self.find('#gold-register-email').focus();
 		}
-
+	});
+	self.find('[data-mm-role=kickoff-restore-license]').click(function () {
+		var identiferField = self.find('[data-mm-role=gold-account-identifier]'),
+			entered = identiferField.val();
+		if (entered && entered.trim()) {
+			identiferField.parents('div.control-group').removeClass('error');
+			showSection('sending-code');
+			goldApi.requestCode(entered.trim()).then(
+				function () {
+					showSection('code-sent');
+				},
+				function () {
+					showSection('sending-code-failed');
+				}
+			);
+		} else {
+			identiferField.parents('div.control-group').addClass('error');
+		}
+	});
+	self.find('[data-mm-role=restore-license-with-code]').click(function () {
+		var codeField = self.find('[data-mm-role=gold-access-code]'),
+			code = codeField.val();
+		if (code && code.trim()) {
+			showSection('sending-restore-license-code');
+			goldApi.restoreLicenseWithCode(code.trim()).then(
+				function () {
+					showSection('view-license');
+					fillInFields();
+				},
+				function () {
+					showSection('restore-code-failed');
+				});
+		} else {
+			codeField.parents('div.control-group').addClass('error');
+		}
 	});
 	licenseManager.addEventListener('license-entry-required', function () {
 		openFromLicenseManager = true;

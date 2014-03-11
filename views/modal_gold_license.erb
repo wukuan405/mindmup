@@ -14,9 +14,7 @@
 
 		</div>
 		<div data-mm-section="no-license license-required">
-
 			<p><i>Export, save and embed larger maps using MindMup Gold. </i></p>
-
 			<form class="form-horizontal">
 			<div class="control-group">
 				<label class="control-label" for="gold-account-identifer">Log in or sign up:</label>
@@ -27,22 +25,32 @@
 			</form>
 		</div>
 		<div data-mm-section="code-sent">
-			<p>We have sent a temporary access code to your e-mail. Please paste the code in the box below to log in</p>
-			<div class="control-group">
-
-				<div class="controls">
-					<input type="text" data-mm-role="gold-access code" placeholder="Access code"/>
+			<p>We have sent a temporary access code to your e-mail.</p>
+			<form class="form-horizontal">
+				<div class="control-group">
+					<label class="control-label" for="gold-access-code">Enter code from e-mail:</label>
+					<div class="controls">
+						<input type="text" data-mm-role="gold-access-code" id="gold-access-code" placeholder="Access code" />
+					</div>
 				</div>
-			</div>
+			</form>
+		</div>
+		<div data-mm-section="sending-restore-license-code">
+			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, your license is being restored</p>
+		</div>
+		<div data-mm-section="sending-code-failed">
+			<p class="alert alert-block alert-error">We could not find that email or username.</p>
+
+			<p> If you are a new user select <strong>I want to sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="sending-code">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, sending the access code to your e-mail</p>
 		</div>
-		<div data-mm-section="sending-code-failed">
-			  <p class="alert alert-block alert-error">We could not find that email or username.</p>
-
-			  <p> If you are a new user select <strong>I want to sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
+		<div data-mm-section="restore-code-failed">
+			<p class="alert alert-block alert-error">The code you entered was rejected.</p>
+			<p>If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
 		</div>
+
 		<div data-mm-section="unauthorised-license">
 		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.</p>
@@ -172,39 +180,35 @@
 	</div>
     <div class="modal-footer">
 	  <a target="_blank" href="http://blog.mindmup.com/p/mindmup-gold.html" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required" class="btn pull-left" tabstop="1"><i class="icon-question-sign"></i>&nbsp;More Info</a>
-      <button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription license-details  expired-license invalid-license license-purchase-required" class="btn pull-left" tabstop="8">Log Out</button>
-      <button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
-      <button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	  <button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription license-details  expired-license invalid-license license-purchase-required" class="btn pull-left" tabstop="8">Log Out</button>
+	  <button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
+	  <button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	  <button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
 
+	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">I have a Gold account</button>
 
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required" data-mm-role="show-section" class="btn btn-primary" data-mm-target-section="sending-code" tabstop="1">I have a Gold account</button>
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="sending-code" data-mm-role="show-section" class="btn btn-primary" data-mm-target-section="code-sent" tabstop="1">Go...</button>
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="sending-code" data-mm-role="show-section" class="btn btn-danger" data-mm-target-section="sending-code-failed" tabstop="1">Fail...</button>
+	<button data-category="Gold Click" data-event-type="Log In" data-mm-section="code-sent" data-mm-role="restore-license-with-code" class="btn btn-primary" tabstop="1">Log In</button>
+	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
 
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="code-sent" data-mm-role="show-section" class="btn btn-primary" data-mm-target-section="code-sent" tabstop="1">Log In</button>
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
+	<a data-category="Gold Click" data-event-type="Proceed to payment" target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>
+	<button data-category="Gold Click" data-event-type="Log In"  data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="xno-license xlicense-required invalid-license" class="btn btn-primary" tabstop="3">Log In</button>
+	<button data-category="Gold Click" data-event-type="Save License" data-mm-role="save-license" data-mm-section="license-details" class="btn btn-primary" tabstop="3">Save License</button>
+	<button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
+	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
 
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="xno-license xlicense-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign Up</button>
-      <a data-category="Gold Click" data-event-type="Proceed to payment" target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>
-      <button data-category="Gold Click" data-event-type="Log In"  data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="xno-license xlicense-required invalid-license" class="btn btn-primary" tabstop="3">Log In</button>
-      <button data-category="Gold Click" data-event-type="Save License" data-mm-role="save-license" data-mm-section="license-details" class="btn btn-primary" tabstop="3">Save License</button>
-      <button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
-      <button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
+	<button data-category="Gold Click" data-event-type="Change License" data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
+	<input type="file" name="file" />
 
+	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+	<form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
+		<input type="hidden" data-mm-role="license-text" name="license">
+	</form>
 
-      <button data-category="Gold Click" data-event-type="Change License" data-mm-role="upload" data-mm-role-touch="show-section" data-mm-target-section="license-details" data-mm-section="unauthorised-license" class="btn btn-primary" tabstop="5">Change License</button>
-	  <input type="file" name="file" />
+	<button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
 
-      <button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
-      <form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
-	<input type="hidden" data-mm-role="license-text" name="license">
-      </form>
-
-      <button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn" tabstop="7">&lt; Back</button>
-
-      <button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed" class="btn" tabstop="9">Cancel</button>
-      <button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="no-license payment-complete view-license cancelled-subscription license-server-unavailable" class="btn" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code" class="btn" tabstop="9">Cancel</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="no-license payment-complete view-license cancelled-subscription license-server-unavailable" class="btn" tabstop="10">Close</button>
     </div>
   </div>
 

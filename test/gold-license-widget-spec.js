@@ -12,6 +12,11 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="no-license"></span>' +
 					'<span data-mm-section="view-license"></span>' +
 					'<span data-mm-section="loading-subscription"></span>' +
+					'<span data-mm-section="code-sent"></span>' +
+					'<span data-mm-section="sending-code"></span>' +
+					'<span data-mm-section="sending-code-failed"></span>' +
+					'<span data-mm-section="sending-restore-license-code"></span>' +
+					'<span data-mm-section="restore-code-failed"></span>' +
 					'<span data-mm-section="cancelled-subscription"></span>' +
 					'<span data-mm-section="payment-complete"></span>' +
 					'<span data-mm-section="cancelling-subscription"></span>' +
@@ -20,12 +25,19 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="account-name"></span>' +
 					'<span data-mm-role="renewal-price"></span>' +
 					'<input type="text" data-mm-role="license-text"/>' +
+					'<div class="control-group" id="gold-account-identifier-group">' +
 					'<input type="text" data-mm-role="gold-account-identifier"/>' +
+					'</div>' +
+					'<div class="control-group" id="gold-access-code-group">' +
+					'<input type="text" data-mm-role="gold-access-code"/>' +
+					'</div>' +
 					'<textarea data-mm-role="license-text" >dirty</textarea>' +
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
 					'<button data-mm-role="kickoff-sign-up"/>' +
+					'<button data-mm-role="kickoff-restore-license"/>' +
+					'<button data-mm-role="restore-license-with-code"/>' +
 					'<button data-mm-role="cancel-subscription"/>' +
 					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
@@ -58,10 +70,12 @@ describe('Gold License Widget', function () {
 		underTest,
 		activityLog,
 		fileReader,
+		requestCodeDeferred,
 		goldApi,
 		registerDeferred,
 		subscriptionDeferred,
 		cancelSubscriptionDeferred,
+		restoreLicenseWithCodeDeferred,
 		futureTs,
 		mockWindow,
 		checkSectionShown = function (sectionName) {
@@ -81,10 +95,14 @@ describe('Gold License Widget', function () {
 		registerDeferred = jQuery.Deferred();
 		subscriptionDeferred = jQuery.Deferred();
 		cancelSubscriptionDeferred = jQuery.Deferred();
+		requestCodeDeferred = jQuery.Deferred();
+		restoreLicenseWithCodeDeferred = jQuery.Deferred();
 		goldApi = {
 			register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()),
 			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise()),
-			cancelSubscription: jasmine.createSpy('cancelSubscription').and.returnValue(cancelSubscriptionDeferred.promise())
+			cancelSubscription: jasmine.createSpy('cancelSubscription').and.returnValue(cancelSubscriptionDeferred.promise()),
+			requestCode: jasmine.createSpy('requestCode').and.returnValue(requestCodeDeferred.promise()),
+			restoreLicenseWithCode: jasmine.createSpy('restoreLicenseWithCode').and.returnValue(restoreLicenseWithCodeDeferred.promise())
 		};
 		activityLog = { log: jasmine.createSpy('log') };
 		fileReader = jasmine.createSpy('fileReaderWidget');
@@ -221,6 +239,90 @@ describe('Gold License Widget', function () {
 				expect(underTest.find('#gold-register-account-name').val()).toEqual('');
 				expect(underTest.find('#gold-register-email').val()).toEqual('');
 			});
+		});
+		describe('when kickoff-restore-license is clicked', function () {
+			beforeEach(function () {
+				underTest.modal('show');
+			});
+			it('moves to the sending-code section', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hello');
+
+				underTest.find('[data-mm-role=kickoff-restore-license]').click();
+
+				checkSectionShown('sending-code');
+			});
+			it('uses goldApi to request a code', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hello');
+
+				underTest.find('[data-mm-role=kickoff-restore-license]').click();
+
+				expect(goldApi.requestCode).toHaveBeenCalledWith('hello');
+			});
+			it('marks input as error if it is empty', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('');
+
+				underTest.find('[data-mm-role=kickoff-restore-license]').click();
+
+				checkSectionShown('no-license');
+				expect(goldApi.requestCode).not.toHaveBeenCalled();
+				expect(underTest.find('[data-mm-role=gold-account-identifier]').parents('.control-group').hasClass('error')).toBeTruthy();
+
+			});
+			describe('goldApi.promise result', function () {
+				beforeEach(function () {
+					underTest.find('[data-mm-role=gold-account-identifier]').val('hello');
+					underTest.find('[data-mm-role=kickoff-restore-license]').click();
+				});
+				it('moves to the code-sent block when goldApi.requestCode promise is resolved', function () {
+					requestCodeDeferred.resolve();
+					checkSectionShown('code-sent');
+				});
+				it('moves to the sending-code-failed block when goldApi.requestCode promise is rejected', function () {
+					requestCodeDeferred.reject();
+					checkSectionShown('sending-code-failed');
+				});
+			});
+
+		});
+		describe('when restore-license-with-code button is clicked', function () {
+			beforeEach(function () {
+				underTest.modal('show');
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hello');
+				underTest.find('[data-mm-role=kickoff-restore-license]').click();
+				requestCodeDeferred.resolve();
+
+			});
+			it('shows the logging in section', function () {
+				underTest.find('[data-mm-role=gold-access-code]').val('itissecret');
+				underTest.find('[data-mm-role=restore-license-with-code]').click();
+				checkSectionShown('sending-restore-license-code');
+			});
+			it('uses goldApi to restore the license', function () {
+				underTest.find('[data-mm-role=gold-access-code]').val('itissecret');
+				underTest.find('[data-mm-role=restore-license-with-code]').click();
+				expect(goldApi.restoreLicenseWithCode).toHaveBeenCalledWith('itissecret');
+			});
+			it('marks code field as being in error if it is blank', function () {
+				underTest.find('[data-mm-role=gold-access-code]').val('');
+				underTest.find('[data-mm-role=restore-license-with-code]').click();
+				expect(goldApi.restoreLicenseWithCode).not.toHaveBeenCalled();
+				expect(underTest.find('[data-mm-role=gold-access-code]').parents('.control-group').hasClass('error')).toBeTruthy();
+			});
+			describe('goldApi.promise result', function () {
+				beforeEach(function () {
+					underTest.find('[data-mm-role=gold-access-code]').val('itissecret');
+					underTest.find('[data-mm-role=restore-license-with-code]').click();
+				});
+				it('moves to the code-sent block when goldApi.requestCode promise is resolved', function () {
+					restoreLicenseWithCodeDeferred.resolve();
+					checkSectionShown('view-license');
+				});
+				it('moves to the sending-code-failed block when goldApi.requestCode promise is rejected', function () {
+					restoreLicenseWithCodeDeferred.reject();
+					checkSectionShown('restore-code-failed');
+				});
+			});
+
 		});
 		describe('when cancel-subscription button clicked', function () {
 			beforeEach(function () {
