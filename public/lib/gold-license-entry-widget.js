@@ -267,6 +267,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			showSection('sending-restore-license-code');
 			goldApi.restoreLicenseWithCode(code.trim()).then(
 				function () {
+					goldApi.getSubscription().then(function (subscription) {
+						var expiryTs = subscription && subscription.expiry;
+						if (expiryTs > Date.now() / 1000) {
+							licenseManager.completeLicenseEntry();
+						}
+					});
+
 					showSection('view-license');
 					fillInFields();
 				},

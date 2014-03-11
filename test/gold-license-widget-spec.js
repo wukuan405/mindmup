@@ -8,7 +8,6 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="license-purchase-required"></span>' +
 					'<span data-mm-section="expired-license"></span>' +
 					'<span data-mm-section="license-server-unavailable"></span>' +
-					'<span data-mm-section="license-details"></span>' +
 					'<span data-mm-section="no-license"></span>' +
 					'<span data-mm-section="view-license"></span>' +
 					'<span data-mm-section="loading-subscription"></span>' +
@@ -41,7 +40,7 @@ describe('Gold License Widget', function () {
 					'<button data-mm-role="cancel-subscription"/>' +
 					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
-					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="license-details"/>' +
+					'<button name="btntest" data-mm-role="show-section" data-mm-target-section="code-sent"/>' +
 					'<div data-mm-section="register">' +
 					'<form>' +
 					'<div class="control-group">' +
@@ -210,7 +209,7 @@ describe('Gold License Widget', function () {
 			underTest.modal('show');
 			underTest.find('[name=btntest]').click();
 			expect(underTest.is(':visible')).toBeTruthy();
-			checkSectionShown('license-details');
+			checkSectionShown('code-sent');
 		});
 		describe('when kickoff-sign-up button is clicked', function () {
 			beforeEach(function () {
@@ -612,7 +611,7 @@ describe('Gold License Widget', function () {
 		});
 		it('logs showing each section', function () {
 			underTest.find('[name=btntest]').click();
-			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-section', 'license-details');
+			expect(activityLog.log).toHaveBeenCalledWith('Gold', 'license-section', 'code-sent');
 		});
 	});
 });
