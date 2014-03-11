@@ -21,7 +21,7 @@
 			<div class="control-group">
 				<label class="control-label" for="gold-account-identifer">Log in or sign up:</label>
 				<div class="controls">
-					<input type="text" data-mm-role="account-identifier" id="gold-account-identifier" placeholder="Account name or e-mail"/>
+					<input type="text" data-mm-role="gold-account-identifier" id="gold-account-identifier" placeholder="Account name or e-mail"/>
 				</div>
 			</div>
 			</form>
@@ -31,7 +31,7 @@
 			<div class="control-group">
 
 				<div class="controls">
-					<input type="text" data-mm-role="account-identifier" placeholder="Access code" id="gold-access code"/>
+					<input type="text" data-mm-role="gold-access code" placeholder="Access code"/>
 				</div>
 			</div>
 		</div>
@@ -43,31 +43,6 @@
 
 			  <p> If you are a new user select <strong>I want to sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
 		</div>
-		<div data-mm-section="no-license3">
-			<button class="btn button-success">Sign up for Mindmup Gold</button>
-			<p>..or log into Mindmup gold:</p>
-			<div class="control-group">
-				<label class="control-label" for="gold-view-account-identifer">Account name or Email</label>
-				<div class="controls">
-					<input type="text" data-mm-role="account-identifier" readonly="true" id="gold-view-account-identifier"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="gold-code">Security Code</label>
-				<div class="controls">
-					<input type="text" data-mm-role="sec-code" readonly="true" id="sec-dode"/>
-					<button class="btn">Send me a code</button>
-				</div>
-			</div>
-
-		</div>
-		<p data-mm-section="no-license1">
-
-		</p>
-		<div data-mm-section="no-license license-required">
-
-		</div>
-
 		<div data-mm-section="unauthorised-license">
 		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.</p>
@@ -208,7 +183,7 @@
 	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="sending-code" data-mm-role="show-section" class="btn btn-danger" data-mm-target-section="sending-code-failed" tabstop="1">Fail...</button>
 
 	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="code-sent" data-mm-role="show-section" class="btn btn-primary" data-mm-target-section="code-sent" tabstop="1">Log In</button>
-	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
+	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
 
 	  <button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="xno-license xlicense-required" data-mm-role="show-section" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign Up</button>
       <a data-category="Gold Click" data-event-type="Proceed to payment" target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>

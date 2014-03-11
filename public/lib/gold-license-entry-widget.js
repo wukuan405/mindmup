@@ -1,4 +1,4 @@
-/*global jQuery, window*/
+/*global jQuery, window, _*/
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget) {
 	'use strict';
 	messageTarget = messageTarget || window;
@@ -186,11 +186,16 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		audit('license-show');
 		hasAction = false;
 		var license = licenseManager.getLicense();
+		self.find('input[type=text]').val('');
 		showSection(initialSection(license, openFromLicenseManager));
 		fillInFields();
 	});
 	self.on('shown', setFileUploadButton);
-
+	self.on('shown', function () {
+		if (self.find('[data-mm-role=gold-account-identifier]').is(':visible')) {
+			self.find('[data-mm-role=gold-account-identifier]').focus();
+		}
+	});
 
 	self.on('hidden', function () {
 		if (!hasAction) {
@@ -219,6 +224,24 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				showSection('view-license');
 			}
 		);
+	});
+	self.find('button[data-mm-role=kickoff-sign-up]').click(function () {
+		var entered = self.find('[data-mm-role=gold-account-identifier]').val(),
+			isEmail = _.include(entered, '@');
+		if (isEmail) {
+			self.find('#gold-register-account-name').val('');
+			self.find('#gold-register-email').val(entered);
+		} else {
+			self.find('#gold-register-account-name').val(entered);
+			self.find('#gold-register-email').val('');
+		}
+		showSection('register');
+		if (isEmail) {
+			self.find('#gold-register-account-name').focus();
+		} else {
+			self.find('#gold-register-email').focus();
+		}
+
 	});
 	licenseManager.addEventListener('license-entry-required', function () {
 		openFromLicenseManager = true;

@@ -19,11 +19,13 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="subscription-name"></span>' +
 					'<span data-mm-role="account-name"></span>' +
 					'<span data-mm-role="renewal-price"></span>' +
-					'<input type="text" data-mm-role="license-text"></span>' +
+					'<input type="text" data-mm-role="license-text"/>' +
+					'<input type="text" data-mm-role="gold-account-identifier"/>' +
 					'<textarea data-mm-role="license-text" >dirty</textarea>' +
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="kickoff-sign-up"/>' +
 					'<button data-mm-role="cancel-subscription"/>' +
 					'<button data-mm-role="save-license"/>' +
 					'<button data-mm-role="register">Register</button>' +
@@ -41,7 +43,6 @@ describe('Gold License Widget', function () {
 					'</div>' +
 					'</form>' +
 					'</div>' +
-					'<span data-mm-section="register"></span>' +
 					'<span data-mm-section="registration-fail"><span class="alert"><span data-mm-role="email-exists"></span><span data-mm-role="network-error"></span></span></span>' +
 					'<span data-mm-section="registration-progress"></span>' +
 					'<span data-mm-section="registration-success">' +
@@ -192,6 +193,34 @@ describe('Gold License Widget', function () {
 			underTest.find('[name=btntest]').click();
 			expect(underTest.is(':visible')).toBeTruthy();
 			checkSectionShown('license-details');
+		});
+		describe('when kickoff-sign-up button is clicked', function () {
+			beforeEach(function () {
+				underTest.modal('show');
+			});
+			it('moves to the register section', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hello');
+				underTest.find('[data-mm-role=kickoff-sign-up]').click();
+				checkSectionShown('register');
+			});
+			it('populates the email field of the register section if the enetered value was an email', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hello@there');
+				underTest.find('[data-mm-role=kickoff-sign-up]').click();
+				expect(underTest.find('#gold-register-email').val()).toEqual('hello@there');
+				expect(underTest.find('#gold-register-account-name').val()).toEqual('');
+			});
+			it('populates the usename field of the registration section if the entered value is not an email', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('hellothere');
+				underTest.find('[data-mm-role=kickoff-sign-up]').click();
+				expect(underTest.find('#gold-register-account-name').val()).toEqual('hellothere');
+				expect(underTest.find('#gold-register-email').val()).toEqual('');
+			});
+			it('leaves both fields blank if nothing is supplied', function () {
+				underTest.find('[data-mm-role=gold-account-identifier]').val('');
+				underTest.find('[data-mm-role=kickoff-sign-up]').click();
+				expect(underTest.find('#gold-register-account-name').val()).toEqual('');
+				expect(underTest.find('#gold-register-email').val()).toEqual('');
+			});
 		});
 		describe('when cancel-subscription button clicked', function () {
 			beforeEach(function () {
