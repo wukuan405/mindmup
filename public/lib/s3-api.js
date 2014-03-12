@@ -46,7 +46,7 @@ MM.S3Api = function () {
 		}).then(deferred.resolve, saveFailed);
 		return deferred.promise();
 	};
-	self.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 20000};
+	self.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 30000};
 	self.poll = function (signedListUrl, options) {
 		var sleepTimeoutId,
 			timeoutId,
