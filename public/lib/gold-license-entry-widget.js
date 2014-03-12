@@ -4,7 +4,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	messageTarget = messageTarget || window;
 	var self = this,
 		openFromLicenseManager = false,
-		hasAction = false,
 		remove = self.find('[data-mm-role~=remove]'),
 		fileInput = self.find('input[type=file]'),
 		uploadButton = self.find('[data-mm-role=upload]'),
@@ -77,7 +76,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		setLicense = function (licenseText) {
 			audit('license-set');
 			if (licenseManager.storeLicense(licenseText)) {
-				hasAction = true;
 				if (openFromLicenseManager) {
 					self.modal('hide');
 					licenseManager.completeLicenseEntry();
@@ -184,7 +182,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	});
 	self.on('show', function () {
 		audit('license-show');
-		hasAction = false;
 		var license = licenseManager.getLicense();
 		self.find('input[type=text]').val('');
 		showSection(initialSection(license, openFromLicenseManager));
@@ -198,15 +195,12 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	});
 
 	self.on('hidden', function () {
-		if (!hasAction) {
-			licenseManager.cancelLicenseEntry();
-		}
+		licenseManager.cancelLicenseEntry();
 		remove.show();
 		openFromLicenseManager = false;
 	});
 	remove.click(function () {
 		licenseManager.removeLicense();
-		hasAction = true;
 		fillInFields();
 		showSection('no-license');
 	});
