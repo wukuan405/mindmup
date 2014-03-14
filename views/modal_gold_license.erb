@@ -179,10 +179,11 @@
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 	<button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn pull-left" tabstop="7"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	  <a target="_blank" href="http://blog.mindmup.com/p/mindmup-gold.html" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;More Info</a>
-	  <button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription expired-license invalid-license license-purchase-required unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
-	  <button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
-	  <button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<a target="_blank" href="http://blog.mindmup.com/p/mindmup-gold.html" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license loading-subscription  cancelled-subscription expired-license invalid-license license-purchase-required unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
+	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription">Cancel Subscription</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Change Card" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="form-submit payment-type-block" data-mm-form="#change-card-form">Change Card</button>
 
 
 	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">I have a Gold account</button>
@@ -198,6 +199,9 @@
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 	<form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
+		<input type="hidden" data-mm-role="license-text" name="license">
+	</form>
+	<form id="change-card-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/change_card">
 		<input type="hidden" data-mm-role="license-text" name="license">
 	</form>
 
