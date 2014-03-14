@@ -23,6 +23,9 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="subscription-name"></span>' +
 					'<span data-mm-role="account-name"></span>' +
 					'<span data-mm-role="renewal-price"></span>' +
+					'<div data-mm-role="payment-type-block">' +
+					'<span data-mm-role="payment-type"></span>' +
+					'</div>' +
 					'<input type="text" data-mm-role="license-text"/>' +
 					'<div class="control-group" id="gold-account-identifier-group">' +
 					'<input type="text" data-mm-role="gold-account-identifier"/>' +
@@ -409,7 +412,17 @@ describe('Gold License Widget', function () {
 			underTest.modal('show');
 			expect(underTest.find('span[data-mm-role~=renewal-price]').text()).toEqual('1 million dollars mwahahaha');
 		});
-
+		it('fills in anything with payment-type and shows the payment-type-block when there is a payment type', function () {
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 year', renewalPrice: '1 million dollars mwahahaha', 'paymentType': 'VISA ...1234 Expiration: 02/2024'});
+			underTest.modal('show');
+			expect(underTest.find('[data-mm-role=payment-type-block]').is(':visible')).toBeTruthy();
+			expect(underTest.find('[data-mm-role=payment-type]').text()).toEqual('VISA ...1234 Expiration: 02/2024');
+		});
+		it('hides the payment-type-block when there is no payment type', function () {
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 year', renewalPrice: '1 million dollars mwahahaha'});
+			underTest.modal('show');
+			expect(underTest.find('[data-mm-role=payment-type-block]').is(':visible')).toBeFalsy();
+		});
 		it('fills in anything with the data-mm-role=license-text with the current license text formatted as JSON', function () {
 			underTest.modal('show');
 			expect(underTest.find('input[data-mm-role~=license-text]').val()).toBe('{"account":"test-acc"}');

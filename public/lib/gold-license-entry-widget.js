@@ -26,6 +26,12 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
 			self.find('[data-mm-role~=subscription-name]').val(subscription.subscription).text(subscription.subscription);
 			self.find('[data-mm-role~=renewal-price]').val(subscription.renewalPrice).text(subscription.renewalPrice);
+			if (subscription.paymentType) {
+				self.find('[data-mm-role~=payment-type-block]').show();
+				self.find('[data-mm-role~=payment-type]').text(subscription.paymentType);
+			} else {
+				self.find('[data-mm-role~=payment-type-block]').hide();
+			}
 		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
