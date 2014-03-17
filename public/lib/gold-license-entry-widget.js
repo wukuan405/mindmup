@@ -25,7 +25,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			self.find('[data-mm-role~=subscription-name]').val(subscription.subscription).text(subscription.subscription);
 			self.find('[data-mm-role~=renewal-price]').val(subscription.renewalPrice).text(subscription.renewalPrice);
 			if (subscription.paymentType) {
-				self.find('[data-mm-role~=payment-type-block]').show();
+				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-type-block]').show();
 				self.find('[data-mm-role~=payment-type]').text(subscription.paymentType);
 			} else {
 				self.find('[data-mm-role~=payment-type-block]').hide();
@@ -91,6 +91,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		},
 		regSuccess = function (apiResponse) {
 			/*jshint sub: true*/
+			var license = licenseManager.getLicense(),
+				account = (license && license.account) || apiResponse['email'];
 			self.find('[data-mm-role=license-capacity]').text(apiResponse['capacity']);
 			if (apiResponse['license']) {
 				self.find('[data-mm-role~=license-text]').val(apiResponse['license']);
@@ -102,6 +104,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				self.find('[data-mm-role=license-has-grace-period]').hide();
 			}
 			self.find('[data-mm-role=license-email]').text(apiResponse['email']);
+
+			self.find('[data-mm-role=license-account]').text(account);
 			self.find('[data-mm-role=license-payment-url]').attr('href', apiResponse['payment-url']);
 			showSection('registration-success');
 		},
