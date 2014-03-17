@@ -27,6 +27,7 @@ configure do
   set :google_analytics_account, ENV["GOOGLE_ANALYTICS_ACCOUNT"]
   set :s3_website,ENV['S3_WEBSITE']
   set :base_url, ENV['SITE_URL'] || "/"
+  set :embed_base_url, ENV['EMBED_URL'] || settings.base_url
   set :s3_key_id, ENV['S3_KEY_ID']
   set :s3_form_expiry, (60*60*24*30)
   set :s3_bucket_name, ENV['S3_BUCKET_NAME']
