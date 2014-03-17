@@ -1,4 +1,4 @@
-/*global $, _, jQuery, document, MM, window, sessionStorage */
+/*global $, _, jQuery,, MM, window*/
 
 
 
@@ -305,7 +305,19 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		return sendRequest('/repos/' + repository + '/branches', branchParser);
 	};
 	self.getFiles = function (componentPath) {
-		return sendRequest(componentPathToUrl(componentPath));
+		var deferred = jQuery.Deferred();
+		sendRequest(componentPathToUrl(componentPath)).then(
+			deferred.resolve,
+			function(reason) {
+				if (reason === 'not-found') {
+					deferred.resolve([]);
+				} else {
+					deferred.reject(reason);
+				}
+			},
+			deferred.notify
+		);
+		return deferred.promise();
 	};
 	self.getOrgs = function () {
 		var orgParser = function (githubData) {

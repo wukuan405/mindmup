@@ -111,7 +111,7 @@ describe('Github integration', function () {
 				expect(rejected).toHaveBeenCalledWith('not-authenticated');
 				expect(sessionStorage.github_auth_token).toBeFalsy();
 			});
-			it('rejects with not-found and does not clears session auth if ajax error is 404', function () {
+			it('rejects with not-found and does not clear session auth if ajax error is 404', function () {
 				spyOn(jQuery, 'ajax').and.returnValue(jQuery.Deferred().reject({status: 404, statusText: 'Pink'}));
 				underTest.loadFile({repo: 'r', path: '/test.mup', branch: 'bbb'}).then(done, rejected);
 				expect(rejected).toHaveBeenCalledWith('not-found');
@@ -372,6 +372,19 @@ describe('Github integration', function () {
 						headers : { Authorization : 'bearer x' }
 					});
 					expect(done).toHaveBeenCalledWith(dirList);
+				});
+				it('resolves with an empty list in case of 404', function () {
+					fakeXhr.status = 404;
+					ajaxCall.reject(fakeXhr, 404);
+					underTest.getFiles({repo: 'repo1', branch: 'branch1', path: 'path1'}).then(done, rejected);
+					expect(done).toHaveBeenCalledWith([]);
+				});
+				it('resolves 403 as usual', function () {
+					fakeXhr.status = 403;
+					ajaxCall.reject(fakeXhr, 403);
+					underTest.getFiles({repo: 'repo1', branch: 'branch1', path: 'path1'}).then(done, rejected);
+					expect(rejected).toHaveBeenCalledWith('not-authenticated');
+
 				});
 			});
 			describe('getOrgs', function () {
