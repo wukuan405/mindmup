@@ -118,6 +118,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		regSuccess = function (apiResponse) {
 			/*jshint sub: true*/
 			self.find('[data-mm-role=license-capacity]').text(apiResponse['capacity']);
+			if (apiResponse['license']) {
+				self.find('[data-mm-role~=license-text]').val(apiResponse['license']);
+			}
 			if (apiResponse['grace-period']) {
 				self.find('[data-mm-role=license-grace-period]').text(apiResponse['grace-period']);
 				self.find('[data-mm-role=license-has-grace-period]').show();
@@ -172,7 +175,12 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					var expiryTs = subscription && subscription.expiry;
 					if (expiryTs > Date.now() / 1000) {
 						licenseManager.completeLicenseEntry();
-						displaySubscription(subscription, 'payment-complete');
+						if (currentSection === 'view-license') {
+							displaySubscription(subscription, 'view-license');
+						} else {
+							displaySubscription(subscription, 'payment-complete');
+						}
+
 					}
 				});
 			}

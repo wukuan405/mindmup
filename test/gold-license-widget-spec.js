@@ -511,6 +511,13 @@ describe('Gold License Widget', function () {
 			checkSectionShown('payment-complete');
 			expect(licenseManager.completeLicenseEntry).toHaveBeenCalled();
 		});
+		it('stays on view-license if that was the previous section, such as when card is updated', function () {
+			licenseManager.getLicense.and.returnValue({a: 1});
+			underTest.modal('show');
+			mockWindow.dispatchEvent('message', {data: {goldApi: 'reload'}});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+			checkSectionShown('view-license');
+		});
 		it('does not complete license entry if license is expired', function () {
 			mockWindow.dispatchEvent('message', {data: {goldApi: 'reload'}});
 			subscriptionDeferred.resolve({expiry: -1, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
@@ -572,19 +579,21 @@ describe('Gold License Widget', function () {
 			registerDeferred.resolve({});
 			checkSectionShown('registration-success');
 		});
-		it('fills in license-capacity, grace-period, email and payment-url when registration succeeds', function () {
+		it('fills in license-capacity, grace-period, email, license-text and payment-url when registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
 				'grace-period': 'grace',
 				'email': 'em',
-				'payment-url': 'purl'
+				'payment-url': 'purl',
+				'license': 'new license'
 			});
 			checkSectionShown('registration-success');
 			expect(underTest.find('[data-mm-role=license-capacity]').text()).toEqual('cap');
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeTruthy();
 			expect(underTest.find('[data-mm-role=license-grace-period]').text()).toEqual('grace');
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
+			expect(underTest.find('[data-mm-role=license-text]').val()).toEqual('new license');
 			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
 		it('hides grace period wording if license does not have grace period because expiry is -1', function () {
@@ -609,7 +618,6 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
 
 		});
-
 	});
 
 	describe('event logging', function () {
