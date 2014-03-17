@@ -5,8 +5,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	var self = this,
 		openFromLicenseManager = false,
 		remove = self.find('[data-mm-role~=remove]'),
-		fileInput = self.find('input[type=file]'),
-		uploadButton = self.find('[data-mm-role=upload]'),
 		currentSection,
 		audit = function (action, label) {
 			if (label) {
@@ -79,35 +77,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				self.find('[data-mm-role~=renewal-price]').val('').text('');
 			}
 		},
-		setLicense = function (licenseText) {
-			audit('license-set');
-			if (licenseManager.storeLicense(licenseText)) {
-				if (openFromLicenseManager) {
-					self.modal('hide');
-					licenseManager.completeLicenseEntry();
-				} else {
-					showSection('view-license');
-					fillInFields();
-				}
-			} else {
-				showSection('invalid-license');
-			}
-		},
-		setFileUploadButton = function () {
-			var firstVisibleUpload = uploadButton.filter(':visible').first();
-			if (firstVisibleUpload.length > 0) {
-				fileInput.show().css('opacity', 0).css('position', 'absolute').offset(firstVisibleUpload.offset()).width(firstVisibleUpload.outerWidth())
-					.height(firstVisibleUpload.outerHeight());
-			} else {
-				fileInput.hide();
-			}
-		},
 		showSection = function (sectionName) {
 			currentSection = sectionName;
 			audit('license-section', sectionName);
 			self.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').hide();
 			self.find('[data-mm-section~=' + sectionName + ']').show();
-			setFileUploadButton();
 		},
 		initialSection = function (hasLicense, wasEntryRequired) {
 			if (wasEntryRequired) {
@@ -190,10 +164,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		var id = jQuery(this).data('mm-form');
 		jQuery(id).submit();
 	});
-	self.find('[data-mm-role=save-license]').click(function () {
-		var licenseText = self.find('textarea[data-mm-role=license-text]').val();
-		setLicense(licenseText);
-	});
 	self.on('show', function () {
 		audit('license-show');
 		var license = licenseManager.getLicense();
@@ -201,7 +171,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		showSection(initialSection(license, openFromLicenseManager));
 		fillInFields();
 	});
-	self.on('shown', setFileUploadButton);
 	self.on('shown', function () {
 		if (self.find('[data-mm-role=gold-account-identifier]').is(':visible')) {
 			self.find('[data-mm-role=gold-account-identifier]').focus();
@@ -297,9 +266,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		self.modal('show');
 	});
 	self.modal({keyboard: true, show: false});
-	fileInput.css('opacity', 0).hide();
 	/*jshint camelcase: false*/
-	fileInput.file_reader_upload(undefined, setLicense, function () {showSection('invalid-license'); }, ['txt']);
 	messageTarget.addEventListener('message', onWindowMessage, false);
 	return self;
 };

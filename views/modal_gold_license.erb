@@ -194,8 +194,6 @@
 	<button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
 	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
 
-	<input type="file" name="file" />
-
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 	<form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
 		<input type="hidden" data-mm-role="license-text" name="license">
