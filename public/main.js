@@ -147,6 +147,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel);
+				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 
 			};
 		jQuery.fn.colorPicker.defaults.colors = [

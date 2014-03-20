@@ -1,4 +1,4 @@
-/*global jQuery, MM, observable, setTimeout */
+/*global jQuery, MM, observable, setTimeout, _ */
 MM.Alert = function () {
 	'use strict';
 	var self = this, lastId = 1;
@@ -21,13 +21,14 @@ jQuery.fn.alertWidget = function (alert) {
 		alert.addEventListener('shown', function (id, message, detail, type) {
 			type = type || 'info';
 			detail = detail || '';
-			element.append(
-				'<div class="alert fade in alert-' + type + ' alert-no-' + id + '">' +
+			if (_.isString(message)) {
+				message = jQuery('<strong>' + message + '</strong>' + '&nbsp;' + detail);
+			}
+			jQuery('<div class="alert fade in">' +
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
-					'<strong>' + message + '</strong>' +
-					'&nbsp;' + detail +
-					'</div>'
-			);
+					'</div>')
+				.addClass('alert-' + type + ' alert-no-' + id)
+				.prepend(message).appendTo(element);
 		});
 		alert.addEventListener('hidden', function (id) {
 			element.find('.alert-no-' + id).remove();

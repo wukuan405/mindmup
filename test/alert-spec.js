@@ -53,6 +53,18 @@ describe('alertWidget', function () {
 
 		expect(element.find('.alert :contains("Message 123")').length).toBe(1);
 	});
+	it('should use a dom element as content and preserve dom handlers', function () {
+		element.alertWidget(alert);
+
+		var clickSpy = jasmine.createSpy('click'),
+			dom = $('<a>Bongo</a>').click(clickSpy).appendTo('<div>');
+
+		alert.dispatchEvent('shown', 123, dom, undefined, 'success');
+		element.find('a').click();
+
+		expect(element.find('.alert :contains("Bongo")').length).toBe(1);
+		expect(clickSpy).toHaveBeenCalled();
+	});
 
 	it('should hide alert when hidden event is dispatched by the alert model', function () {
 		element.alertWidget(alert);
