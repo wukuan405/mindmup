@@ -28,13 +28,11 @@ jQuery.fn.saveWidget = function (mapController) {
 			}
 			element.find('[data-mm-role=currentrepo]').removeClass(repoClasses).addClass('repo repo-' + repository);
 		};
-	$(window).keydown(function (evt) {
-		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey)) {
-			if (!autoSave && mapChanged) {
-				mapController.publishMap(repository);
-			}
-			evt.preventDefault();
+	$(window).keydown('ctrl+s meta+s', function (evt) {
+		if (!autoSave && mapChanged) {
+			mapController.publishMap(repository);
 		}
+		evt.preventDefault();
 	});
 	element.find('[data-mm-role=publish]').add('a[data-mm-repository]', element).click(function () {
 		mapController.publishMap($(this).attr('data-mm-repository') || repository);
