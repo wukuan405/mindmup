@@ -577,3 +577,6 @@ body .modal.huge {
 #modalMeasuresSheet .modal-footer a {
 	margin-right:20px; margin-left:20px; line-height: 30px;
 }
+.measures-sheet .input-append.navbar-form button {
+  margin-top: 5px !important;
+}

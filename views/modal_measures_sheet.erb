@@ -1,10 +1,33 @@
-<div class="modal huge hide fade" id="modalMeasuresSheet">
+<div class="modal huge hide fade measures-sheet" id="modalMeasuresSheet">
 	<div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 	  <h3>Measurements</h3>
 
 	</div>
 	<div class="modal-body">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <ul class="nav">
+          <li>
+              <form class="navbar-form input-append pull-left">
+                <input type="text" data-mm-role="measure-to-add" class="span2" placeholder="Measurement name" tabindex="2"/>
+                <button type="submit" class="btn"><i class="icon-plus-sign"></i><span class="hidden-phone">&nbsp;Add&nbsp;Measure</span></button>
+              </form>
+            </li>
+            <li class="divider-vertical hidden-phone"></li>
+          </ul>
+          <ul class="nav pull-right">
+            <li class="divider-vertical hidden-phone"></li>
+            <li class="hidden-phone">
+              <a href="#" tabindex="4" data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="measures" data-mm-extension="txt"><i class="icon-download-alt"></i>&nbsp;Download</a>
+              </li>
+              <li class="divider-vertical hidden-phone"></li>
+            <li class="hidden-phone">
+            <a href="http://blog.mindmup.com/p/measures.html" target="_blank"><i class="icon-info-sign"></i>&nbsp;Help</a>
+            </li>
+          </ul>
+        </div>
+    </div>
 		<table data-mm-role="measurements-table" class="table table-striped">
 			<thead>
 				<tr>
@@ -30,7 +53,7 @@
 			<div style="display:table-cell; vertical-align:middle; padding-left:20%; padding-right:20%;">
 				<div class="alert alert-info alert-block">
 				<h4>Add some measures</h4>
-				<p>At the moment, your map has no associated measures. Start by adding some measures by using the <strong>Add Measure</strong> field in the lower left corner of this window. You
+				<p>At the moment, your map has no associated measures. Start by adding some measures by using the <strong>Add Measure</strong> field in the upper right corner of this window. You
 				will then be able to assign measurement values to your map nodes. For more information on how to use this feature, see our
 				<a href="http://blog.mindmup.com/p/measures.html" target="_blank">Measures documentation page</a>.
 			</div>
@@ -38,14 +61,8 @@
 		</div>
 	</div>
 	<div class="modal-footer">
-		<form class="input-append pull-left">
-	    		<input type="text" data-mm-role="measure-to-add" tabindex="2"/>
-	    		<button type="submit" class="btn btn-primary">Add Measure</button>
-		</form>
-		<a href="http://blog.mindmup.com/p/measures.html" target="_blank" class="pull-left">Learn how to use</a>
-		<button class="btn" tabindex="3"
-		data-mm-role="remote-export" data-mm-target="#formExport" data-mm-format="measures" data-mm-extension="txt"
-		><i class="icon-download-alt"></i>&nbsp;Download</button>
+
+
 
 		
 		<button class="btn" tabindex="4" data-dismiss="modal" >Close</button>
