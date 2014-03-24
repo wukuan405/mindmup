@@ -132,11 +132,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			return measuresModel.validate(value);
 		}).numericTotaliser();
 
-		element.on('shown', function () {
-			element.find('[data-mm-role=measure-to-add]').focus();
-			element.find('[data-mm-role=measurements-table] td').first().focus();
-		});
-		element.on('show', function () {
+		element.parent().on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();
 			summaryContainer.children('[data-mm-role=summary-template]').remove();
 			var measures = measuresModel.getMeasures();
@@ -169,18 +165,12 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.addEventListener('measureAdded', onMeasureAdded);
 			measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
 		});
-		element.on('hide', function () {
+		element.parent().on('hide', function () {
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
 			measuresModel.removeFilter();
 		});
-		element.modal({keyboard: true, show: false});
-
-		measuresModel.addEventListener('measuresEditRequested', function () {
-			element.modal('show');
-		});
-
 
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {
 			measuresModel.addMeasure(addMeasureInput.val());
@@ -188,4 +178,5 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			return false;
 		});
 	});
+
 };

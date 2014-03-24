@@ -3668,7 +3668,7 @@ MAPJS.pngExport = function (idea) {
 	});
 	return deferred.promise();
 };
-/*global _, jQuery, Kinetic, MAPJS, window, document, $*/
+/*global _, jQuery, Kinetic, MAPJS, window, document, $, MutationObserver*/
 jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController) {
 	'use strict';
 	return this.each(function () {
@@ -3778,6 +3778,14 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageInsert
 		setStageDimensions();
 		stage.setX(0.5 * stage.getWidth());
 		stage.setY(0.5 * stage.getHeight());
+
+		new MutationObserver(function (mutations) {
+			setStageDimensions();
+			stage.setX(0.5 * stage.getWidth());
+			stage.setY(0.5 * stage.getHeight());
+			stage.draw();
+		}).observe(element[0], {attributes: true});
+
 		jQuery(window).bind('orientationchange resize', setStageDimensions);
 		element.on('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); return false; });
 		element.on('mousedown touch', function (e) {

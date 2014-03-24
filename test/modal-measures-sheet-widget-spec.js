@@ -1,4 +1,4 @@
-/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, fakeBootstrapModal, observable, spyOn*/
+/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
 describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
@@ -39,8 +39,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
-		underTest.modal('hide');
-		fakeBootstrapModal(underTest);
+		underTest.trigger('hide');
 	});
 	afterEach(function () {
 		underTest.detach();
@@ -59,7 +58,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				{id: 1,				title: 'tom'},
 				{id: 2,				title: 'mike'}
 			]);
-			underTest.modal('show');
+			underTest.trigger('show');
 		});
 		it('shows the no-measures div instead of the table', function () {
 			expect(underTest.find('[data-mm-role=measurements-table]').css('display')).toEqual('none');
@@ -72,17 +71,13 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		});
 	});
 	describe('listening for measureModel Events', function () {
-		it('only subscribes to measuresEditRequested before show', function () {
-			expect(measuresModel.addEventListener.calls.count()).toBe(1);
-			expect(measuresModel.addEventListener).toHaveBeenCalledWith('measuresEditRequested', jasmine.any(Function));
-		});
 		describe('when shown', function () {
 			beforeEach(function () {
 				measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue([]);
 				measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([]);
 
 				measuresModel.addEventListener.calls.reset();
-				underTest.modal('show');
+				underTest.trigger('show');
 			});
 			it('subscribes to measureValueChanged, measureAdded, measureRemoved when shown', function () {
 				expect(measuresModel.addEventListener.calls.count()).toBe(3);
@@ -91,7 +86,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureRemoved', jasmine.any(Function));
 			});
 			it('when hidden again measureValueChanged, measureAdded, measureRemoved are unsubscribed', function () {
-				underTest.modal('hide');
+				underTest.trigger('hide');
 				expect(measuresModel.listeners('measureValueChanged')).toEqual([]);
 				expect(measuresModel.listeners('measureAdded')).toEqual([]);
 				expect(measuresModel.listeners('measureRemoved')).toEqual([]);
@@ -107,7 +102,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				{id: 1,				title: 'tom',	values: { 'Cost': 200, 'Profit': 300 }},
 				{id: 2,				title: 'mike is long',	values: { 'Profit': 22 }}
 			]);
-			underTest.modal('show');
+			underTest.trigger('show');
 		});
 		it('shows a table with measurements in the first row, keeping any non template elements', function () {
 			expect(underTest.find('[data-mm-role=measurements-table]').css('display')).not.toEqual('none');
@@ -202,13 +197,13 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		});
 		describe('when reloaded', function () {
 			beforeEach(function () {
-				underTest.modal('hide');
+				underTest.trigger('hide');
 				measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue(['Profit', 'Fun']);
 				measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([
 					{id: '77.session1', title: 'ron',	values: { 'Fun': 100 }},
 					{id: 3,				title: 'non',	values: { 'Profit': 22 }}
 				]);
-				underTest.modal('show');
+				underTest.trigger('show');
 			});
 			it('clears out previous measures before adding new ones', function () {
 				var headerRow = underTest.find('thead tr');
