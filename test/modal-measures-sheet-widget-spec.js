@@ -44,12 +44,6 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 	afterEach(function () {
 		underTest.detach();
 	});
-	it('shows itself when the measureModel dispatches a measuresEditRequested event', function () {
-		measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue([]);
-		measuresModel.getMeasurementValues = jasmine.createSpy('measurementValues').and.returnValue([]);
-		measuresModel.dispatchEvent('measuresEditRequested');
-		expect(underTest.is(':visible')).toBeTruthy();
-	});
 	describe('when loaded from a map with no measures', function () {
 		beforeEach(function () {
 			measuresModel.getMeasures = jasmine.createSpy('getMeasures').and.returnValue([]);

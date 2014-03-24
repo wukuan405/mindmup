@@ -103,12 +103,6 @@ describe('MM.MeasuresModel', function () {
 
 	});
 	describe('editWithFilter', function () {
-		it('should dispatch a measuresEditRequested event', function () {
-			var listener = jasmine.createSpy('listener');
-			underTest.addEventListener('measuresEditRequested', listener);
-			underTest.editWithFilter();
-			expect(listener).toHaveBeenCalled();
-		});
 		it('sets filter with node ids', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
 			underTest.editWithFilter(MM.MeasuresModel.filterByIds([1, 121]));
@@ -119,17 +113,10 @@ describe('MM.MeasuresModel', function () {
 		});
 	});
 	describe('removeFilter', function () {
-		var listener;
 		beforeEach(function () {
-			listener = jasmine.createSpy('listener');
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			underTest.addEventListener('measuresEditRequested', listener);
 			underTest.editWithFilter(MM.MeasuresModel.filterByIds([1, 121]));
-			listener.calls.reset();
 			underTest.removeFilter();
-		});
-		it('should not dispatch a measuresEditRequested event', function () {
-			expect(listener).not.toHaveBeenCalled();
 		});
 		it('returns entire map when measurements are retrieved', function () {
 			expect(underTest.getMeasurementValues()).toEqual([
@@ -139,7 +126,6 @@ describe('MM.MeasuresModel', function () {
 				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
 			]);
 		});
-
 	});
 
 	describe('getMeasurementValues', function () {

@@ -86,7 +86,6 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 	};
 	self.editWithFilter = function (newFilter) {
 		filter = newFilter;
-		self.dispatchEvent('measuresEditRequested');
 	};
 	self.getMeasurementValues = function () {
 		if (!activeContent) {
@@ -170,6 +169,18 @@ MM.MeasuresModel.filterByIds = function (ids) {
 	'use strict';
 	return function (idea) {
 		return _.include(ids, idea.id);
+	};
+};
+
+MM.MeasuresModel.ActivatedNodesFilter = function (mapModel) {
+	'use strict';
+	var self = jQuery(this);
+
+	self.filter = function () {
+		var ids = mapModel.getActivatedNodeIds();
+		return function (idea) {
+			return _.include(ids, idea.id);
+		};
 	};
 };
 
