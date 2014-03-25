@@ -218,19 +218,30 @@ MM.MeasuresModel.ActivatedNodesFilter = function (mapModel) {
 
 jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresModel, splittableController) {
 	'use strict';
-	var toggle = 0,
-		splits = [MM.SplittableController.COLUMN_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.NO_SPLIT];
 	measuresModel.addEventListener('measureEditing', function (isEditing) {
 		mapModel.setInputEnabled(!isEditing);
 	});
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
+			current = MM.SplittableController.NO_SPLIT,
+			calcSplit = function () {
+				if (element.innerHeight() > element.innerWidth()) {
+					return MM.SplittableController.ROW_SPLIT;
+				} else {
+					return MM.SplittableController.COLUMN_SPLIT;
+				}
+			},
 			showModal = function () {
 				if (mapModel.getInputEnabled()) {
-					measuresModel.editWithFilter(new MM.MeasuresModel.ActivatedNodesFilter(mapModel));
-					splittableController.split(splits[toggle]);
-					toggle++;
-					toggle = toggle % 3;
+					var nextSplit = MM.SplittableController.NO_SPLIT;
+					if (current === MM.SplittableController.NO_SPLIT) {
+						nextSplit = calcSplit();
+						measuresModel.editWithFilter(new MM.MeasuresModel.ActivatedNodesFilter(mapModel));
+					} else {
+						measuresModel.removeFilter();
+					}
+					splittableController.split(nextSplit);
+					current = nextSplit;
 				}
 			};
 
