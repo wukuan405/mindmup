@@ -610,11 +610,10 @@ body .modal.huge {
   -moz-box-shadow: 0 1px 10px rgba(0,0,0,0.1);
   box-shadow: 0 1px 10px rgba(0,0,0,0.1);
   overflow: scroll;
-
 }
-#optionalPane.column-split {
+.column-split #optionalPane{
   border-left:1px solid #d4d4d4;
 }
-#optionalPane.row-split {
+.row-split #optionalPane{
   border-top:1px solid #d4d4d4;
 }

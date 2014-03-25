@@ -119,6 +119,22 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					jQuery(idea).children().eq(col).remove();
 				});
 			},
+			buildMeasureTable = function () {
+				measurementContainer.children('[data-mm-role=measurement-template]').remove();
+				summaryContainer.children('[data-mm-role=summary-template]').remove();
+				var measures = measuresModel.getMeasures();
+				if (measures && measures.length > 0) {
+					measurementsTable.show();
+					noMeasuresDiv.hide();
+				} else {
+					measurementsTable.hide();
+					noMeasuresDiv.show();
+				}
+				_.each(measures, function (m) {
+					appendMeasure(m);
+				});
+				buildMeasureRows(measures);
+			},
 			focused = false,
 			buildMeasureRows = function (measures) {
 				ideaContainer.children('[data-mm-role=idea-template]').remove();
@@ -174,31 +190,19 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			}
 		});
 		element.parent().on('show', function () {
-			measurementContainer.children('[data-mm-role=measurement-template]').remove();
-			summaryContainer.children('[data-mm-role=summary-template]').remove();
-			var measures = measuresModel.getMeasures();
-			if (measures && measures.length > 0) {
-				measurementsTable.show();
-				noMeasuresDiv.hide();
-			} else {
-				measurementsTable.hide();
-				noMeasuresDiv.show();
-			}
-			_.each(measures, function (m) {
-				appendMeasure(m);
-			});
-			buildMeasureRows(measures);
+			buildMeasureTable();
+			measuresModel.addEventListener('startFromScratch', buildMeasureTable);
 			measuresModel.addEventListener('measureRowsChanged', onMeasureRowsChanged);
 			measuresModel.addEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.addEventListener('measureAdded', onMeasureAdded);
 			measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
 		});
 		element.parent().on('hide', function () {
+			measuresModel.removeEventListener('startFromScratch', buildMeasureTable);
 			measuresModel.removeEventListener('measureRowsChanged', onMeasureRowsChanged);
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
-			measuresModel.removeFilter();
 		});
 
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {

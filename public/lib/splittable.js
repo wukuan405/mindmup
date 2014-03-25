@@ -1,9 +1,31 @@
-/*global MM, jQuery, observable*/
-MM.SplittableController = function () {
+/*global MM, jQuery, observable, _*/
+MM.SplittableController = function (element) {
 	'use strict';
-	observable(this);
-	this.split = function (position) {
+	var self = observable(this),
+		allPositions = [MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT],
+		calcSplit = function () {
+			if (element.innerHeight() > element.innerWidth()) {
+				return MM.SplittableController.ROW_SPLIT;
+			} else {
+				return MM.SplittableController.COLUMN_SPLIT;
+			}
+		};
+	self.split =	 function (position) {
+		element.removeClass(allPositions.join(' ')).addClass(position);
 		this.dispatchEvent('split', position);
+	};
+	self.currentSplit = function () {
+		var bodyPosition = _.find(allPositions, function (position) {
+			return element.hasClass(position);
+		});
+		return bodyPosition || MM.SplittableController.NO_SPLIT;
+	};
+	self.toggle = function () {
+		if (self.currentSplit() === MM.SplittableController.NO_SPLIT) {
+			self.split(calcSplit());
+		} else {
+			self.split(MM.SplittableController.NO_SPLIT);
+		}
 	};
 };
 MM.SplittableController.NO_SPLIT = 'no-split';
@@ -16,7 +38,9 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 		defaultArea = element.find('[data-mm-role=default]'),
 		optionalArea = element.find('[data-mm-role=optional]'),
 		doSplit = function (position) {
-			var optionalAreaCss, defaultAreaCss, wasVisible;
+			var optionalAreaCss,
+				defaultAreaCss,
+				wasVisible;
 			if (position === MM.SplittableController.COLUMN_SPLIT) {
 				optionalAreaCss = {
 					'top': minTop,
@@ -69,7 +93,6 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 			wasVisible = optionalArea.is(':visible');
 			defaultArea.css(defaultAreaCss);
 			optionalArea.css(optionalAreaCss);
-			optionalArea.removeClass([MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT].join(' ')).addClass(position);
 			if (optionalArea.is(':visible') && !wasVisible) {
 				optionalArea.trigger('show');
 			} else if (!optionalArea.is(':visible') && wasVisible) {
@@ -77,6 +100,6 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 			}
 		};
 	splittableController.addEventListener('split', doSplit);
-	doSplit(MM.SplittableController.NO_SPLIT);
+	doSplit(splittableController.currentSplit());
 	return element;
 };

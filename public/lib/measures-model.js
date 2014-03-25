@@ -1,5 +1,5 @@
 /*global MM, _, observable, jQuery*/
-MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) {
+MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, defaultFilter) {
 	'use strict';
 	var self = observable(this),
 		activeContent,
@@ -82,6 +82,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		activeContent = content;
 		measures = getActiveContentMeasures();
+		self.dispatchEvent('startFromScratch');
 		activeContent.addEventListener('changed', onActiveContentChange);
 	});
 	self.editingMeasure = function (isEditing) {
@@ -182,6 +183,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		filter = undefined;
 	};
+	self.editWithFilter(defaultFilter);
 };
 MM.MeasuresModel.filterByIds = function (ids) {
 	'use strict';
@@ -223,28 +225,12 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 	});
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
-			current = MM.SplittableController.NO_SPLIT,
-			calcSplit = function () {
-				if (element.innerHeight() > element.innerWidth()) {
-					return MM.SplittableController.ROW_SPLIT;
-				} else {
-					return MM.SplittableController.COLUMN_SPLIT;
-				}
-			},
-			showModal = function () {
-				if (mapModel.getInputEnabled()) {
-					var nextSplit = MM.SplittableController.NO_SPLIT;
-					if (current === MM.SplittableController.NO_SPLIT) {
-						nextSplit = calcSplit();
-						measuresModel.editWithFilter(new MM.MeasuresModel.ActivatedNodesFilter(mapModel));
-					} else {
-						measuresModel.removeFilter();
-					}
-					splittableController.split(nextSplit);
-					current = nextSplit;
+			toggleMeasures = function (force) {
+				if (force || mapModel.getInputEnabled()) {
+					splittableController.toggle();
 				}
 			};
 
-		element.keydown(keyStroke, showModal).find('[data-mm-role=activatedNodesMeasureSheet]').click(showModal);
+		element.keydown(keyStroke, toggleMeasures).find('[data-mm-role=activatedNodesMeasureSheet]').click(toggleMeasures.bind(element, true));
 	});
 };

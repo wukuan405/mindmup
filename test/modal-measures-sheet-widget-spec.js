@@ -74,7 +74,8 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				underTest.trigger('show');
 			});
 			it('subscribes to measureValueChanged, measureAdded, measureRemoved when shown', function () {
-				expect(measuresModel.addEventListener.calls.count()).toBe(4);
+				expect(measuresModel.addEventListener.calls.count()).toBe(5);
+				expect(measuresModel.addEventListener).toHaveBeenCalledWith('startFromScratch', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureRowsChanged', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureValueChanged', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureAdded', jasmine.any(Function));
@@ -86,7 +87,6 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				expect(measuresModel.listeners('measureValueChanged')).toEqual([]);
 				expect(measuresModel.listeners('measureAdded')).toEqual([]);
 				expect(measuresModel.listeners('measureRemoved')).toEqual([]);
-				expect(measuresModel.removeFilter).toHaveBeenCalled();
 			});
 		});
 	});
