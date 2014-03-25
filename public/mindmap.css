@@ -58,6 +58,13 @@ body {
 	width: 120px;
 	cursor: move;
 }
+
+@media (max-width: 1024px) {
+  .hidden-tablet-landscape {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .hidden-tablet-portrait {
     display: none !important;
