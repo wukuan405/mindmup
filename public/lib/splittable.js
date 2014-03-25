@@ -1,4 +1,4 @@
-/*global MM, jQuery, console, observable*/
+/*global MM, jQuery, observable*/
 MM.SplittableController = function () {
 	'use strict';
 	observable(this);
@@ -76,7 +76,6 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 				optionalArea.trigger('hide');
 			}
 		};
-	element.css('padding-top', minTop);
 	splittableController.addEventListener('split', doSplit);
 	doSplit(MM.SplittableController.NO_SPLIT);
 	return element;

@@ -599,7 +599,6 @@ body .modal.huge {
 #modalMeasuresSheet {
   margin: 5px 5px 5px 5px;
   border-left: 1px;
-  height: 100%;
   overflow: visible;
 }
 #modalMeasuresSheet .table-container {
