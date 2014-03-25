@@ -35,7 +35,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		};
 	beforeEach(function () {
 		measuresModel = observable(jasmine.createSpyObj('measuresModel',
-			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter']
+			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter', 'editingMeasure']
 		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
@@ -74,13 +74,15 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 				underTest.trigger('show');
 			});
 			it('subscribes to measureValueChanged, measureAdded, measureRemoved when shown', function () {
-				expect(measuresModel.addEventListener.calls.count()).toBe(3);
+				expect(measuresModel.addEventListener.calls.count()).toBe(4);
+				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureRowsChanged', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureValueChanged', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureAdded', jasmine.any(Function));
 				expect(measuresModel.addEventListener).toHaveBeenCalledWith('measureRemoved', jasmine.any(Function));
 			});
 			it('when hidden again measureValueChanged, measureAdded, measureRemoved are unsubscribed', function () {
 				underTest.trigger('hide');
+				expect(measuresModel.listeners('measureRowsChanged')).toEqual([]);
 				expect(measuresModel.listeners('measureValueChanged')).toEqual([]);
 				expect(measuresModel.listeners('measureAdded')).toEqual([]);
 				expect(measuresModel.listeners('measureRemoved')).toEqual([]);

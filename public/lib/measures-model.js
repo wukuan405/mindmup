@@ -6,6 +6,9 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		measures = [],
 		latestMeasurementValues = [],
 		filter,
+		onFilterChanged = function () {
+			self.dispatchEvent('measureRowsChanged');
+		},
 		getActiveContentMeasures = function () {
 			var value = activeContent && activeContent.getAttr(configAttributeName);
 			if (!_.isArray(value)) {
@@ -81,11 +84,20 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		measures = getActiveContentMeasures();
 		activeContent.addEventListener('changed', onActiveContentChange);
 	});
+	self.editingMeasure = function (isEditing) {
+		self.dispatchEvent('measureEditing', isEditing);
+	};
 	self.getMeasures = function () {
 		return measures.slice(0);
 	};
 	self.editWithFilter = function (newFilter) {
+		if (filter) {
+			self.removeFilter();
+		}
 		filter = newFilter;
+		if (filter && filter.addEventListener) {
+			filter.addEventListener('filteredRowsChanged', onFilterChanged);
+		}
 	};
 	self.getMeasurementValues = function () {
 		if (!activeContent) {
@@ -93,7 +105,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		var result = [];
 		activeContent.traverse(function (idea) {
-			if (!filter || filter(idea)) {
+			if (!filter || filter.predicate(idea)) {
 				result.push({
 					id: idea.id,
 					title: idea.title,
@@ -147,7 +159,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		}
 		data.push(['Name'].concat(measures));
 		activeContent.traverse(function (idea) {
-			if (!filter || filter(idea)) {
+			if (!filter || filter.predicate(idea)) {
 				data.push(
 					[idea.title].concat(_.map(measures,
 							function (measure) {
@@ -162,25 +174,44 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController) 
 		return data;
 	};
 	self.removeFilter = function () {
+		if (filter && filter.cleanup) {
+			filter.cleanup();
+		}
+		if (filter && filter.removeEventListener) {
+			filter.removeEventListener('filteredRowsChanged', onFilterChanged);
+		}
 		filter = undefined;
 	};
 };
 MM.MeasuresModel.filterByIds = function (ids) {
 	'use strict';
-	return function (idea) {
-		return _.include(ids, idea.id);
+	return {
+		predicate: function (idea) {
+			return _.include(ids, idea.id);
+		}
 	};
 };
 
 MM.MeasuresModel.ActivatedNodesFilter = function (mapModel) {
 	'use strict';
-	var self = jQuery(this);
-
-	self.filter = function () {
-		var ids = mapModel.getActivatedNodeIds();
-		return function (idea) {
-			return _.include(ids, idea.id);
-		};
+	var self = observable(this),
+		ids = mapModel.getActivatedNodeIds(),
+		onFilteredResultsChange = function (force) {
+			var newIds = mapModel.getActivatedNodeIds();
+			if (force || ids !== newIds) {
+				ids = newIds;
+				self.dispatchEvent('filteredRowsChanged');
+			}
+		},
+		onFilteredResultsChangeForced = onFilteredResultsChange.bind(self, true);
+	mapModel.addEventListener('activatedNodesChanged', onFilteredResultsChange);
+	mapModel.addEventListener('nodeTitleChanged', onFilteredResultsChangeForced);
+	self.predicate = function (idea) {
+		return _.include(ids, idea.id);
+	};
+	self.cleanup = function () {
+		mapModel.removeEventListener('activatedNodesChanged', onFilteredResultsChange);
+		mapModel.removeEventListener('nodeTitleChanged', onFilteredResultsChangeForced);
 	};
 };
 
@@ -189,11 +220,14 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 	'use strict';
 	var toggle = 0,
 		splits = [MM.SplittableController.COLUMN_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.NO_SPLIT];
+	measuresModel.addEventListener('measureEditing', function (isEditing) {
+		mapModel.setInputEnabled(!isEditing);
+	});
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			showModal = function () {
 				if (mapModel.getInputEnabled()) {
-					measuresModel.editWithFilter(MM.MeasuresModel.filterByIds(mapModel.getActivatedNodeIds()));
+					measuresModel.editWithFilter(new MM.MeasuresModel.ActivatedNodesFilter(mapModel));
 					splittableController.split(splits[toggle]);
 					toggle++;
 					toggle = toggle % 3;

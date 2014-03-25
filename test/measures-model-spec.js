@@ -38,6 +38,7 @@ describe('MM.MeasuresModel', function () {
 		};
 		activeContent = MAPJS.content(JSON.parse(JSON.stringify(content)));
 	});
+
 	describe('getRawData', function () {
 		it('returns an empty array when no active content', function () {
 			expect(underTest.getRawData()).toEqual([]);
@@ -54,7 +55,7 @@ describe('MM.MeasuresModel', function () {
 		});
 		it('retrieves only filtered data in a two-dim array when filter is used', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			underTest.editWithFilter(function (idea) { return idea.id === 121; });
+			underTest.editWithFilter({predicate: function (idea) { return idea.id === 121; }});
 			expect(underTest.getRawData(true)).toEqual([
 				['Name', 'Speed', 'Efficiency'],
 				['one twenty one', undefined, -1]
@@ -110,6 +111,11 @@ describe('MM.MeasuresModel', function () {
 				{id: 1, title: 'one', values: {'Speed': 100}},
 				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
 			]);
+		});
+		it('listens for changes to filtered rows', function () {
+			var filter = jasmine.createSpyObj('filter', ['predicate', 'addEventListener']);
+			underTest.editWithFilter(filter);
+			expect(filter.addEventListener).toHaveBeenCalledWith('filteredRowsChanged', jasmine.any(Function));
 		});
 	});
 	describe('removeFilter', function () {

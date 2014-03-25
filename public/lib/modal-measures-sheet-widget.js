@@ -118,20 +118,61 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				_.each(ideaContainer.children(), function (idea) {
 					jQuery(idea).children().eq(col).remove();
 				});
+			},
+			focused = false,
+			buildMeasureRows = function (measures) {
+				ideaContainer.children('[data-mm-role=idea-template]').remove();
+				_.each(measuresModel.getMeasurementValues(), function (mv) {
+					var newIdea = ideaTemplate.clone().appendTo(ideaContainer).attr('data-mm-nodeid', mv.id);
+					newIdea.find('[data-mm-role=idea-title]').text(function () {
+						var truncLength = jQuery(this).data('mm-truncate');
+						if (truncLength && mv.title.length > truncLength) {
+							return mv.title.substring(0, truncLength) + '...';
+						}
+						return mv.title;
+					});
+					_.each(measures, function (measure) {
+						appendMeasureValue(newIdea, mv.values[measure], mv.id, measure);
+					});
+				});
+				element.find('[data-mm-role=measurements-table]').trigger('change');
+				element.find('[data-mm-role=measurements-table] td').on('focus', function () {
+					if (!focused) {
+						focused = true;
+						measuresModel.editingMeasure(true);
+					}
+				}).on('blur', function () {
+					if (focused) {
+						focused = false;
+						measuresModel.editingMeasure(false);
+					}
+				});
+			},
+			onMeasureRowsChanged = function () {
+				buildMeasureRows(measuresModel.getMeasures());
 			};
 
 		measurementTemplate.detach();
 		summaryTemplate.detach();
 		ideaTemplate.detach();
-		measurementsTable
-		.editableTableWidget({
+		measurementsTable.editableTableWidget({
 			editor: element.find('[data-mm-role=measures-editor]'),
 			cloneProperties: jQuery.fn.editableTableWidget.defaultOptions.cloneProperties.concat(['outline', 'box-shadow', '-webkit-box-shadow', '-moz-box-shadow'])
-		})
-		.on('validate', function (evt, value) {
+		}).on('validate', function (evt, value) {
+			measuresModel.editingMeasure(true);
 			return measuresModel.validate(value);
 		}).numericTotaliser();
-
+		element.find('[data-mm-role=measures-editor]').on('focus', function () {
+			if (!focused) {
+				focused = true;
+				measuresModel.editingMeasure(true);
+			}
+		}).on('blur', function () {
+			if (focused) {
+				focused = false;
+				measuresModel.editingMeasure(false);
+			}
+		});
 		element.parent().on('show', function () {
 			measurementContainer.children('[data-mm-role=measurement-template]').remove();
 			summaryContainer.children('[data-mm-role=summary-template]').remove();
@@ -146,26 +187,14 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			_.each(measures, function (m) {
 				appendMeasure(m);
 			});
-			ideaContainer.children('[data-mm-role=idea-template]').remove();
-			_.each(measuresModel.getMeasurementValues(), function (mv) {
-				var newIdea = ideaTemplate.clone().appendTo(ideaContainer).attr('data-mm-nodeid', mv.id);
-				newIdea.find('[data-mm-role=idea-title]').text(function () {
-					var truncLength = jQuery(this).data('mm-truncate');
-					if (truncLength && mv.title.length > truncLength) {
-						return mv.title.substring(0, truncLength) + '...';
-					}
-					return mv.title;
-				});
-				_.each(measures, function (measure) {
-					appendMeasureValue(newIdea, mv.values[measure], mv.id, measure);
-				});
-			});
-			element.find('[data-mm-role=measurements-table]').trigger('change');
+			buildMeasureRows(measures);
+			measuresModel.addEventListener('measureRowsChanged', onMeasureRowsChanged);
 			measuresModel.addEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.addEventListener('measureAdded', onMeasureAdded);
 			measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
 		});
 		element.parent().on('hide', function () {
+			measuresModel.removeEventListener('measureRowsChanged', onMeasureRowsChanged);
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
