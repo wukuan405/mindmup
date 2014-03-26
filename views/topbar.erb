@@ -121,7 +121,7 @@
 
             <li class="divider hidden-phone"></li>
             <li rel="tooltip" data-mm-context-menu data-title="A"><a data-category="Top Bar" data-event-type="Open Attachment"   class="openAttachment"><i class="icon-paper-clip"></i>&nbsp;Node Attachment</a></li>
-			<li rel="tooltip" data-mm-context-menu data-title="M"><a data-category="Top Bar" data-event-type="Open Measurements" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table">&nbsp;Measurements</i></a></li>
+			<li rel="tooltip" data-mm-context-menu data-title="M"><a data-category="Top Bar" data-event-type="Open Measurements" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table">&nbsp;<span class="visible-column-split">Hide</span><span class="visible-row-split">Hide</span><span class="hidden-column-split hidden-row-split">Show</span>&nbsp;Measurements</i></a></li>
           </ul>
         </li>
         <li class="dropdown hidden-narrow-screen">
@@ -138,6 +138,9 @@
             <li rel="tooltip" data-title="Esc or 0"><a data-category="Top Bar" data-event-type="Zoom reset" class="resetView"><i class="icon-circle-blank"></i>&nbsp;Re-center view</a></li>
 
             <li class="divider hidden-touch"></li>
+
+            <li class="hidden-touch visible-row-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip" ><i class="icon-columns"></i>&nbsp;Column&nbsp;split</a></li>
+            <li class="hidden-touch visible-column-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip"><i class="icon-columns icon-rotate-90"></i>&nbsp;Row&nbsp;split</a></li>
 
             <li class="hidden-touch" rel="tooltip" data-title="Ctrl+b"><a data-mm-target="body" data-mm-role="toggle-class" data-mm-class="collapsed-toolbar"><i class="icon-food"></i>&nbsp;<span class="visible-collapsed-toolbar">Show</span><span class="hidden-collapsed-toolbar">Hide</span>&nbsp;toolbar</a></li>
 

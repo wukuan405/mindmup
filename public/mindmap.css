@@ -246,6 +246,32 @@ span.repo-g, span.repo-a, span.repo-o, span.repo-b, span.repo-p {
 	display: none !important;
 }
 
+.visible-row-split {
+  display: none;
+}
+.row-split .visible-row-split {
+  display: block !important;
+}
+.row-split span.visible-row-split {
+  display: inline !important;
+}
+.row-split .hidden-row-split {
+  display: none !important;
+}
+
+.visible-column-split {
+  display: none;
+}
+.column-split .visible-column-split {
+  display: block !important;
+}
+.column-split span.visible-column-split {
+  display: inline !important;
+}
+.column-split .hidden-column-split {
+  display: none !important;
+}
+
 #listBookmarks a .btn-inline {
 	margin-left:15px;
 }

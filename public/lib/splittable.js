@@ -1,5 +1,5 @@
 /*global MM, jQuery, observable, _*/
-MM.SplittableController = function (element) {
+MM.SplittableController = function (element, keyStroke) {
 	'use strict';
 	var self = observable(this),
 		allPositions = [MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT],
@@ -27,11 +27,33 @@ MM.SplittableController = function (element) {
 			self.split(MM.SplittableController.NO_SPLIT);
 		}
 	};
+	self.flip = function () {
+		var currentSplit = self.currentSplit();
+		if (currentSplit === MM.SplittableController.NO_SPLIT) {
+			return;
+		}
+		if (currentSplit === MM.SplittableController.ROW_SPLIT) {
+			self.split(MM.SplittableController.COLUMN_SPLIT);
+		} else {
+			self.split(MM.SplittableController.ROW_SPLIT);
+		}
+	};
+	element.keydown(keyStroke, self.flip);
+
 };
 MM.SplittableController.NO_SPLIT = 'no-split';
 MM.SplittableController.COLUMN_SPLIT = 'column-split';
 MM.SplittableController.ROW_SPLIT = 'row-split';
 
+jQuery.fn.splitFlipWidget = function (splittableController) {
+	'use strict';
+	return jQuery.each(this, function () {
+		var element = jQuery(this);
+		element.click(function () {
+			splittableController.flip();
+		});
+	});
+};
 jQuery.fn.splittableWidget = function (splittableController, minTop) {
 	'use strict';
 	var element = jQuery(this),
