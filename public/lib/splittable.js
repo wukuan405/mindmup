@@ -1,53 +1,9 @@
-/*global MM, jQuery, observable, _*/
-MM.SplittableController = function (element) {
-	'use strict';
-	var self = observable(this),
-		allPositions = [MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT],
-		calcSplit = function () {
-			if (element.innerHeight() > element.innerWidth()) {
-				return MM.SplittableController.ROW_SPLIT;
-			} else {
-				return MM.SplittableController.COLUMN_SPLIT;
-			}
-		};
-	self.split =	 function (position) {
-		element.removeClass(allPositions.join(' ')).addClass(position);
-		this.dispatchEvent('split', position);
-	};
-	self.currentSplit = function () {
-		var bodyPosition = _.find(allPositions, function (position) {
-			return element.hasClass(position);
-		});
-		return bodyPosition || MM.SplittableController.NO_SPLIT;
-	};
-	self.toggle = function () {
-		if (self.currentSplit() === MM.SplittableController.NO_SPLIT) {
-			self.split(calcSplit());
-		} else {
-			self.split(MM.SplittableController.NO_SPLIT);
-		}
-	};
-	self.flip = function () {
-		var currentSplit = self.currentSplit();
-		if (currentSplit === MM.SplittableController.NO_SPLIT) {
-			return;
-		}
-		if (currentSplit === MM.SplittableController.ROW_SPLIT) {
-			self.split(MM.SplittableController.COLUMN_SPLIT);
-		} else {
-			self.split(MM.SplittableController.ROW_SPLIT);
-		}
-	};
-};
-MM.SplittableController.NO_SPLIT = 'no-split';
-MM.SplittableController.COLUMN_SPLIT = 'column-split';
-MM.SplittableController.ROW_SPLIT = 'row-split';
+/*global MM, jQuery, _*/
 
 jQuery.fn.splitFlipWidget = function (splittableController, menuSelector, mapModel, keyStroke) {
 	'use strict';
 	var self = jQuery(this),
 		onFlipRequest = function (force) {
-			console.log('onFlipRequest', force, arguments);
 			if (force || mapModel.isEditingEnabled()) {
 				splittableController.flip();
 			}
