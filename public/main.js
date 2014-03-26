@@ -72,7 +72,7 @@ MM.main = function (config) {
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert),
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
-			splittableController = new MM.SplittableController(jQuery('body'), 'Alt+o'),
+			splittableController = new MM.SplittableController(jQuery('body')),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -150,7 +150,7 @@ MM.main = function (config) {
 				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel, splittableController);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
-				jQuery('[data-mm-role=split-flip]').splitFlipWidget(splittableController);
+				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',

@@ -643,3 +643,9 @@ body .modal.huge {
 .row-split #optionalPane{
   border-top:1px solid #d4d4d4;
 }
+.table-container {
+  margin-right: 5px;
+}
+.column-split .table-container {
+  margin-bottom: 45px;
+}

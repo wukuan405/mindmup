@@ -1,5 +1,5 @@
 /*global MM, jQuery, observable, _*/
-MM.SplittableController = function (element, keyStroke) {
+MM.SplittableController = function (element) {
 	'use strict';
 	var self = observable(this),
 		allPositions = [MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT],
@@ -38,21 +38,29 @@ MM.SplittableController = function (element, keyStroke) {
 			self.split(MM.SplittableController.ROW_SPLIT);
 		}
 	};
-	element.keydown(keyStroke, self.flip);
-
 };
 MM.SplittableController.NO_SPLIT = 'no-split';
 MM.SplittableController.COLUMN_SPLIT = 'column-split';
 MM.SplittableController.ROW_SPLIT = 'row-split';
 
-jQuery.fn.splitFlipWidget = function (splittableController) {
+jQuery.fn.splitFlipWidget = function (splittableController, menuSelector, mapModel, keyStroke) {
 	'use strict';
-	return jQuery.each(this, function () {
-		var element = jQuery(this);
+	var self = jQuery(this),
+		onFlipRequest = function (force) {
+			console.log('onFlipRequest', force, arguments);
+			if (force || mapModel.isEditingEnabled()) {
+				splittableController.flip();
+			}
+
+		};
+	_.each(self.find(menuSelector), function (elem) {
+		var element = jQuery(elem);
 		element.click(function () {
-			splittableController.flip();
+			onFlipRequest(true);
 		});
 	});
+	self.keydown(keyStroke, onFlipRequest.bind(self, false));
+	return self;
 };
 jQuery.fn.splittableWidget = function (splittableController, minTop) {
 	'use strict';

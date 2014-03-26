@@ -230,11 +230,12 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			toggleMeasures = function (force) {
+				console.log('toggleMeasures', force, mapModel.getInputEnabled())
 				if (force || mapModel.getInputEnabled()) {
 					splittableController.toggle();
 				}
 			};
 
-		element.keydown(keyStroke, toggleMeasures).find('[data-mm-role=activatedNodesMeasureSheet]').click(toggleMeasures.bind(element, true));
+		element.keydown(keyStroke, toggleMeasures.bind(element, false)).find('[data-mm-role=activatedNodesMeasureSheet]').click(toggleMeasures.bind(element, true));
 	});
 };
