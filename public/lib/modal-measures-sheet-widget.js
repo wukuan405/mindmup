@@ -78,13 +78,22 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				measurementsTable.show();
 				noMeasuresDiv.hide();
 			},
+			onFocused = function (nowFocused, nodeId) {
+				if (nowFocused !== focused) {
+					focused = nowFocused;
+					measuresModel.editingMeasure(nowFocused, nodeId);
+				}
+			},
 			appendMeasureValue = function (container, value, nodeId, measureName, index) {
 				var current = container.children('[data-mm-role=value-template]').eq(index),
 					valueCell = valueTemplate.clone();
-				valueCell
-				.text(value || '0')
+				valueCell.text(value || '0')
 				.on('change', function (evt, newValue) {
 					return measuresModel.setValue(nodeId, measureName, newValue);
+				}).on('focus', function () {
+					onFocused(true, nodeId);
+				}).on('blur', function () {
+					onFocused(false, nodeId);
 				});
 
 				if (current.length) {
@@ -152,17 +161,6 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					});
 				});
 				element.find('[data-mm-role=measurements-table]').trigger('change');
-				element.find('[data-mm-role=measurements-table] td').on('focus', function () {
-					if (!focused) {
-						focused = true;
-						measuresModel.editingMeasure(true);
-					}
-				}).on('blur', function () {
-					if (focused) {
-						focused = false;
-						measuresModel.editingMeasure(false);
-					}
-				});
 			},
 			onMeasureRowsChanged = function () {
 				buildMeasureRows(measuresModel.getMeasures());
@@ -178,17 +176,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.editingMeasure(true);
 			return measuresModel.validate(value);
 		}).numericTotaliser();
-		element.find('[data-mm-role=measures-editor]').on('focus', function () {
-			if (!focused) {
-				focused = true;
-				measuresModel.editingMeasure(true);
-			}
-		}).on('blur', function () {
-			if (focused) {
-				focused = false;
-				measuresModel.editingMeasure(false);
-			}
-		});
+		element.find('[data-mm-role=measures-editor]').on('focus', onFocused.bind(element, true, false)).on('blur', onFocused.bind(element, false, false));
 		element.parent().on('show', function () {
 			buildMeasureTable();
 			measuresModel.addEventListener('startFromScratch', buildMeasureTable);

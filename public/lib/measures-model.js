@@ -85,8 +85,9 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		self.dispatchEvent('startFromScratch');
 		activeContent.addEventListener('changed', onActiveContentChange);
 	});
-	self.editingMeasure = function (isEditing) {
-		self.dispatchEvent('measureEditing', isEditing);
+	self.editingMeasure = function (isEditing, nodeId) {
+
+		self.dispatchEvent('measureEditing', isEditing, nodeId);
 	};
 	self.getMeasures = function () {
 		return measures.slice(0);
@@ -220,7 +221,10 @@ MM.MeasuresModel.ActivatedNodesFilter = function (mapModel) {
 
 jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresModel, splittableController) {
 	'use strict';
-	measuresModel.addEventListener('measureEditing', function (isEditing) {
+	measuresModel.addEventListener('measureEditing', function (isEditing, nodeId) {
+		if (isEditing && nodeId) {
+			mapModel.selectNode(nodeId, true, true);
+		}
 		mapModel.setInputEnabled(!isEditing);
 	});
 	return jQuery.each(this, function () {
