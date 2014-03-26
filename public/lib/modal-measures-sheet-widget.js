@@ -94,6 +94,10 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					onFocused(true, nodeId);
 				}).on('blur', function () {
 					onFocused(false, nodeId);
+				}).keydown('Esc', function (e) {
+					valueCell.blur();
+					e.preventDefault();
+					e.stopPropagation();
 				});
 
 				if (current.length) {
