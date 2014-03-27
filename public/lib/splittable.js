@@ -12,50 +12,26 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 			if (position === MM.SplittableController.COLUMN_SPLIT) {
 				optionalAreaCss = {
 					'top': minTop,
-					'left': '50%',
-					'width': '50%',
-					'height': '100%',
-					'min-height': '100%',
-					'display': 'block',
-					'position': 'absolute'
+					'display': 'block'
 				};
 				defaultAreaCss = {
-					'top': minTop,
-					'left': 0,
-					'width': '50%',
-					'height': '100%',
-					'min-height': '100%',
-					'display': 'block',
+					'top': minTop
 				};
 			} else if (position === MM.SplittableController.ROW_SPLIT) {
 				optionalAreaCss = {
 					'top': '50%',
-					'left': 0,
-					'width': '100%',
-					'height': '50%',
-					'min-height': 0,
-					'display': 'block',
-					'position': 'inherit'
+					'display': 'block'
 				};
 				defaultAreaCss = {
-					'top': 0,
-					'left': 0,
-					'width': '100%',
-					'height': '50%',
-					'min-height': 0,
-					'display': 'block'
+					'top': 0
 				};
 			} else {
 				optionalAreaCss = {
+					'top': 0,
 					'display': 'none'
 				};
 				defaultAreaCss = {
-					'top': 0,
-					'left': 0,
-					'width': '100%',
-					'height': '100%',
-					'min-height': '100%',
-					'display': 'block'
+					'top': 0
 				};
 			}
 			wasVisible = optionalArea.is(':visible');
