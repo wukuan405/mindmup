@@ -1,4 +1,4 @@
-/*global describe, beforeEach, afterEach, jQuery, MM, it, expect, _, spyOn*/
+/*global describe, beforeEach, afterEach, jQuery, MM, it, expect, _, spyOn, jasmine*/
 describe('MM.SplittableController', function () {
 	'use strict';
 	var underTest,
@@ -33,6 +33,13 @@ describe('MM.SplittableController', function () {
 				expect(underTest.split(splitType)).toBeTruthy();
 				expect(element.hasClass(splitType)).toBeTruthy();
 			});
+			it('should dispatch a split event for ' + splitType, function () {
+				var listener = jasmine.createSpy('listener');
+				underTest.addEventListener('split', listener);
+				underTest.split(splitType);
+				expect(listener).toHaveBeenCalledWith(splitType);
+			});
+
 		});
 		it('should return false and not set unrecognised class', function () {
 			expect(underTest.split('blah')).toBeFalsy();
