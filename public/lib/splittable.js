@@ -36,6 +36,9 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 			}
 			wasVisible = optionalArea.is(':visible');
 			defaultArea.css(defaultAreaCss);
+			if (!window || !window.MutationObserver) {
+				defaultArea.trigger(jQuery.Event('resize'));
+			}
 			optionalArea.css(optionalAreaCss);
 			if (optionalArea.is(':visible') && !wasVisible) {
 				optionalArea.trigger('show');
