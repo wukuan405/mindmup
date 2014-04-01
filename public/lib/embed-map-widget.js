@@ -3,7 +3,7 @@ jQuery.fn.embedMapWidget = function (mapController) {
 	'use strict';
 	var element = this,
 		textArea = element.find('textarea'),
-		templateText = textArea.val().trim(),
+		templateText = textArea && textArea.val() && textArea.val().trim(),
 		selectText = function () {
 			if (textArea[0].setSelectionRange) {
 				textArea[0].setSelectionRange(0, textArea[0].value.length);

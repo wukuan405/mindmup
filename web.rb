@@ -20,7 +20,7 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20140326144951'
+  static_ts = '20140331180016'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
   set :static_host, "#{public_host}/#{static_ts}"
   set :static_image_host, "#{public_host}/img"
@@ -103,6 +103,10 @@ end
 get "/m" do
   show_map
 end
+get "/mobile" do
+  show_map true
+end
+
 post "/publishingConfig" do
   s3_upload_identifier = settings.current_map_data_version +  settings.key_id_generator.generate(:compact)
   s3_key=settings.s3_upload_folder+"/" + s3_upload_identifier + ".json"
@@ -136,9 +140,15 @@ helpers do
     headers['Access-Control-Allow-Origin'] = '*'
     headers['Access-Control-Allow-Headers'] = 'accept, authorization, origin'
   end
-  def show_map
+  def show_map mobile_first = false
     if (browser_supported? || user_accepted_browser?)
-      erb :editor
+      if (mobile_first)
+        @external_prefix = 'mobile-first-'
+        erb :mobile_first_editor
+      else
+        @external_prefix = ''
+        erb :editor
+      end
     else
       response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
       response.headers['Pragma'] = 'no-cache'

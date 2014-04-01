@@ -1,41 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<!--
-  Copyright (c) 2013/4 Sauf Pompiers Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to permit persons
-to whom the Software is furnished to do so, subject to the following conditions:
-
-1. The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-2. The Software may not be used to offer a publicly accessible service that
-replicates the core service, visual layout or experience of www.mindmup.com
-
-3. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
--->
+<%= erb :copyright %>
   <head>
-    <meta charset="utf-8">
-    <title>MindMup: Zero-Friction Free Online Mind Mapping Software - Mind Map in the cloud</title>
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
-    <link rel="apple-touch-icon" href="<%=settings.static_image_host%>/apple-touch-icon.png" />
-    <meta name="keywords" content="mind mapping, mind map, mindmap, mindmapping, free online mindmapping, free online mind mapping, mindmup" />
-    <meta name="description" content="Mind Map in the cloud. Zero-friction, free online mind mapping. Opensource mindmapping software. The most productive online mind map canvas on the Web. Supports Freemind mindmap import/export." />
-    <link rel="shortcut icon" href="<%=settings.static_image_host%>/favicon.ico" >
-  <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
-  <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
-      <link href="<%=settings.public_url%>/mindmap.css" rel="stylesheet" />
-    <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
-  <%= erb :timetrack %>
+    <%= erb :common_head %>
+    <%= erb :timetrack %>
   </head>
   <body class="map-unchanged <%=browser.body_class %>">
     <%=erb :topbar %>

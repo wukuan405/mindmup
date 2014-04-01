@@ -1,4 +1,4 @@
-<script src="<%=settings.static_host%>/external.js" ></script>
+<script src="<%=settings.static_host%>/<%=@external_prefix%>external.js" ></script>
 <% if production? then %>
     <script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
 <% else %>
