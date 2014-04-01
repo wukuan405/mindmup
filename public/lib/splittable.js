@@ -1,4 +1,4 @@
-/*global MM, jQuery*/
+/*global MM, jQuery, window*/
 
 jQuery.fn.splittableWidget = function (splittableController, minTop) {
 	'use strict';
@@ -36,7 +36,7 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 			}
 			wasVisible = optionalArea.is(':visible');
 			defaultArea.css(defaultAreaCss);
-			if (!window || !window.MutationObserver) {
+			if (!window || !window.MutationObserver || defaultArea.data('mm-context') === 'embedded') {
 				defaultArea.trigger(jQuery.Event('resize'));
 			}
 			optionalArea.css(optionalAreaCss);
