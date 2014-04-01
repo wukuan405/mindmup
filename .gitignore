@@ -15,6 +15,7 @@ test/version_tmp
 tmp
 .DS_Store
 public/.DS_Store
+public/content
 public/offline
 compiled
 downloads

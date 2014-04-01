@@ -1,0 +1,77 @@
+<div id="modalPNGExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="png">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Export to Image</h3>
+  </div>
+  <div class="modal-body">
+    <div class="visible initial">
+      <p>The map will be securely uploaded to our server for processing.</p>
+      <form class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label">Orientation:</label>
+          <div class="controls">
+            <div class="btn-group" data-toggle="buttons-radio">
+              <button name="orientation" type="button" class="btn active" value="landscape">
+                <img src="//static.mindmup.com/img/portrait.png" class="export landscape"/>
+              </button>
+              <button name="orientation" type="button" class="btn " value="portrait">
+                <img src="//static.mindmup.com/img/portrait.png" class="export"/>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Page Size:</label>
+          <div class="controls">
+            <select name="page-size">
+              <option>A0</option>
+              <option>A1</option>
+              <option>A2</option>
+              <option>A3</option>
+              <option selected>A4</option>
+              <option>A5</option>
+              <option value="LETTER">US Letter</option>
+              <option value="LEGAL">US Legal</option>
+              <option value="TABLOID">US Tabloid</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="visible inprogress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...
+    </div>
+    <div class="visible done alert alert-success alert-block">
+      <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
+    </div>
+    <div class="visible error alert alert-error alert-block">
+      <h4>Unable to export Image:</h4>
+      <br/>
+
+      <span data-mm-role="error-message"></span>
+      <span data-mm-role="generation-error">
+        This map contains a feature not currently supported by IMage export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+      </span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The map you are exporting is too large. The maximum size of maps that can be exported online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
+              <li><a href="http://blog.mindmup.com/p/mindmup-gold.html" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size/(1024*1024)%> Mb</li>
+           </ul>
+           <p>For maps larger than  <%=settings.gold_pdf_max_size/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+
+         </p>
+      </span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Export</a>
+    <a tabstop="2" href="#" class="btn visible initial inprogress" data-dismiss="modal">Cancel</a>
+    <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
+  </div>
+</div>

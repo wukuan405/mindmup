@@ -1,10 +1,18 @@
 /*global jQuery, MM, _ */
 MM.LayoutExportController = function (mapModel, configurationGenerator, storageApi, activityLog) {
 	'use strict';
-	var category = 'Map',
-		eventType = 'PDF Export';
-	this.startExport = function (format, exportProperties) {
+	var self = this,
+		category = 'Map',
+		getEventType = function (format) {
+			if (!format) {
+				return 'Export';
+			}
+			return format.toUpperCase() + ' Export';
+		};
+
+	self.startExport = function (format, exportProperties) {
 		var deferred = jQuery.Deferred(),
+			eventType = getEventType(format),
 			isStopped = function () {
 				return deferred.state() !== 'pending';
 			},
@@ -71,7 +79,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				return exportType;
 			},
 			exportFailed = function (reason, fileId) {
-				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20PDF%20Export%20Error%20' + fileId; });
+				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + format.toUpperCase() + '%20Export%20Error%20' + fileId; });
 				self.find('[data-mm-role=file-id]').html(fileId);
 				self.find('.error span').hide();
 				setState('error');
