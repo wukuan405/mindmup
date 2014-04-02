@@ -73,7 +73,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			getExportMetadata = function () {
 				var form = self.find('form'),
 					exportType = {};
-				form.find('button.active').add(form.find('select')).each(function () {
+				form.find('button.active').add(form.find('select')).add(form.find('input[type=hidden]')).each(function () {
 					exportType[jQuery(this).attr('name')] = jQuery(this).val();
 				});
 				return exportType;

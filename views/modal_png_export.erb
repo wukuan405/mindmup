@@ -6,37 +6,9 @@
   <div class="modal-body">
     <div class="visible initial">
       <p>The map will be securely uploaded to our server for processing.</p>
-      <form class="form-horizontal">
-        <div class="control-group">
-          <label class="control-label">Orientation:</label>
-          <div class="controls">
-            <div class="btn-group" data-toggle="buttons-radio">
-              <button name="orientation" type="button" class="btn active" value="landscape">
-                <img src="//static.mindmup.com/img/portrait.png" class="export landscape"/>
-              </button>
-              <button name="orientation" type="button" class="btn " value="portrait">
-                <img src="//static.mindmup.com/img/portrait.png" class="export"/>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Page Size:</label>
-          <div class="controls">
-            <select name="page-size">
-              <option>A0</option>
-              <option>A1</option>
-              <option>A2</option>
-              <option>A3</option>
-              <option selected>A4</option>
-              <option>A5</option>
-              <option value="LETTER">US Letter</option>
-              <option value="LEGAL">US Legal</option>
-              <option value="TABLOID">US Tabloid</option>
-            </select>
-          </div>
-        </div>
+      <form>
+        <input type="hidden" name="orientation" value="landscape"></input>
+        <input type="hidden" name="page-size" value="A4"></input>
       </form>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
