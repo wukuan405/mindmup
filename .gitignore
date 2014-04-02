@@ -16,6 +16,7 @@ tmp
 .DS_Store
 public/.DS_Store
 public/offline
+public/content
 compiled
 downloads
 #grunt and jasmine artificats
