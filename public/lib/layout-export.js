@@ -60,7 +60,14 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
-			format = self.data('mm-format'),
+			selectedFormat = function () {
+				var selector = self.find('[data-mm-role=format-selector]');
+				if (selector && selector.val()) {
+					return selector.val();
+				} else {
+					return self.data('mm-format');
+				}
+			},
 			confirmElement = self.find('[data-mm-role=export]'),
 			setState = function (state) {
 				self.find('.visible').hide();
@@ -71,15 +78,17 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				setState('done');
 			},
 			getExportMetadata = function () {
-				var form = self.find('form'),
+				var form = self.find('form[data-mm-role=export-parameters]'),
 					exportType = {};
-				form.find('button.active').add(form.find('select')).add(form.find('input[type=hidden]')).each(function () {
-					exportType[jQuery(this).attr('name')] = jQuery(this).val();
-				});
+				if (form) {
+					form.find('button.active').add(form.find('select')).add(form.find('input[type=hidden]')).each(function () {
+						exportType[jQuery(this).attr('name')] = jQuery(this).val();
+					});
+				}
 				return exportType;
 			},
 			exportFailed = function (reason, fileId) {
-				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + format.toUpperCase() + '%20Export%20Error%20' + fileId; });
+				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + selectedFormat().toUpperCase() + '%20Export%20Error%20' + fileId; });
 				self.find('[data-mm-role=file-id]').html(fileId);
 				self.find('.error span').hide();
 				setState('error');
@@ -93,7 +102,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			},
 			doExport = function () {
 				setState('inprogress');
-				layoutExportController.startExport(format, {'export': getExportMetadata()}).then(exportComplete, exportFailed);
+				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(exportComplete, exportFailed);
 			};
 		self.find('form').submit(function () {return false; });
 		confirmElement.click(doExport).keydown('space', doExport);
