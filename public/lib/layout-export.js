@@ -27,12 +27,12 @@ MM.LayoutExportController = function (mapModel, configurationGenerator, storageA
 								activityLog.log(category, eventType + ' completed');
 								deferred.resolve(exportConfig.signedOutputUrl);
 							};
-						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 5000}).then(
+						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 15000}).then(
 							function () {
 								pollErrorTimer.end();
 								reject('generation-error', fileId);
 							});
-						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 2000}).then(
+						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 5000}).then(
 							resolve,
 							function (reason) {
 								pollTimeoutTimer.end();
