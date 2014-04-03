@@ -182,6 +182,11 @@ describe('MM.S3Api', function () {
 			clock.tick(sleep - 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
+		it('should not mutate the default options', function () {
+			var before = underTest.pollerDefaults.sleepPeriod;
+			underTest.poll('REQUEST', {sleepPeriod: before + 1000});
+			expect(underTest.pollerDefaults.sleepPeriod).toEqual(before);
+		});
 		it('resolves if the ajax response contains at least one file, using the first response key', function () {
 			var resolved = jasmine.createSpy();
 			underTest.poll('REQUEST').then(resolved);

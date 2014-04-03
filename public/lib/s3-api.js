@@ -85,7 +85,7 @@ MM.S3Api = function () {
 				window.clearTimeout(sleepTimeoutId);
 				deferred = undefined;
 			};
-		options = _.extend(self.pollerDefaults, options);
+		options = _.extend({}, self.pollerDefaults, options);
 
 		if (shouldPoll()) {
 			timeoutId = window.setTimeout(cancelRequest, options.timeoutPeriod);
