@@ -167,12 +167,25 @@ describe('MM.S3Api', function () {
 			clock.tick(underTest.pollerDefaults.sleepPeriod + 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
-		it('polls only after sleep period', function () {
+		it('polls only after sleep period for default', function () {
 			underTest.poll('REQUEST');
 			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withoutFile);
 			clock.tick(underTest.pollerDefaults.sleepPeriod - 1);
 			expect(jQuery.ajax).not.toHaveBeenCalled();
+		});
+		it('polls only after sleep period for supplied sleepPeriod', function () {
+			var sleep = underTest.pollerDefaults.sleepPeriod + 1000;
+			underTest.poll('REQUEST', {sleepPeriod: sleep});
+			jQuery.ajax.calls.reset();
+			ajaxDeferred.resolve(withoutFile);
+			clock.tick(sleep - 1);
+			expect(jQuery.ajax).not.toHaveBeenCalled();
+		});
+		it('should not mutate the default options', function () {
+			var before = underTest.pollerDefaults.sleepPeriod;
+			underTest.poll('REQUEST', {sleepPeriod: before + 1000});
+			expect(underTest.pollerDefaults.sleepPeriod).toEqual(before);
 		});
 		it('resolves if the ajax response contains at least one file, using the first response key', function () {
 			var resolved = jasmine.createSpy();
