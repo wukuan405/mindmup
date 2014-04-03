@@ -57,6 +57,10 @@ describe('LayoutExport', function () {
 		it('polls for result and error when the request is started', function () {
 			spyOn(storageApi, 'poll').and.callThrough();
 			underTest.startExport();
+			var outputOptions = storageApi.poll.calls.mostRecent().args[1],
+				errorOptions = storageApi.poll.calls.first().args[1];
+			expect(outputOptions.sleepPeriod).toEqual(5000);
+			expect(errorOptions.sleepPeriod).toEqual(15000);
 			expect(storageApi.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Object));
 			expect(storageApi.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Object));
 		});
