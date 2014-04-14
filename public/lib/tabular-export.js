@@ -51,7 +51,7 @@ MM.HtmlTableExporter = function () {
 MM.exportToHtmlDocument = function (idea) {
 	'use strict';
 	var deferred = jQuery.Deferred(),
-		createContent = function (imageUrl) {
+		createContent = function () {
 			var result = $('<div>'), /*parent needed for html generation*/
 				appendLinkOrText = function (element, text) {
 					if (MAPJS.URLHelper.containsLink(text)) {
@@ -85,9 +85,6 @@ MM.exportToHtmlDocument = function (idea) {
 					return list;
 				},
 				heading = $('<h1>').appendTo(result);
-			if (imageUrl) {
-				$('<img>').addClass('mapimage').attr('src', imageUrl).appendTo(result);
-			}
 			appendLinkOrText(heading, idea.title);
 			appendAttachment(result, idea);
 			if (!_.isEmpty(idea.ideas)) {
@@ -100,7 +97,7 @@ MM.exportToHtmlDocument = function (idea) {
 				$(result).html() +
 				'</body></html>', 'text/html');
 		};
-	MAPJS.pngExport(idea).then(createContent);
+	createContent();
 	return deferred.promise();
 };
 MM.exportTableToText = function (table) {

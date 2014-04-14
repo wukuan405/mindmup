@@ -6,7 +6,7 @@ cat `grep 'src="/' views/embedded_scripts.erb | sed 's/.*"\/\([^"]*\)".*/public\
 mkdir compiled/e
 cp public/e/* compiled/e/
 grunt compile
-gsed s/static.mindmup.com/d23c2zpg6dm0n.cloudfront.net/g compiled/mindmap.css -i
+for c in compiled/*.css; do gsed s/static.mindmup.com/d23c2zpg6dm0n.cloudfront.net/g $c -i; done
 for c in compiled/e/*.css; do gsed s/static.mindmup.com/d23c2zpg6dm0n.cloudfront.net/g $c -i; done
 rc=$?
 if [[ $rc != 0 ]] ; then
