@@ -3861,6 +3861,27 @@ jQuery.fn.mapWidget = function (activityLog, mapModel, touchEnabled, imageInsert
 				}
 			});
 		});
+		jQuery(document).on('keydown', function (e) {
+			var functions = {
+				'U+003D': 'scaleUp',
+				'U+002D': 'scaleDown',
+				61: 'scaleUp',
+				173: 'scaleDown'
+			}, mappedFunction;
+			if (e && !e.altKey && (e.ctrlKey || e.metaKey)) {
+				if (e.originalEvent && e.originalEvent.keyIdentifier) { /* webkit */
+					mappedFunction = functions[e.originalEvent.keyIdentifier];
+				} else if (e.key === 'MozPrintableKey') {
+					mappedFunction = functions[e.which];
+				}
+				if (mappedFunction) {
+					if (actOnKeys) {
+						e.preventDefault();
+						mapModel[mappedFunction]('keyboard');
+					}
+				}
+			}
+		});
 		MAPJS.dragdrop(mapModel, stage, imageInsertController);
 		$(document).on('keypress', function (evt) {
 			if (!actOnKeys) {
@@ -4818,6 +4839,12 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.on('mm:start-dragging', function () {
 				element.addClass('dragging');
 			})
+			.on('contextmenu', function (event) {
+				// ugly ugly ugly!
+				mapModel.dispatchEvent('contextMenuRequested', node.id, event.pageX, event.pageY);
+				event.preventDefault();
+				return false;
+			})
 			.on('mm:stop-dragging', function (evt) {
 				element.removeClass('dragging');
 				var dropPosition = evt && evt.gesture && evt.gesture.center,
@@ -5052,9 +5079,13 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 			'a' : 'openAttachment',
 			'i' : 'editIcon'
 		},
-		actOnKeys = true;
+		actOnKeys = true,
+		self = this;
 	mapModel.addEventListener('inputEnabledChanged', function (canInput) {
 		actOnKeys = canInput;
+		if (canInput) {
+			self.focus();
+		}
 	});
 
 	return this.each(function () {
@@ -5068,7 +5099,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 				'height': element.innerHeight(),
 				'scale': 1
 			}).updateStage();
-		element.css('overflow', 'auto');
+		element.css('overflow', 'auto').attr('tabindex', 1);
 		if (mapModel.isEditingEnabled()) {
 			element.simpleDraggableContainer();
 		}
@@ -5079,11 +5110,35 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
+					event.stopImmediatePropagation();
 					event.preventDefault();
 					mapModel[mappedFunction]('keyboard');
 				}
 			});
 		});
+
+		jQuery(document).on('keydown', function (e) {
+			var functions = {
+				'U+003D': 'scaleUp',
+				'U+002D': 'scaleDown',
+				61: 'scaleUp',
+				173: 'scaleDown'
+			}, mappedFunction;
+			if (e && !e.altKey && (e.ctrlKey || e.metaKey)) {
+				if (e.originalEvent && e.originalEvent.keyIdentifier) { /* webkit */
+					mappedFunction = functions[e.originalEvent.keyIdentifier];
+				} else if (e.key === 'MozPrintableKey') {
+					mappedFunction = functions[e.which];
+				}
+				if (mappedFunction) {
+					if (actOnKeys) {
+						e.preventDefault();
+						mapModel[mappedFunction]('keyboard');
+					}
+				}
+			}
+		});
+
 		element.on('keypress', function (evt) {
 			if (!actOnKeys) {
 				return;
@@ -5126,6 +5181,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 //		- perhaps read some css property
 //		$('svg').first().css('var-mapjs-line-style', 'curved'); console.log($('svg')[0].style.varMapjsLineStyle
 // prevent scrolling so the screen is blank
+// mapModel - clean up the notion of clicks, in particular context menu which is no longer working like that!
 // support for multiple stages so that eg stage ID is prepended to the node and connector IDs
 // support for selectAll when editing nodes or remove that from the mapModel - do we still use it?
 // html export
