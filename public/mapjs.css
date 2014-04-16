@@ -29,9 +29,9 @@
 	white-space: pre-wrap;
 	font-family: "Helvetica";
 	font-weight: bold;
-	font-size: 12;
+	font-size: 12px;
 	text-align: center;
-	line-height: 150% !important;
+	line-height: 150%;
 	display: block;
 	max-width: 146px;
 	min-height: 1.5em;

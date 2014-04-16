@@ -1,0 +1,16 @@
+<div> <!-- needs div for easier child locators -->
+  <div class='modal hide fade' data-mm-role="modal" id="customStyleModal">
+    <div class='modal-header'>
+    <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+    <h3>Custom CSS Style</h3>
+    </div>
+    <div class='modal-body' >
+		<textarea data-mm-role="style-input" style="width: 90%;height: 300px;" wrap="soft"></textarea> 
+    </div>
+    <div class='modal-footer'>
+		<a href='#' data-dismiss='modal' class='btn btn-primary' data-mm-role="save">Save</a>
+		<a href='#' data-dismiss='modal' class='btn'>Cancel</a>
+    </div>
+  </div>
+  <li data-mm-role="top-menu"><a data-category="Topbar" data-event-type="Custom CSS" data-toggle="modal" data-target="#customStyleModal"><i class="icon-cog"></i>&nbsp;Custom Style</a></li>
+</div>
