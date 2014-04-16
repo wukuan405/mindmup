@@ -22,7 +22,7 @@ jQuery.fn.alertWidget = function (alert) {
 			type = type || 'info';
 			detail = detail || '';
 			if (_.isString(message)) {
-				message = jQuery('<strong>' + message + '</strong>' + '&nbsp;' + detail);
+				message = jQuery('<span><strong>' + message + '</strong>&nbsp;' + detail + '</span>');
 			}
 			jQuery('<div class="alert fade in">' +
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +

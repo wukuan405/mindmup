@@ -51,8 +51,17 @@ describe('alertWidget', function () {
 
 		alert.dispatchEvent('shown', 123, 'Message 123', 'Detail 123', 'success');
 
-		expect(element.find('.alert :contains("Message 123")').length).toBe(1);
+		expect(element.find('.alert span:contains("Message 123")').length).toBe(1);
 	});
+	it('should show detail message as well', function () {
+		element.alertWidget(alert);
+
+		alert.dispatchEvent('shown', 123, 'Message 123', 'Detail 123', 'success');
+
+		expect(element.find('.alert :contains("Detail 123")').length).toBe(1);
+	});
+
+
 	it('should use a dom element as content and preserve dom handlers', function () {
 		element.alertWidget(alert);
 
@@ -82,6 +91,6 @@ describe('alertWidget', function () {
 
 		alert.dispatchEvent('hidden', 126);
 
-		expect(element.find('.alert :contains("Message 125")').length).toBe(1);
+		expect(element.find('.alert span:contains("Message 125")').length).toBe(1);
 	});
 });
