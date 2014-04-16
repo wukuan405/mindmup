@@ -1099,15 +1099,14 @@ MAPJS.Outline.extendBorder = function (originalBorder, extension) {
 MAPJS.Tree = function (options) {
 	'use strict';
 	_.extend(this, options);
-	this.toLayout = function (level, x, y, parentId) {
+	this.toLayout = function (x, y, parentId) {
 		x = x || 0;
 		y = y || 0;
 		var result = {
 			nodes: {},
 			connectors: {}
 		}, self;
-		self = _.pick(this, 'id', 'title', 'attr', 'width', 'height');
-		self.level = level || 1;
+		self = _.pick(this, 'id', 'title', 'attr', 'width', 'height', 'level');
 		if (self.level === 1) {
 			self.x = -0.5 * this.width;
 			self.y = -0.5 * this.height;
@@ -1124,7 +1123,7 @@ MAPJS.Tree = function (options) {
 		}
 		if (this.subtrees) {
 			this.subtrees.forEach(function (t) {
-				var subLayout = t.toLayout(self.level + 1, self.x, self.y, self.id);
+				var subLayout = t.toLayout(self.x, self.y, self.id);
 				_.extend(result.nodes, subLayout.nodes);
 				_.extend(result.connectors, subLayout.connectors);
 			});
@@ -1142,14 +1141,15 @@ MAPJS.Outline.fromDimensions = function (dimensions) {
 		l: dimensions.width
 	}]);
 };
-MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParentPredicate) {
+MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParentPredicate, level) {
 	'use strict';
 	var options = {
 		id: content.id,
 		title: content.title,
 		attr: content.attr,
 		deltaY: 0,
-		deltaX: 0
+		deltaX: 0,
+		level: level || 1
 	},
 		setVerticalSpacing = function (treeArray,  dy) {
 			var i,
@@ -1199,7 +1199,7 @@ MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParen
 			});
 			return result;
 		},
-		nodeDimensions = dimensionProvider(content),
+		nodeDimensions = dimensionProvider(content, options.level),
 		appendSubtrees = function (subtrees) {
 			var suboutline, deltaHeight, subtreePosition, horizontal, treeOutline;
 			_.each(subtrees, function (subtree) {
@@ -1233,7 +1233,7 @@ MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParen
 	options.outline = new MAPJS.Outline.fromDimensions(nodeDimensions);
 	if (shouldIncludeSubIdeas()) {
 		options.subtrees = _.map(includedSubIdeas(), function (i) {
-			return MAPJS.calculateTree(i, dimensionProvider, margin, rankAndParentPredicate);
+			return MAPJS.calculateTree(i, dimensionProvider, margin, rankAndParentPredicate, options.level + 1);
 		});
 		if (!_.isEmpty(options.subtrees)) {
 			appendSubtrees(options.subtrees);
@@ -4616,14 +4616,15 @@ MAPJS.DOMRender = {
 		return {
 			title: idea.title,
 			icon: idea.attr && idea.attr.icon && _.pick(idea.attr.icon, 'width', 'height', 'position'),
-			collapsed: idea.attr && idea.attr.collapsed
+			collapsed: idea.attr && idea.attr.collapsed,
+			level: idea.level
 		};
 	},
 	addNodeCacheMark: function (domNode, idea) {
 		'use strict';
 		domNode.data('nodeCacheMark', MAPJS.DOMRender.nodeCacheMark(idea));
 	},
-	dimensionProvider: function (idea) {
+	dimensionProvider: function (idea, level) {
 		'use strict'; /* support multiple stages? */
 		var existing = document.getElementById('node_' + idea.id),
 			textBox,
@@ -4634,7 +4635,7 @@ MAPJS.DOMRender = {
 				return _.pick(textBox.data(), 'width', 'height');
 			}
 		}
-		textBox = jQuery('<div>').addClass('mapjs-node').css({position: 'absolute', visibility: 'hidden'}).appendTo('body').updateNodeContent(idea);
+		textBox = jQuery('<div>').addClass('mapjs-node').attr('mapjs-level', level).css({position: 'absolute', visibility: 'hidden'}).appendTo('body').updateNodeContent(idea);
 		result = {
 			width: textBox.outerWidth(true),
 			height: textBox.outerHeight(true)
@@ -4698,6 +4699,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 				'opacity': 1 /* previous animation can be cancelled with clearqueue, so ensure it gets visible */
 			}, _.extend({
 				complete: function () {
+					element.css('opacity', '');
 					element.each(updateScreenCoordinates);
 				},
 			}, nodeAnimOptions)).trigger('mapjs:animatemove');

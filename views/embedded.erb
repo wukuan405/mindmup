@@ -136,6 +136,9 @@
         jQuery('#loading').show();
   		  window.mmtimestamp.log('embedded ui loaded');
         mapLoader.loadMap(mapId).then(function (idea) {
+		  if (idea.getAttr('customCSS')) {
+			jQuery('<style id="customStyleCSS" type="text/css"></style>').text(idea.getAttr('customCSS')).appendTo('body');
+		  }
           jQuery('#loading').hide();
           jQuery('#container').show();
           var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);

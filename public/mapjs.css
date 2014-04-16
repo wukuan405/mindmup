@@ -11,7 +11,10 @@
 	-ms-user-select: none;
 	background-color: #E0E0E0;
 	color: #4F4F4F;
-	cursor: hand;
+	cursor: pointer;
+	font-family: "Helvetica";
+	font-weight: bold;
+	font-size: 12px;
 }
 .mapjs-add-link {
 	cursor: crosshair;
@@ -19,17 +22,9 @@
 .mapjs-add-link .mapjs-node {
 	cursor: alias;
 }
-.mapjs-node span[contenteditable=true] {
-	user-select: text;
-	-moz-user-select: text;
-	-webkit-user-select: text;
-	-ms-user-select: text;
-}
+
 .mapjs-node span {
 	white-space: pre-wrap;
-	font-family: "Helvetica";
-	font-weight: bold;
-	font-size: 12px;
 	text-align: center;
 	line-height: 150%;
 	display: block;
@@ -37,6 +32,14 @@
 	min-height: 1.5em;
 	min-width: 1em;
 	outline: none;
+	cursor: pointer;
+}
+.mapjs-node span[contenteditable=true] {
+	user-select: text;
+	-moz-user-select: text;
+	-webkit-user-select: text;
+	-ms-user-select: text;
+	cursor: auto;
 }
 .mapjs-node.activated {
 	outline: 0;
@@ -124,4 +127,3 @@
 	margin:0;
 	padding:0;
 }
-
