@@ -4392,13 +4392,13 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 		},
 		applyLinkUrl = function (title) {
 			var url = MAPJS.URLHelper.getLink(title),
-				element = self.find('a.mapjs-link');
+				element = self.find('a.mapjs-hyperlink');
 			if (!url) {
 				element.hide();
 				return;
 			}
 			if (element.length === 0) {
-				element = jQuery('<a target="_blank" class="mapjs-link"></a>').appendTo(self);
+				element = jQuery('<a target="_blank" class="mapjs-hyperlink"></a>').appendTo(self);
 			}
 			element.attr('href', url).show();
 		},
@@ -4436,9 +4436,9 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 		},
 		setCollapseClass = function () {
 			if (nodeContent.attr && nodeContent.attr.collapsed) {
-				self.addClass('mapjs-collapsed');
+				self.addClass('collapsed');
 			} else {
-				self.removeClass('mapjs-collapsed');
+				self.removeClass('collapsed');
 			}
 		},
 		foregroundClass = function (backgroundColor) {
@@ -5108,11 +5108,12 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 // --------- editing --------------
 
 //--- go live
+// + pich to zoom and scale around zoom point not around centre of viewport!
 // firefox selection bug
 // collaboration - collaborator images - not to break
 // straight lines - not to break
 // optional load of the new renderer
-// pich to zoom and scale around zoom point not around centre of viewport!
+
 // focus after drop if going off screen
 //
 //- v2 -
