@@ -1286,11 +1286,86 @@ MAPJS.MemoryClipboard = function () {
 		contents = clone(c);
 	};
 };
+/*global $, Hammer*/
+/*jslint newcap:true*/
+$.fn.simpleDraggableContainer = function () {
+	'use strict';
+	var currentDragObject,
+		originalDragObjectPosition,
+		drag = function (event) {
+			if (currentDragObject && event.gesture) {
+				var scale = currentDragObject.parent().data('scale') || 1,
+					newpos = {
+						top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY / scale),
+						left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX / scale)
+					};
+				currentDragObject.css(newpos).trigger('mm:drag');
+				event.preventDefault();
+				if (event.gesture) {
+					event.gesture.preventDefault();
+				}
+			}
+		},
+		rollback = function () {
+			var target = currentDragObject; // allow it to be cleared while animating
+			target.animate(originalDragObjectPosition, {
+				complete: function () {
+					target.trigger('mm:cancel-dragging');
+				},
+				progress: function () {
+					target.trigger('mm:drag');
+				}
+			});
+		};
+	return Hammer($(this), {'drag_min_distance': 2}).on('mm:start-dragging', function (event) {
+		if (!currentDragObject) {
+			currentDragObject = $(event.relatedTarget);
+			originalDragObjectPosition = {
+				top: currentDragObject.css('top'),
+				left: currentDragObject.css('left')
+			};
+			$(this).on('drag', drag);
+		}
+	}).on('dragend', function (e) {
+		var evt = $.Event('mm:stop-dragging', {gesture: e.gesture});
+		$(this).off('drag', drag);
+		if (currentDragObject) {
+			currentDragObject.trigger(evt);
+			if (evt.result === false) {
+				rollback();
+			}
+			currentDragObject = undefined;
+		}
+	}).on('mouseleave', function () {
+		if (currentDragObject) {
+			$(this).off('drag', drag);
+			rollback();
+			currentDragObject = undefined;
+		}
+	}).attr('data-drag-role', 'container');
+};
+$.fn.simpleDraggable = function () {
+	'use strict';
+	return $(this).on('dragstart', function (e) {
+		$(this).trigger(
+			$.Event('mm:start-dragging', {
+				relatedTarget: this
+			})
+		);
+		e.stopPropagation();
+		if (e.gesture) {
+			e.gesture.stopPropagation();
+		}
+	});
+};
+
+
 /*jslint forin: true, nomen: true*/
 /*global _, MAPJS, observable*/
-MAPJS.MapModel = function (layoutCalculator, selectAllTitles, clipboardProvider) {
+MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvider) {
 	'use strict';
 	var self = this,
+		layoutCalculator = layoutCalculatorArg,
 		clipboard = clipboardProvider || new MAPJS.MemoryClipboard(),
 		analytic,
 		currentLayout = {
@@ -2160,6 +2235,81 @@ MAPJS.MapModel = function (layoutCalculator, selectAllTitles, clipboardProvider)
 				return layout;
 			};
 		}());
+	self.dropNode = function (nodeId, x, y, shiftKey) {
+		var rootNode = currentLayout.nodes[idea.id],
+			verticallyClosestNode = {
+				id: null,
+				y: Infinity
+			},
+			parentIdea = idea.findParent(nodeId),
+			parentNode = currentLayout.nodes[parentIdea.id],
+			nodeBeingDragged = currentLayout.nodes[nodeId],
+			isPointOverNode = function (node) { //move to mapModel candidate
+				/*jslint eqeq: true*/
+				return x >= node.x &&
+					y >= node.y &&
+					x <= node.x + node.width &&
+					y <= node.y + node.height;
+			},
+			canDropOnNode = function (node) {
+				/*jslint eqeq: true*/
+				return nodeId != node.id && isPointOverNode(node);
+			},
+			tryFlip = function (rootNode, nodeBeingDragged, nodeDragEndX) {
+				var flipRightToLeft = rootNode.x < nodeBeingDragged.x && nodeDragEndX < rootNode.x,
+					flipLeftToRight = rootNode.x > nodeBeingDragged.x && rootNode.x < nodeDragEndX;
+				if (flipRightToLeft || flipLeftToRight) {
+					return idea.flip(nodeId);
+				}
+				return false;
+			},
+			maxSequence = 1,
+			validReposition = function () {
+				return nodeBeingDragged.level === 2 ||
+					((nodeBeingDragged.x - parentNode.x) * (x - parentNode.x) > 0);
+			},
+			potentialDropTarget = _.find(currentLayout.nodes, canDropOnNode),
+			result = false,
+			clone;
+		if (potentialDropTarget) {
+			if (shiftKey) {
+				clone = idea.clone(nodeId);
+				if (clone) {
+					idea.paste(potentialDropTarget.id, clone);
+				}
+				return false;
+			}
+			return idea.changeParent(nodeId, potentialDropTarget.id);
+		} else {
+			idea.startBatch();
+			if (currentLayout.nodes[nodeId].level === 2) {
+				tryFlip(rootNode, nodeBeingDragged, x);
+			}
+			_.each(idea.sameSideSiblingIds(nodeId), function (id) {
+				var node = currentLayout.nodes[id];
+				if (y < node.y && node.y < verticallyClosestNode.y) {
+					verticallyClosestNode = node;
+				}
+			});
+			result = idea.positionBefore(nodeId, verticallyClosestNode.id);
+			if (shiftKey && validReposition()) {
+				analytic('nodeManuallyPositioned');
+				maxSequence = _.max(_.map(parentIdea.ideas, function (i) { return (i.id !== nodeId && i.attr && i.attr.position && i.attr.position[2]) || 0; }));
+				result = idea.updateAttr(
+					nodeId,
+					'position',
+					[Math.abs(x - parentNode.x), y - parentNode.y, maxSequence + 1]
+				);
+			}
+			idea.endBatch();
+
+		}
+		return result;
+	};
+	self.setLayoutCalculator = function (newCalculator) {
+		layoutCalculator = newCalculator;
+	};
+
 };
 /*global _, MAPJS, jQuery*/
 /*jslint forin:true*/
@@ -3915,7 +4065,7 @@ jQuery.fn.imageDropWidget = function (imageInsertController) {
 	});
 	return this;
 };
-/*global jQuery, Color, _, MAPJS, document*/
+/*global jQuery, Color, _, MAPJS, document, window*/
 MAPJS.createSVG = function (tag) {
 	'use strict';
 	return jQuery(document.createElementNS('http://www.w3.org/2000/svg', tag || 'svg'));
@@ -3946,6 +4096,8 @@ jQuery.fn.getDataBox = function () {
 	}
 	return this.getBox();
 };
+
+
 jQuery.fn.animateConnectorToPosition = function (animationOptions, tolerance) {
 	'use strict';
 	var element = jQuery(this),
@@ -3997,15 +4149,15 @@ jQuery.fn.updateStage = function () {
 	'use strict';
 	var data = this.data(),
 		size = {
-			'min-width': data.width - data.offsetX,
-			'min-height': data.height - data.offsetY,
-			'width': data.width - data.offsetX,
-			'height': data.height - data.offsetY,
+			'min-width': Math.round(data.width - data.offsetX),
+			'min-height': Math.round(data.height - data.offsetY),
+			'width': Math.round(data.width - data.offsetX),
+			'height': Math.round(data.height - data.offsetY),
 			'transform-origin': 'top left',
-			'transform': 'translate(' + data.offsetX + 'px, ' + data.offsetY + 'px)'
+			'transform': 'translate3d(' + Math.round(data.offsetX) + 'px, ' + Math.round(data.offsetY) + 'px, 0)'
 		};
 	if (data.scale && data.scale !== 1) {
-		size.transform = 'scale(' + data.scale + ') translate(' + data.offsetX + 'px, ' + data.offsetY + 'px)';
+		size.transform = 'scale(' + data.scale + ') translate(' + Math.round(data.offsetX) + 'px, ' + Math.round(data.offsetY) + 'px)';
 	}
 	this.css(size);
 	return this;
@@ -4269,6 +4421,7 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 					(title.length < MAX_URL_LENGTH ? title : (title.substring(0, MAX_URL_LENGTH) + '...')),
 				element = textSpan();
 			element.text(text.trim());
+			self.data('title', title);
 			element.css({'max-width': '', 'min-width': ''});
 			if ((element[0].scrollWidth - 10) > element.outerWidth()) {
 				element.css('max-width', element[0].scrollWidth + 'px');
@@ -4371,11 +4524,91 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 	applyLinkUrl(nodeContent.title);
 	applyAttachment();
 	self.attr('mapjs-level', nodeContent.level);
-
 	setColors();
 	setIcon(nodeContent.attr && nodeContent.attr.icon);
 	setCollapseClass();
 	return self;
+};
+jQuery.fn.placeCaretAtEnd = function () {
+	'use strict';
+	var el = this[0];
+	if (window.getSelection && document.createRange) {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else if (document.body.createTextRange) {
+        var textRange = document.body.createTextRange();
+        textRange.moveToElementText(el);
+        textRange.collapse(false);
+        textRange.select();
+    }
+};
+jQuery.fn.editNode = function () {
+	'use strict';
+	var textBox = this.find('[data-mapjs-role=title]'),
+		unformattedText = this.data('title'),
+		originalText = textBox.text(),
+		result = jQuery.Deferred(),
+		clear = function () {
+			detachListeners();
+			textBox.css('word-break', '');
+			textBox.removeAttr('contenteditable');
+		},
+		finishEditing = function () {
+			if (textBox.text() === unformattedText) {
+				return cancelEditing();
+			}
+			clear();
+			result.resolve(textBox.text());
+		},
+		cancelEditing = function () {
+			clear();
+			textBox.text(originalText);
+			result.reject();
+		},
+		keyboardEvents = function (e) {
+			var ENTER_KEY_CODE = 13,
+				ESC_KEY_CODE = 27,
+				TAB_KEY_CODE = 9,
+				S_KEY_CODE = 83,
+				Z_KEY_CODE = 90;
+			if (e.shiftKey && e.which === ENTER_KEY_CODE) {
+				return; // allow shift+enter to break lines
+			}
+			else if (e.which === ENTER_KEY_CODE) {
+				finishEditing();
+				e.stopPropagation();
+			} else if (e.which === ESC_KEY_CODE) {
+				cancelEditing();
+				e.stopPropagation();
+			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey))) {
+				finishEditing();
+				e.preventDefault(); /* stop focus on another object */
+			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey)) { /* undo node edit on ctrl+z if text was not changed */
+				if (textBox.text() === unformattedText) {
+					cancelEditing();
+				}
+				e.stopPropagation();
+			}
+		},
+		attachListeners = function () {
+			textBox.on('blur', finishEditing).on('keydown', keyboardEvents);
+		},
+		detachListeners = function () {
+			textBox.off('blur', finishEditing).off('keydown', keyboardEvents);
+		};
+	attachListeners();
+	if (unformattedText !== originalText) { /* links or some other potential formatting issues */
+		textBox.css('word-break', 'break-all');
+	}
+	textBox.text(unformattedText).attr('contenteditable', true).focus();
+	if (unformattedText) {
+		textBox.placeCaretAtEnd();
+	}
+	return result.promise();
 };
 MAPJS.DOMRender = {
 	nodeCacheMark: function (idea) {
@@ -4557,15 +4790,18 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 	mapModel.addEventListener('nodeCreated', function (node) {
 		var element = jQuery('<div>')
 			.attr({ 'tabindex': 0, 'id': nodeKey(node.id), 'data-mapjs-role': 'node' })
-			.data({ 'x': node.x, 'y': node.y, 'width': node.width, 'height': node.height})
+			.data({'x': Math.round(node.x), 'y': Math.round(node.y), 'width': Math.round(node.width), 'height': Math.round(node.height), 'nodeId': node.id})
 			.css({display: 'block', position: 'absolute'})
 			.addClass('mapjs-node')
 			.appendTo(stageElement)
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node)
-			.on('tap', function (evt) { mapModel.clickNode(node.id, evt); })
+			.on('tap', function (evt) {
+				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
+				mapModel.clickNode(node.id, realEvent);
+			})
 			.on('doubletap', function () {
-				if (!mapModel.getEditingEnabled()) {
+				if (!mapModel.isEditingEnabled()) {
 					mapModel.toggleCollapse('mouse');
 					return;
 				}
@@ -4575,9 +4811,33 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 				mapModel.openAttachment('mouse', node.id);
 			})
 			.each(ensureSpaceForNode)
-			.each(updateScreenCoordinates);
+			.each(updateScreenCoordinates)
+			.on('mm:start-dragging', function () {
+				element.addClass('dragging');
+			})
+			.on('mm:stop-dragging', function (evt) {
+				element.removeClass('dragging');
+				var dropPosition = evt && evt.gesture && evt.gesture.center,
+					isShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey,
+					vpOffset = viewPort.offset(),
+					viewportDropCoordinates, stageDropCoordinates = { };
+				if (dropPosition) {
+					viewportDropCoordinates = {
+						x: dropPosition.pageX - vpOffset.left,
+						y: dropPosition.pageY -  vpOffset.top
+					};
+					stageDropCoordinates = viewToStageCoordinates(viewportDropCoordinates.x, viewportDropCoordinates.y);
+				}
+				return mapModel.dropNode(node.id, stageDropCoordinates.x, stageDropCoordinates.y, !!isShift);
+			})
+			.on('mm:cancel-dragging', function () {
+				element.removeClass('dragging');
+			});
 		element.css('min-width', element.css('width'));
 		MAPJS.DOMRender.addNodeCacheMark(element, node);
+		if (mapModel.isEditingEnabled() && node.level > 1) {
+			element.simpleDraggable();
+		}
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = jQuery('#' + nodeKey(ideaId));
@@ -4594,11 +4854,11 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 	});
 	mapModel.addEventListener('nodeMoved', function (node /*, reason*/) {
 		var	nodeDom = jQuery('#' + nodeKey(node.id)).data({
-				'x': node.x,
-				'y': node.y
+				'x': Math.round(node.x),
+				'y': Math.round(node.y)
 			}).each(ensureSpaceForNode),
-			screenTopLeft = stageToViewCoordinates(node.x, node.y),
-			screenBottomRight = stageToViewCoordinates(node.x + node.width, node.y + node.height);
+			screenTopLeft = stageToViewCoordinates(Math.round(node.x), Math.round(node.y)),
+			screenBottomRight = stageToViewCoordinates(Math.round(node.x + node.width), Math.round(node.y + node.height));
 		if (screenBottomRight.x < 0 || screenBottomRight.y < 0 || screenTopLeft.x > viewPort.innerWidth() || screenTopLeft.y > viewPort.innerHeight()) {
 			nodeDom.each(updateScreenCoordinates);
 		} else {
@@ -4614,7 +4874,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.data({'nodeFrom': jQuery('#' + nodeKey(connector.from)), 'nodeTo': jQuery('#' + nodeKey(connector.to))})
 			.appendTo(stageElement).queueFadeIn(nodeAnimOptions).updateConnector();
 		jQuery('#' + nodeKey(connector.from)).add(jQuery('#' + nodeKey(connector.to)))
-			.on('mapjs:move', function () { element.updateConnector(); })
+			.on('mapjs:move mm:drag', function () { element.updateConnector(); })
 			.on('mapjs:animatemove', function () { connectorsForAnimation = connectorsForAnimation.add(element); });
 	});
 	mapModel.addEventListener('connectorRemoved', function (connector) {
@@ -4631,7 +4891,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.data(attr)
 			.appendTo(stageElement).queueFadeIn(nodeAnimOptions).updateLink();
 		jQuery('#' + nodeKey(l.ideaIdFrom)).add(jQuery('#' + nodeKey(l.ideaIdTo)))
-			.on('mapjs:move', function () { link.updateLink(); })
+			.on('mapjs:move mm:drag', function () { link.updateLink(); })
 			.on('mapjs:animatemove', function () { linksForAnimation = linksForAnimation.add(link); });
 
 	});
@@ -4682,7 +4942,46 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 		stageElement.children().andSelf().dequeue(nodeAnimOptions.queue);
 	});
 
+	/* editing */
 
+	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
+		var editingElement = jQuery('#' + nodeKey(nodeId));
+		mapModel.setInputEnabled(false);
+		viewPort.finish(); /* close any pending animations */
+		editingElement.editNode().done(
+			function (newText) {
+				mapModel.setInputEnabled(true);
+				mapModel.updateTitle(nodeId, newText, editingNew);
+				editingElement.focus();
+
+			}).fail(function () {
+				mapModel.setInputEnabled(true);
+				if (editingNew) {
+					mapModel.undo('internal');
+				}
+				editingElement.focus();
+			});
+	});
+	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
+		if (isOn) {
+			stageElement.addClass('mapjs-add-link');
+		} else {
+			stageElement.removeClass('mapjs-add-link');
+		}
+	});
+	mapModel.addEventListener('linkAttrChanged', function (l) {
+		var  attr = _.extend({arrow: false}, l.attr && l.attr.style);
+		jQuery('#' + linkKey(l)).data(attr).updateLink();
+	});
+
+	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
+		_.each(activatedNodes, function (nodeId) {
+			jQuery('#' + nodeKey(nodeId)).addClass('activated');
+		});
+		_.each(deactivatedNodes, function (nodeId) {
+			jQuery('#' + nodeKey(nodeId)).removeClass('activated');
+		});
+	});
 };
 
 /*jslint nomen: true, newcap: true, browser: true*/
@@ -4755,7 +5054,6 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		actOnKeys = canInput;
 	});
 
-
 	return this.each(function () {
 		var element = $(this),
 			stage = $('<div>').css({
@@ -4768,7 +5066,9 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 				'scale': 1
 			}).updateStage();
 		element.css('overflow', 'auto');
-		//element.draggableContainer();
+		if (mapModel.isEditingEnabled()) {
+			element.simpleDraggableContainer();
+		}
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
 		}
@@ -4803,30 +5103,28 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 };
 
 
-// --------- read only ------------
-// round coordinates for
-//  * CSS translation
-//  * nodes
-//
 // --------- editing --------------
-// - don't set contentEditable
-// - enable drag & drop
-// drop
-// editing as span or as textarea - grow automatically
 
-// collaboration avatars
-// activated
-// mouse events
-// mapwidget keyboard bindings
-// mapwidget mouse bindings
-// html export
-
-
-//- v2 -
-// collaboration - collaborator images
-// straight lines extension
-// prevent scrolling so the screen is blank
+//--- go live
+// firefox selection bug
+// collaboration - collaborator images - not to break
+// straight lines - not to break
+// optional load of the new renderer
+// pich to zoom and scale around zoom point not around centre of viewport!
+// focus after drop if going off screen
 //
+//- v2 -
+// drag and drop images?
+// consolidate links and connectors into a single concept with different styles?
+// extract generic stage/viewport functions from DOMRender.ViewController into JQuery functions?
+// collaborator images in collaboration
+// straight lines extension
+//		- perhaps read some css property
+//		$('svg').first().css('var-mapjs-line-style', 'curved'); console.log($('svg')[0].style.varMapjsLineStyle
+// prevent scrolling so the screen is blank
+// support for multiple stages so that eg stage ID is prepended to the node and connector IDs
+// support for selectAll when editing nodes or remove that from the mapModel - do we still use it?
+// html export
 //
 // remaining kinetic mediator events
 //
@@ -4843,11 +5141,15 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 // +	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
 // +	mapModel.addEventListener('mapViewResetRequested', function () {
 // editing
-// -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
-// -	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
-// -	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
+// +	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
+// +	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
 // +	mapModel.addEventListener('nodeAttrChanged', function (n) {
-// -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
 // +	mapModel.addEventListener('nodeTitleChanged', function (n) {
-// -	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
-// -	mapModel.addEventListener('linkAttrChanged', function (l) {
+// +	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
+// +	mapModel.addEventListener('linkAttrChanged', function (l) {
+//
+//
+// -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
+// -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
+//		- do we need this? it was used onscroll and onswipe
+//      - we don't need this any more!

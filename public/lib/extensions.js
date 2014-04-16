@@ -138,6 +138,12 @@ MM.Extensions.config = {
 			'use strict';
 			return (/^d1/).test(mapId);
 		}
+	},
+	'newcanvas': {
+		name: 'New MindMup Layout (Beta)',
+		script: '/e/newcanvas.js',
+		icon: 'icon-thumbs-up',
+		desc: 'Activate the new MindMup layout now'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
