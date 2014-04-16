@@ -49,6 +49,7 @@ MM.Extensions.newCanvas = function () {
 			parsed.find('[data-mm-role=top-menu]').clone().appendTo('#nodeContextMenu');
 			parsed.find('[data-mm-role=modal]').clone().appendTo('body').customStyleWidget(controller);
 		};
+	MAPJS.DOMRender.stageMargin = 50;
 	MM.Extensions.components.mapModel.setLayoutCalculator(MAPJS.DOMRender.layoutCalculator);
 	jQuery.fn.mapWidget = jQuery.fn.domMapWidget;
 	jQuery('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/mapjs.css" />').appendTo('body');

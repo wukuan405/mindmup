@@ -255,7 +255,7 @@ MM.Extensions.googleCollaboration = function () {
 				}
 				makeImage(sessionId).done(function (kineticImg) {
 					var stage = MM.Extensions.components.container.data('mm-stage'),
-						node = stage.get('#node_' + focusNodes.get(sessionId)),
+						node = stage && stage.get('#node_' + focusNodes.get(sessionId)),
 						xpos,
 						ypos,
 						opacity;
