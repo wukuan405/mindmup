@@ -250,12 +250,15 @@ MM.Extensions.googleCollaboration = function () {
 				self.showFocus(sessionId);
 			};
 			self.showFocus = function (sessionId) {
+				var stage = MM.Extensions.components.container.data('mm-stage');
+				if (!stage) {
+					return;
+				}
 				if (sessionId === localSessionId) {
 					return;
 				}
 				makeImage(sessionId).done(function (kineticImg) {
-					var stage = MM.Extensions.components.container.data('mm-stage'),
-						node = stage && stage.get('#node_' + focusNodes.get(sessionId)),
+					var node = stage.get('#node_' + focusNodes.get(sessionId)),
 						xpos,
 						ypos,
 						opacity;
