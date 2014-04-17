@@ -4823,6 +4823,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.on('tap', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				mapModel.clickNode(node.id, realEvent);
+				evt.stopPropagation();
 			})
 			.on('doubletap', function () {
 				if (!mapModel.isEditingEnabled()) {
@@ -4838,6 +4839,17 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.each(updateScreenCoordinates)
 			.on('mm:start-dragging', function () {
 				element.addClass('dragging');
+			})
+			.on('hold', function (evt) {
+				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
+				mapModel.clickNode(node.id, realEvent);
+				mapModel.dispatchEvent('contextMenuRequested', node.id, evt.gesture.center.pageX, evt.gesture.center.pageY);
+				evt.preventDefault();
+				if (evt.gesture) {
+					evt.gesture.preventDefault();
+					evt.gesture.stopPropagation();
+				}
+				return false;
 			})
 			.on('contextmenu', function (event) {
 				// ugly ugly ugly!
@@ -5088,6 +5100,8 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		}
 	});
 
+
+
 	return this.each(function () {
 		var element = $(this),
 			stage = $('<div>').css({
@@ -5105,6 +5119,12 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		}
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
+		} else {
+			element.on('tap', function (event) {
+				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
+				event.preventDefault();
+				return false;
+			});
 		}
 		MAPJS.DOMRender.viewController(mapModel, stage);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {

@@ -3,7 +3,7 @@ html, body {
   overflow: hidden;
 }
 
-#container, #topbar, #floating-toolbar {
+#container, #topbar, #floating-toolbar, .dropdown-menu {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -684,4 +684,3 @@ body .modal.huge {
 .column-split .table-container {
   margin-bottom: 45px;
 }
-
