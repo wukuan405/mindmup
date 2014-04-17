@@ -1473,7 +1473,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		onIdeaChanged = function () {
 			revertSelectionForUndo = false;
 			revertActivatedForUndo = false;
-			updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
+			self.rebuildRequired();
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -1497,6 +1497,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	};
 	self.analytic = analytic;
 	self.getCurrentlySelectedIdeaId = getCurrentlySelectedIdeaId;
+	self.rebuildRequired = function () {
+		updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
+	};
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
@@ -4825,12 +4828,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 				mapModel.clickNode(node.id, realEvent);
 				evt.stopPropagation();
 			})
-			.on('doubletap', function (evt) {
-				evt.preventDefault();
-				if (evt.gesture) {
-					evt.gesture.preventDefault();
-					evt.gesture.stopPropagation();
-				}
+			.on('doubletap', function () {
 				if (!mapModel.isEditingEnabled()) {
 					mapModel.toggleCollapse('mouse');
 					return;
@@ -5125,7 +5123,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
 		} else {
-			element.on('doubletap', function (event) {
+			element.on('tap', function (event) {
 				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
 				event.preventDefault();
 				return false;
@@ -5184,35 +5182,3 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		});
 	});
 };
-
-
-// --------- editing --------------
-
-//--- go live
-// pinch to zoom and scale around zoom point not around centre of viewport!
-// firefox selection bug
-// focus after drop if going off screen
-// check with dave about touch interface gestures
-// reset stage size after a new map is loaded?
-//  - or as nodes get removed?
-//- v2 -
-// drag and drop images
-// consolidate links and connectors into a single concept with different styles?
-// extract generic stage/viewport functions from DOMRender.ViewController into JQuery functions?
-// collaborator images in collaboration
-// straight lines extension
-//		- perhaps read some css property
-//		$('svg').first().css('var-mapjs-line-style', 'curved'); console.log($('svg')[0].style.varMapjsLineStyle
-// prevent scrolling so the screen is blank
-//		- do we still need to do this?
-// mapModel - clean up the notion of clicks, in particular context menu which is no longer working like that!
-//		- move dropNode code somewhere else and test it
-// support for multiple stages so that eg stage ID is prepended to the node and connector IDs
-// support for selectAll when editing nodes or remove that from the mapModel
-//		- do we still use it?
-// html export
-//
-// -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
-// -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
-//		- do we need this? it was used onscroll and onswipe
-//      - we don't need this any more!
