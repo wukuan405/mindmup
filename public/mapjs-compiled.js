@@ -1473,7 +1473,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		onIdeaChanged = function () {
 			revertSelectionForUndo = false;
 			revertActivatedForUndo = false;
-			updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
+			self.rebuildRequired();
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -1497,6 +1497,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	};
 	self.analytic = analytic;
 	self.getCurrentlySelectedIdeaId = getCurrentlySelectedIdeaId;
+	self.rebuildRequired = function () {
+		updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
+	};
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
@@ -5179,57 +5182,3 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		});
 	});
 };
-
-
-// --------- editing --------------
-
-//--- go live
-// + pich to zoom and scale around zoom point not around centre of viewport!
-// firefox selection bug
-// collaboration - collaborator images - not to break
-// straight lines - not to break
-// optional load of the new renderer
-
-// focus after drop if going off screen
-//
-//- v2 -
-// drag and drop images?
-// consolidate links and connectors into a single concept with different styles?
-// extract generic stage/viewport functions from DOMRender.ViewController into JQuery functions?
-// collaborator images in collaboration
-// straight lines extension
-//		- perhaps read some css property
-//		$('svg').first().css('var-mapjs-line-style', 'curved'); console.log($('svg')[0].style.varMapjsLineStyle
-// prevent scrolling so the screen is blank
-// mapModel - clean up the notion of clicks, in particular context menu which is no longer working like that!
-// support for multiple stages so that eg stage ID is prepended to the node and connector IDs
-// support for selectAll when editing nodes or remove that from the mapModel - do we still use it?
-// html export
-//
-// remaining kinetic mediator events
-//
-// viewing
-// +	mapModel.addEventListener('nodeCreated', function (n) {
-// +	mapModel.addEventListener('connectorRemoved', function (n) {
-// +	mapModel.addEventListener('linkCreated', function (l) {
-// +	mapModel.addEventListener('linkRemoved', function (l) {
-// +	mapModel.addEventListener('nodeMoved', function (n, reason) {
-// +	mapModel.addEventListener('nodeRemoved', function (n) {
-// +	mapModel.addEventListener('connectorCreated', function (n) {
-// +	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
-// +	mapModel.addEventListener('layoutChangeComplete', function () {
-// +	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
-// +	mapModel.addEventListener('mapViewResetRequested', function () {
-// editing
-// +	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
-// +	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
-// +	mapModel.addEventListener('nodeAttrChanged', function (n) {
-// +	mapModel.addEventListener('nodeTitleChanged', function (n) {
-// +	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
-// +	mapModel.addEventListener('linkAttrChanged', function (l) {
-//
-//
-// -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
-// -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
-//		- do we need this? it was used onscroll and onswipe
-//      - we don't need this any more!

@@ -1,5 +1,5 @@
 /* global jQuery, MM, MAPJS, window*/
-MM.CustomStyleController = function (mapController) {
+MM.CustomStyleController = function (mapController, mapModel) {
 	'use strict';
 	var self = this,
 		customStyleElement = jQuery('<style id="customStyleCSS" type="text/css"></style>').appendTo('body'),
@@ -18,7 +18,7 @@ MM.CustomStyleController = function (mapController) {
 			if (newText !== currentStyleText) {
 				currentStyleText = newText;
 				customStyleElement.text(currentStyleText || '');
-				activeContent.dispatchEvent('changed');
+				mapModel.rebuildRequired();
 			}
 		};
 	mapController.addEventListener('mapLoaded', setActiveContent);
@@ -45,7 +45,7 @@ MM.Extensions.newCanvas = function () {
 	'use strict';
 	var loadUI = function (html) {
 			var parsed = jQuery(html),
-				controller = new MM.CustomStyleController(MM.Extensions.components.mapController);
+				controller = new MM.CustomStyleController(MM.Extensions.components.mapController, MM.Extensions.components.mapModel);
 			parsed.find('[data-mm-role=top-menu]').clone().appendTo('#nodeContextMenu');
 			parsed.find('[data-mm-role=modal]').clone().appendTo('body').customStyleWidget(controller);
 		};
