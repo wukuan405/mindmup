@@ -4,7 +4,7 @@
 	border-radius: 10px;
 	border: 1px solid #777;
 	box-shadow: 5px 5px 5px rgba(204, 204, 204, 0.8);
-	z-index: 2;
+	z-index: 3;
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
@@ -52,12 +52,12 @@
 .mapjs-node.selected {
 	outline: 0;
 	box-shadow: 5px 5px 5px black;
-	z-index: 3;
+	z-index: 4;
 }
 
 .mapjs-node.dragging {
 	opacity: 0.4;
-	z-index: 4;
+	z-index: 5;
 }
 .collapsed {
 	box-shadow: 3px 3px 0 #A0A0A0, 4px 4px 0 #333, 6px 6px 0 #707070, 7px 7px 0 #222;
@@ -116,7 +116,12 @@
 	position: absolute;
 	margin: 0px;
 	padding: 0px;
+}
+.mapjs-draw-container[data-mapjs-role=connector] {
 	z-index: 1;
+}
+.mapjs-draw-container[data-mapjs-role=link] {
+	z-index: 2;
 }
 .mapjs-connector {
 	stroke-width: 1px;
@@ -127,6 +132,12 @@
 	stroke-width: 1.5px;
 	fill: none;
 }
+.mapjs-link-hit {
+	stroke: transparent;
+	stroke-width: 15;
+	cursor: crosshair;
+}
+
 .mapjs-arrow {
 }
 #container {
