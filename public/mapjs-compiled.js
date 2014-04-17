@@ -4825,7 +4825,12 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 				mapModel.clickNode(node.id, realEvent);
 				evt.stopPropagation();
 			})
-			.on('doubletap', function () {
+			.on('doubletap', function (evt) {
+				evt.preventDefault();
+				if (evt.gesture) {
+					evt.gesture.preventDefault();
+					evt.gesture.stopPropagation();
+				}
 				if (!mapModel.isEditingEnabled()) {
 					mapModel.toggleCollapse('mouse');
 					return;
@@ -5120,7 +5125,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
 		} else {
-			element.on('tap', function (event) {
+			element.on('doubletap', function (event) {
 				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
 				event.preventDefault();
 				return false;
@@ -5184,16 +5189,14 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 // --------- editing --------------
 
 //--- go live
-// + pich to zoom and scale around zoom point not around centre of viewport!
+// pinch to zoom and scale around zoom point not around centre of viewport!
 // firefox selection bug
-// collaboration - collaborator images - not to break
-// straight lines - not to break
-// optional load of the new renderer
-
 // focus after drop if going off screen
-//
+// check with dave about touch interface gestures
+// reset stage size after a new map is loaded?
+//  - or as nodes get removed?
 //- v2 -
-// drag and drop images?
+// drag and drop images
 // consolidate links and connectors into a single concept with different styles?
 // extract generic stage/viewport functions from DOMRender.ViewController into JQuery functions?
 // collaborator images in collaboration
@@ -5201,33 +5204,13 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 //		- perhaps read some css property
 //		$('svg').first().css('var-mapjs-line-style', 'curved'); console.log($('svg')[0].style.varMapjsLineStyle
 // prevent scrolling so the screen is blank
+//		- do we still need to do this?
 // mapModel - clean up the notion of clicks, in particular context menu which is no longer working like that!
+//		- move dropNode code somewhere else and test it
 // support for multiple stages so that eg stage ID is prepended to the node and connector IDs
-// support for selectAll when editing nodes or remove that from the mapModel - do we still use it?
+// support for selectAll when editing nodes or remove that from the mapModel
+//		- do we still use it?
 // html export
-//
-// remaining kinetic mediator events
-//
-// viewing
-// +	mapModel.addEventListener('nodeCreated', function (n) {
-// +	mapModel.addEventListener('connectorRemoved', function (n) {
-// +	mapModel.addEventListener('linkCreated', function (l) {
-// +	mapModel.addEventListener('linkRemoved', function (l) {
-// +	mapModel.addEventListener('nodeMoved', function (n, reason) {
-// +	mapModel.addEventListener('nodeRemoved', function (n) {
-// +	mapModel.addEventListener('connectorCreated', function (n) {
-// +	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
-// +	mapModel.addEventListener('layoutChangeComplete', function () {
-// +	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
-// +	mapModel.addEventListener('mapViewResetRequested', function () {
-// editing
-// +	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
-// +	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
-// +	mapModel.addEventListener('nodeAttrChanged', function (n) {
-// +	mapModel.addEventListener('nodeTitleChanged', function (n) {
-// +	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
-// +	mapModel.addEventListener('linkAttrChanged', function (l) {
-//
 //
 // -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
 // -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
