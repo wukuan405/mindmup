@@ -4879,7 +4879,9 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 				mapModel.clickNode(node.id, realEvent);
 				evt.stopPropagation();
 			})
-			.on('doubletap', function () {
+			.on('doubletap', function (event) {
+				event.stopPropagation();
+				event.gesture.stopPropagation();
 				if (!mapModel.isEditingEnabled()) {
 					mapModel.toggleCollapse('mouse');
 					return;
@@ -5200,7 +5202,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
 		} else {
-			element.on('tap', function (event) {
+			element.on('doubletap', function (event) {
 				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
 				event.preventDefault();
 				return false;
