@@ -94,20 +94,34 @@
             <li rel="tooltip" data-title="Ctrl+z"><a data-category="Top Bar" data-event-type="Undo" class="undo"><i class="icon-undo"></i>&nbsp;Undo</a></li>
             <li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+Shift+z"><a data-category="Top Bar" data-event-type="Redo" class="redo"><i class="icon-repeat"></i>&nbsp;Redo</a></li>
 
-            <li class="divider hidden-phone"></li>
-			<li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+F"><a data-category="Top Bar" data-event-type="Find" data-mm-role="show-map-search"><i class="icon-search"></i>&nbsp;Find</a></li>
-            <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+c"><a data-category="Top Bar" data-event-type="Copy" class="copy"><i class="icon-copy"></i>&nbsp;Copy</a></li>
-            <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+x"><a data-category="Top Bar" data-event-type="Cut" class="cut"><i class="icon-cut"></i>&nbsp;Cut</a></li>
-            <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+v"><a data-category="Top Bar" data-event-type="Paste" class="paste"><i class="icon-paste"></i>&nbsp;Paste</a></li>
-            <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="&#123;"><a data-category="Top Bar" data-event-type="Select subtree" class="activateNodeAndChildren"><i class="icon-sitemap"></i>&nbsp;Select&nbsp;subtree</a></li>
-            <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="["><a data-category="Top Bar" data-event-type="Select all children" class="activateChildren"><i class="icon-th-list"></i>&nbsp;Select&nbsp;all&nbsp;children</a></li>
-            <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="="><a data-category="Top Bar" data-event-type="Select all siblings" class="activateSiblingNodes"><i class="icon-ellipsis-vertical"></i>&nbsp;Select&nbsp;all&nbsp;siblings</a></li>
+      <li class="divider hidden-phone"></li>
+              <li class="hidden-phone-landscape" rel="tooltip" data-title="Ctrl+F"><a data-category="Top Bar" data-event-type="Find" data-mm-role="show-map-search"><i class="icon-search"></i>&nbsp;Find</a></li>
+              <li class="dropdown-submenu hidden-phone">
+                <a href="#"><i class="icon-copy"></i>&nbsp;Clipboard</a>
+                <ul data-mm-role="clipboard" class="dropdown-menu" role="menu">
 
-            <li class="divider hidden-phone"></li>
+                  <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+c"><a data-category="Top Bar" data-event-type="Copy" class="copy"><i class="icon-copy"></i>&nbsp;Copy</a></li>
+                  <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+x"><a data-category="Top Bar" data-event-type="Cut" class="cut"><i class="icon-cut"></i>&nbsp;Cut</a></li>
+                  <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Clipboard" data-title="Ctrl+v"><a data-category="Top Bar" data-event-type="Paste" class="paste"><i class="icon-paste"></i>&nbsp;Paste</a></li>
+                </ul>
+              </li>
+            <li class="dropdown-submenu hidden-phone">
+              <a href="#"><i class="icon-sitemap"></i>&nbsp;Select nodes</a>
+              <ul data-mm-role="select" class="dropdown-menu" role="menu">
+                <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="&#123;"><a data-category="Top Bar" data-event-type="Select subtree" class="activateNodeAndChildren"><i class="icon-sitemap"></i>&nbsp;Select&nbsp;subtree</a></li>
+                <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="["><a data-category="Top Bar" data-event-type="Select all children" class="activateChildren"><i class="icon-th-list"></i>&nbsp;Select&nbsp;all&nbsp;children</a></li>
+                <li class="hidden-phone" rel="tooltip" data-mm-context-menu="Select" data-title="="><a data-category="Top Bar" data-event-type="Select all siblings" class="activateSiblingNodes"><i class="icon-ellipsis-vertical"></i>&nbsp;Select&nbsp;all&nbsp;siblings</a></li>
+              </ul>
+            </li>
 
-            <li rel="tooltip" data-mm-context-menu="Insert" data-title="Tab"><a data-category="Top Bar" data-event-type="Add idea" class="addSubIdea"><i class="icon-signout" ></i>&nbsp;Add Child</a></li>
-            <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Insert" data-title="Enter"><a data-category="Top Bar" data-event-type="Insert Sibling" class="addSiblingIdea"><i class="icon-download-alt" ></i>&nbsp;Add Sibling</a></li>
-            <li class="hidden-phone-landscape" data-mm-context-menu="Insert" rel="tooltip" data-title="Shift+Tab"><a data-category="Top Bar" data-event-type="Insert Intermediate" class="insertIntermediate"><i class="icon-signin" ></i>&nbsp;Add Parent</a></li>
+            <li class="dropdown-submenu">
+              <a href="#"><i class="icon-plus"></i>&nbsp;Insert</a>
+              <ul data-mm-role="add node" class="dropdown-menu" role="menu">
+                <li rel="tooltip" data-mm-context-menu="Insert" data-title="Tab"><a data-category="Top Bar" data-event-type="Add idea" class="addSubIdea"><i class="icon-signout" ></i>&nbsp;Add Child</a></li>
+                <li class="hidden-phone-landscape" rel="tooltip" data-mm-context-menu="Insert" data-title="Enter"><a data-category="Top Bar" data-event-type="Insert Sibling" class="addSiblingIdea"><i class="icon-download-alt" ></i>&nbsp;Add Sibling</a></li>
+                <li class="hidden-phone-landscape" data-mm-context-menu="Insert" rel="tooltip" data-title="Shift+Tab"><a data-category="Top Bar" data-event-type="Insert Intermediate" class="insertIntermediate"><i class="icon-signin" ></i>&nbsp;Add Parent</a></li>
+              </ul>
+            </li>
             <li rel="tooltip" data-mm-context-menu data-title="Backspace"><a data-category="Top Bar" data-event-type="Delete idea" class="removeSubIdea"><i class="icon-remove"></i>&nbsp;Delete</a></li>
 
             <li class="divider hidden-phone"></li>
