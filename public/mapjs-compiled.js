@@ -4877,11 +4877,18 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 			.on('tap', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				mapModel.clickNode(node.id, realEvent);
-				evt.stopPropagation();
+				if (evt) {
+					evt.stopPropagation();
+				}
+
 			})
 			.on('doubletap', function (event) {
-				event.stopPropagation();
-				event.gesture.stopPropagation();
+				if (event) {
+					event.stopPropagation();
+					if (event.gesture) {
+						event.gesture.stopPropagation();
+					}
+				}
 				if (!mapModel.isEditingEnabled()) {
 					mapModel.toggleCollapse('mouse');
 					return;
@@ -4960,8 +4967,9 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement) {
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
 		var node = jQuery('#' + nodeKey(ideaId));
 		if (isSelected) {
+			node.addClass('selected');
 			ensureNodeVisible(node).then(function () {
-				node.addClass('selected').focus();
+				node.focus();
 			});
 		} else {
 			node.removeClass('selected');
