@@ -5,6 +5,7 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		self = this,
 		currentMapId,
 		currentIdea,
+		changeListener,
 		events = [],
 		isWarningShown = false,
 		checkForLocalChanges = function (mapId) {
@@ -15,7 +16,7 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		},
 		trackChanges = function (idea, mapId) {
 			events = [];
-			idea.addEventListener('changed', function (command, params) {
+			changeListener = function (command, params) {
 				events.push({cmd: command, args: params});
 				try {
 					storage.setItem(prefix + mapId, events);
@@ -25,7 +26,21 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 						alertDispatcher.show('Problem with auto save!', 'We could not autosave the changes - there is not enough free space in your local browser repository.', 'warning');
 					}
 				}
-			});
+			};
+			idea.addEventListener('changed', changeListener);
+		},
+		onTrackingChange = function (mapId, idea, properties) {
+			if (changeListener && currentIdea) {
+				currentIdea.removeEventListener('changed', changeListener);
+			}
+
+			if (mapId && (!properties || !properties.autoSave)) {
+				currentMapId = mapId;
+				currentIdea = idea;
+				isWarningShown = false;
+				checkForLocalChanges(mapId);
+				trackChanges(idea, mapId);
+			}
 		};
 	observable(this);
 	self.applyUnsavedChanges = function () {
@@ -45,14 +60,9 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 		if (mapId === currentMapId || idea === currentIdea) {
 			self.discardUnsavedChanges();
 		}
-	});
-	mapController.addEventListener('mapLoaded', function (mapId, idea, properties) {
-		if (mapId && (!properties || !properties.autoSave)) {
-			currentMapId = mapId;
-			currentIdea = idea;
-			isWarningShown = false;
-			checkForLocalChanges(mapId);
-			trackChanges(idea, mapId);
+		if (mapId !== currentMapId) {
+			onTrackingChange(mapId, idea);
 		}
 	});
+	mapController.addEventListener('mapLoaded', onTrackingChange);
 };

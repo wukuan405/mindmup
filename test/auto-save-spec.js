@@ -86,6 +86,36 @@ describe('Auto save', function () {
 
 			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd2', args: [2]} ]);
 		});
+		it('should unsubscribe old listener when map saved with new id and idea is changed', function () {
+			var newIdea = observable({});
+			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+			spyOn(idea, 'removeEventListener').and.callThrough();
+			spyOn(newIdea, 'addEventListener').and.callThrough();
+
+			mapController.dispatchEvent('mapSaved', 'newmapId', newIdea);
+
+			expect(idea.removeEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
+			expect(newIdea.addEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
+		});
+		it('should unsubscribe old listener when map saved with new id and idea is not changed', function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+			spyOn(idea, 'removeEventListener').and.callThrough();
+			spyOn(idea, 'addEventListener').and.callThrough();
+
+			mapController.dispatchEvent('mapSaved', 'newmapId', idea);
+
+			expect(idea.removeEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
+			expect(idea.addEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
+		});
+		it('should use latest map id if saved with a new map id', function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+			mapController.dispatchEvent('mapSaved', 'newmapId', idea);
+			spyOn(storage, 'setItem').and.callThrough();
+
+			idea.dispatchEvent('changed', 'cmd2', [2]);
+
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-newmapId', [ {cmd: 'cmd2', args: [2]} ]);
+		});
 		it('should drop unsaved changes from storage when a map is saved', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			idea.dispatchEvent('changed', 'cmd1', [1]);
