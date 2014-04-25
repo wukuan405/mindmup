@@ -143,6 +143,7 @@ MM.Extensions.config = {
 		name: 'New MindMup Layout (Beta)',
 		script: '/e/newcanvas.js',
 		icon: 'icon-thumbs-up',
+		doc: 'http://blog.mindmup.com/p/new-drawing-engine.html',
 		desc: 'Activate the new MindMup layout now'
 	}
 };
