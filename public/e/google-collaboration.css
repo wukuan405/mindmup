@@ -18,3 +18,8 @@ img.collab-photo {
 	display: inherit;
 }
 
+.mm-collaborator {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+}
