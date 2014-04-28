@@ -4948,9 +4948,15 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.updateNodeContent(node)
 			.on('tap', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
+				if (realEvent.button) {
+					return;
+				}
 				mapModel.clickNode(node.id, realEvent);
 				if (evt) {
 					evt.stopPropagation();
+				}
+				if (evt && evt.gesture) {
+					evt.gesture.stopPropagation();
 				}
 
 			})
@@ -4995,6 +5001,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			})
 			.on('contextmenu', function (event) {
 				// ugly ugly ugly!
+				mapModel.selectNode(node.id);
 				mapModel.dispatchEvent('contextMenuRequested', node.id, event.pageX, event.pageY);
 				event.preventDefault();
 				return false;
