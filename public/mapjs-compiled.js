@@ -1752,21 +1752,21 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			return false;
 		}
 		analytic('removeSubIdea', source);
+		var removed;
 		if (isInputEnabled) {
-			var shouldSelectParent,
-				previousSelectionId = getCurrentlySelectedIdeaId(),
-				parent = idea.findParent(previousSelectionId);
 			self.applyToActivated(function (id) {
-				var removed  = idea.removeSubIdea(id);
-				/*jslint eqeq: true*/
-				if (previousSelectionId == id) {
-					shouldSelectParent = removed;
+				/*jslint eqeq:true */
+				var parent;
+				if (currentlySelectedIdeaId == id) {
+					parent = idea.findParent(currentlySelectedIdeaId);
+					if (parent) {
+						self.selectNode(parent.id);
+					}
 				}
+				removed  = idea.removeSubIdea(id);
 			});
-			if (shouldSelectParent) {
-				self.selectNode(parent.id);
-			}
 		}
+		return removed;
 	};
 	this.updateTitle = function (ideaId, title, isNew) {
 		if (isNew) {
@@ -4912,6 +4912,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			return viewToStageCoordinates(viewPort.innerWidth() / 2, viewPort.innerHeight() / 2);
 		},
 		ensureNodeVisible = function (domElement) {
+			viewPort.finish();
 			var result = jQuery.Deferred(),
 				node = domElement.data(),
 				nodeTopLeft = stageToViewCoordinates(node.x, node.y),
@@ -5082,7 +5083,10 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		if (isSelected) {
 			node.addClass('selected');
 			ensureNodeVisible(node).then(function () {
-				node.focus();
+				/*jslint eqeq:true*/
+				if (mapModel.getCurrentlySelectedIdeaId() == ideaId) {
+					node.focus();
+				}
 			});
 		} else {
 			node.removeClass('selected');
