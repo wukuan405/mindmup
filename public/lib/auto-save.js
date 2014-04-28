@@ -1,5 +1,5 @@
 /*global MM, observable*/
-MM.AutoSave = function (mapController, storage, alertDispatcher) {
+MM.AutoSave = function (mapController, storage, alertDispatcher, mapModel) {
 	'use strict';
 	var prefix = 'auto-save-',
 		self = this,
@@ -46,9 +46,11 @@ MM.AutoSave = function (mapController, storage, alertDispatcher) {
 	self.applyUnsavedChanges = function () {
 		var events = storage.getItem(prefix + currentMapId);
 		if (events) {
+			mapModel.pause();
 			events.forEach(function (event) {
 				currentIdea.execCommand(event.cmd, event.args);
 			});
+			mapModel.resume();
 		}
 	};
 	self.discardUnsavedChanges = function () {

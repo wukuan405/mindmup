@@ -1,12 +1,13 @@
 /*global spyOn, MAPJS, jasmine, describe, it, MM, observable, expect, beforeEach, localStorage*/
 describe('Auto save', function () {
 	'use strict';
-	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert;
+	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert, mapModel;
 	beforeEach(function () {
 		storage = MM.jsonStorage(localStorage);
+		mapModel = jasmine.createSpyObj('mapModel', ['pause', 'resume']);
 		mapController = observable({});
 		alert = {show: function () {} };
-		autoSave = new MM.AutoSave(mapController, storage, alert);
+		autoSave = new MM.AutoSave(mapController, storage, alert, mapModel);
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
 		idea = observable({});
 		storage.remove('auto-save-mapId');
@@ -190,6 +191,16 @@ describe('Auto save', function () {
 			autoSave.applyUnsavedChanges();
 
 			expect(aggregate.title).toBe('old');
+		});
+		it('should pause and resume whilte applying saved changes', function () {
+			var aggregate = MAPJS.content({id: 1, title: 'old'});
+			storage.setItem('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new title']} ]);
+			mapController.dispatchEvent('mapLoaded', 'mapId', aggregate);
+
+			autoSave.applyUnsavedChanges();
+
+			expect(mapModel.pause).toHaveBeenCalled();
+			expect(mapModel.resume).toHaveBeenCalled();
 		});
 	});
 	describe('discardUnsavedChanges', function () {
