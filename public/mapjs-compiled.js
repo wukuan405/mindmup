@@ -1389,20 +1389,24 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		horizontalSelectionThreshold = 300,
 		isAddLinkMode,
 		updateCurrentLayout = function (newLayout) {
-			var nodeId, newNode, oldNode, newConnector, oldConnector, linkId, newLink, oldLink, newActive;
 			self.dispatchEvent('layoutChangeStarting');
-			for (nodeId in currentLayout.connectors) {
-				newConnector = newLayout.connectors[nodeId];
-				oldConnector = currentLayout.connectors[nodeId];
+			_.each(currentLayout.connectors, function (oldConnector, connectorId) {
+				var newConnector = newLayout.connectors[connectorId];
 				if (!newConnector || newConnector.from !== oldConnector.from || newConnector.to !== oldConnector.to) {
 					self.dispatchEvent('connectorRemoved', oldConnector);
 				}
-			}
-			for (nodeId in currentLayout.nodes) {
-				oldNode = currentLayout.nodes[nodeId];
-				newNode = newLayout.nodes[nodeId];
+			});
+			_.each(currentLayout.links, function (oldLink, linkId) {
+				var newLink = newLayout.links && newLayout.links[linkId];
+				if (!newLink) {
+					self.dispatchEvent('linkRemoved', oldLink);
+				}
+			});
+			_.each(currentLayout.nodes, function (oldNode, nodeId) {
+				var newNode = newLayout.nodes[nodeId],
+					newActive;
 				if (!newNode) {
-					/*jslint eqeq: true, loopfunc: true*/
+					/*jslint eqeq: true*/
 					if (nodeId == currentlySelectedIdeaId) {
 						self.selectNode(idea.id);
 					}
@@ -1412,10 +1416,10 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 					}
 					self.dispatchEvent('nodeRemoved', oldNode, nodeId);
 				}
-			}
-			for (nodeId in newLayout.nodes) {
-				oldNode = currentLayout.nodes[nodeId];
-				newNode = newLayout.nodes[nodeId];
+			});
+
+			_.each(newLayout.nodes, function (newNode, nodeId) {
+				var oldNode = currentLayout.nodes[nodeId];
 				if (!oldNode) {
 					self.dispatchEvent('nodeCreated', newNode);
 				} else {
@@ -1429,17 +1433,15 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 						self.dispatchEvent('nodeAttrChanged', newNode);
 					}
 				}
-			}
-			for (nodeId in newLayout.connectors) {
-				newConnector = newLayout.connectors[nodeId];
-				oldConnector = currentLayout.connectors[nodeId];
+			});
+			_.each(newLayout.connectors, function (newConnector, connectorId) {
+				var oldConnector = currentLayout.connectors[connectorId];
 				if (!oldConnector || newConnector.from !== oldConnector.from || newConnector.to !== oldConnector.to) {
 					self.dispatchEvent('connectorCreated', newConnector);
 				}
-			}
-			for (linkId in newLayout.links) {
-				newLink = newLayout.links[linkId];
-				oldLink = currentLayout.links && currentLayout.links[linkId];
+			});
+			_.each(newLayout.links, function (newLink, linkId) {
+				var oldLink = currentLayout.links && currentLayout.links[linkId];
 				if (oldLink) {
 					if (!_.isEqual(newLink.attr || {}, (oldLink && oldLink.attr) || {})) {
 						self.dispatchEvent('linkAttrChanged', newLink);
@@ -1447,14 +1449,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				} else {
 					self.dispatchEvent('linkCreated', newLink);
 				}
-			}
-			for (linkId in currentLayout.links) {
-				oldLink = currentLayout.links[linkId];
-				newLink = newLayout.links && newLayout.links[linkId];
-				if (!newLink) {
-					self.dispatchEvent('linkRemoved', oldLink);
-				}
-			}
+			});
 			currentLayout = newLayout;
 			if (!self.isInCollapse) {
 				self.dispatchEvent('layoutChangeComplete');
@@ -1471,7 +1466,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
+		paused = false,
 		onIdeaChanged = function () {
+			if (paused) {
+				return;
+			}
 			revertSelectionForUndo = false;
 			revertActivatedForUndo = false;
 			self.rebuildRequired();
@@ -1487,6 +1486,13 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		};
 	observable(this);
 	analytic = self.dispatchEvent.bind(self, 'analytic', 'mapModel');
+	self.pause = function () {
+		paused = true;
+	};
+	self.resume = function () {
+		paused = false;
+		self.rebuildRequired();
+	};
 	self.getIdea = function () {
 		return idea;
 	};
@@ -1504,6 +1510,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	this.setIdea = function (anIdea) {
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
+			paused = false;
 			setActiveNodes([]);
 			self.dispatchEvent('nodeSelectionChanged', currentlySelectedIdeaId, false);
 			currentlySelectedIdeaId = undefined;
@@ -2328,7 +2335,29 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	self.setLayoutCalculator = function (newCalculator) {
 		layoutCalculator = newCalculator;
 	};
-
+	self.dropImage =  function (dataUrl, imgWidth, imgHeight, x, y) {
+		var nodeId,
+			dropOn = function (ideaId, position) {
+				var scaleX = Math.min(imgWidth, 300) / imgWidth,
+					scaleY = Math.min(imgHeight, 300) / imgHeight,
+					scale = Math.min(scaleX, scaleY),
+					existing = idea.getAttrById(ideaId, 'icon');
+				self.setIcon('drag and drop', dataUrl, Math.round(imgWidth * scale), Math.round(imgHeight * scale), (existing && existing.position) || position, ideaId);
+			},
+			addNew = function () {
+				var newId;
+				idea.startBatch();
+				newId = idea.addSubIdea(currentlySelectedIdeaId);
+				dropOn(newId, 'center');
+				idea.endBatch();
+				self.selectNode(newId);
+			};
+		nodeId = self.getNodeIdAtPosition(x, y);
+		if (nodeId) {
+			return dropOn(nodeId, 'left');
+		}
+		addNew();
+	};
 };
 /*global _, MAPJS, jQuery*/
 /*jslint forin:true*/
@@ -4106,6 +4135,43 @@ jQuery.fn.imageDropWidget = function (imageInsertController) {
 	return this;
 };
 /*global jQuery, Color, _, MAPJS, document, window*/
+MAPJS.DOMRender = {
+	nodeCacheMark: function (idea, levelOverride) {
+		'use strict';
+		return {
+			title: idea.title,
+			icon: idea.attr && idea.attr.icon && _.pick(idea.attr.icon, 'width', 'height', 'position'),
+			collapsed: idea.attr && idea.attr.collapsed,
+			level: idea.level || levelOverride
+		};
+	},
+	addNodeCacheMark: function (domNode, idea) {
+		'use strict';
+		domNode.data('nodeCacheMark', MAPJS.DOMRender.nodeCacheMark(idea));
+	},
+	dimensionProvider: function (idea, level) {
+		'use strict'; /* support multiple stages? */
+		var textBox = jQuery(document).nodeWithId(idea.id),
+			result;
+		if (textBox && textBox.length > 0) {
+			if (_.isEqual(textBox.data('nodeCacheMark'), MAPJS.DOMRender.nodeCacheMark(idea, level))) {
+				return _.pick(textBox.data(), 'width', 'height');
+			}
+		}
+		textBox = jQuery('<div>').addClass('mapjs-node').attr('mapjs-level', level).css({position: 'absolute', visibility: 'hidden'}).appendTo('body').updateNodeContent(idea);
+		result = {
+			width: textBox.outerWidth(true),
+			height: textBox.outerHeight(true)
+		};
+		textBox.detach();
+		return result;
+	},
+	layoutCalculator: function (contentAggregate) {
+		'use strict';
+		return MAPJS.calculateLayout(contentAggregate, MAPJS.DOMRender.dimensionProvider);
+	},
+
+};
 MAPJS.createSVG = function (tag) {
 	'use strict';
 	return jQuery(document.createElementNS('http://www.w3.org/2000/svg', tag || 'svg'));
@@ -4205,51 +4271,146 @@ jQuery.fn.updateStage = function () {
 	this.css(size);
 	return this;
 };
+
+MAPJS.DOMRender.curvedPath = function (parent, child) {
+	'use strict';
+	var horizontalConnector = function (parentX, parentY, parentWidth, parentHeight,
+				childX, childY, childWidth, childHeight) {
+			var childHorizontalOffset = parentX < childX ? 0.1 : 0.9,
+				parentHorizontalOffset = 1 - childHorizontalOffset;
+			return {
+				from: {
+					x: parentX + parentHorizontalOffset * parentWidth,
+					y: parentY + 0.5 * parentHeight
+				},
+				to: {
+					x: childX + childHorizontalOffset * childWidth,
+					y: childY + 0.5 * childHeight
+				},
+				controlPointOffset: 0
+			};
+		},
+		calculateConnector = function (parent, child) {
+			var tolerance = 10,
+				childHorizontalOffset,
+				childMid = child.top + child.height * 0.5,
+				parentMid = parent.top + parent.height * 0.5;
+			if (Math.abs(parentMid - childMid) + tolerance < Math.max(child.height, parent.height * 0.75)) {
+				return horizontalConnector(parent.left, parent.top, parent.width, parent.height, child.left, child.top, child.width, child.height);
+			}
+			childHorizontalOffset = parent.left < child.left ? 0 : 1;
+			return {
+				from: {
+					x: parent.left + 0.5 * parent.width,
+					y: parent.top + 0.5 * parent.height
+				},
+				to: {
+					x: child.left + childHorizontalOffset * child.width,
+					y: child.top + 0.5 * child.height
+				},
+				controlPointOffset: 0.75
+			};
+		},
+		position = {
+			left: Math.min(parent.left, child.left),
+			top: Math.min(parent.top, child.top),
+		},
+		calculatedConnector, offset, maxOffset;
+	position.width = Math.max(parent.left + parent.width, child.left + child.width, position.left + 1) - position.left;
+	position.height = Math.max(parent.top + parent.height, child.top + child.height, position.top + 1) - position.top;
+
+	calculatedConnector = calculateConnector(parent, child);
+	offset = calculatedConnector.controlPointOffset * (calculatedConnector.from.y - calculatedConnector.to.y);
+	maxOffset = Math.min(child.height, parent.height) * 1.5;
+	offset = Math.max(-maxOffset, Math.min(maxOffset, offset));
+	return {
+		'd': 'M' + Math.round(calculatedConnector.from.x - position.left) + ',' + Math.round(calculatedConnector.from.y - position.top) +
+			'Q' + Math.round(calculatedConnector.from.x - position.left) + ',' + Math.round(calculatedConnector.to.y - offset - position.top) + ' ' + Math.round(calculatedConnector.to.x - position.left) + ',' + Math.round(calculatedConnector.to.y - position.top),
+		// 'conn': calculatedConnector,
+		'position': position
+	};
+};
+MAPJS.DOMRender.straightPath = function (parent, child) {
+	'use strict';
+	var calculateConnector = function (parent, child) {
+		var parentPoints = [
+			{
+				x: parent.left + 0.5 * parent.width,
+				y: parent.top
+			},
+			{
+				x: parent.left + parent.width,
+				y: parent.top + 0.5 * parent.height
+			},
+			{
+				x: parent.left + 0.5 * parent.width,
+				y: parent.top + parent.height
+			},
+			{
+				x: parent.left,
+				y: parent.top + 0.5 * parent.height
+			}
+		], childPoints = [
+			{
+				x: child.left + 0.5 * child.width,
+				y: child.top
+			},
+			{
+				x: child.left + child.width,
+				y: child.top + 0.5 * child.height
+			},
+			{
+				x: child.left + 0.5 * child.width,
+				y: child.top + child.height
+			},
+			{
+				x: child.left,
+				y: child.top + 0.5 * child.height
+			}
+		], i, j, min = Infinity, bestParent, bestChild, dx, dy, current;
+		for (i = 0; i < parentPoints.length; i += 1) {
+			for (j = 0; j < childPoints.length; j += 1) {
+				dx = parentPoints[i].x - childPoints[j].x;
+				dy = parentPoints[i].y - childPoints[j].y;
+				current = dx * dx + dy * dy;
+				if (current < min) {
+					bestParent = i;
+					bestChild = j;
+					min = current;
+				}
+			}
+		}
+		return {
+			from: parentPoints[bestParent],
+			to: childPoints[bestChild]
+		};
+	},
+	position = {
+		left: Math.min(parent.left, child.left),
+		top: Math.min(parent.top, child.top),
+	},
+	conn = calculateConnector(parent, child);
+	position.width = Math.max(parent.left + parent.width, child.left + child.width, position.left + 1) - position.left;
+	position.height = Math.max(parent.top + parent.height, child.top + child.height, position.top + 1) - position.top;
+
+	return {
+		'd': 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) +
+				 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top),
+		'conn': conn,
+		'position': position
+	};
+};
+
+MAPJS.DOMRender.nodeConnectorPath = MAPJS.DOMRender.curvedPath;
+MAPJS.DOMRender.linkConnectorPath = MAPJS.DOMRender.straightPath;
+
 jQuery.fn.updateConnector = function () {
 	'use strict';
 	return jQuery.each(this, function () {
 		var	element = jQuery(this),
-			horizontalConnector = function (parentX, parentY, parentWidth, parentHeight,
-					childX, childY, childWidth, childHeight) {
-				var childHorizontalOffset = parentX < childX ? 0.1 : 0.9,
-					parentHorizontalOffset = 1 - childHorizontalOffset;
-				return {
-					from: {
-						x: parentX + parentHorizontalOffset * parentWidth,
-						y: parentY + 0.5 * parentHeight
-					},
-					to: {
-						x: childX + childHorizontalOffset * childWidth,
-						y: childY + 0.5 * childHeight
-					},
-					controlPointOffset: 0
-				};
-			},
-			calculateConnector = function (parent, child) {
-				var tolerance = 10,
-					childHorizontalOffset,
-					childMid = child.top + child.height * 0.5,
-					parentMid = parent.top + parent.height * 0.5;
-
-				if (Math.abs(parentMid - childMid) + tolerance < Math.max(child.height, parent.height * 0.75)) {
-					return horizontalConnector(parent.left, parent.top, parent.width, parent.height, child.left, child.top, child.width, child.height);
-				}
-				childHorizontalOffset = parent.left < child.left ? 0 : 1;
-				return {
-					from: {
-						x: parent.left + 0.5 * parent.width,
-						y: parent.top + 0.5 * parent.height
-					},
-					to: {
-						x: child.left + childHorizontalOffset * child.width,
-						y: child.top + 0.5 * child.height
-					},
-					controlPointOffset: 0.75
-				};
-			},
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
-			calculatedConnector, from, to, position, offset, maxOffset, pathElement, fromBox, toBox, changeCheck;
+			connection, pathElement, fromBox, toBox, changeCheck;
 		if (!shapeFrom || !shapeTo || shapeFrom.length === 0 || shapeTo.length === 0) {
 			element.hide();
 			return;
@@ -4262,90 +4423,26 @@ jQuery.fn.updateConnector = function () {
 		}
 
 		element.data('changeCheck', changeCheck);
-		calculatedConnector = calculateConnector(fromBox, toBox);
-		from = calculatedConnector.from;
-		to = calculatedConnector.to;
-		position = {
-			left: Math.min(fromBox.left, toBox.left),
-			top: Math.min(fromBox.top, toBox.top),
-		};
-		offset = calculatedConnector.controlPointOffset * (from.y - to.y);
-		maxOffset = Math.min(toBox.height, fromBox.height) * 1.5;
+		connection = MAPJS.DOMRender.nodeConnectorPath(fromBox, toBox);
 		pathElement = element.find('path');
-		position.width = Math.max(fromBox.left + fromBox.width, toBox.left + toBox.width, position.left + 1) - position.left;
-		position.height = Math.max(fromBox.top + fromBox.height, toBox.top + toBox.height, position.top + 1) - position.top;
-		element.css(position);
-		offset = Math.max(-maxOffset, Math.min(maxOffset, offset));
+		element.css(connection.position);
 		if (pathElement.length === 0) {
 			pathElement = MAPJS.createSVG('path').attr('class', 'mapjs-connector').appendTo(element);
 		}
 		// if only the relative position changed, do not re-update the curve!!!!
 		pathElement.attr('d',
-			'M' + Math.round(from.x - position.left) + ',' + Math.round(from.y - position.top) +
-			'Q' + Math.round(from.x - position.left) + ',' + Math.round(to.y - offset - position.top) + ' ' + Math.round(to.x - position.left) + ',' + Math.round(to.y - position.top)
+			connection.d
 		);
 	});
 };
+
 jQuery.fn.updateLink = function () {
 	'use strict';
 	return jQuery.each(this, function () {
 		var	element = jQuery(this),
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
-			calculateConnector = function (parent, child) {
-				var parentPoints = [
-					{
-						x: parent.left + 0.5 * parent.width,
-						y: parent.top
-					},
-					{
-						x: parent.left + parent.width,
-						y: parent.top + 0.5 * parent.height
-					},
-					{
-						x: parent.left + 0.5 * parent.width,
-						y: parent.top + parent.height
-					},
-					{
-						x: parent.left,
-						y: parent.top + 0.5 * parent.height
-					}
-				], childPoints = [
-					{
-						x: child.left + 0.5 * child.width,
-						y: child.top
-					},
-					{
-						x: child.left + child.width,
-						y: child.top + 0.5 * child.height
-					},
-					{
-						x: child.left + 0.5 * child.width,
-						y: child.top + child.height
-					},
-					{
-						x: child.left,
-						y: child.top + 0.5 * child.height
-					}
-				], i, j, min = Infinity, bestParent, bestChild, dx, dy, current;
-				for (i = 0; i < parentPoints.length; i += 1) {
-					for (j = 0; j < childPoints.length; j += 1) {
-						dx = parentPoints[i].x - childPoints[j].x;
-						dy = parentPoints[i].y - childPoints[j].y;
-						current = dx * dx + dy * dy;
-						if (current < min) {
-							bestParent = i;
-							bestChild = j;
-							min = current;
-						}
-					}
-				}
-				return {
-					from: parentPoints[bestParent],
-					to: childPoints[bestChild]
-				};
-			},
-			conn, position,
+			connection,
 			pathElement = element.find('path.mapjs-link'),
 			hitElement = element.find('path.mapjs-link-hit'),
 			arrowElement = element.find('path.mapjs-arrow'),
@@ -4355,8 +4452,7 @@ jQuery.fn.updateLink = function () {
 				solid: ''
 			},
 			attrs = _.pick(element.data(), 'lineStyle', 'arrow', 'color'),
-			fromBox, toBox, changeCheck,
-			d;
+			fromBox, toBox, changeCheck;
 		if (!shapeFrom || !shapeTo || shapeFrom.length === 0 || shapeTo.length === 0) {
 			element.hide();
 			return;
@@ -4371,23 +4467,14 @@ jQuery.fn.updateLink = function () {
 
 		element.data('changeCheck', changeCheck);
 
-
-		conn = calculateConnector(fromBox, toBox);
-		position = {
-			left: Math.min(fromBox.left, toBox.left),
-			top: Math.min(fromBox.top, toBox.top),
-		};
-		position.width = Math.max(fromBox.left + fromBox.width, toBox.left + toBox.width, position.left + 1) - position.left;
-		position.height = Math.max(fromBox.top + fromBox.height, toBox.top + toBox.height, position.top + 1) - position.top;
-		element.css(position);
+		connection = MAPJS.DOMRender.linkConnectorPath(fromBox, toBox);
+		element.css(connection.position);
 
 		if (pathElement.length === 0) {
 			pathElement = MAPJS.createSVG('path').attr('class', 'mapjs-link').appendTo(element);
 		}
-		d = 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) +
-				 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top);
 		pathElement.attr({
-			'd': d,
+			'd': connection.d,
 			'stroke-dasharray': dashes[attrs.lineStyle]
 		}).css('stroke', attrs.color);
 
@@ -4395,7 +4482,7 @@ jQuery.fn.updateLink = function () {
 			hitElement = MAPJS.createSVG('path').attr('class', 'mapjs-link-hit').appendTo(element);
 		}
 		hitElement.attr({
-			'd': d
+			'd': connection.d
 		});
 
 		if (attrs.arrow) {
@@ -4403,28 +4490,28 @@ jQuery.fn.updateLink = function () {
 				arrowElement = MAPJS.createSVG('path').attr('class', 'mapjs-arrow').appendTo(element);
 			}
 			var a1x, a1y, a2x, a2y, len = 14, iy, m,
-				dx = conn.to.x - conn.from.x,
-				dy = conn.to.y - conn.from.y;
+				dx = connection.conn.to.x - connection.conn.from.x,
+				dy = connection.conn.to.y - connection.conn.from.y;
 			if (dx === 0) {
 				iy = dy < 0 ? -1 : 1;
-				a1x = conn.to.x + len * Math.sin(n) * iy;
-				a2x = conn.to.x - len * Math.sin(n) * iy;
-				a1y = conn.to.y - len * Math.cos(n) * iy;
-				a2y = conn.to.y - len * Math.cos(n) * iy;
+				a1x = connection.conn.to.x + len * Math.sin(n) * iy;
+				a2x = connection.conn.to.x - len * Math.sin(n) * iy;
+				a1y = connection.conn.to.y - len * Math.cos(n) * iy;
+				a2y = connection.conn.to.y - len * Math.cos(n) * iy;
 			} else {
 				m = dy / dx;
-				if (conn.from.x < conn.to.x) {
+				if (connection.conn.from.x < connection.conn.to.x) {
 					len = -len;
 				}
-				a1x = conn.to.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-				a1y = conn.to.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-				a2x = conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-				a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+				a1x = connection.conn.to.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+				a1y = connection.conn.to.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+				a2x = connection.conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+				a2y = connection.conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
 			}
 			arrowElement.attr('d',
-				'M' + Math.round(a1x - position.left) + ',' + Math.round(a1y - position.top) +
-				'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top) +
-				'L' + Math.round(a2x - position.left) + ',' + Math.round(a2y - position.top) +
+				'M' + Math.round(a1x - connection.position.left) + ',' + Math.round(a1y - connection.position.top) +
+				'L' + Math.round(connection.conn.to.x - connection.position.left) + ',' + Math.round(connection.conn.to.y - connection.position.top) +
+				'L' + Math.round(a2x - connection.position.left) + ',' + Math.round(a2y - connection.position.top) +
 				'Z')
 				.css('fill', attrs.color)
 				.show();
@@ -4512,7 +4599,7 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 			if (fromStyle === 'false' || fromStyle === 'transparent') {
 				fromStyle = false;
 			}
-			self.removeClass('mapsj-node-dark mapjs-node-white mapjs-node-light');
+			self.removeClass('mapjs-node-dark mapjs-node-white mapjs-node-light');
 			if (fromStyle) {
 				self.css('background-color', fromStyle);
 				self.addClass(foregroundClass(fromStyle));
@@ -4665,52 +4752,10 @@ jQuery.fn.editNode = function () {
 	}
 	return result.promise();
 };
-MAPJS.DOMRender = {
-	nodeCacheMark: function (idea) {
-		'use strict';
-		return {
-			title: idea.title,
-			icon: idea.attr && idea.attr.icon && _.pick(idea.attr.icon, 'width', 'height', 'position'),
-			collapsed: idea.attr && idea.attr.collapsed,
-			level: idea.level
-		};
-	},
-	addNodeCacheMark: function (domNode, idea) {
-		'use strict';
-		domNode.data('nodeCacheMark', MAPJS.DOMRender.nodeCacheMark(idea));
-	},
-	dimensionProvider: function (idea, level) {
-		'use strict'; /* support multiple stages? */
-		var existing = document.getElementById('node_' + idea.id),
-			textBox,
-			result;
-		if (existing) {
-			textBox = jQuery(existing);
-			if (_.isEqual(textBox.data('nodeCacheMark'), MAPJS.DOMRender.nodeCacheMark(idea))) {
-				return _.pick(textBox.data(), 'width', 'height');
-			}
-		}
-		textBox = jQuery('<div>').addClass('mapjs-node').attr('mapjs-level', level).css({position: 'absolute', visibility: 'hidden'}).appendTo('body').updateNodeContent(idea);
-		result = {
-			width: textBox.outerWidth(true),
-			height: textBox.outerHeight(true)
-		};
-		textBox.detach();
-		return result;
-	},
-	layoutCalculator: function (contentAggregate) {
-		'use strict';
-		return MAPJS.calculateLayout(contentAggregate, MAPJS.DOMRender.dimensionProvider);
-	}
-};
 
-MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled) {
+
+(function () {
 	'use strict';
-	var viewPort = stageElement.parent(),
-		connectorsForAnimation = jQuery(),
-		linksForAnimation = jQuery(),
-		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' };
-
 	var cleanDOMId = function (s) {
 			return s.replace(/\./g, '_');
 		},
@@ -4722,8 +4767,54 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 		},
 		nodeKey = function (id) {
 			return cleanDOMId('node_' + id);
-		},
-		stageToViewCoordinates = function (x, y) {
+		};
+
+	jQuery.fn.createNode = function (node) {
+		return jQuery('<div>')
+			.attr({'id': nodeKey(node.id), 'tabindex': 0, 'data-mapjs-role': 'node' })
+			.data({'x': Math.round(node.x), 'y': Math.round(node.y), 'width': Math.round(node.width), 'height': Math.round(node.height), 'nodeId': node.id})
+			.css({display: 'block', position: 'absolute'})
+			.addClass('mapjs-node')
+			.appendTo(this);
+	};
+	jQuery.fn.createConnector = function (connector) {
+		return MAPJS.createSVG()
+			.attr({'id': connectorKey(connector), 'data-mapjs-role': 'connector', 'class': 'mapjs-draw-container'})
+			.data({'nodeFrom': this.nodeWithId(connector.from), 'nodeTo': this.nodeWithId(connector.to)})
+			.appendTo(this);
+	};
+	jQuery.fn.createLink = function (l) {
+		var defaults = _.extend({color: 'red', lineStyle: 'dashed'}, l.attr && l.attr.style);
+		return MAPJS.createSVG()
+			.attr({
+				'id': linkKey(l),
+				'data-mapjs-role': 'link',
+				'class': 'mapjs-draw-container'
+			})
+			.data({'nodeFrom': this.nodeWithId(l.ideaIdFrom), 'nodeTo': this.nodeWithId(l.ideaIdTo) })
+			.data(defaults)
+			.appendTo(this);
+	};
+	jQuery.fn.nodeWithId = function (id) {
+		return this.find('#' + nodeKey(id));
+	};
+	jQuery.fn.findConnector = function (connectorObj) {
+		return this.find('#' + connectorKey(connectorObj));
+	};
+	jQuery.fn.findLink = function (linkObj) {
+		return this.find('#' + linkKey(linkObj));
+	};
+
+})();
+
+MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController) {
+	'use strict';
+	var viewPort = stageElement.parent(),
+		connectorsForAnimation = jQuery(),
+		linksForAnimation = jQuery(),
+		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' };
+
+	var stageToViewCoordinates = function (x, y) {
 			var stage = stageElement.data();
 			return {
 				x: stage.scale * (x + stage.offsetX) - viewPort.scrollLeft(),
@@ -4845,7 +4936,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 			return result;
 		},
 		stagePositionForPointEvent = function (evt) {
-			var dropPosition = evt && evt.gesture && evt.gesture.center,
+			var dropPosition = (evt && evt.gesture && evt.gesture.center) || evt,
 				vpOffset = viewPort.offset(),
 				viewportDropCoordinates;
 			if (dropPosition) {
@@ -4863,26 +4954,31 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 			}
 		},
 		showDroppable = function (nodeId) {
-			jQuery('#' + nodeKey(nodeId)).addClass('droppable');
+			stageElement.nodeWithId(nodeId).addClass('droppable');
 			currentDroppable = nodeId;
 		},
 		currentDroppable = false;
-
-		/*used for testing */
+	if (imageInsertController) {
+		imageInsertController.addEventListener('imageInserted', function (dataUrl, imgWidth, imgHeight, evt) {
+			var point = stagePositionForPointEvent(evt);
+			mapModel.dropImage(dataUrl, imgWidth, imgHeight, point.x, point.y);
+		});
+	}
 	mapModel.addEventListener('nodeCreated', function (node) {
-		var element = jQuery('<div>')
-			.attr({ 'tabindex': 0, 'id': nodeKey(node.id), 'data-mapjs-role': 'node' })
-			.data({'x': Math.round(node.x), 'y': Math.round(node.y), 'width': Math.round(node.width), 'height': Math.round(node.height), 'nodeId': node.id})
-			.css({display: 'block', position: 'absolute'})
-			.addClass('mapjs-node')
-			.appendTo(stageElement)
+		var element = stageElement.createNode(node)
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node)
 			.on('tap', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
+				if (realEvent.button) {
+					return;
+				}
 				mapModel.clickNode(node.id, realEvent);
 				if (evt) {
 					evt.stopPropagation();
+				}
+				if (evt && evt.gesture) {
+					evt.gesture.stopPropagation();
 				}
 
 			})
@@ -4927,6 +5023,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 			})
 			.on('contextmenu', function (event) {
 				// ugly ugly ugly!
+				mapModel.selectNode(node.id);
 				mapModel.dispatchEvent('contextMenuRequested', node.id, event.pageX, event.pageY);
 				event.preventDefault();
 				return false;
@@ -4953,7 +5050,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 					dropResult = mapModel.positionNodeAt(node.id, element.getBox().left, element.getBox().top, !!isShift);
 				}
 				if (dropResult) {
-					ensureNodeVisible(jQuery('#' + nodeKey(node.id)));
+					ensureNodeVisible(stageElement.nodeWithId(node.id));
 				}
 				return dropResult;
 			})
@@ -4981,7 +5078,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 		}
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
-		var node = jQuery('#' + nodeKey(ideaId));
+		var node = stageElement.nodeWithId(ideaId);
 		if (isSelected) {
 			node.addClass('selected');
 			ensureNodeVisible(node).then(function () {
@@ -4992,10 +5089,10 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 		}
 	});
 	mapModel.addEventListener('nodeRemoved', function (node) {
-		jQuery('#' + nodeKey(node.id)).queueFadeOut(nodeAnimOptions);
+		stageElement.nodeWithId(node.id).queueFadeOut(nodeAnimOptions);
 	});
 	mapModel.addEventListener('nodeMoved', function (node /*, reason*/) {
-		var	nodeDom = jQuery('#' + nodeKey(node.id)).data({
+		var	nodeDom = stageElement.nodeWithId(node.id).data({
 				'x': Math.round(node.x),
 				'y': Math.round(node.y)
 			}).each(ensureSpaceForNode),
@@ -5008,42 +5105,31 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 		}
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged', function (n) {
-		jQuery('#' + nodeKey(n.id)).updateNodeContent(n);
+		stageElement.nodeWithId(n.id).updateNodeContent(n);
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
-		var element = MAPJS.createSVG()
-			.attr({'id': connectorKey(connector), 'data-mapjs-role': 'connector', 'class': 'mapjs-draw-container'})
-			.data({'nodeFrom': jQuery('#' + nodeKey(connector.from)), 'nodeTo': jQuery('#' + nodeKey(connector.to))})
-			.appendTo(stageElement).queueFadeIn(nodeAnimOptions).updateConnector();
-		jQuery('#' + nodeKey(connector.from)).add(jQuery('#' + nodeKey(connector.to)))
+		var element = stageElement.createConnector(connector).queueFadeIn(nodeAnimOptions).updateConnector();
+		stageElement.nodeWithId(connector.from).add(stageElement.nodeWithId(connector.to))
 			.on('mapjs:move mm:drag', function () { element.updateConnector(); })
 			.on('mapjs:animatemove', function () { connectorsForAnimation = connectorsForAnimation.add(element); });
 	});
 	mapModel.addEventListener('connectorRemoved', function (connector) {
-		jQuery('#' + connectorKey(connector)).queueFadeOut(nodeAnimOptions);
+		stageElement.findConnector(connector).queueFadeOut(nodeAnimOptions);
 	});
 	mapModel.addEventListener('linkCreated', function (l) {
-		var attr = _.extend({color: 'red', lineStyle: 'dashed'}, l.attr && l.attr.style, { 'nodeFrom': jQuery('#' + nodeKey(l.ideaIdFrom)), 'nodeTo': jQuery('#' + nodeKey(l.ideaIdTo)) }),
-			link = MAPJS.createSVG()
-			.attr({
-				'id': linkKey(l),
-				'data-mapjs-role': 'link',
-				'class': 'mapjs-draw-container'
-			})
-			.data(attr)
-			.appendTo(stageElement).queueFadeIn(nodeAnimOptions).updateLink();
+		var link = stageElement.createLink(l).queueFadeIn(nodeAnimOptions).updateLink();
 		link.find('.mapjs-link-hit').on('tap', function (event) {
 			mapModel.selectLink('mouse', l, { x: event.gesture.center.pageX, y: event.gesture.center.pageY });
 			event.stopPropagation();
 			event.gesture.stopPropagation();
 		});
-		jQuery('#' + nodeKey(l.ideaIdFrom)).add(jQuery('#' + nodeKey(l.ideaIdTo)))
+		stageElement.nodeWithId(l.ideaIdFrom).add(stageElement.nodeWithId(l.ideaIdTo))
 			.on('mapjs:move mm:drag', function () { link.updateLink(); })
 			.on('mapjs:animatemove', function () { linksForAnimation = linksForAnimation.add(link); });
 
 	});
 	mapModel.addEventListener('linkRemoved', function (l) {
-		jQuery('#' + linkKey(l)).queueFadeOut(nodeAnimOptions);
+		stageElement.findLink(l).queueFadeOut(nodeAnimOptions);
 	});
 	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier /*, zoomPoint */) {
 		var currentScale = stageElement.data('scale'),
@@ -5056,7 +5142,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 		centerViewOn(currentCenter.x, currentCenter.y);
 	});
 	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
-		var node = jQuery('#' + nodeKey(ideaId)).data(),
+		var node = stageElement.nodeWithId(ideaId).data(),
 			nodeCenterX = node.x + node.width / 2,
 			nodeCenterY = node.y + node.height / 2;
 		if (stageElement.data('scale') !== 1) {
@@ -5099,7 +5185,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 	/* editing */
 
 	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
-		var editingElement = jQuery('#' + nodeKey(nodeId));
+		var editingElement = stageElement.nodeWithId(nodeId);
 		mapModel.setInputEnabled(false);
 		viewPort.finish(); /* close any pending animations */
 		editingElement.editNode().done(
@@ -5125,15 +5211,15 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled)
 	});
 	mapModel.addEventListener('linkAttrChanged', function (l) {
 		var  attr = _.extend({arrow: false}, l.attr && l.attr.style);
-		jQuery('#' + linkKey(l)).data(attr).updateLink();
+		stageElement.findLink(l).data(attr).updateLink();
 	});
 
 	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
 		_.each(activatedNodes, function (nodeId) {
-			jQuery('#' + nodeKey(nodeId)).addClass('activated');
+			stageElement.nodeWithId(nodeId).addClass('activated');
 		});
 		_.each(deactivatedNodes, function (nodeId) {
-			jQuery('#' + nodeKey(nodeId)).removeClass('activated');
+			stageElement.nodeWithId(nodeId).removeClass('activated');
 		});
 	});
 };
@@ -5163,7 +5249,7 @@ jQuery.fn.scrollWhenDragging = function () {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController) {
 	'use strict';
 	var hotkeyEventHandlers = {
 			'return': 'addSiblingIdea',
@@ -5232,6 +5318,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		}
 		if (!touchEnabled) {
 			element.scrollWhenDragging(); //no need to do this for touch, this is native
+			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
 				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
@@ -5260,7 +5347,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 			});
 
 		}
-		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled);
+		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
