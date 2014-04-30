@@ -1373,6 +1373,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			connectors: {}
 		},
 		idea,
+		currentLabelGenerator,
 		isInputEnabled = true,
 		isEditingEnabled = true,
 		currentlySelectedIdeaId,
@@ -1388,8 +1389,21 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		},
 		horizontalSelectionThreshold = 300,
 		isAddLinkMode,
+		applyLabels = function (newLayout) {
+			if (!currentLabelGenerator) {
+				return;
+			}
+			var labelMap = currentLabelGenerator(idea);
+			_.each(newLayout.nodes, function (node, id) {
+				if (labelMap[id]) {
+					node.label = labelMap[id];
+				}
+			});
+		},
 		updateCurrentLayout = function (newLayout) {
 			self.dispatchEvent('layoutChangeStarting');
+			applyLabels(newLayout);
+
 			_.each(currentLayout.connectors, function (oldConnector, connectorId) {
 				var newConnector = newLayout.connectors[connectorId];
 				if (!newConnector || newConnector.from !== oldConnector.from || newConnector.to !== oldConnector.to) {
@@ -1431,6 +1445,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 					}
 					if (!_.isEqual(newNode.attr || {}, oldNode.attr || {})) {
 						self.dispatchEvent('nodeAttrChanged', newNode);
+					}
+					if (newNode.label !== oldNode.label) {
+						self.dispatchEvent('nodeLabelChanged', newNode);
 					}
 				}
 			});
@@ -2360,6 +2377,10 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			return dropOn(nodeId, 'left');
 		}
 		addNew();
+	};
+	self.setLabelGenerator = function (labelGenerator) {
+		currentLabelGenerator = labelGenerator;
+		self.rebuildRequired();
 	};
 };
 /*global _, MAPJS, jQuery*/
@@ -4556,6 +4577,17 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 			}
 			element.attr('href', url).show();
 		},
+		applyLabel = function (label) {
+			var element = self.find('.mapjs-label');
+			if (!label) {
+				element.hide();
+				return;
+			}
+			if (element.length === 0) {
+				element = jQuery('<span class="mapjs-label"></span>').appendTo(self);
+			}
+			element.text(label).show();
+		},
 		applyAttachment = function () {
 			var attachment = nodeContent.attr && nodeContent.attr.attachment,
 				element = self.find('a.mapjs-attachment');
@@ -4680,6 +4712,7 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 		};
 	updateText(nodeContent.title);
 	applyLinkUrl(nodeContent.title);
+	applyLabel(nodeContent.label);
 	applyAttachment();
 	self.attr('mapjs-level', nodeContent.level)
 		.data({'x': Math.round(nodeContent.x), 'y': Math.round(nodeContent.y), 'width': Math.round(nodeContent.width), 'height': Math.round(nodeContent.height), 'nodeId': nodeContent.id})
@@ -5132,7 +5165,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			nodeDom.each(animateToPositionCoordinates);
 		}
 	});
-	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged', function (n) {
+	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
 		stageElement.nodeWithId(n.id).updateNodeContent(n);
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {

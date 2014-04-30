@@ -46,7 +46,7 @@ jQuery.fn.numericTotaliser = function () {
 };
 
 
-jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
+jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
@@ -73,6 +73,11 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				measurement.find('[data-mm-role=measurement-name]').text(measureName);
 				measurement.find('[data-mm-role=remove-measure]').click(function () {
 					measuresModel.removeMeasure(measureName);
+				});
+				measurement.find('[data-mm-role=show-measure]').click(function () {
+					mapModel.setLabelGenerator(function () {
+						return measuresModel.getMeasurementForAllNodes(measureName);
+					});
 				});
 				summaryTemplate.clone().addToRowAtIndex(summaryContainer, index).text('0');
 				measurementsTable.show();
@@ -196,8 +201,8 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
 			element.parent().siblings('[tabindex]').focus();
+			mapModel.setLabelGenerator(false);
 		});
-
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {
 			measuresModel.addMeasure(addMeasureInput.val());
 			addMeasureInput.val('');

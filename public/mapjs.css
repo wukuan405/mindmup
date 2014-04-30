@@ -86,6 +86,15 @@
 .mapjs-node-white {
 	color: black;
 }
+.mapjs-label {
+	left: -0.5em;
+	position: absolute;
+	bottom: -0.5em;
+	background: black;
+	opacity: 0.5;
+	color: white;
+}
+
 .mapjs-hyperlink {
 	right: -0.75em;
 	position: absolute;

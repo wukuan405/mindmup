@@ -101,6 +101,17 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 			filter.addEventListener('filteredRowsChanged', onFilterChanged);
 		}
 	};
+	self.getMeasurementForAllNodes = function (measurementName) {
+		if (!activeContent || !measurementName) {
+			return [];
+		}
+		var result = [];
+		activeContent.traverse(function (idea) {
+			var measures = idea.getAttr(valueAttrName);
+			result[idea.id] = measures && measures[measurementName];
+		});
+		return result;
+	};
 	self.getMeasurementValues = function () {
 		if (!activeContent) {
 			return [];

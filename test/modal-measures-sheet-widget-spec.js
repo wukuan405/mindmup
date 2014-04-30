@@ -18,6 +18,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 					'</div>',
 		underTest,
 		measuresModel,
+		mapModel,
 		tableValues = function () {
 			return _.map(underTest.find('tbody tr'), function (row) {
 				return _.map(jQuery(row).find('td'), function (cell) {
@@ -35,11 +36,13 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		};
 	beforeEach(function () {
 		measuresModel = observable(jasmine.createSpyObj('measuresModel',
-			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter', 'editingMeasure']
+			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter', 'editingMeasure', 'getMeasurementForAllNodes']
 		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
-		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel);
+		mapModel = jasmine.createSpyObj('mapModel',['setLabelGenerator']);
+		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel, mapModel);
 		underTest.trigger('hide');
+
 	});
 	afterEach(function () {
 		underTest.detach();
