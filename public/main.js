@@ -92,6 +92,7 @@ MM.main = function (config) {
 				} else {
 					jQuery('[rel=tooltip]').tooltip();
 				}
+				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
 				jQuery('body').mapStatusWidget(mapController);
 				jQuery('#container').mapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);

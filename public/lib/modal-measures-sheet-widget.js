@@ -51,32 +51,49 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 		var element = jQuery(this),
 			measurementActivationTemplate = element.find('[data-mm-role=measurement-activation-template]'),
 		    measurementActivationContainer = measurementActivationTemplate.parent(),
+		    hideLabels = element.find('[data-mm-role=hide-measure]'),
 		    onMeasureAdded = function (measureName /*, index */) {
 				var measurementActivation = measurementActivationTemplate.clone().appendTo(measurementActivationContainer);
 				measurementActivation.attr('data-mm-measure', measureName).find('[data-mm-role=show-measure]').click(function () {
-					var item = jQuery(this);
-					item.parent().addClass('mm-active').siblings().removeClass('mm-active');
+					measuresModel.dispatchEvent('measureLabelShown', measureName);
 					mapModel.setLabelGenerator(function () {
 						return measuresModel.getMeasurementForAllNodes(measureName);
 					});
 				}).find('[data-mm-role=measure-name]').text(measureName);
+				element.show();
 			},
 			onMeasureRemoved = function (measureName) {
 				measurementActivationContainer.children('[data-mm-measure=' + measureName + ']').remove();
+				if (_.isEmpty(measuresModel.getMeasures())) {
+					element.hide();
+				}
 			},
 			clean = function () {
 				measurementActivationContainer.children('[data-mm-role=measurement-activation-template]').remove();
 				var measures = measuresModel.getMeasures();
-				_.each(measures, function (m) {
-					onMeasureAdded(m);
-				});
+				if (measures && measures.length > 0) {
+					_.each(measures, onMeasureAdded);
+				} else {
+					element.hide();
+				}
+			},
+			onMeasureLabelShown = function (measureName) {
+				measurementActivationContainer.children().removeClass('mm-active').filter('[data-mm-measure=' + measureName + ']').addClass('mm-active');
+				if (measureName) {
+					hideLabels.show();
+				} else {
+					hideLabels.hide();
+				}
 			};
 		clean();
+
 		measuresModel.addEventListener('startFromScratch', clean);
 		measuresModel.addEventListener('measureAdded', onMeasureAdded);
 		measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
-		element.find('[data-mm-role=hide-measure]').click(function () {
+		measuresModel.addEventListener('measureLabelShown', onMeasureLabelShown);
+		hideLabels.hide().click(function () {
 			mapModel.setLabelGenerator(false);
+			measuresModel.dispatchEvent('measureLabelShown', '');
 		});
 	});
 };

@@ -49,6 +49,7 @@ MM.Extensions.newCanvas = function () {
 			parsed.find('[data-mm-role=top-menu]').clone().appendTo('#nodeContextMenu');
 			parsed.find('[data-mm-role=modal]').clone().appendTo('body').customStyleWidget(controller);
 		};
+	MM.Extensions.mmConfig.layout = 'dom';
 	MAPJS.DOMRender.stageMargin = {top: 75, left: 50, bottom: 50, right: 50};
 	MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
 	MAPJS.defaultStyles = {};

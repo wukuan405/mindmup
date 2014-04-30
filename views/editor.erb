@@ -182,7 +182,8 @@ SOFTWARE.
           corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
           goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
           goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
-          publicUrl: '<%=settings.public_url %>'
+		  publicUrl: '<%=settings.public_url %>',
+		  layout: 'kinetic'
         });
        } catch (e) {
         scriptError(e);
