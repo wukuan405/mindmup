@@ -143,7 +143,8 @@ MM.main = function (config) {
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
-				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel, mapModel);
+				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
+				jQuery('[data-mm-role=measures-display-control]').measuresDisplayControlWidget(measuresModel, mapModel);
 				jQuery('.modal.huge').scalableModalWidget();
 				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
