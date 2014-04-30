@@ -53,7 +53,9 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 		    measurementsTable = element.find('[data-mm-role=measurements-table]'),
 		    noMeasuresDiv = element.find('[data-mm-role=no-measures]'),
 			measurementTemplate = element.find('[data-mm-role=measurement-template]'),
+			measurementActivationTemplate = element.find('[data-mm-role=measurement-activation-template]'),
 			measurementContainer = measurementTemplate.parent(),
+		    measurementActivationContainer = measurementActivationTemplate.parent(),
 			ideaTemplate = element.find('[data-mm-role=idea-template]'),
 			valueTemplate = ideaTemplate.find('[data-mm-role=value-template]').detach(),
 			ideaContainer = ideaTemplate.parent(),
@@ -69,16 +71,19 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 				}).indexOf(measureName);
 			},
 			appendMeasure = function (measureName, index) {
-				var measurement = measurementTemplate.clone().addToRowAtIndex(measurementContainer, index);
+				var measurement = measurementTemplate.clone().addToRowAtIndex(measurementContainer, index),
+					measurementActivation = measurementActivationTemplate.clone().appendTo(measurementActivationContainer);
 				measurement.find('[data-mm-role=measurement-name]').text(measureName);
 				measurement.find('[data-mm-role=remove-measure]').click(function () {
 					measuresModel.removeMeasure(measureName);
 				});
-				measurement.find('[data-mm-role=show-measure]').click(function () {
+				measurementActivation.attr('data-mm-measure', measureName).find('[data-mm-role=show-measure]').click(function () {
+					var item = jQuery(this);
+					item.parent().addClass('mm-active').siblings().removeClass('mm-active');
 					mapModel.setLabelGenerator(function () {
 						return measuresModel.getMeasurementForAllNodes(measureName);
 					});
-				});
+				}).find('[data-mm-role=measure-name]').text(measureName);
 				summaryTemplate.clone().addToRowAtIndex(summaryContainer, index).text('0');
 				measurementsTable.show();
 				noMeasuresDiv.hide();
@@ -132,6 +137,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 					return;
 				}
 				measurementContainer.children().eq(col).remove();
+				measurementActivationContainer.children('[data-mm-measure=' + measureName + ']').remove();
 				summaryContainer.children().eq(col).remove();
 				_.each(ideaContainer.children(), function (idea) {
 					jQuery(idea).children().eq(col).remove();
@@ -139,6 +145,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 			},
 			buildMeasureTable = function () {
 				measurementContainer.children('[data-mm-role=measurement-template]').remove();
+				measurementActivationContainer.children('[data-mm-role=measurement-activation-template]').remove();
 				summaryContainer.children('[data-mm-role=summary-template]').remove();
 				var measures = measuresModel.getMeasures();
 				if (measures && measures.length > 0) {
@@ -200,13 +207,16 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel, mapModel) {
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
-			element.parent().siblings('[tabindex]').focus();
 			mapModel.setLabelGenerator(false);
+			element.parent().siblings('[tabindex]').focus();
 		});
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {
 			measuresModel.addMeasure(addMeasureInput.val());
 			addMeasureInput.val('');
 			return false;
+		});
+		element.find('[data-mm-role=hide-measure]').click(function () {
+			mapModel.setLabelGenerator(false);
 		});
 	});
 

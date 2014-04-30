@@ -450,6 +450,12 @@ input.noglow {
 		display: none;
 	}
 }
+@media (max-width: 1600px) {
+	#optionalPane .hidden-narrow-screen {
+		display: none;
+	}
+}
+
 .btn-xlarge {
     padding: 18px 28px;
     font-size: 40px;
@@ -683,4 +689,10 @@ body .modal.huge {
 }
 .column-split .table-container {
   margin-bottom: 45px;
+}
+.show-active {
+	display: none;
+}
+.mm-active .show-active {
+	display: initial;
 }
