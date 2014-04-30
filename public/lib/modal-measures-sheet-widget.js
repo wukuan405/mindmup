@@ -195,6 +195,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);
 			measuresModel.removeEventListener('measureAdded', onMeasureAdded);
 			measuresModel.removeEventListener('measureRemoved', onMeasureRemoved);
+			element.parent().siblings('[tabindex]').focus();
 		});
 
 		element.find('[data-mm-role=measure-to-add]').parent('form').on('submit', function () {

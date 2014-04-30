@@ -134,8 +134,8 @@ MM.main = function (config) {
 				jQuery('.dropdown-submenu>a').click(function () { return false; });
 				jQuery('[data-category]').trackingWidget(activityLog);
 				jQuery('.modal')
-					.on('show', mapModel.setInputEnabled.bind(mapModel, false))
-					.on('hide', mapModel.setInputEnabled.bind(mapModel, true));
+					.on('show',  mapModel.setInputEnabled.bind(mapModel, false, false))
+					.on('hide', mapModel.setInputEnabled.bind(mapModel, true, false));
 				jQuery('#modalKeyActions').keyActionsWidget();
 				jQuery('#topbar .updateStyle').attr('data-mm-align', 'top').colorPicker();
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');

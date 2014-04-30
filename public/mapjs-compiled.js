@@ -1530,10 +1530,10 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	this.getEditingEnabled = function () {
 		return isEditingEnabled;
 	};
-	this.setInputEnabled = function (value) {
+	this.setInputEnabled = function (value, holdFocus) {
 		if (isInputEnabled !== value) {
 			isInputEnabled = value;
-			self.dispatchEvent('inputEnabledChanged', value);
+			self.dispatchEvent('inputEnabledChanged', value, !!holdFocus);
 		}
 	};
 	this.getInputEnabled = function () {
@@ -4946,8 +4946,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				return;
 			}
 			viewPort.finish();
-			var result = jQuery.Deferred(),
-				node = domElement.data(),
+			var node = domElement.data(),
 				nodeTopLeft = stageToViewCoordinates(node.x, node.y),
 				nodeBottomRight = stageToViewCoordinates(node.x + node.width, node.y + node.height),
 				animation = {},
@@ -4962,12 +4961,9 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			} else if ((nodeBottomRight.y + margin.bottom) > viewPort.innerHeight()) {
 				animation.scrollTop = viewPort.scrollTop() + nodeBottomRight.y - viewPort.innerHeight() + margin.bottom;
 			}
-			if (_.isEmpty(animation)) {
-				result.resolve();
-			} else {
-				viewPort.animate(animation, {duration: 100, complete: result.resolve});
+			if (!_.isEmpty(animation)) {
+				viewPort.animate(animation, {duration: 100});
 			}
-			return result;
 		},
 		stagePositionForPointEvent = function (evt) {
 			var dropPosition = (evt && evt.gesture && evt.gesture.center) || evt,
@@ -5114,12 +5110,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		var node = stageElement.nodeWithId(ideaId);
 		if (isSelected) {
 			node.addClass('selected');
-			ensureNodeVisible(node).then(function () {
-				/*jslint eqeq:true*/
-				if (mapModel.getCurrentlySelectedIdeaId() == ideaId) {
-					node.focus();
-				}
-			});
+			ensureNodeVisible(node);
 		} else {
 			node.removeClass('selected');
 		}
@@ -5195,6 +5186,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector(true);
 		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink();
 		centerViewOn(0, 0);
+		viewPort.focus();
 	});
 	mapModel.addEventListener('layoutChangeStarting', function () {
 		viewPortDimensions = undefined;
@@ -5336,9 +5328,9 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 		},
 		actOnKeys = true,
 		self = this;
-	mapModel.addEventListener('inputEnabledChanged', function (canInput) {
+	mapModel.addEventListener('inputEnabledChanged', function (canInput, holdFocus) {
 		actOnKeys = canInput;
-		if (canInput) {
+		if (canInput && !holdFocus) {
 			self.focus();
 		}
 	});
@@ -5402,7 +5394,6 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				}
 			});
 		});
-
 		jQuery(document).on('keydown', function (e) {
 			var functions = {
 				'U+003D': 'scaleUp',

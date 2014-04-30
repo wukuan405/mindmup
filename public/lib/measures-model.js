@@ -225,7 +225,7 @@ jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresMo
 		if (isEditing && nodeId) {
 			mapModel.selectNode(nodeId, true, true);
 		}
-		mapModel.setInputEnabled(!isEditing);
+		mapModel.setInputEnabled(!isEditing, true);
 	});
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
