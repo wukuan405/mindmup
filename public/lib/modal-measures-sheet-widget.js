@@ -57,7 +57,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 				measurementActivation.attr('data-mm-measure', measureName).find('[data-mm-role=show-measure]').click(function () {
 					measuresModel.dispatchEvent('measureLabelShown', measureName);
 					mapModel.setLabelGenerator(function () {
-						return measuresModel.getMeasurementForAllNodes(measureName);
+						return measuresModel.addUpMeasurementForAllNodes(measureName);
 					});
 				}).find('[data-mm-role=measure-name]').text(measureName);
 				element.show();

@@ -101,15 +101,24 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 			filter.addEventListener('filteredRowsChanged', onFilterChanged);
 		}
 	};
-	self.getMeasurementForAllNodes = function (measurementName) {
+	self.addUpMeasurementForAllNodes = function (measurementName) {
 		if (!activeContent || !measurementName) {
 			return [];
 		}
-		var result = [];
-		activeContent.traverse(function (idea) {
-			var measures = idea.getAttr(valueAttrName);
-			result[idea.id] = measures && measures[measurementName];
-		});
+		var result = [],
+			addUpMeasure = function (idea) {
+				var measures = idea.getAttr(valueAttrName), sum = 0;
+				if (measures && measures[measurementName]) {
+					sum = parseFloat(measures && measures[measurementName]);
+				}
+				if (idea.ideas) {
+					_.each(idea.ideas, function (subIdea) {
+						sum += (result[subIdea.id] || 0);
+					});
+				}
+				result[idea.id] = sum;
+			};
+		activeContent.traverse(addUpMeasure, true);
 		return result;
 	};
 	self.getMeasurementValues = function () {
