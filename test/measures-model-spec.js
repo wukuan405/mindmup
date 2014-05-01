@@ -103,6 +103,61 @@ describe('MM.MeasuresModel', function () {
 		});
 
 	});
+	describe('addUpMeasurementForAllNodes', function () {
+		beforeEach(function () {
+			content = {
+				id: 1,
+				title: 'one',
+				attr:	{
+					'measurement-names': ['Speed', 'Efficiency'],
+					'measurement-vals': {'Speed': 100}
+				},
+				ideas: {
+					11: {
+						id: 11,
+						title: 'with values',
+						attr: {'measurement-vals': {'Speed': 1, 'Efficiency': 2} }
+					},
+					12: {
+						id: 12,
+						title: 'no values',
+						ideas: {
+							121: {
+								id: 121,
+								title: 'one twenty one',
+								attr: {'measurement-vals': {'Efficiency': -1}}
+							}
+						}
+					},
+					13: {
+						id: 13,
+						title: 'adds up to 0',
+						attr: {'measurement-vals': {'Efficiency': -1}}
+					},
+					14: {
+						id: 14,
+						title: 'only notes, no measures',
+						ideas: {
+							141: {
+								id: 141,
+								title: 'one four one'
+							}
+						}
+					}
+				}
+
+			};
+			activeContent = MAPJS.content(JSON.parse(JSON.stringify(content)));
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+		});
+		it('returns a numeric total for measurement values addd up the tree for the selected measure', function () {
+			expect(underTest.addUpMeasurementForAllNodes('Speed')).toEqual({1: 101, 11: 1});
+
+		});
+		it('shows zeros only when the total adds up to zero, not when the measure is missing', function () {
+			expect(underTest.addUpMeasurementForAllNodes('Efficiency')).toEqual({1: 0, 11: 2, 12: -1, 121: -1, 13: -1});
+		});
+	});
 	describe('editWithFilter', function () {
 		it('sets filter with node ids', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);

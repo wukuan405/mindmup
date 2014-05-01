@@ -1400,7 +1400,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			}
 			var labelMap = currentLabelGenerator(idea);
 			_.each(newLayout.nodes, function (node, id) {
-				if (labelMap[id]) {
+				if (labelMap[id] || labelMap[id] === 0) {
 					node.label = labelMap[id];
 				}
 			});
@@ -4584,7 +4584,7 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 		},
 		applyLabel = function (label) {
 			var element = self.find('.mapjs-label');
-			if (!label) {
+			if (!label && label !== 0) {
 				element.hide();
 				return;
 			}

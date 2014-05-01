@@ -103,20 +103,26 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 	};
 	self.addUpMeasurementForAllNodes = function (measurementName) {
 		if (!activeContent || !measurementName) {
-			return [];
+			return {};
 		}
-		var result = [],
+		var result = {},
 			addUpMeasure = function (idea) {
-				var measures = idea.getAttr(valueAttrName), sum = 0;
+				var measures = idea.getAttr(valueAttrName), sum = 0, hasValue = false;
 				if (measures && measures[measurementName]) {
-					sum = parseFloat(measures && measures[measurementName]);
+					sum = parseFloat(measures[measurementName]);
+					hasValue = true;
 				}
 				if (idea.ideas) {
 					_.each(idea.ideas, function (subIdea) {
-						sum += (result[subIdea.id] || 0);
+						if (result[subIdea.id] !== undefined) {
+							hasValue = true;
+							sum += result[subIdea.id];
+						}
 					});
 				}
-				result[idea.id] = sum;
+				if (hasValue) {
+					result[idea.id] = sum;
+				}
 			};
 		activeContent.traverse(addUpMeasure, true);
 		return result;
