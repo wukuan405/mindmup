@@ -1,5 +1,6 @@
 /*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
 describe('editByActivatedNodesWidget', function () {
+	'use strict';
 	var mapModel, measuresModel, splittableController, underTest, template = '<div><a data-mm-role="activatedNodesMeasureSheet">aloha</a></div>';
 	beforeEach(function () {
 		mapModel = jasmine.createSpyObj('mapModel', ['selectNode', 'setInputEnabled', 'getInputEnabled']);
@@ -12,12 +13,12 @@ describe('editByActivatedNodesWidget', function () {
 		underTest.remove();
 	});
 	it('toggles splittable controller on keystroke', function () {
-		underTest.trigger(jQuery.Event('keydown', {which:70}));
+		underTest.trigger(jQuery.Event('keydown', {which: 70}));
 		expect(splittableController.toggle).toHaveBeenCalled();
 	});
 	it('does not toggle on keystroke if input is disabled', function () {
 		mapModel.getInputEnabled.and.returnValue(false);
-		underTest.trigger(jQuery.Event('keydown', {which:70}));
+		underTest.trigger(jQuery.Event('keydown', {which: 70}));
 		expect(splittableController.toggle).not.toHaveBeenCalled();
 	});
 	it('toggles splittable controller on click', function () {
@@ -83,7 +84,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			['addMeasure', 'removeMeasure', 'validate', 'setValue', 'removeFilter', 'editingMeasure', 'getMeasurementForAllNodes']
 		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
-		mapModel = jasmine.createSpyObj('mapModel',['setLabelGenerator']);
+		mapModel = jasmine.createSpyObj('mapModel', ['setLabelGenerator']);
 		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel, mapModel);
 		underTest.trigger('hide');
 
@@ -161,6 +162,24 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
 			expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'tom', 'mike...']);
 		});
+		describe('measureLabelShown event handling', function () {
+			it('if a label is shown assigns the active class to the label', function () {
+				measuresModel.dispatchEvent('measureLabelShown', 'Cost');
+				expect(underTest.find('.mm-active [data-mm-role=measurement-name]').text()).toBe('Cost');
+			});
+			it('removes  mm-active class from all labels when no label is shown', function () {
+				measuresModel.dispatchEvent('measureLabelShown', 'Cost');
+				measuresModel.dispatchEvent('measureLabelShown', false);
+				expect(underTest.find('.mm-active').length).toBe(0);
+			});
+			it('removes mm-active class from previously active when the shown label changes', function () {
+				measuresModel.dispatchEvent('measureLabelShown', 'Cost');
+				measuresModel.dispatchEvent('measureLabelShown', 'Profit');
+				expect(underTest.find('.mm-active [data-mm-role=measurement-name]').text()).toBe('Profit');
+			});
+		});
+
+
 		it('shows measurement values for ideas in the table cells, mapping values to the right columns', function () {
 			expect(tableValues()).toEqual([
 				['100',	'0'],

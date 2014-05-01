@@ -173,8 +173,11 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				});
 			},
 			onMeasureLabelShown = function (measureName) {
+				measurementContainer.children().removeClass('mm-active');
 				var col = getColumnIndexForMeasure(measureName);
-				measurementContainer.children().removeClass('mm-active').eq(col).addClass('mm-active');
+				if (col >= 0) {
+					measurementContainer.children().eq(col).addClass('mm-active');
+				}
 			},
 			onMeasureRemoved = function (measureName) {
 				var col = getColumnIndexForMeasure(measureName);
