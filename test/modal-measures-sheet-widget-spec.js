@@ -1,4 +1,48 @@
 /*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
+describe('editByActivatedNodesWidget', function () {
+	var mapModel, measuresModel, splittableController, underTest, template = '<div><a data-mm-role="activatedNodesMeasureSheet">aloha</a></div>';
+	beforeEach(function () {
+		mapModel = jasmine.createSpyObj('mapModel', ['selectNode', 'setInputEnabled', 'getInputEnabled']);
+		measuresModel = observable({});
+		splittableController = jasmine.createSpyObj('splittableController', ['toggle']);
+		underTest = jQuery(template).appendTo('body').editByActivatedNodesWidget('f', mapModel, measuresModel, splittableController);
+		mapModel.getInputEnabled.and.returnValue(true);
+	});
+	afterEach(function () {
+		underTest.remove();
+	});
+	it('toggles splittable controller on keystroke', function () {
+		underTest.trigger(jQuery.Event('keydown', {which:70}));
+		expect(splittableController.toggle).toHaveBeenCalled();
+	});
+	it('does not toggle on keystroke if input is disabled', function () {
+		mapModel.getInputEnabled.and.returnValue(false);
+		underTest.trigger(jQuery.Event('keydown', {which:70}));
+		expect(splittableController.toggle).not.toHaveBeenCalled();
+	});
+	it('toggles splittable controller on click', function () {
+		underTest.find('a').click();
+		expect(splittableController.toggle).toHaveBeenCalled();
+	});
+	it('toggles splittable controller on click even if input is disabled', function () {
+		mapModel.getInputEnabled.and.returnValue(false);
+		underTest.find('a').click();
+		expect(splittableController.toggle).toHaveBeenCalled();
+	});
+	it('disables input on mapModel when editing', function () {
+		measuresModel.dispatchEvent('measureEditing', true, 1);
+		expect(mapModel.setInputEnabled).toHaveBeenCalledWith(false, true);
+	});
+	it('re-enables input on mapModel when editing stops, but holds focus', function () {
+		measuresModel.dispatchEvent('measureEditing', false);
+		expect(mapModel.setInputEnabled).toHaveBeenCalledWith(true, true);
+	});
+	it('selects the node when editing in mapModel', function () {
+		measuresModel.dispatchEvent('measureEditing', true, 1);
+		expect(mapModel.selectNode).toHaveBeenCalledWith(1, true, true);
+
+	});
+});
 describe('MM.ModalMeasuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
@@ -45,7 +89,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 
 	});
 	afterEach(function () {
-		underTest.detach();
+		underTest.remove();
 	});
 	describe('when loaded from a map with no measures', function () {
 		beforeEach(function () {
