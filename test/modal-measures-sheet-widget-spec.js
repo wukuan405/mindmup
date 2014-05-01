@@ -1,7 +1,80 @@
 /*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
-describe('measureDisplayControlWidget', function () {
+describe('measuresDisplayControlWidget', function () {
+	'use strict';
+	var underTest, mapModel, measuresModel, template = '<div class="dropdown-submenu" data-mm-layout="dom" data-mm-role="measures-display-control">' +
+			'<ul class="dropdown-menu" role="menu">' +
+			'<li><a data-category="Measurements" data-event-type="Hide" data-mm-role="hide-measure"><i class="icon-eye-close"></i>&nbsp;Hide</a></li>' +
+			'<li class="divider" data-mm-role="hide-measure"></li>' +
+			'<li data-mm-role="measurement-activation-template"><a data-category="Measurements" data-event-type="Show On Map" data-mm-role="show-measure"><span class="show-active"><i class="icon-check"></i>&nbsp;</span><span data-mm-role="measure-name"></span></a></li>' +
+			'</ul>' +
+                '</div>',
+		checkMeasureNames = function (measureNames) {
+			_.each(measureNames, function (measureName) {
+				expect(underTest.find('[data-mm-measure=' + measureName + ']  [data-mm-role=measure-name]').text()).toBe(measureName);
+			});
+			expect(underTest.find('[data-mm-measure]').length).toBe(measureNames.length);
+		};
+	beforeEach(function () {
+		mapModel = jasmine.createSpyObj('mapModel', ['setLabelGenerator']);
+		measuresModel = observable(jasmine.createSpyObj('measuresModel', ['getMeasures', 'addUpMeasurementForAllNodes']));
+		measuresModel.getMeasures.and.returnValue(['Cost', 'Expenses']);
+		measuresModel.addUpMeasurementForAllNodes.and.returnValue({1: 3});
+		underTest = jQuery(template).appendTo('body').measuresDisplayControlWidget(measuresModel, mapModel);
+	});
+	afterEach(function () {
+		underTest.remove();
+	});
+	it('shows all measure in list when opened', function () {
+		checkMeasureNames(['Cost', 'Expenses']);
+	});
+	it('adds measure to the list', function () {
+		measuresModel.dispatchEvent('measureAdded', 'Fun');
+		checkMeasureNames(['Cost', 'Expenses', 'Fun']);
+	});
+	it('removes measures from the list', function () {
+		measuresModel.dispatchEvent('measureRemoved', 'Cost');
+		checkMeasureNames(['Expenses']);
+	});
 
+	it('shows a hide all option when a measure is being shown', function () {
+		measuresModel.dispatchEvent('measureLabelShown', 'Cost');
+		expect(underTest.find('[data-mm-role=hide-measure]').css('display')).not.toBe('none');
+	});
+	it('hides the hide all option when no measures are being shown', function () {
+		expect(underTest.find('[data-mm-role=hide-measure]').css('display')).toBe('none');
+	});
+	it('sets the shown measure as active', function () {
+		measuresModel.dispatchEvent('measureLabelShown', 'Cost');
+		expect(underTest.find('[data-mm-measure=Cost]').hasClass('mm-active')).toBeTruthy();
+		expect(underTest.find('[data-mm-measure][data-mm-measure!=Cost]').hasClass('mm-active')).toBeFalsy();
+	});
+	it('shows the measure when it is clicked', function () {
+		var listener = jasmine.createSpy('measureLabelShownListener');
+		measuresModel.addEventListener('measureLabelShown', listener);
 
+		underTest.find('[data-mm-measure=Cost] a').click();
+
+		expect(listener).toHaveBeenCalledWith('Cost');
+		expect(mapModel.setLabelGenerator).toHaveBeenCalled();
+		expect(mapModel.setLabelGenerator.calls.mostRecent().args[0]()).toEqual({1: 3});
+	});
+	it('rebuilds the list when told to start from scratch', function () {
+		measuresModel.dispatchEvent('measureRemoved', 'Cost');
+
+		measuresModel.dispatchEvent('startFromScratch');
+
+		expect(underTest.find('[data-mm-measure=Cost]').length).toBe(1);
+		expect(underTest.find('[data-mm-measure=Expenses]').length).toBe(1);
+		expect(underTest.find('[data-mm-measure]').length).toBe(2);
+
+	});
+	it('removed the active flag from all measures if measure label shown is falsy', function () {
+		measuresModel.dispatchEvent('measureShown', 'Cost');
+
+		measuresModel.dispatchEvent('measureShown', '');
+
+		expect(underTest.find('.mm-active').length).toBe(0);
+	});
 });
 describe('editByActivatedNodesWidget', function () {
 	'use strict';
