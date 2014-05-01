@@ -1,4 +1,8 @@
 /*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
+describe('measureDisplayControlWidget', function () {
+
+
+});
 describe('editByActivatedNodesWidget', function () {
 	'use strict';
 	var mapModel, measuresModel, splittableController, underTest, template = '<div><a data-mm-role="activatedNodesMeasureSheet">aloha</a></div>';
