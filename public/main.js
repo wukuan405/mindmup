@@ -72,7 +72,7 @@ MM.main = function (config) {
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
-			splittableController = new MM.SplittableController(jQuery('body')),
+			splittableController = new MM.SplittableController(jQuery('body'), mapModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,

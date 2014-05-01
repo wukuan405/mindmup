@@ -1,5 +1,5 @@
 /*global MM, observable, _*/
-MM.SplittableController = function (element) {
+MM.SplittableController = function (element, mapModel) {
 	'use strict';
 	var self = observable(this),
 		allPositions = [MM.SplittableController.NO_SPLIT, MM.SplittableController.ROW_SPLIT, MM.SplittableController.COLUMN_SPLIT],
@@ -16,6 +16,7 @@ MM.SplittableController = function (element) {
 		}
 		element.removeClass(allPositions.join(' ')).addClass(position);
 		this.dispatchEvent('split', position);
+		mapModel.centerOnNode(mapModel.getCurrentlySelectedIdeaId());
 		return true;
 	};
 	self.currentSplit = function () {

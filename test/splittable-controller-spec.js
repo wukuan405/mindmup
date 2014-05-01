@@ -3,11 +3,14 @@ describe('MM.SplittableController', function () {
 	'use strict';
 	var underTest,
 		element,
+		mapModel,
 		splitTypes = ['no-split', 'row-split', 'column-split'],
 		template =	'<div></div>';
 	beforeEach(function () {
 		element = jQuery(template).appendTo('body');
-		underTest = new MM.SplittableController(element);
+		mapModel = jasmine.createSpyObj('mapModel', ['getCurrentlySelectedIdeaId', 'centerOnNode']);
+		mapModel.getCurrentlySelectedIdeaId.and.returnValue(22);
+		underTest = new MM.SplittableController(element, mapModel);
 	});
 	afterEach(function () {
 		element.remove();
@@ -39,7 +42,10 @@ describe('MM.SplittableController', function () {
 				underTest.split(splitType);
 				expect(listener).toHaveBeenCalledWith(splitType);
 			});
-
+			it('should center map on currently selected node for ' + splitType, function () {
+				underTest.split(splitType);
+				expect(mapModel.centerOnNode).toHaveBeenCalledWith(22);
+			});
 		});
 		it('should return false and not set unrecognised class', function () {
 			expect(underTest.split('blah')).toBeFalsy();
