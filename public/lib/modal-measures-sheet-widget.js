@@ -172,6 +172,10 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 					appendMeasureValue(jQuery(idea), '0', jQuery(idea).data('mm-nodeid'), measureName, index);
 				});
 			},
+			onMeasureLabelShown = function (measureName) {
+				var col = getColumnIndexForMeasure(measureName);
+				measurementContainer.children().removeClass('mm-active').eq(col).addClass('mm-active');
+			},
 			onMeasureRemoved = function (measureName) {
 				var col = getColumnIndexForMeasure(measureName);
 				if (col < 0) {
@@ -221,6 +225,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 				buildMeasureRows(measuresModel.getMeasures());
 			};
 
+
 		measurementTemplate.detach();
 		summaryTemplate.detach();
 		ideaTemplate.detach();
@@ -253,6 +258,7 @@ jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
 			addMeasureInput.val('');
 			return false;
 		});
+		measuresModel.addEventListener('measureLabelShown', onMeasureLabelShown);
 	});
 
 };

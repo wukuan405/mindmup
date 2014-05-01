@@ -696,3 +696,6 @@ body .modal.huge {
 .mm-active .show-active {
 	display: initial;
 }
+.black {
+	color: black !important;
+}
