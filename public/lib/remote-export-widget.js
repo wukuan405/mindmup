@@ -37,9 +37,13 @@ jQuery.fn.remoteExportWidget = function (mapController, alert, measureModel, con
 				'html': MM.exportToHtmlDocument,
 				'png': MAPJS.pngExport,
 				'txt': toPromise(MM.exportIdeas.bind({}, loadedIdea, new MM.TabSeparatedTextExporter()), 'text/plain'),
+				'measures-all': toPromise(function () {
+						return MM.exportTableToText(measureModel.getRawData(true));
+					}, 'text/tab-separated-values'),
 				'measures': toPromise(function () {
 						return MM.exportTableToText(measureModel.getRawData());
 					}, 'text/tab-separated-values')
+
 			},
 			format = $(this).data('mm-format'),
 			extension = $(this).data('mm-extension') || format,

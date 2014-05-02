@@ -56,8 +56,19 @@ describe('MM.MeasuresModel', function () {
 		it('retrieves only filtered data in a two-dim array when filter is used', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
 			underTest.editWithFilter({predicate: function (idea) { return idea.id === 121; }});
+			expect(underTest.getRawData()).toEqual([
+				['Name', 'Speed', 'Efficiency'],
+				['one twenty one', undefined, -1]
+			]);
+		});
+		it('retrieves all data in a two-dim array when ignore filter flag is used', function () {
+			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
+			underTest.editWithFilter({predicate: function (idea) { return idea.id === 121; }});
 			expect(underTest.getRawData(true)).toEqual([
 				['Name', 'Speed', 'Efficiency'],
+				['one', 100, undefined],
+				['with values', 1, 2],
+				['no values', undefined, undefined],
 				['one twenty one', undefined, -1]
 			]);
 		});

@@ -180,14 +180,14 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		}
 		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
 	};
-	self.getRawData = function () {
+	self.getRawData = function (ignoreFilter) {
 		var data = [];
 		if (!activeContent) {
 			return data;
 		}
 		data.push(['Name'].concat(measures));
 		activeContent.traverse(function (idea) {
-			if (!filter || filter.predicate(idea)) {
+			if (ignoreFilter || !filter || filter.predicate(idea)) {
 				data.push(
 					[idea.title].concat(_.map(measures,
 							function (measure) {
