@@ -99,6 +99,9 @@ end
 get %r{/map/(.*)} do |mapid|
   redirect "/#m:#{URI::encode(mapid)}"
 end
+get "/static" do
+  erb :static_map_view
+end
 
 get "/m" do
   show_map
