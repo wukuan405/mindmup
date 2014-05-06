@@ -10,6 +10,14 @@
 		<div id="container"></div>
 
     <script>
+      MM.layoutStaticCustomStyle = function (layout) {
+        'use strict';
+        var customCSSText = layout && layout.nodes && layout.nodes['1'] && layout.nodes['1'].attr && layout.nodes['1'].attr.customCSS;
+        if (customCSSText) {
+          jQuery('<style id="customStyleCSS" type="text/css"></style>').appendTo('body').text(customCSSText);
+        }
+      };
+
       var container = jQuery('#container');
       container.on('mapjs:layout',function (evt) {
         var layout = evt.layout,
@@ -25,6 +33,7 @@
           }).updateStage(),
           fakeMapModel = observable({}),
           fakeImageController = observable({});
+        MM.layoutStaticCustomStyle(layout);
         MAPJS.DOMRender.stageMargin = {top: 10, left: 10, bottom: 15, right: 15};
 
         MAPJS.DOMRender.viewController(fakeMapModel, stage, false, fakeImageController);
