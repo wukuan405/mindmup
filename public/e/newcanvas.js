@@ -18,6 +18,7 @@ MM.CustomStyleController = function (mapController, mapModel) {
 			if (newText !== currentStyleText) {
 				currentStyleText = newText;
 				customStyleElement.text(currentStyleText || '');
+				jQuery('.mapjs-node').data('nodeCacheMark', '');
 				mapModel.rebuildRequired();
 			}
 		};
