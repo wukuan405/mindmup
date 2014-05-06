@@ -25,10 +25,11 @@
           }).updateStage(),
           fakeMapModel = observable({}),
           fakeImageController = observable({});
+        MAPJS.DOMRender.stageMargin = {top: 10, left: 10, bottom: 15, right: 15};
 
         MAPJS.DOMRender.viewController(fakeMapModel, stage, false, fakeImageController);
 
-        fakeMapModel.isEditingEnabled = function () { return false;} 
+        fakeMapModel.isEditingEnabled = function () { return false;}
         fakeMapModel.dispatchEvent('layoutChangeStarting');
 
         _.each(layout.nodes, function(node) { fakeMapModel.dispatchEvent('nodeCreated', node) });
