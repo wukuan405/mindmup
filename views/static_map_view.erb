@@ -12,7 +12,9 @@
     <script>
       MM.layoutStaticCustomStyle = function (layout) {
         'use strict';
-        var customCSSText = layout && layout.nodes && layout.nodes['1'] && layout.nodes['1'].attr && layout.nodes['1'].attr.customCSS;
+        var rootNodeId = layout && layout.rootNodeId,
+          rootNode = rootNodeId && layout.nodes && layout.nodes[rootNodeId],
+          customCSSText = rootNode && rootNode.attr && rootNode.attr.customCSS;
         if (customCSSText) {
           jQuery('<style id="customStyleCSS" type="text/css"></style>').appendTo('body').text(customCSSText);
         }
