@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+  </head>
+  <body>
+  <%= erb :embedded_scripts %>
+		<div id="container"></div>
+
+    <script>
+      var container = jQuery('#container');
+      container.on('mapjs:layout',function (evt) {
+        var layout = evt.layout,
+          element = $('#container'),
+          stage = $('<div>').css({
+            position: 'relative'
+          }).attr('data-mapjs-role', 'stage').appendTo(element).data({
+            'offsetX': element.innerWidth() / 2,
+            'offsetY': element.innerHeight() / 2,
+            'width': element.innerWidth(),
+            'height': element.innerHeight(),
+            'scale': 1
+          }).updateStage(),
+          fakeMapModel = observable({}),
+          fakeImageController = observable({});
+
+        MAPJS.DOMRender.viewController(fakeMapModel, stage, false, fakeImageController);
+
+        fakeMapModel.isEditingEnabled = function () { return false;} 
+        fakeMapModel.dispatchEvent('layoutChangeStarting');
+
+        _.each(layout.nodes, function(node) { fakeMapModel.dispatchEvent('nodeCreated', node) });
+        _.each(layout.connectors, function(connector) { fakeMapModel.dispatchEvent('connectorCreated', connector) });
+        _.each(layout.links, function(link) { fakeMapModel.dispatchEvent('linkCreated', link) });
+        stage.children().css({'opacity':1, 'display': ''});
+        stage.detach();
+        container.remove();
+        stage.appendTo('body');
+    });
+		</script>
+
+
+  </body>
+</html>
