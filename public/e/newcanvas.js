@@ -1,4 +1,4 @@
-/* global jQuery, MM, MAPJS, window*/
+/* global jQuery, MM, MAPJS, window, document*/
 MM.CustomStyleController = function (mapController, mapModel) {
 	'use strict';
 	var self = this,
@@ -49,9 +49,12 @@ MM.Extensions.newCanvas = function () {
 				controller = new MM.CustomStyleController(MM.Extensions.components.mapController, MM.Extensions.components.mapModel);
 			parsed.find('[data-mm-role=top-menu]').clone().appendTo('#nodeContextMenu');
 			parsed.find('[data-mm-role=modal]').clone().appendTo('body').customStyleWidget(controller);
-		};
+		},
+		horizontalMargin = jQuery(document).innerHeight() * 0.8,
+		verticalMargin = jQuery(document).innerWidth() * 0.8;
 	MM.Extensions.mmConfig.layout = 'dom';
-	MAPJS.DOMRender.stageMargin = {top: 75, left: 50, bottom: 50, right: 50};
+
+	MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
 	MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
 	MAPJS.defaultStyles = {};
 	MM.Extensions.components.mapModel.setLayoutCalculator(MAPJS.DOMRender.layoutCalculator);
