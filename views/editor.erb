@@ -34,6 +34,7 @@ SOFTWARE.
   <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
   <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
       <link href="<%=settings.public_url%>/mindmap.css" rel="stylesheet" />
+      <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
   <%= erb :timetrack %>
   </head>
@@ -111,6 +112,7 @@ SOFTWARE.
   <%= erb :icon_editor %>
 
   <%= erb :anon_alert_template %>
+  <%= erb :modal_custom_style %>
   <div id="splittable">
     <div id="container" data-mm-role="default"></div>
     <div id="optionalPane" data-mm-role="optional" class="hide">
@@ -183,7 +185,7 @@ SOFTWARE.
           goldApiUrl: '<%= ENV['GOLD_API_URL'] %>',
           goldBucketName: '<%= ENV['GOLD_BUCKET_NAME'] %>',
           publicUrl: '<%=settings.public_url %>',
-          layout: 'kinetic'
+          layout: 'dom'
         });
        } catch (e) {
         scriptError(e);

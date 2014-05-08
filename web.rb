@@ -20,7 +20,7 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20140428132310'
+  static_ts = '20140508235240'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
   set :static_host, "#{public_host}/#{static_ts}"
   set :static_image_host, "#{public_host}/img"
