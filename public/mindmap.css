@@ -133,7 +133,7 @@ div.topbar-color-picker {
   z-index: 999;
   background-color: #5FBF5F;
   color: #FFFFFF;
-  font-family: Helvetica, "Arial Unicode MS", sans-serif;
+  font-family: "Arial Unicode MS", Helvetica, sans-serif;
   font-weight: bold;
   font-size: 13px;
   line-height:13px;
