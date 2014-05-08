@@ -72,7 +72,7 @@ MM.main = function (config) {
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
-			splittableController = new MM.SplittableController(jQuery('body'), mapModel),
+			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -144,15 +144,15 @@ MM.main = function (config) {
 				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
-				jQuery('#modalMeasuresSheet').modalMeasuresSheetWidget(measuresModel);
+				jQuery('#measuresSheet').measuresSheetWidget(measuresModel);
 				jQuery('[data-mm-role=measures-display-control]').measuresDisplayControlWidget(measuresModel, mapModel);
 				jQuery('.modal.huge').scalableModalWidget();
 				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
-				jQuery(document).editByActivatedNodesWidget('M', mapModel, measuresModel, splittableController);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
+				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
@@ -168,6 +168,7 @@ MM.main = function (config) {
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert, modalConfirm);
+		MM.measuresModelMediator(mapModel, measuresModel);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
 			mapModel.setIdea(idea);
 		});

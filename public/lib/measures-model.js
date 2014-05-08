@@ -1,4 +1,4 @@
-/*global MM, _, observable, jQuery*/
+/*global MM, _, observable*/
 MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, defaultFilter) {
 	'use strict';
 	var self = observable(this),
@@ -245,22 +245,12 @@ MM.MeasuresModel.ActivatedNodesFilter = function (mapModel) {
 };
 
 
-jQuery.fn.editByActivatedNodesWidget = function (keyStroke, mapModel, measuresModel, splittableController) {
+MM.measuresModelMediator = function (mapModel, measuresModel) {
 	'use strict';
 	measuresModel.addEventListener('measureEditing', function (isEditing, nodeId) {
 		if (isEditing && nodeId) {
 			mapModel.selectNode(nodeId, true, true);
 		}
 		mapModel.setInputEnabled(!isEditing, true);
-	});
-	return jQuery.each(this, function () {
-		var element = jQuery(this),
-			toggleMeasures = function (force) {
-				if (force || mapModel.getInputEnabled()) {
-					splittableController.toggle();
-				}
-			};
-
-		element.keydown(keyStroke, toggleMeasures.bind(element, false)).find('[data-mm-role=activatedNodesMeasureSheet]').click(toggleMeasures.bind(element, true));
 	});
 };

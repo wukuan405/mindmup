@@ -585,31 +585,31 @@ body .modal.huge {
   margin-left:auto;
   margin-right:auto;
 }
-#modalMeasuresSheet table {
+#measuresSheet table {
   background-color:white;
   border: 1px solid #d4d4d4;
 }
-#modalMeasuresSheet td {
+#measuresSheet td {
 	text-align: right;
 	width: 20%;
 }
-#modalMeasuresSheet th + th {
+#measuresSheet th + th {
 	text-align: right;
 }
-#modalMeasuresSheet table thead tr th {
+#measuresSheet table thead tr th {
 	border-bottom: 3px gray solid !important;
 }
-#modalMeasuresSheet table tfoot tr th{
+#measuresSheet table tfoot tr th{
 	border-top: 3px gray solid !important;
 }
-#modalMeasuresSheet table tbody th{
+#measuresSheet table tbody th{
 	width: 30%;
 }
-#modalMeasuresSheet form {
+#measuresSheet form {
 	margin: 0px !important;
 }
 
-#modalMeasuresSheet td:focus {
+#measuresSheet td:focus {
 	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
 	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
 	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
@@ -622,18 +622,18 @@ body .modal.huge {
 	outline: thin auto red !important;
 }
 
-#modalMeasuresSheet .modal-footer a {
+#measuresSheet .modal-footer a {
 	margin-right:20px; margin-left:20px; line-height: 30px;
 }
-.measures-sheet .input-append.navbar-form button {
+#optionalPane  .input-append.navbar-form button{
   margin-top: 5px !important;
 }
-#modalMeasuresSheet {
+#measuresSheet {
   margin: 5px 5px 5px 5px;
   border-left: 1px;
   overflow: visible;
 }
-#modalMeasuresSheet .table-container {
+#measuresSheet .table-container {
   overflow: visible;
 }
 #optionalPane {

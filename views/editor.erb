@@ -80,6 +80,7 @@ SOFTWARE.
         <div class="btn-group">
         <button rel="tooltip" data-placement="bottom" data-title="Attachment (A)" data-category="Toolbar Click" data-event-type="Open Attachment" class="btn openAttachment"><i class="icon-paper-clip"></i></button>
         <button rel="tooltip" data-placement="bottom" data-title="Measurements (M)" data-category="Toolbar Click" data-event-type="Open Measurements" class="btn" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table"></i></button>
+        <button rel="tooltip" data-placement="bottom" data-title="Storyboard (S)" data-category="Toolbar Click" data-event-type="Open Storyboard" class="btn" data-mm-role="storyboard-toggler"><i class="icon-film"></i></button>
 
 
         </div>
@@ -115,6 +116,7 @@ SOFTWARE.
     <div id="container" data-mm-role="default"></div>
     <div id="optionalPane" data-mm-role="optional" class="hide">
       <%= erb :modal_measures_sheet %>
+      <%= erb :storyboard %>
     </div>
   </div>
     <div id="linkEditWidget">
