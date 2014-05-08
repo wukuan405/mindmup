@@ -141,7 +141,7 @@ MM.Extensions.config = {
 	},
 	'kinetic': {
 		name: 'Old MindMup Layout (Deprecated)',
-		script: '/e/kinetic-mapjs-compiled.js /e/kinetic.js',
+		script: '/e/kinetic-all.js',
 		icon: 'icon-thumbs-down',
 		doc: 'http://blog.mindmup.com/p/new-drawing-engine.html',
 		desc: 'Switch back to old MindMup layout temporarily'
