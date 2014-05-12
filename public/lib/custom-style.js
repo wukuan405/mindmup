@@ -1,4 +1,4 @@
-/* global jQuery, MM, MAPJS, window, document*/
+/* global jQuery, MM*/
 MM.CustomStyleController = function (mapController, mapModel) {
 	'use strict';
 	var self = this,
@@ -42,26 +42,4 @@ jQuery.fn.customStyleWidget = function (controller) {
 		controller.setStyle(textField.val());
 	});
 };
-MM.Extensions.newCanvas = function () {
-	'use strict';
-	var loadUI = function (html) {
-			var parsed = jQuery(html),
-				controller = new MM.CustomStyleController(MM.Extensions.components.mapController, MM.Extensions.components.mapModel);
-			parsed.find('[data-mm-role=top-menu]').clone().appendTo('#nodeContextMenu');
-			parsed.find('[data-mm-role=modal]').clone().appendTo('body').customStyleWidget(controller);
-		},
-		horizontalMargin = jQuery(document).innerHeight() * 0.8,
-		verticalMargin = jQuery(document).innerWidth() * 0.8;
-	MM.Extensions.mmConfig.layout = 'dom';
 
-	MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
-	MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
-	MAPJS.defaultStyles = {};
-	MM.Extensions.components.mapModel.setLayoutCalculator(MAPJS.DOMRender.layoutCalculator);
-	jQuery.fn.mapWidget = jQuery.fn.domMapWidget;
-	jQuery('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/mapjs.css" />').appendTo('body');
-	jQuery.get(MM.Extensions.mmConfig.publicUrl + '/e/newcanvas.html', loadUI);
-};
-if (!window.jasmine) {
-	MM.Extensions.newCanvas();
-}

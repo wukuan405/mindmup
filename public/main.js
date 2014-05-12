@@ -65,7 +65,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			navigation = MM.navigation(browserStorage, mapController),
-			mapModel = new MAPJS.MapModel(MAPJS.KineticMediator.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
+			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 			layoutExportController = new MM.LayoutExportController(mapModel, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
@@ -73,6 +73,7 @@ MM.main = function (config) {
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
+			customStyleController = new MM.CustomStyleController(mapController, mapModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -84,7 +85,9 @@ MM.main = function (config) {
 				'measuresModel' : measuresModel
 			}),
 			loadWidgets = function () {
-				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
+				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
+					horizontalMargin = jQuery(document).innerHeight() * 0.8,
+					verticalMargin = jQuery(document).innerWidth() * 0.8;
 				if (isTouch) {
 					jQuery('[data-mm-role-touch]').attr('data-mm-role', function () {
 						return jQuery(this).attr('data-mm-role-touch');
@@ -92,9 +95,14 @@ MM.main = function (config) {
 				} else {
 					jQuery('[rel=tooltip]').tooltip();
 				}
+
+				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
+				MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
+
+
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
 				jQuery('body').mapStatusWidget(mapController);
-				jQuery('#container').mapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
+				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
@@ -153,6 +161,7 @@ MM.main = function (config) {
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
+				jQuery('#customStyleModal').customStyleWidget(customStyleController);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',

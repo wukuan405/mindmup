@@ -139,12 +139,12 @@ MM.Extensions.config = {
 			return (/^d1/).test(mapId);
 		}
 	},
-	'newcanvas': {
-		name: 'New MindMup Layout (Beta)',
-		script: '/e/newcanvas.js',
-		icon: 'icon-thumbs-up',
+	'kinetic': {
+		name: 'Old MindMup Layout (Deprecated)',
+		script: '/e/kinetic-all.js',
+		icon: 'icon-thumbs-down',
 		doc: 'http://blog.mindmup.com/p/new-drawing-engine.html',
-		desc: 'Activate the new MindMup layout now'
+		desc: 'Switch back to old MindMup layout temporarily'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
