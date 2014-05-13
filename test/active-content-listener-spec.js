@@ -24,12 +24,12 @@ describe('MM.activeContentListener', function () {
 			expect(activeContent.addEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
 		});
 		it('should call onChangeFunction when map is loaded', function () {
-			expect(onChangeFunction).toHaveBeenCalledWith(activeContent);
+			expect(onChangeFunction).toHaveBeenCalledWith(activeContent, true);
 		});
 		it('should call onChangeFunction when active content changed', function () {
 			onChangeFunction.calls.reset();
 			activeContent.dispatchEvent('changed');
-			expect(onChangeFunction).toHaveBeenCalledWith(activeContent);
+			expect(onChangeFunction).toHaveBeenCalledWith(activeContent, false);
 		});
 
 		describe('when subsequent maps are loaded', function () {
@@ -42,7 +42,7 @@ describe('MM.activeContentListener', function () {
 				mapController.dispatchEvent('mapLoaded', 'newMapId', newActiveContent);
 			});
 			it('getActiveContent should return latest active content', function () {
-				expect(underTest.getActiveContent()).toBe(newActiveContent);
+				expect(underTest.getActiveContent()).toBe(newActiveContent, true);
 			});
 			it('should unsubscribe from old activeContent changed event', function () {
 				expect(activeContent.removeEventListener).toHaveBeenCalledWith('changed', jasmine.any(Function));
@@ -54,7 +54,7 @@ describe('MM.activeContentListener', function () {
 				onChangeFunction.calls.reset();
 				newActiveContent.dispatchEvent('changed');
 				expect(onChangeFunction.calls.count()).toBe(1);
-				expect(onChangeFunction).toHaveBeenCalledWith(newActiveContent);
+				expect(onChangeFunction).toHaveBeenCalledWith(newActiveContent, false);
 			});
 		});
 	});

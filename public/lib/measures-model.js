@@ -2,15 +2,34 @@
 MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, defaultFilter) {
 	'use strict';
 	var self = observable(this),
-		activeContent,
 		measures = [],
 		latestMeasurementValues = [],
 		filter,
+		onActiveContentChange = function (activeContent, isNew) {
+			if (isNew) {
+				self.dispatchEvent('startFromScratch');
+			}
+			var measuresBefore = measures;
+			measures = getActiveContentMeasures();
+			if (self.listeners('measureRemoved').length > 0) {
+				_.each(_.difference(measuresBefore, measures), function (measure) {
+					self.dispatchEvent('measureRemoved', measure);
+				});
+			}
+			if (self.listeners('measureAdded').length > 0) {
+				_.each(_.difference(measures, measuresBefore), function (measure) {
+					self.dispatchEvent('measureAdded', measure, measures.indexOf(measure));
+				});
+			}
+			dispatchMeasurementChangedEvents();
+		},
+		activeContentListener = new MM.ActiveContentListener(mapController, onActiveContentChange),
 		onFilterChanged = function () {
 			self.dispatchEvent('measureRowsChanged');
 		},
 		getActiveContentMeasures = function () {
-			var value = activeContent && activeContent.getAttr(configAttributeName);
+			var activeContent = activeContentListener.getActiveContent(),
+				value = activeContent && activeContent.getAttr(configAttributeName);
 			if (!_.isArray(value)) {
 				return [];
 			}
@@ -60,31 +79,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 			_.each(differences, function (changeArgs) {
 				self.dispatchEvent.apply(self, changeArgs);
 			});
-		},
-		onActiveContentChange = function () {
-			var measuresBefore = measures;
-			measures = getActiveContentMeasures();
-			if (self.listeners('measureRemoved').length > 0) {
-				_.each(_.difference(measuresBefore, measures), function (measure) {
-					self.dispatchEvent('measureRemoved', measure);
-				});
-			}
-			if (self.listeners('measureAdded').length > 0) {
-				_.each(_.difference(measures, measuresBefore), function (measure) {
-					self.dispatchEvent('measureAdded', measure, measures.indexOf(measure));
-				});
-			}
-			dispatchMeasurementChangedEvents();
 		};
-	mapController.addEventListener('mapLoaded', function (id, content) {
-		if (activeContent) {
-			activeContent.removeEventListener('changed', onActiveContentChange);
-		}
-		activeContent = content;
-		measures = getActiveContentMeasures();
-		self.dispatchEvent('startFromScratch');
-		activeContent.addEventListener('changed', onActiveContentChange);
-	});
 	self.editingMeasure = function (isEditing, nodeId) {
 
 		self.dispatchEvent('measureEditing', isEditing, nodeId);
@@ -102,6 +97,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		}
 	};
 	self.addUpMeasurementForAllNodes = function (measurementName) {
+		var activeContent = activeContentListener.getActiveContent();
 		if (!activeContent || !measurementName) {
 			return {};
 		}
@@ -128,10 +124,11 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		return result;
 	};
 	self.getMeasurementValues = function () {
+		var activeContent = activeContentListener.getActiveContent(),
+			result = [];
 		if (!activeContent) {
-			return [];
+			return result;
 		}
-		var result = [];
 		activeContent.traverse(function (idea) {
 			if (!filter || filter.predicate(idea)) {
 				result.push({
@@ -153,6 +150,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		if (_.find(measures, function (measure) { return measure.toUpperCase() === measureName.toUpperCase(); })) {
 			return false;
 		}
+		var activeContent = activeContentListener.getActiveContent();
 		activeContent.updateAttr(activeContent.id, configAttributeName, measures.concat([measureName]));
 	};
 	self.removeMeasure = function (measureName) {
@@ -163,7 +161,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		if (_.isEqual(updated, measures)) {
 			return;
 		}
-
+		var activeContent = activeContentListener.getActiveContent();
 		activeContent.startBatch();
 		activeContent.updateAttr(activeContent.id, configAttributeName, updated);
 		activeContent.traverse(function (idea) {
@@ -178,10 +176,11 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		if (!self.validate(value)) {
 			return false;
 		}
-		return activeContent.mergeAttrProperty(nodeId, valueAttrName, measureName, value);
+		return activeContentListener.getActiveContent().mergeAttrProperty(nodeId, valueAttrName, measureName, value);
 	};
 	self.getRawData = function (ignoreFilter) {
-		var data = [];
+		var activeContent = activeContentListener.getActiveContent(),
+			data = [];
 		if (!activeContent) {
 			return data;
 		}
