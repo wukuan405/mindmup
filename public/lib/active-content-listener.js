@@ -1,20 +1,22 @@
 /*global MM*/
 
-MM.activeContentListener = function (mapController, onActiveContentChanged)  {
+MM.ActiveContentListener = function (mapController, onActiveContentChanged)  {
 	'use strict';
-	var activeContent,
-		mapId,
+	var self = this,
+		activeContent,
 		onChanged = function () {
-			onActiveContentChanged(mapId, activeContent);
+			onActiveContentChanged(activeContent);
 		},
 		onMapLoaded = function (newMapId, content) {
 			if (activeContent) {
 				activeContent.removeEventListener('changed', onChanged);
 			}
-			mapId = newMapId;
 			activeContent = content;
-			onActiveContentChanged(mapId, activeContent);
+			onActiveContentChanged(activeContent);
 			activeContent.addEventListener('changed', onChanged);
 		};
 	mapController.addEventListener('mapLoaded', onMapLoaded);
+	self.getActiveContent = function () {
+		return activeContent;
+	};
 };

@@ -265,28 +265,19 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 
 MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, configStatusUpdater) {
 	'use strict';
-	var activeContent,
-		setActiveContent = function (mapId, content) {
-			if (activeContent) {
-				activeContent.removeEventListener('changed', publishData);
-			}
-			activeContent = content;
-			publishData();
-			activeContent.addEventListener('changed', publishData);
-		},
-		publishData = function () {
+	var publishData = function (activeContent) {
 			calcModel.dataUpdated(activeContent);
-		};
+		},
+		activeContentListener = new MM.ActiveContentListener(mapController, publishData);
 	configStatusUpdater.addEventListener('configChanged', function () {
 		calcModel.setFilter({});
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function () {
 		var filter = calcModel.getFilter() || {};
 		if (filter.selectedSubtree) {
-			publishData();
+			publishData(activeContentListener.getActiveContent());
 		}
 	});
-	mapController.addEventListener('mapLoaded', setActiveContent);
 };
 MM.sortProgressConfig = function (config) {
 	'use strict';
