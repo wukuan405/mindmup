@@ -104,7 +104,7 @@ MM.main = function (config) {
 
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
-				jQuery('body').mapStatusWidget(mapController);
+				jQuery('body').mapStatusWidget(mapController, activeContentListener);
 				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
