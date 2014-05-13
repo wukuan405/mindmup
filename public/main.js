@@ -64,16 +64,18 @@ MM.main = function (config) {
 				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
+			activeContentListener = new MM.ActiveContentListener(mapController),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 			layoutExportController = new MM.LayoutExportController(mapModel, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
+
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', mapController, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
-			customStyleController = new MM.CustomStyleController(mapController, mapModel),
+			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -82,7 +84,8 @@ MM.main = function (config) {
 				'mapModel': mapModel,
 				'container': jQuery('#container'),
 				'iconEditor': iconEditor,
-				'measuresModel' : measuresModel
+				'measuresModel' : measuresModel,
+				'activeContentListener': activeContentListener
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),

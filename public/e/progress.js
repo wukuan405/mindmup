@@ -263,12 +263,11 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 	};
 };
 
-MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, configStatusUpdater) {
+MM.progressCalcChangeMediator = function (calcModel, activeContentListener, mapModel, configStatusUpdater) {
 	'use strict';
 	var publishData = function (activeContent) {
 			calcModel.dataUpdated(activeContent);
-		},
-		activeContentListener = new MM.ActiveContentListener(mapController, publishData);
+		};
 	configStatusUpdater.addEventListener('configChanged', function () {
 		calcModel.setFilter({});
 	});
@@ -278,6 +277,7 @@ MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, co
 			publishData(activeContentListener.getActiveContent());
 		}
 	});
+	activeContentListener.addListener(publishData);
 };
 MM.sortProgressConfig = function (config) {
 	'use strict';
@@ -679,6 +679,7 @@ MM.Extensions.progress = function () {
 		measurementsConfigurationAttributeName = MM.Extensions.config.progress.measurementsConfigName,
 		measureAttributeName = 'measurements',
 		mapController = MM.Extensions.components.mapController,
+		activeContentListener = MM.Extensions.components.activeContentListener,
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
@@ -699,7 +700,7 @@ MM.Extensions.progress = function () {
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
-			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
+			MM.progressCalcChangeMediator(calcModel, activeContentListener, mapModel, updater);
 		};
 	$.get(MM.Extensions.mmConfig.publicUrl + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.publicUrl + '/e/progress.css" />').appendTo($('body'));

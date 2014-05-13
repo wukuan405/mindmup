@@ -7,7 +7,7 @@ describe('MM.MeasuresModel', function () {
 		content;
 	beforeEach(function () {
 		mapController = observable({});
-		underTest = new MM.MeasuresModel('measurement-names', 'measurement-vals', mapController);
+		underTest = new MM.MeasuresModel('measurement-names', 'measurement-vals', new MM.ActiveContentListener(mapController));
 		content = {
 			id: 1,
 			title: 'one',

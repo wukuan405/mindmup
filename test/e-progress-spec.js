@@ -1100,7 +1100,7 @@ describe('MM.sortProgressConfig', function () {
 
 describe('MM.progressCalcChangeMediator', function () {
 	'use strict';
-	var mapController, activeContent, mapModel, calcModel, filter, progressConfigUpdater;
+	var activeContent, mapModel, calcModel, filter, progressConfigUpdater, mapController, activeContentListener;
 	beforeEach(function () {
 		filter = {};
 		calcModel = {
@@ -1111,8 +1111,9 @@ describe('MM.progressCalcChangeMediator', function () {
 		mapModel = observable({});
 		progressConfigUpdater = observable({});
 		mapController = observable({});
+		activeContentListener = new MM.ActiveContentListener(mapController);
 		activeContent = MAPJS.content({id: 1});
-		MM.progressCalcChangeMediator(calcModel, mapController, mapModel, progressConfigUpdater);
+		MM.progressCalcChangeMediator(calcModel, activeContentListener, mapModel, progressConfigUpdater);
 		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
 		calcModel.dataUpdated.calls.reset();
 	});

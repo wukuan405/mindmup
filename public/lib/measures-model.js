@@ -1,5 +1,5 @@
 /*global MM, _, observable*/
-MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, defaultFilter) {
+MM.MeasuresModel = function (configAttributeName, valueAttrName, activeContentListener, defaultFilter) {
 	'use strict';
 	var self = observable(this),
 		measures = [],
@@ -23,7 +23,6 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 			}
 			dispatchMeasurementChangedEvents();
 		},
-		activeContentListener = new MM.ActiveContentListener(mapController, onActiveContentChange),
 		onFilterChanged = function () {
 			self.dispatchEvent('measureRowsChanged');
 		},
@@ -80,6 +79,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 				self.dispatchEvent.apply(self, changeArgs);
 			});
 		};
+
 	self.editingMeasure = function (isEditing, nodeId) {
 
 		self.dispatchEvent('measureEditing', isEditing, nodeId);
@@ -209,6 +209,7 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		}
 		filter = undefined;
 	};
+	activeContentListener.addListener(onActiveContentChange);
 	self.editWithFilter(defaultFilter);
 };
 MM.MeasuresModel.filterByIds = function (ids) {
