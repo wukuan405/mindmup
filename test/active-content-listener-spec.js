@@ -45,9 +45,9 @@ describe('MM.activeContentListener', function () {
 		it('should call listeners when active content changed', function () {
 			onChangeFunction1.calls.reset();
 			onChangeFunction2.calls.reset();
-			activeContent.dispatchEvent('changed');
-			expect(onChangeFunction1).toHaveBeenCalledWith(activeContent, false);
-			expect(onChangeFunction2).toHaveBeenCalledWith(activeContent, false);
+			activeContent.dispatchEvent('changed', 'methodarg', ['foo', 'bar']);
+			expect(onChangeFunction1).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
+			expect(onChangeFunction2).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
 		});
 
 		describe('when subsequent maps are loaded', function () {
@@ -72,11 +72,11 @@ describe('MM.activeContentListener', function () {
 			it('should call listeners when active content changed', function () {
 				onChangeFunction1.calls.reset();
 				onChangeFunction2.calls.reset();
-				newActiveContent.dispatchEvent('changed');
+				newActiveContent.dispatchEvent('changed', 'newmethodarg', ['bar', 'foo']);
 				expect(onChangeFunction1.calls.count()).toBe(1);
 				expect(onChangeFunction2.calls.count()).toBe(1);
-				expect(onChangeFunction1).toHaveBeenCalledWith(newActiveContent, false);
-				expect(onChangeFunction2).toHaveBeenCalledWith(newActiveContent, false);
+				expect(onChangeFunction1).toHaveBeenCalledWith(newActiveContent, false, 'newmethodarg', ['bar', 'foo']);
+				expect(onChangeFunction2).toHaveBeenCalledWith(newActiveContent, false, 'newmethodarg', ['bar', 'foo']);
 			});
 		});
 	});

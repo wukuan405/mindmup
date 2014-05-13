@@ -4,8 +4,8 @@ MM.ActiveContentListener = function (mapController)  {
 	'use strict';
 	var self = observable(this),
 		activeContent,
-		onChanged = function (isNewContent) {
-			self.dispatchEvent('mm-active-content-changed', activeContent, !!isNewContent);
+		onChanged = function (method, attrs, isNewContent) {
+			self.dispatchEvent('mm-active-content-changed', activeContent, !!isNewContent, method, attrs);
 		},
 		onMapLoaded = function (newMapId, content) {
 			if (activeContent) {
