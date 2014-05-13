@@ -1,9 +1,8 @@
 /*global MM*/
 
-MM.ActiveContentListener = function (mapController, onActiveContentChanged)  {
+MM.activeContentListener = function (mapController, onActiveContentChanged)  {
 	'use strict';
-	var self = this,
-		activeContent,
+	var activeContent,
 		mapId,
 		onChanged = function () {
 			onActiveContentChanged(mapId, activeContent);
