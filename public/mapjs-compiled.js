@@ -1291,65 +1291,66 @@ MAPJS.MemoryClipboard = function () {
 };
 /*global $, Hammer*/
 /*jslint newcap:true*/
-$.fn.simpleDraggableContainer = function () {
+(function () {
 	'use strict';
-	var currentDragObject,
-		originalDragObjectPosition,
-		drag = function (event) {
-			if (currentDragObject && event.gesture) {
-				var scale = currentDragObject.parent().data('scale') || 1,
-					newpos = {
-						top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY / scale),
-						left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX / scale)
-					};
-				currentDragObject.css(newpos).trigger($.Event('mm:drag', {gesture: event.gesture}));
-				event.preventDefault();
-				if (event.gesture) {
-					event.gesture.preventDefault();
+	$.fn.simpleDraggableContainer = function () {
+		var currentDragObject,
+			originalDragObjectPosition,
+			drag = function (event) {
+				if (currentDragObject && event.gesture) {
+					var scale = currentDragObject.parent().data('scale') || 1,
+						newpos = {
+							top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY / scale),
+							left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX / scale)
+						};
+					currentDragObject.css(newpos).trigger($.Event('mm:drag', {gesture: event.gesture}));
+					event.preventDefault();
+					if (event.gesture) {
+						event.gesture.preventDefault();
+					}
 				}
-			}
-		},
-		rollback = function () {
-			var target = currentDragObject; // allow it to be cleared while animating
-			target.animate(originalDragObjectPosition, {
-				complete: function () {
-					target.trigger('mm:cancel-dragging');
-				},
-				progress: function () {
-					target.trigger('mm:drag');
-				}
-			});
-		};
-	return Hammer($(this), {'drag_min_distance': 2}).on('mm:start-dragging', function (event) {
-		if (!currentDragObject) {
-			currentDragObject = $(event.relatedTarget);
-			originalDragObjectPosition = {
-				top: currentDragObject.css('top'),
-				left: currentDragObject.css('left')
+			},
+			rollback = function () {
+				var target = currentDragObject; // allow it to be cleared while animating
+				target.animate(originalDragObjectPosition, {
+					complete: function () {
+						target.trigger('mm:cancel-dragging');
+					},
+					progress: function () {
+						target.trigger('mm:drag');
+					}
+				});
 			};
-			$(this).on('drag', drag);
-		}
-	}).on('dragend', function (e) {
-		var evt = $.Event('mm:stop-dragging', {gesture: e.gesture});
-		$(this).off('drag', drag);
-		if (currentDragObject) {
-			currentDragObject.trigger(evt);
-			if (evt.result === false) {
-				rollback();
+		return Hammer($(this), {'drag_min_distance': 2}).on('mm:start-dragging', function (event) {
+			if (!currentDragObject) {
+				currentDragObject = $(event.relatedTarget);
+				originalDragObjectPosition = {
+					top: currentDragObject.css('top'),
+					left: currentDragObject.css('left')
+				};
+				$(this).on('drag', drag);
 			}
-			currentDragObject = undefined;
-		}
-	}).on('mouseleave', function () {
-		if (currentDragObject) {
+		}).on('dragend', function (e) {
+			var evt = $.Event('mm:stop-dragging', {gesture: e.gesture});
 			$(this).off('drag', drag);
-			rollback();
-			currentDragObject = undefined;
-		}
-	}).attr('data-drag-role', 'container');
-};
-$.fn.simpleDraggable = function () {
-	'use strict';
-	return $(this).on('dragstart', function (e) {
+			if (currentDragObject) {
+				currentDragObject.trigger(evt);
+				if (evt.result === false) {
+					rollback();
+				}
+				currentDragObject = undefined;
+			}
+		}).on('mouseleave', function () {
+			if (currentDragObject) {
+				$(this).off('drag', drag);
+				rollback();
+				currentDragObject = undefined;
+			}
+		}).attr('data-drag-role', 'container');
+	};
+
+
+	var onDrag = function (e) {
 		$(this).trigger(
 			$.Event('mm:start-dragging', {
 				relatedTarget: this
@@ -1359,10 +1360,16 @@ $.fn.simpleDraggable = function () {
 		if (e.gesture) {
 			e.gesture.stopPropagation();
 		}
-	});
-};
+	};
 
-
+	$.fn.simpleDraggable = function (options) {
+		if (!options || !options.disable) {
+			return $(this).on('dragstart', onDrag);
+		} else {
+			return $(this).off('dragstart', onDrag);
+		}
+	};
+})();
 /*jslint forin: true, nomen: true*/
 /*global _, MAPJS, observable*/
 MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvider) {
@@ -3358,7 +3365,8 @@ jQuery.fn.placeCaretAtEnd = function () {
 };
 jQuery.fn.editNode = function () {
 	'use strict';
-	var textBox = this.find('[data-mapjs-role=title]'),
+	var node = this,
+		textBox = this.find('[data-mapjs-role=title]'),
 		unformattedText = this.data('title'),
 		originalText = textBox.text(),
 		result = jQuery.Deferred(),
@@ -3366,6 +3374,9 @@ jQuery.fn.editNode = function () {
 			detachListeners();
 			textBox.css('word-break', '');
 			textBox.removeAttr('contenteditable');
+			if (node.attr('mapjs-level') > 1) {
+				node.simpleDraggable();
+			}
 		},
 		finishEditing = function () {
 			if (textBox.text() === unformattedText) {
@@ -3418,6 +3429,7 @@ jQuery.fn.editNode = function () {
 	if (unformattedText) {
 		textBox.placeCaretAtEnd();
 	}
+	node.simpleDraggable({disable: true});
 	return result.promise();
 };
 
@@ -3914,7 +3926,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 /*jslint nomen: true, newcap: true, browser: true*/
 /*global MAPJS, $, Hammer, _, jQuery*/
 
-jQuery.fn.scrollWhenDragging = function () {
+jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 	/*jslint newcap:true*/
 	'use strict';
 	Hammer(this);
@@ -3922,10 +3934,12 @@ jQuery.fn.scrollWhenDragging = function () {
 		var element = $(this),
 			dragOrigin;
 		element.on('dragstart', function () {
-			dragOrigin = {
-				top: element.scrollTop(),
-				left: element.scrollLeft()
-			};
+			if (scrollPredicate()) {
+				dragOrigin = {
+					top: element.scrollTop(),
+					left: element.scrollLeft()
+				};
+			}
 		}).on('drag', function (e) {
 			if (e.gesture && dragOrigin) {
 				element.scrollTop(dragOrigin.top - e.gesture.deltaY);
@@ -4004,7 +4018,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			element.simpleDraggableContainer();
 		}
 		if (!touchEnabled) {
-			element.scrollWhenDragging(); //no need to do this for touch, this is native
+			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
