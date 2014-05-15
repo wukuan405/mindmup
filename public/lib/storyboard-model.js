@@ -16,15 +16,12 @@ MM.StoryboardRepository = function () {
 	*/
 };
 
-MM.buildStoryboardScene = function (/*nodeId, index*/) {
+MM.buildStoryboardScene = function (nodeId, index) {
 	'use strict';
-	/*
-	Scene {
-		nodeId
-		index
-	}
-	*/
-
+	return {
+		'nodeId': nodeId,
+		'index': index
+	};
 };
 
 MM.StoryboardModel = function () {
