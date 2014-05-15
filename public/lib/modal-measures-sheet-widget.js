@@ -21,8 +21,11 @@ jQuery.fn.numericTotaliser = function () {
 				return;
 			}
 			element.find('tbody tr').each(function () {
-				var row = jQuery(this);
-				total += parseFloat(row.children().eq(column).text());
+				var row = jQuery(this),
+					val = parseFloat(row.children().eq(column).text());
+				if (!isNaN(val)) {
+					total += val;
+				}
 			});
 			footer.children().eq(column).text(total);
 		},

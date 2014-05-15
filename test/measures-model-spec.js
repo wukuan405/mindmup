@@ -13,7 +13,7 @@ describe('MM.MeasuresModel', function () {
 			title: 'one',
 			attr:	{
 				'measurement-names': ['Speed', 'Efficiency'],
-				'measurement-vals': {'Speed': 100}
+				'measurement-vals': {'Speed': 100, 'Efficiency': 'wut?'}
 			},
 			ideas: {
 				11: {
@@ -405,7 +405,7 @@ describe('MM.MeasuresModel', function () {
 		});
 		it('should remove all the measure values from all nodes', function () {
 			underTest.removeMeasure('Speed');
-			expect(activeContent.getAttrById(1, 'measurement-vals')).toBeFalsy();
+			expect(activeContent.getAttrById(1, 'measurement-vals')).toEqual({'Efficiency': 'wut?'});
 			expect(activeContent.getAttrById(11, 'measurement-vals')).toEqual({'Efficiency': 2});
 			expect(activeContent.getAttrById(121, 'measurement-vals')).toEqual({'Efficiency': -1});
 		});
@@ -419,7 +419,7 @@ describe('MM.MeasuresModel', function () {
 			underTest.removeMeasure('Speed');
 			activeContent.undo();
 			expect(activeContent.attr['measurement-names']).toEqual(['Speed', 'Efficiency']);
-			expect(activeContent.getAttrById(1, 'measurement-vals')).toEqual({'Speed': 100});
+			expect(activeContent.getAttrById(1, 'measurement-vals')).toEqual({'Speed': 100, 'Efficiency': 'wut?'});
 			expect(activeContent.getAttrById(11, 'measurement-vals')).toEqual({'Speed': 1, 'Efficiency': 2});
 			expect(activeContent.getAttrById(121, 'measurement-vals')).toEqual({'Efficiency': -1});
 		});

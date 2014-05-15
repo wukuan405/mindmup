@@ -134,10 +134,19 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 		var result = [];
 		activeContent.traverse(function (idea) {
 			if (!filter || filter.predicate(idea)) {
+				var newVals = {};
+				_.each(_.extend({}, idea.getAttr(valueAttrName)), function (val, key) {
+					if (val === undefined) {
+						return;
+					}
+					if (!isNaN(parseFloat(val))) {
+						newVals[key] = val;
+					}
+				});
 				result.push({
 					id: idea.id,
 					title: idea.title,
-					values: _.extend({}, idea.getAttr(valueAttrName))
+					values: newVals
 				});
 			}
 		});
@@ -191,8 +200,11 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, mapController, 
 				data.push(
 					[idea.title].concat(_.map(measures,
 							function (measure) {
-								var ideaMeasures = idea.getAttr(valueAttrName) || {};
-								return ideaMeasures[measure];
+								var ideaMeasures = idea.getAttr(valueAttrName) || {},
+									floatVal = ideaMeasures[measure] && parseFloat(ideaMeasures[measure]);
+								if (floatVal !== undefined && !isNaN(floatVal)) {
+									return floatVal;
+								}
 							})
 						)
 				);
