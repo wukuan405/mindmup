@@ -1,5 +1,5 @@
 /*global MM, describe, beforeEach, observable, it, jasmine, expect, spyOn*/
-describe('MM.activeContentListener', function () {
+describe('MM.ActiveContentListener', function () {
 	'use strict';
 	var underTest, mapController, onChangeFunction1, onChangeFunction2, activeContent;
 	beforeEach(function () {
