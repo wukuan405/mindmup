@@ -56,7 +56,7 @@ module.exports = function (grunt) {
 		cssmin: {
 			combine: {
 				files: {
-					'compiled/mindmap.css': ['public/mindmap.css'],
+					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
 				}
 			}
