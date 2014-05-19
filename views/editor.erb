@@ -33,8 +33,12 @@ SOFTWARE.
     <link rel="shortcut icon" href="<%=settings.static_image_host%>/favicon.ico" >
   <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
   <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
+  <% if(production?) %>
+      <link href="<%=settings.public_url%>/combined.css" rel="stylesheet" />
+  <% else %>
       <link href="<%=settings.public_url%>/mindmap.css" rel="stylesheet" />
       <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
+  <% end %>
     <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
   <%= erb :timetrack %>
   </head>
