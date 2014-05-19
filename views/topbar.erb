@@ -11,7 +11,7 @@
             <li> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
             <li> <a href="#" data-mm-role="new-from-clipboard" data-category="Top Bar" data-event-type="New From Clipboard"><i class="icon-paste"></i>&nbsp;New&nbsp;From&nbsp;Clipboard</a> </li>
 
-			<li class="dropdown-submenu">
+		  <li class="dropdown-submenu">
 			<a href="#"><i class="icon-cloud-upload"></i>&nbsp;Open/Import</a>
 			<ul data-mm-role="open-sources" class="dropdown-menu" role="menu">
 				<li  class="hidden-touch">
@@ -23,11 +23,11 @@
 				<li>
 					<a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalLocalStorageOpen" data-toggle="modal"><span class="repo repo-o"></span>&nbsp;From Browser Storage</a>
 				</li>
-        <li>
-          <a data-event-type="Open from Mindmup Gold Storage" data-category="Top Bar" data-target="#modalGoldStorageOpen" data-toggle="modal"><span class="repo repo-b"></span>&nbsp;From Mindmup Gold Storage</a>
-        </li>
+                          <li>
+                              <a data-event-type="Open from Mindmup Gold Storage" data-category="Top Bar" data-target="#modalGoldStorageOpen" data-toggle="modal"><span class="repo repo-b"></span>&nbsp;From Mindmup Gold Storage</a>
+                          </li>
 			</ul>
-			</li>
+		  </li>
             <li class="divider hidden-touch"></li>
 			<li class="hidden-map-changed disabled">
 			<a><i class="icon-save"></i>&nbsp;Save</a>
@@ -135,7 +135,6 @@
 
             <li class="divider hidden-phone"></li>
             <li rel="tooltip" data-mm-context-menu data-title="A"><a data-category="Top Bar" data-event-type="Open Attachment"   class="openAttachment"><i class="icon-paper-clip"></i>&nbsp;Node Attachment</a></li>
-			<li rel="tooltip" data-mm-context-menu data-title="M"><a data-category="Top Bar" data-event-type="Open Measurements" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table">&nbsp;<span class="visible-column-split">Hide</span><span class="visible-row-split">Hide</span><span class="hidden-column-split hidden-row-split">Show</span>&nbsp;Measurements</i></a></li>
             <li data-mm-layout="dom"><a data-category="Topbar" data-event-type="Custom CSS" data-toggle="modal" data-target="#customStyleModal"><i class="icon-cog"></i>&nbsp;Custom Style</a></li>
           </ul>
         </li>
@@ -153,10 +152,18 @@
             <li rel="tooltip" data-title="Esc or 0"><a data-category="Top Bar" data-event-type="Zoom reset" class="resetView"><i class="icon-circle-blank"></i>&nbsp;Re-center view</a></li>
 
             <li class="divider hidden-touch"></li>
+              <li class="dropdown-submenu">
+                <a href="#">
+                    <span class="hidden-row-split"><i class="icon-columns"></i></span><span class="visible-row-split"><i class="icon-columns icon-rotate-270"></i></span>&nbsp;Side pane
+                </a>
+                <ul class="dropdown-menu" role="menu">
+                    <li class="hidden-phone visible-row-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip" ><i class="icon-columns"></i>&nbsp;Column&nbsp;split</a></li>
+                    <li class="hidden-phone visible-column-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip"><i class="icon-columns icon-rotate-270"></i>&nbsp;Row&nbsp;split</a></li>
 
-            <li class="hidden-touch visible-row-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip" ><i class="icon-columns"></i>&nbsp;Column&nbsp;split</a></li>
-            <li class="hidden-touch visible-column-split" rel="tooltip" data-title="Alt+o"><a data-mm-target="body" data-mm-role="split-flip"><i class="icon-columns icon-rotate-270"></i>&nbsp;Row&nbsp;split</a></li>
-
+                    <li rel="tooltip"  data-title="M" ><a data-category="Top Bar" data-event-type="Open Measurements" data-mm-role="activatedNodesMeasureSheet"><i class="icon-table" >&nbsp;Toggle&nbsp;Measurements</i></a></li>
+                    <li rel="tooltip" data-title="S"  ><a data-category="Top Bar" data-event-type="Open Storyboard" data-mm-role="storyboard-toggler"><i class="icon-film">&nbsp;Toggle&nbsp;Storyboard</i></a></li>
+                </ul>
+              </li>
             <li class="hidden-touch" rel="tooltip" data-title="Ctrl+b"><a data-mm-target="body" data-mm-role="toggle-class" data-mm-class="collapsed-toolbar"><i class="icon-food"></i>&nbsp;<span class="visible-collapsed-toolbar">Show</span><span class="hidden-collapsed-toolbar">Hide</span>&nbsp;toolbar</a></li>
 
             <li class="hidden-touch" rel="tooltip" data-title="Ctrl+shift+b"><a data-mm-target="body" data-mm-role="toggle-class" data-mm-class="hidden-topbar" data-mm-key="ctrl+shift+b meta+shift+b"><i class="icon-list-alt"></i>&nbsp;

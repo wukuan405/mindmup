@@ -1,19 +1,10 @@
 /* global jQuery, MM*/
-MM.CustomStyleController = function (mapController, mapModel) {
+MM.CustomStyleController = function (activeContentListener, mapModel) {
 	'use strict';
 	var self = this,
 		customStyleElement = jQuery('<style id="customStyleCSS" type="text/css"></style>').appendTo('body'),
-		activeContent,
 		currentStyleText,
-		setActiveContent = function (mapId, content) {
-			if (activeContent) {
-				activeContent.removeEventListener('changed', publishData);
-			}
-			activeContent = content;
-			publishData();
-			activeContent.addEventListener('changed', publishData);
-		},
-		publishData = function () {
+		publishData = function (activeContent) {
 			var newText = activeContent.getAttr('customCSS');
 			if (newText !== currentStyleText) {
 				currentStyleText = newText;
@@ -22,13 +13,14 @@ MM.CustomStyleController = function (mapController, mapModel) {
 				mapModel.rebuildRequired();
 			}
 		};
-	mapController.addEventListener('mapLoaded', setActiveContent);
 	self.getStyle = function () {
 		return currentStyleText || '';
 	};
 	self.setStyle = function (styleText) {
+		var activeContent = activeContentListener.getActiveContent();
 		activeContent.updateAttr(activeContent.id, 'customCSS', styleText);
 	};
+	activeContentListener.addListener(publishData);
 };
 jQuery.fn.customStyleWidget = function (controller) {
 	'use strict';

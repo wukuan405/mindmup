@@ -2,7 +2,7 @@
 /*jshint laxbreak:true*/
 describe('MM.ContentStatusUpdater', function () {
 	'use strict';
-	var underTest, content,
+	var underTest, content, activeContentListener,
 		mapControllerStub = function (content) {
 			var mc  = {};
 			mc.addEventListener = function (eventType, listener) {
@@ -108,7 +108,8 @@ describe('MM.ContentStatusUpdater', function () {
 
 			}
 		});
-		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
+		activeContentListener = new MM.ActiveContentListener(mapControllerStub(content));
+		underTest = new MM.ContentStatusUpdater('test-status', 'test-statuses', 'test-measurement-value', 'test-measurement-config',  activeContentListener);
 	});
 	it('propagation keeps child status - regression bug check', function () {
 		underTest.updateStatus(1111, 'questionable');
@@ -295,7 +296,8 @@ describe('MM.ContentStatusUpdater', function () {
 					}
 				}
 			});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses',  'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
+			activeContentListener = new MM.ActiveContentListener(mapControllerStub(content));
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses',  'test-measurement-value', 'test-measurement-config', activeContentListener);
 		});
 		it('drops status attributes from cleared nodes', function () {
 			underTest.clear();
@@ -326,7 +328,8 @@ describe('MM.ContentStatusUpdater', function () {
 				id: 1,
 				attr: { 'test-statuses': 'old' }
 			});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapControllerStub(content));
+			activeContentListener = new MM.ActiveContentListener(mapControllerStub(content));
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', activeContentListener);
 		});
 		it('changes status configuration on current content', function () {
 			underTest.setStatusConfig(configOne);
@@ -355,7 +358,7 @@ describe('MM.ContentStatusUpdater', function () {
 		var mapController, underTest, configOne, configTwo, firstContent, secondContent;
 		beforeEach(function () {
 			mapController = observable({});
-			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', mapController);
+			underTest = new MM.ContentStatusUpdater('status', 'test-statuses', 'test-measurement-value', 'test-measurement-config', new MM.ActiveContentListener(mapController));
 			configOne = { 'passing': { style: { background: '#ffffff' } } };
 			configTwo = { 'failing': { style: { background: '#ffffff' } } };
 			firstContent = MAPJS.content({
@@ -1100,7 +1103,7 @@ describe('MM.sortProgressConfig', function () {
 
 describe('MM.progressCalcChangeMediator', function () {
 	'use strict';
-	var mapController, activeContent, mapModel, calcModel, filter, progressConfigUpdater;
+	var activeContent, mapModel, calcModel, filter, progressConfigUpdater, mapController, activeContentListener;
 	beforeEach(function () {
 		filter = {};
 		calcModel = {
@@ -1111,8 +1114,9 @@ describe('MM.progressCalcChangeMediator', function () {
 		mapModel = observable({});
 		progressConfigUpdater = observable({});
 		mapController = observable({});
+		activeContentListener = new MM.ActiveContentListener(mapController);
 		activeContent = MAPJS.content({id: 1});
-		MM.progressCalcChangeMediator(calcModel, mapController, mapModel, progressConfigUpdater);
+		MM.progressCalcChangeMediator(calcModel, activeContentListener, mapModel, progressConfigUpdater);
 		mapController.dispatchEvent('mapLoaded', 'testID', activeContent);
 		calcModel.dataUpdated.calls.reset();
 	});

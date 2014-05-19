@@ -1,4 +1,4 @@
-/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn*/
+/*global describe, jasmine, beforeEach, it, jQuery, afterEach, _, expect, observable, spyOn, MM*/
 describe('measuresDisplayControlWidget', function () {
 	'use strict';
 	var underTest, mapModel, measuresModel, template = '<div class="dropdown-submenu" data-mm-layout="dom" data-mm-role="measures-display-control">' +
@@ -76,36 +76,14 @@ describe('measuresDisplayControlWidget', function () {
 		expect(underTest.find('.mm-active').length).toBe(0);
 	});
 });
-describe('editByActivatedNodesWidget', function () {
+describe('measuresModelMediator', function () {
 	'use strict';
-	var mapModel, measuresModel, splittableController, underTest, template = '<div><a data-mm-role="activatedNodesMeasureSheet">aloha</a></div>';
+	var mapModel, measuresModel;
 	beforeEach(function () {
 		mapModel = jasmine.createSpyObj('mapModel', ['selectNode', 'setInputEnabled', 'getInputEnabled']);
 		measuresModel = observable({});
-		splittableController = jasmine.createSpyObj('splittableController', ['toggle']);
-		underTest = jQuery(template).appendTo('body').editByActivatedNodesWidget('f', mapModel, measuresModel, splittableController);
+		MM.measuresModelMediator(mapModel, measuresModel);
 		mapModel.getInputEnabled.and.returnValue(true);
-	});
-	afterEach(function () {
-		underTest.remove();
-	});
-	it('toggles splittable controller on keystroke', function () {
-		underTest.trigger(jQuery.Event('keydown', {which: 70}));
-		expect(splittableController.toggle).toHaveBeenCalled();
-	});
-	it('does not toggle on keystroke if input is disabled', function () {
-		mapModel.getInputEnabled.and.returnValue(false);
-		underTest.trigger(jQuery.Event('keydown', {which: 70}));
-		expect(splittableController.toggle).not.toHaveBeenCalled();
-	});
-	it('toggles splittable controller on click', function () {
-		underTest.find('a').click();
-		expect(splittableController.toggle).toHaveBeenCalled();
-	});
-	it('toggles splittable controller on click even if input is disabled', function () {
-		mapModel.getInputEnabled.and.returnValue(false);
-		underTest.find('a').click();
-		expect(splittableController.toggle).toHaveBeenCalled();
 	});
 	it('disables input on mapModel when editing', function () {
 		measuresModel.dispatchEvent('measureEditing', true, 1);
@@ -121,7 +99,7 @@ describe('editByActivatedNodesWidget', function () {
 
 	});
 });
-describe('MM.ModalMeasuresSheetWidget', function () {
+describe('MM.measuresSheetWidget', function () {
 	'use strict';
 	var template =	'<div class="modal">' +
 						'<table data-mm-role="measurements-table">' +
@@ -162,7 +140,7 @@ describe('MM.ModalMeasuresSheetWidget', function () {
 		));
 		spyOn(measuresModel, 'addEventListener').and.callThrough();
 		mapModel = jasmine.createSpyObj('mapModel', ['setLabelGenerator']);
-		underTest = jQuery(template).appendTo('body').modalMeasuresSheetWidget(measuresModel, mapModel);
+		underTest = jQuery(template).appendTo('body').measuresSheetWidget(measuresModel, mapModel);
 		underTest.trigger('hide');
 
 	});

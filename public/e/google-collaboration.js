@@ -337,7 +337,10 @@ MM.Extensions.googleCollaboration = function () {
 			self.stop = function () {
 				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
 				_.each(sessionImages, function (img) {
-					img.remove();
+					if (img && img.remove) {
+						img.remove();
+					}
+
 				});
 				sessionImages = {};
 				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);

@@ -263,18 +263,9 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 	};
 };
 
-MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, configStatusUpdater) {
+MM.progressCalcChangeMediator = function (calcModel, activeContentListener, mapModel, configStatusUpdater) {
 	'use strict';
-	var activeContent,
-		setActiveContent = function (mapId, content) {
-			if (activeContent) {
-				activeContent.removeEventListener('changed', publishData);
-			}
-			activeContent = content;
-			publishData();
-			activeContent.addEventListener('changed', publishData);
-		},
-		publishData = function () {
+	var publishData = function (activeContent) {
 			calcModel.dataUpdated(activeContent);
 		};
 	configStatusUpdater.addEventListener('configChanged', function () {
@@ -283,10 +274,10 @@ MM.progressCalcChangeMediator = function (calcModel, mapController, mapModel, co
 	mapModel.addEventListener('nodeSelectionChanged', function () {
 		var filter = calcModel.getFilter() || {};
 		if (filter.selectedSubtree) {
-			publishData();
+			publishData(activeContentListener.getActiveContent());
 		}
 	});
-	mapController.addEventListener('mapLoaded', setActiveContent);
+	activeContentListener.addListener(publishData);
 };
 MM.sortProgressConfig = function (config) {
 	'use strict';
@@ -379,51 +370,52 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 };
 
 
-MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, measurementAttributeName, measurementConfigurationAttributeName, mapController) {
+MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttributeName, measurementAttributeName, measurementConfigurationAttributeName, activeContentListener) {
 	'use strict';
 	var self = observable(this),
-		content,
 		findStatus = function (statusName) {
-			return content.getAttr(statusConfigurationAttributeName)[statusName];
+			return activeContentListener.getActiveContent().getAttr(statusConfigurationAttributeName)[statusName];
 		},
 		statusPriority = function (statusName) {
 			var s = findStatus(statusName);
 			return s && s.priority;
 		},
-		bindTo = function (mapContent) {
-			content = mapContent;
-			content.addEventListener('changed', function (method, attrs) {
-				/*jslint eqeq: true*/
-				if (method === 'updateAttr' && attrs[0] == content.id) {
-					if (attrs[1] === statusConfigurationAttributeName) {
-						self.dispatchEvent('configChanged', attrs[2]);
-					}
-					else if (attrs[1] === measurementConfigurationAttributeName) {
-						self.dispatchEvent('measurementsChanged', attrs[2]);
-					}
+		onActiveContentChanged = function (content, isNew, method, attrs) {
+			/*jslint eqeq:true*/
+			if (method && attrs && method === 'updateAttr' && attrs[0] == content.id) {
+				if (attrs[1] === statusConfigurationAttributeName) {
+					self.dispatchEvent('configChanged', attrs[2]);
 				}
-			});
+				else if (attrs[1] === measurementConfigurationAttributeName) {
+					self.dispatchEvent('measurementsChanged', attrs[2]);
+				}
+			}
+
+			if (isNew) {
+				self.refresh();
+			}
 		},
 		clearStatus = function (ideaId) {
-			var statusName = content.getAttrById(ideaId, statusAttributeName),
+			var statusName = activeContentListener.getActiveContent().getAttrById(ideaId, statusAttributeName),
 				status = statusName && findStatus(statusName),
 				currentStyle;
 			if (status) {
 				if (status.icon) {
-					content.updateAttr(ideaId, 'icon', false);
+					activeContentListener.getActiveContent().updateAttr(ideaId, 'icon', false);
 				}
 				if (status.style) {
-					currentStyle = content.getAttrById(ideaId, 'style');
-					content.updateAttr(ideaId, 'style', _.omit(currentStyle, _.keys(status.style)));
+					currentStyle = activeContentListener.getActiveContent().getAttrById(ideaId, 'style');
+					activeContentListener.getActiveContent().updateAttr(ideaId, 'style', _.omit(currentStyle, _.keys(status.style)));
 				}
 			}
-			content.updateAttr(ideaId, statusAttributeName, false);
+			activeContentListener.getActiveContent().updateAttr(ideaId, statusAttributeName, false);
 		},
 		recursiveClear = function (idea) {
 			clearStatus(idea.id);
 			_.each(idea.ideas, recursiveClear);
 		};
 	self.setStatusConfig = function (statusConfig) {
+		var content = activeContentListener.getActiveContent();
 		if (!statusConfig) {
 			content.updateAttr(content.id, statusConfigurationAttributeName, false);
 			return;
@@ -442,7 +434,8 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		var result = false,
 			changeStatus = function (id, statusName) {
 				var status = findStatus(statusName),
-					merged;
+					merged,
+					content = activeContentListener.getActiveContent();
 				if (!status) {
 					return false;
 				}
@@ -469,7 +462,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 				return _.max(childStatusNames, statusPriority);
 			};
 		if (changeStatus(ideaId, newStatusName)) {
-			_.each(content.calculatePath(ideaId), function (parent) {
+			_.each(activeContentListener.getActiveContent().calculatePath(ideaId), function (parent) {
 				var parentStatusName = shouldPropagate(parent);
 				if (parentStatusName) {
 					changeStatus(parent.id, parentStatusName);
@@ -480,19 +473,18 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 		return result;
 	};
 	self.setMeasurements = function (updatedMeasurements) {
+		var content = activeContentListener.getActiveContent();
 		content.updateAttr(content.id, measurementConfigurationAttributeName, updatedMeasurements);
 	};
 	self.clear = function () {
-		recursiveClear(content);
+		recursiveClear(activeContentListener.getActiveContent());
 	};
 	self.refresh = function () {
+		var content = activeContentListener.getActiveContent();
 		self.dispatchEvent('configChanged', content.getAttr(statusConfigurationAttributeName));
 		self.dispatchEvent('measurementsChanged', content.getAttr(measurementConfigurationAttributeName));
 	};
-	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
-		bindTo(mapContent);
-		self.refresh();
-	});
+	activeContentListener.addListener(onActiveContentChanged);
 
 };
 jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configurations, alertController) {
@@ -687,7 +679,7 @@ MM.Extensions.progress = function () {
 		statusAttributeName = 'progress',
 		measurementsConfigurationAttributeName = MM.Extensions.config.progress.measurementsConfigName,
 		measureAttributeName = 'measurements',
-		mapController = MM.Extensions.components.mapController,
+		activeContentListener = MM.Extensions.components.activeContentListener,
 		alertController = MM.Extensions.components.alert,
 		mapModel = MM.Extensions.components.mapModel,
 		iconEditor = MM.Extensions.components.iconEditor,
@@ -702,13 +694,13 @@ MM.Extensions.progress = function () {
 				calcWidget = parsed.find('#progress-calc-widget'),
 				updater;
 			$('#mainMenu').find('[data-mm-role=optional]').hide();
-			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, mapController);
+			updater = new MM.ContentStatusUpdater(statusAttributeName, statusConfigurationAttributeName, measureAttributeName, measurementsConfigurationAttributeName, activeContentListener);
 			menu.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			toolbar.progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			modal.tableEditWidget(updater.refresh.bind(updater), iconEditor).progressStatusUpdateWidget(updater, mapModel, MM.Extensions.progress.statusConfig, alertController);
 			calcWidget.detach().appendTo($('body')).calcWidget(calcModel, measuresModel).floatingToolbarWidget();
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
-			MM.progressCalcChangeMediator(calcModel, mapController, mapModel, updater);
+			MM.progressCalcChangeMediator(calcModel, activeContentListener, mapModel, updater);
 		};
 	$.get(MM.Extensions.mmConfig.publicUrl + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.publicUrl + '/e/progress.css" />').appendTo($('body'));

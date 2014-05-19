@@ -100,7 +100,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 		});
 	});
 };
-jQuery.fn.modalMeasuresSheetWidget = function (measuresModel) {
+jQuery.fn.measuresSheetWidget = function (measuresModel) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
