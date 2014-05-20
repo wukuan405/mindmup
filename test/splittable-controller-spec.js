@@ -1,4 +1,4 @@
-/*global describe, beforeEach, afterEach, jQuery, MM, it, expect, _, spyOn, jasmine, document*/
+/*global describe, beforeEach, afterEach, jQuery, MM, it, expect, _, spyOn, jasmine*/
 describe('MM.SplittableController', function () {
 	'use strict';
 	var underTest,
