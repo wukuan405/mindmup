@@ -196,6 +196,12 @@ describe('Storyboards', function () {
 						underTest.addScene(11);
 						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'red talk': 1}}]);
 					});
+					it('should dispatch a sceneAdded event', function () {
+						var listener = jasmine.createSpy('listener');
+						underTest.addEventListener('sceneAdded', listener);
+						underTest.addScene(11);
+						expect(listener).toHaveBeenCalled();
+					});
 					it('should keep any other scenes for other storyboards intact', function () {
 						underTest.addScene(12);
 						expect(activeContent.updateAttr).toHaveBeenCalledWith(12, 'test-scenes', [
@@ -221,6 +227,12 @@ describe('Storyboards', function () {
 						underTest.activateSceneAtIndex(2);
 						underTest.addScene(11);
 						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'ted talk': 6}}]);
+					});
+					it('should dispatch a sceneAdded event', function () {
+						var listener = jasmine.createSpy('listener');
+						underTest.addEventListener('sceneAdded', listener);
+						underTest.addScene(11);
+						expect(listener).toHaveBeenCalled();
 					});
 					it('should insert the scene after the optional specified index', function () {
 						underTest.addScene(11, 2);

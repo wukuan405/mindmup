@@ -8,7 +8,7 @@ describe('Storyboard widget', function () {
 		template = '<div><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div>';
 	beforeEach(function () {
 		mapContainer = jQuery('<div>').appendTo('body');
-		storyboardModel = jasmine.createSpyObj('storyboardModel', ['getScenes', 'addScene']);
+		storyboardModel = jasmine.createSpyObj('storyboardModel', ['getScenes', 'addScene', 'addEventListener', 'removeEventListener']);
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
 		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardModel, mapContainer, mapModel, '+');

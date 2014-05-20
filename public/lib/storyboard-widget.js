@@ -28,11 +28,14 @@ jQuery.fn.storyboardWidget = function (storyboardModel, mapContainer, mapModel, 
 			showStoryboard = function () {
 				rebuildStoryboard();
 				mapContainer.on('keypress', addSceneHandler);
+				storyboardModel.addEventListener('sceneAdded', rebuildStoryboard);
 			},
 			hideStoryboard = function () {
 				mapContainer.off('keypress', addSceneHandler);
+				storyboardModel.removeEventListener('sceneAdded', rebuildStoryboard);
 			};
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
+
 	});
 };
