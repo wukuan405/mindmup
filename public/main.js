@@ -165,7 +165,7 @@ MM.main = function (config) {
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardController, jQuery('#container'), mapModel, '+');
+				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel,  jQuery('#container'), mapModel, '+');
 
 
 				/* needs to come after all optional content widgets to fire show events */

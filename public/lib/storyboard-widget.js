@@ -1,5 +1,5 @@
 /*global jQuery, _*/
-jQuery.fn.storyboardWidget = function (storyboardController, mapContainer, mapModel, addSceneHotkey) {
+jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, mapContainer, mapModel, addSceneHotkey) {
 	'use strict';
 	var addSceneHandler = function (evt) {
 		var unicode = evt.charCode || evt.keyCode,
@@ -28,11 +28,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, mapContainer, mapMo
 			showStoryboard = function () {
 				rebuildStoryboard();
 				mapContainer.on('keypress', addSceneHandler);
-				storyboardController.addListener(rebuildStoryboard);
+				storyboardModel.addEventListener('sceneAdded', rebuildStoryboard);
 			},
 			hideStoryboard = function () {
 				mapContainer.off('keypress', addSceneHandler);
-				storyboardController.removeListener(rebuildStoryboard);
+				storyboardModel.removeEventListener('sceneAdded', rebuildStoryboard);
 			};
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);

@@ -3,19 +3,21 @@ describe('Storyboard widget', function () {
 	'use strict';
 	var underTest,
 		storyboardController,
+		storyboardModel,
 		mapModel,
 		mapContainer,
 		template = '<div><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div>';
 	beforeEach(function () {
 		mapContainer = jQuery('<div>').appendTo('body');
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'addListener', 'removeListener']));
+		storyboardModel = observable({});
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
 		storyboardController.getScenes.and.returnValue([
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
-		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, mapContainer, mapModel, '+');
+		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel, mapContainer, mapModel, '+');
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -63,8 +65,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-
-			storyboardController.addListener.calls.mostRecent().args[0]();
+			storyboardModel.dispatchEvent('sceneAdded');
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -87,9 +88,22 @@ describe('Storyboard widget', function () {
 			expect(storyboardController.addScene).not.toHaveBeenCalled();
 		});
 		it('does not update content on sceneAdded', function () {
+			var scenes;
 			underTest.trigger('show');
 			underTest.trigger('hide');
-			expect(storyboardController.removeListener).toHaveBeenCalledWith(storyboardController.addListener.calls.mostRecent().args[0]);
+
+			storyboardController.getScenes.and.returnValue([
+				{ideaId: 12, title: 'already in ted storyboard', index: 1},
+				{ideaId: 14, title: 'inside', index: 5}
+			]);
+			storyboardModel.dispatchEvent('sceneAdded');
+
+			scenes = underTest.find('[data-mm-role=scene]');
+
+			expect(scenes.length).toBe(2);
+			expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+			expect(scenes.last().attr('data-mm-index')).toEqual('2');
+			expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
 		});
 	});
 });
