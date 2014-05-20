@@ -144,6 +144,7 @@ describe('Storyboards', function () {
 			});
 		});
 	});
+
 	describe('StoryboardController', function () {
 		var underTest, storyboardModel;
 		beforeEach(function () {
@@ -211,16 +212,9 @@ describe('Storyboards', function () {
 						underTest.addScene(11);
 						expect(storyboardModel.createStoryboard).not.toHaveBeenCalled();
 					});
-					it('should add a scene to the end if no active scenes', function () {
+					it('should add a scene to the end if optional index supplied ', function () {
 						underTest.addScene(11);
 						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 11}}]);
-					});
-					it('should add a scene after the last activated scene', function () {
-						underTest.activateSceneAtIndex(1);
-						underTest.activateSceneAtIndex(2);
-						underTest.addScene(11);
-						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith('ted talk', 2);
-						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 6}}]);
 					});
 					it('should insert the scene after the optional specified index', function () {
 						underTest.addScene(11, 2);
@@ -281,101 +275,45 @@ describe('Storyboards', function () {
 					});
 				});
 			});
-			describe('remove', function () {
-				describe('if no args given', function () {
-					it('should remove all activated scenes', function () {
-
-					});
-					it('should not do anything if no activated scenes', function () {
-
-					});
-				});
-				describe('when arg is given', function () {
-					it('should remove only the specified scene', function () {
-
-					});
-					it('should not change the activated scene list', function () {
-
-					});
-				});
-			});
-			describe('activateSceneAtIndex', function () {
-				var listener;
+			describe('removeScene', function () {
 				beforeEach(function () {
 					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
-					listener = jasmine.createSpy('activeScenesChanged');
-					underTest.addEventListener('activeScenesChanged', listener);
+					storyboardModel.getScenesForNodeId.and.returnValue([
+						{storyboards: {'ted talk': 1, 'red talk': 1}},
+						{storyboards: {'ted talk': 4}}
+					]);
 				});
-				it('should activate a single scene if nothing else is active', function () {
-					underTest.activateSceneAtIndex(1);
-					expect(underTest.getActiveIndexes()).toEqual([1]);
-				});
-				it('should not do anything if scene is already active', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(1);
-					expect(underTest.getActiveIndexes()).toEqual([1]);
-				});
-				it('should add the scene to the list of activated scenes if deactivateOthers is not specified', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(2);
-					expect(underTest.getActiveIndexes()).toEqual([1, 2]);
-				});
-				it('should add the scene to the list of activated scenes if deactivateOthers is false', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(2, false);
-					expect(underTest.getActiveIndexes()).toEqual([1, 2]);
-				});
-				it('should deactivate all activated scenes and activate the specified scene if deactivateOthers is true', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(2, true);
-					expect(underTest.getActiveIndexes()).toEqual([2]);
-				});
-				it('should ignore previous activation - even if current index is active - when deactivateOthers is true', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(2, false);
-					underTest.activateSceneAtIndex(2, true);
-					expect(underTest.getActiveIndexes()).toEqual([2]);
-				});
-				it('dispatches an event if activation changed', function () {
-					underTest.activateSceneAtIndex(1);
-					expect(listener).toHaveBeenCalledWith([1]);
-				});
-				it('sends all active indexes, not just the change, when activation changes', function () {
-					underTest.activateSceneAtIndex(1);
-					listener.calls.reset();
-					underTest.activateSceneAtIndex(2);
+				it('should remove only the specified scene', function () {
 
-					expect(listener).toHaveBeenCalledWith([1, 2]);
-				});
-				it('sends a detached clone to avoid internal changes', function () {
-					underTest.activateSceneAtIndex(1);
-					listener.calls.reset();
-					underTest.activateSceneAtIndex(2);
-					listener.calls.mostRecent().args[0].push(22);
-					expect(underTest.getActiveIndexes()).toEqual([1, 2]);
-				});
-				it('does not dispatch an event when activation does not change', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.activateSceneAtIndex(2);
-					listener.calls.reset();
+					underTest.removeScene({ideaId: 2, index: 1});
 
-					underTest.activateSceneAtIndex(1);
-					expect(listener).not.toHaveBeenCalled();
+					expect(storyboardModel.getScenesForNodeId).toHaveBeenCalledWith(2);
+					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(2, [
+						{storyboards: {'red talk': 1}},
+						{storyboards: {'ted talk': 4}}
+					]);
 				});
-			});
-			describe('deactivateScene', function () {
-				it('should deactivate the scpecified scene', function () {
+				it('should clean up when the last storyboard scene is removed', function () {
+					underTest.removeScene({ideaId: 2, index: 4});
+
+					expect(storyboardModel.getScenesForNodeId).toHaveBeenCalledWith(2);
+					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(2, [
+						{storyboards: {'ted talk': 1, 'red talk': 1}},
+					]);
 
 				});
-			});
-			describe('getActiveIndexes', function () {
-				it('should return empty array when no scene is active', function () {
-					expect(underTest.getActiveIndexes()).toEqual([]);
+				it('should return false if no scene to remove is supplied', function () {
+					expect(underTest.removeScene()).toBeFalsy();
+					expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
 				});
-				it('should return a detached clone of the array to prevent internal changes', function () {
-					underTest.activateSceneAtIndex(1);
-					underTest.getActiveIndexes().push(23);
-					expect(underTest.getActiveIndexes()).toEqual([1]);
+				it('should return false if no storyboard is active', function () {
+					storyboardModel.getActiveStoryboardName.and.returnValue(undefined);
+					expect(underTest.removeScene({ideaId: 2, index: 1})).toBeFalsy();
+					expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+				});
+				it('should return false if scene to remove is nonsense', function () {
+					expect(underTest.removeScene({'bleurh': '2'})).toBeFalsy();
+					expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
 				});
 			});
 			describe('should reorganise the scene if the scene index precision is more than 8 significant figures', function () {

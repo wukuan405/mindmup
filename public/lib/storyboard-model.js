@@ -67,9 +67,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		return activeContentListener.getActiveContent().getAttrById(nodeId, sceneAttrName) || [];
 	};
 	self.setScenesForNodeId = function (nodeId, scenes) {
-		if (activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes)) {
-			self.dispatchEvent('sceneAdded');
-		}
+		activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes);
 	};
 	self.insertionIndexAfter = function (storyboardName, indexToInsertAfter) {
 		var nextIndex = 0, indexExists;
@@ -110,12 +108,15 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		});
 		return _.sortBy(result, 'index');
 	};
+	activeContentListener.addListener(function () {
+		self.dispatchEvent('storyboardRebuilt');
+	});
 };
+
 MM.StoryboardController = function (storyboardModel) {
 	/* workflows, event processing */
 	'use strict';
 	var self = observable(this),
-		activeIndexes = [],
 		buildStoryboardScene = function (storyboardName, index) {
 			var attr = {};
 			attr[storyboardName] = index;
@@ -123,23 +124,6 @@ MM.StoryboardController = function (storyboardModel) {
 				'storyboards': attr
 			};
 		};
-	self.activateSceneAtIndex = function (index, deactivateOthers) {
-		var old = activeIndexes.slice(0);
-		if (deactivateOthers) {
-			activeIndexes = [index];
-		} else {
-			if (activeIndexes.indexOf(index) >= 0) {
-				return;
-			}
-			activeIndexes.push(index);
-		}
-		if (!_.isEqual(old, activeIndexes)) {
-			self.dispatchEvent('activeScenesChanged', activeIndexes.slice(0));
-		}
-	};
-	self.getActiveIndexes = function () {
-		return activeIndexes.slice(0);
-	};
 	self.getScenes =  function () {
 		var storyboardName = storyboardModel.getActiveStoryboardName();
 		if (storyboardName) {
@@ -157,9 +141,7 @@ MM.StoryboardController = function (storyboardModel) {
 		} else {
 			if (optionalIndexToInsertAfter) {
 				index = storyboardModel.insertionIndexAfter(storyboardName, optionalIndexToInsertAfter);
-			} else if (activeIndexes.length > 0) {
-				index = storyboardModel.insertionIndexAfter(storyboardName, _.max(activeIndexes));
-			} else {
+			}  else {
 				index = storyboardModel.nextSceneIndex(storyboardName);
 			}
 			scenes = storyboardModel.getScenesForNodeId(nodeId);
@@ -167,11 +149,25 @@ MM.StoryboardController = function (storyboardModel) {
 		scenes.push(buildStoryboardScene(storyboardName, index));
 		storyboardModel.setScenesForNodeId(nodeId, scenes);
 	};
-	self.addListener = function (listener) {
-		storyboardModel.addEventListener('sceneAdded', listener);
-	};
-	self.removeListener = function (listener) {
-		storyboardModel.removeEventListener('sceneAdded', listener);
+	self.removeScene = function (sceneToRemove) {
+		if (!sceneToRemove || !sceneToRemove.ideaId || !sceneToRemove.index) {
+			return false;
+		}
+		var storyboardName = storyboardModel.getActiveStoryboardName(),
+			scenes = storyboardName && storyboardModel.getScenesForNodeId(sceneToRemove.ideaId);
+
+		if (!storyboardName) {
+			return false;
+		}
+		_.each(scenes, function (scene) {
+			if (scene.storyboards && scene.storyboards[storyboardName] && scene.storyboards[storyboardName] === sceneToRemove.index) {
+				delete scene.storyboards[storyboardName];
+			}
+		});
+		scenes = _.reject(scenes, function (scene) {
+			return  _.size(scene.storyboards) === 0;
+		});
+		storyboardModel.setScenesForNodeId(sceneToRemove.ideaId, scenes);
 	};
 /*
 	addEventListener('active-storyboard-changed scene-added active-scenes-changed scene-contents-changed scene-moved scene-removed', onchangeListener)

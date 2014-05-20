@@ -15,27 +15,36 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, ma
 			rebuildStoryboard = function () {
 				templateParent.empty();
 				_.each(storyboardController.getScenes(), function (scene) {
-					template.clone()
+					var newScene = template.clone()
 						.appendTo(templateParent)
 						.attr({
 							'data-mm-role': 'scene',
 							'data-mm-idea-id': scene.ideaId,
-							'data-mm-index': scene.index
+							'data-mm-index': scene.index,
+							'tabindex': 1
 						})
-						.find('[data-mm-role=scene-title]').text(scene.title);
+						.on('focus', function () {
+							templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
+							newScene.addClass('activated-scene');
+						}).keydown('del backspace', function (event) {
+							storyboardController.removeScene(scene);
+							event.preventDefault();
+							event.stopPropagation();
+						});
+					newScene.find('[data-mm-role=scene-title]').text(scene.title);
+
 				});
 			},
 			showStoryboard = function () {
 				rebuildStoryboard();
 				mapContainer.on('keypress', addSceneHandler);
-				storyboardModel.addEventListener('sceneAdded', rebuildStoryboard);
+				storyboardModel.addEventListener('storyboardRebuilt', rebuildStoryboard);
 			},
 			hideStoryboard = function () {
 				mapContainer.off('keypress', addSceneHandler);
-				storyboardModel.removeEventListener('sceneAdded', rebuildStoryboard);
+				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
-
 	});
 };

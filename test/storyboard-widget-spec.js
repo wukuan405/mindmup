@@ -65,7 +65,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('sceneAdded');
+			storyboardModel.dispatchEvent('storyboardRebuilt');
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -96,7 +96,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('sceneAdded');
+			storyboardModel.dispatchEvent('storyboardRebuilt');
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
