@@ -1,4 +1,4 @@
-/*global MM, observable, _, jQuery, document*/
+/*global MM, observable, _*/
 MM.SplittableController = function (element, mapModel, storage, storageKey, defaultContent) {
 	'use strict';
 	var self = observable(this),
@@ -29,15 +29,20 @@ MM.SplittableController = function (element, mapModel, storage, storageKey, defa
 		if (elementId === storage[storageKey]) {
 			if (self.currentSplit() === MM.SplittableController.NO_SPLIT) {
 				self.split(calcSplit());
+				element.find('#' + elementId).trigger('show');
 			} else {
 				self.split(MM.SplittableController.NO_SPLIT);
+				element.find('#' + elementId).trigger('hide');
 			}
 		} else {
 			element.find('[data-mm-role=optional-content]').hide();
 			element.find('#' + elementId).show();
 			if (self.currentSplit() === MM.SplittableController.NO_SPLIT) {
 				self.split(calcSplit());
+			} else {
+				element.find('#' + storage[storageKey]).trigger('hide');
 			}
+			element.find('#' + elementId).trigger('show');
 		}
 		storage[storageKey] = elementId;
 
@@ -66,19 +71,3 @@ MM.SplittableController.NO_SPLIT = 'no-split';
 MM.SplittableController.COLUMN_SPLIT = 'column-split';
 MM.SplittableController.ROW_SPLIT = 'row-split';
 
-
-jQuery.fn.optionalContentWidget = function (mapModel, splittableController) {
-	'use strict';
-	var	toggleMeasures = function (force, splitContentId) {
-			if (force || mapModel.getInputEnabled()) {
-				splittableController.toggle(splitContentId);
-			}
-		};
-
-	return jQuery.each(this, function () {
-		var element = jQuery(this),
-			id = element.attr('id');
-		jQuery(document).keydown(element.attr('data-mm-activation-key'), toggleMeasures.bind(element, false, id));
-		jQuery('[data-mm-role=' + element.attr('data-mm-activation-role') + ']').click(toggleMeasures.bind(element, true, id));
-	});
-};

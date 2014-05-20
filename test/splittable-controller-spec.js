@@ -124,6 +124,22 @@ describe('MM.SplittableController', function () {
 			});
 
 		});
+		describe('event processing', [
+				['first show of same',		MM.SplittableController.NO_SPLIT,  'test1', 'test1', ['test1'],	[]],
+				['first show of different', MM.SplittableController.NO_SPLIT,  'test1', 'test2', ['test2'],	[]],
+				['showing different',		MM.SplittableController.ROW_SPLIT, 'test1', 'test2', ['test2'],	['test1']],
+				['hiding',					MM.SplittableController.ROW_SPLIT, 'test1', 'test1', [],		['test1']]
+			], function (currentSplit, currentlyInArea, toggleId, expectedShowEvent, expectedHideEvent) {
+				var events = { hide: [], show: [] };
+				element.addClass(currentSplit);
+				jQuery('[data-mm-role=optional-content]').hide().on('hide show', function (e) {
+					events[e.type].push(jQuery(this).attr('id'));
+				});
+				jQuery('#' + currentlyInArea).show();
+				underTest.toggle(toggleId);
+				expect(events.hide).toEqual(expectedHideEvent);
+				expect(events.show).toEqual(expectedShowEvent);
+			});
 	});
 	describe('flip', function () {
 		it('should return false if currently no-split and not change split', function () {
@@ -140,37 +156,13 @@ describe('MM.SplittableController', function () {
 			expect(underTest.flip()).toBeTruthy();
 			expect(underTest.currentSplit()).toEqual('row-split');
 		});
-	});
-});
+		it('does not dispatch events when just doing a different split', function () {
+			var listener = jasmine.createSpy('show or hide');
+			jQuery('[data-mm-role=optional-content]').on('hide show', listener);
+			element.addClass('column-split');
+			underTest.flip();
 
-describe('optionalContentWidget', function () {
-	'use strict';
-	var underTest, mapModel, splittableController, template = '<div data-mm-activation-key="f" data-mm-activation-role="optionalContentWidget"><a data-mm-role="optionalContentWidget" >aloha</a></div>';
-	beforeEach(function () {
-		mapModel = jasmine.createSpyObj('mapModel', ['selectNode', 'setInputEnabled', 'getInputEnabled']);
-		splittableController = jasmine.createSpyObj('splittableController', ['toggle']);
-		underTest = jQuery(template).appendTo('body').optionalContentWidget(mapModel, splittableController);
-		mapModel.getInputEnabled.and.returnValue(true);
-	});
-	afterEach(function () {
-		underTest.remove();
-	});
-	it('toggles splittable controller on keystroke', function () {
-		jQuery(document).trigger(jQuery.Event('keydown', {which: 70}));
-		expect(splittableController.toggle).toHaveBeenCalled();
-	});
-	it('does not toggle on keystroke if input is disabled', function () {
-		mapModel.getInputEnabled.and.returnValue(false);
-		jQuery(document).trigger(jQuery.Event('keydown', {which: 70}));
-		expect(splittableController.toggle).not.toHaveBeenCalled();
-	});
-	it('toggles splittable controller on click', function () {
-		underTest.find('a').click();
-		expect(splittableController.toggle).toHaveBeenCalled();
-	});
-	it('toggles splittable controller on click even if input is disabled', function () {
-		mapModel.getInputEnabled.and.returnValue(false);
-		underTest.find('a').click();
-		expect(splittableController.toggle).toHaveBeenCalled();
+			expect(listener).not.toHaveBeenCalled();
+		});
 	});
 });

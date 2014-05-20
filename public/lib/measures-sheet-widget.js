@@ -243,7 +243,7 @@ jQuery.fn.measuresSheetWidget = function (measuresModel) {
 			return measuresModel.validate(value);
 		}).numericTotaliser();
 		element.find('[data-mm-role=measures-editor]').on('focus', onFocused.bind(element, true, false)).on('blur', onFocused.bind(element, false, false));
-		element.parent().on('show', function () {
+		element.on('show', function () {
 			buildMeasureTable();
 			measuresModel.addEventListener('startFromScratch', buildMeasureTable);
 			measuresModel.addEventListener('measureRowsChanged', onMeasureRowsChanged);
@@ -251,7 +251,7 @@ jQuery.fn.measuresSheetWidget = function (measuresModel) {
 			measuresModel.addEventListener('measureAdded', onMeasureAdded);
 			measuresModel.addEventListener('measureRemoved', onMeasureRemoved);
 		});
-		element.parent().on('hide', function () {
+		element.on('hide', function () {
 			measuresModel.removeEventListener('startFromScratch', buildMeasureTable);
 			measuresModel.removeEventListener('measureRowsChanged', onMeasureRowsChanged);
 			measuresModel.removeEventListener('measureValueChanged', onMeasureValueChanged);

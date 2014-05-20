@@ -1,4 +1,4 @@
-/*global MM, jQuery*/
+/*global MM, jQuery, window*/
 
 jQuery.fn.splittableWidget = function (splittableController, minTop) {
 	'use strict';
@@ -7,8 +7,7 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 		optionalArea = element.find('[data-mm-role=optional]'),
 		doSplit = function (position) {
 			var optionalAreaCss,
-				defaultAreaCss,
-				wasVisible;
+				defaultAreaCss;
 			if (position === MM.SplittableController.COLUMN_SPLIT) {
 				optionalAreaCss = {
 					'top': minTop,
@@ -34,17 +33,11 @@ jQuery.fn.splittableWidget = function (splittableController, minTop) {
 					'top': 0
 				};
 			}
-			wasVisible = optionalArea.is(':visible');
 			defaultArea.css(defaultAreaCss);
 			if (!window || !window.MutationObserver) {
 				defaultArea.trigger(jQuery.Event('resize'));
 			}
 			optionalArea.css(optionalAreaCss);
-			if (optionalArea.is(':visible') && !wasVisible) {
-				optionalArea.trigger('show');
-			} else if (!optionalArea.is(':visible') && wasVisible) {
-				optionalArea.trigger('hide');
-			}
 		};
 	splittableController.addEventListener('split', doSplit);
 	doSplit(splittableController.currentSplit());

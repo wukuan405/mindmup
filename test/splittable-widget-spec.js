@@ -42,27 +42,4 @@ describe('splittableWidget', function  () {
 		expect(optionalPanel.attr('style')).toContain('display: none;');
 		expect(defaultPanel.attr('style').trim()).toEqual('top: 0px;');
 	});
-	describe('should trigger optional panel events', function () {
-		var showListener, hideListener;
-		beforeEach(function () {
-			showListener = jasmine.createSpy('showListener');
-			hideListener = jasmine.createSpy('hideListener');
-			optionalPanel.on('hide', hideListener);
-			optionalPanel.on('show', showListener);
-		});
-		it('should trigger hide on optional area when hidden', function () {
-			splittableController.dispatchEvent('split', 'no-split');
-			expect(hideListener).toHaveBeenCalled();
-			expect(showListener).not.toHaveBeenCalled();
-		});
-		it('should trigger show on optional area when shown', function () {
-			splittableController.dispatchEvent('split', 'no-split');
-			showListener.calls.reset();
-			hideListener.calls.reset();
-			splittableController.dispatchEvent('split', 'row-split');
-			expect(showListener).toHaveBeenCalled();
-			expect(hideListener).not.toHaveBeenCalled();
-		});
-
-	});
 });
