@@ -13,7 +13,7 @@ jQuery.fn.storyboardWidget = function (storyboardModel, mapContainer, mapModel, 
 			template = element.find('[data-mm-role=scene-template]'),
 		    templateParent = template.parent(),
 			rebuildStoryboard = function () {
-				element.empty();
+				templateParent.empty();
 				_.each(storyboardModel.getScenes(), function (scene) {
 					template.clone()
 						.appendTo(templateParent)

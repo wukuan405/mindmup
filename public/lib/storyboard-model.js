@@ -189,8 +189,8 @@ MM.StoryboardModel = function (repository, activeContentListener, sceneAttrName)
 			scenes = storyboardAdapter.getScenesForNodeId(nodeId);
 		}
 		scenes.push(buildStoryboardScene(storyboardName, index));
-		self.dispatchEvent('sceneAdded');
 		storyboardAdapter.setScenesForNodeId(nodeId, scenes);
+		self.dispatchEvent('sceneAdded');
 
 	};
 

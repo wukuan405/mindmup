@@ -76,6 +76,8 @@ MM.main = function (config) {
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', activeContentListener, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
+			storyboardRepository = new MM.StoryboardRepository(activeContentListener, 'storyboards'),
+			storyboardModel = new MM.StoryboardModel(storyboardRepository, activeContentListener, 'storyboard-scenes'),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -163,7 +165,12 @@ MM.main = function (config) {
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
+				jQuery('#storyboard').storyboardWidget(storyboardModel, jQuery('#container'), mapModel, '+');
+
+
+				/* needs to come after all optional content widgets to fire show events */
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
+
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
 			};
 		jQuery.fn.colorPicker.defaults.colors = [
