@@ -1,4 +1,4 @@
-/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable, spyOn*/
+/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable*/
 describe('Storyboards', function () {
 	'use strict';
 	var activeContent, mapController, activeContentListener;
@@ -18,10 +18,10 @@ describe('Storyboards', function () {
 
 	});
 
-	describe('StoryboardRepository', function () {
+	describe('StoryboardModel', function () {
 		var underTest;
 		beforeEach(function () {
-			underTest = new MM.StoryboardRepository(activeContentListener, 'test-storyboards');
+			underTest = new MM.StoryboardModel(activeContentListener, 'test-storyboards', 'test-scenes');
 			mapController.dispatchEvent('mapLoaded', 'loadedMapid', activeContent);
 		});
 		describe('getActiveStoryboardName', function () {
@@ -96,13 +96,7 @@ describe('Storyboards', function () {
 		describe('when a new map is loaded', function () {
 
 		});
-	});
 
-	describe('StoryBoardAdapter', function () {
-		var underTest;
-		beforeEach(function () {
-			underTest = new MM.StoryboardAdapter(activeContent, 'test-scenes');
-		});
 		describe('nextSceneIndex', function () {
 			it('returns 1 for non existent storyboards', function () {
 				expect(underTest.nextSceneIndex('red talk')).toBe(1);
@@ -150,12 +144,11 @@ describe('Storyboards', function () {
 			});
 		});
 	});
-	describe('StoryboardModel', function () {
-		var underTest, repository;
+	describe('StoryboardController', function () {
+		var underTest, storyboardModel;
 		beforeEach(function () {
-			repository = new jasmine.createSpyObj('repository', ['getActiveStoryboardName', 'createStoryboard']);
-			underTest = new MM.StoryboardModel(repository, activeContentListener, 'test-scenes');
-			spyOn(activeContent, 'updateAttr').and.callThrough();
+			storyboardModel = new jasmine.createSpyObj('storyboardModel', ['getActiveStoryboardName', 'getScenes', 'createStoryboard', 'getScenesForNodeId', 'insertionIndexAfter', 'setScenesForNodeId', 'nextSceneIndex']);
+			underTest = new MM.StoryboardController(storyboardModel);
 		});
 		describe('when active content is not loaded', function () {
 			it('addScene should return false', function () {
@@ -173,38 +166,35 @@ describe('Storyboards', function () {
 			describe('addScene', function () {
 				describe('when no story boards exist', function () {
 					beforeEach(function () {
-						repository.getActiveStoryboardName.and.returnValue(undefined);
-						repository.createStoryboard.and.returnValue('newname');
+						storyboardModel.getActiveStoryboardName.and.returnValue(undefined);
+						storyboardModel.createStoryboard.and.returnValue('newname');
 						underTest.addScene(12);
 					});
 					it('should create a default story board if no story boards exist for the map', function () {
-						expect(repository.createStoryboard).toHaveBeenCalled();
+						expect(storyboardModel.createStoryboard).toHaveBeenCalled();
 					});
 					it('should add a scene to an empty storyboard as the first scene', function () {
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(12, 'test-scenes', [{storyboards: {newname: 1}}]);
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(12, [{storyboards: {newname: 1}}]);
 					});
 				});
 				describe('when the active storyboard exists but is blank', function () {
 					beforeEach(function () {
-						repository.getActiveStoryboardName.and.returnValue('red talk');
+						storyboardModel.getActiveStoryboardName.and.returnValue('red talk');
+						storyboardModel.getScenesForNodeId.and.returnValue([]);
+						storyboardModel.nextSceneIndex.and.returnValue(1);
 					});
 					it('should not try to create a new storyboard', function () {
 						underTest.addScene(11);
-						expect(repository.createStoryboard).not.toHaveBeenCalled();
+						expect(storyboardModel.createStoryboard).not.toHaveBeenCalled();
 					});
 					it('should add a scene to the end of a storyboard if storyboard is currently empty', function () {
 						underTest.addScene(11);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'red talk': 1}}]);
-					});
-					it('should dispatch a sceneAdded event', function () {
-						var listener = jasmine.createSpy('listener');
-						underTest.addEventListener('sceneAdded', listener);
-						underTest.addScene(11);
-						expect(listener).toHaveBeenCalled();
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'red talk': 1}}]);
 					});
 					it('should keep any other scenes for other storyboards intact', function () {
+						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 1}}]);
 						underTest.addScene(12);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(12, 'test-scenes', [
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(12, [
 							{storyboards: {'ted talk': 1}},
 							{storyboards: {'red talk': 1}}
 						]);
@@ -212,35 +202,35 @@ describe('Storyboards', function () {
 				});
 				describe('when the active storyboard exists but is not blank', function () {
 					beforeEach(function () {
-						repository.getActiveStoryboardName.and.returnValue('ted talk');
+						storyboardModel.getScenesForNodeId.and.returnValue([]);
+						storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
+						storyboardModel.nextSceneIndex.and.returnValue(11);
+						storyboardModel.insertionIndexAfter.and.returnValue(6);
 					});
 					it('should not try to create a new storyboard', function () {
 						underTest.addScene(11);
-						expect(repository.createStoryboard).not.toHaveBeenCalled();
+						expect(storyboardModel.createStoryboard).not.toHaveBeenCalled();
 					});
 					it('should add a scene to the end if no active scenes', function () {
 						underTest.addScene(11);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'ted talk': 11}}]);
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 11}}]);
 					});
 					it('should add a scene after the last activated scene', function () {
 						underTest.activateSceneAtIndex(1);
 						underTest.activateSceneAtIndex(2);
 						underTest.addScene(11);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'ted talk': 6}}]);
-					});
-					it('should dispatch a sceneAdded event', function () {
-						var listener = jasmine.createSpy('listener');
-						underTest.addEventListener('sceneAdded', listener);
-						underTest.addScene(11);
-						expect(listener).toHaveBeenCalled();
+						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith('ted talk', 2);
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 6}}]);
 					});
 					it('should insert the scene after the optional specified index', function () {
 						underTest.addScene(11, 2);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(11, 'test-scenes', [{storyboards: {'ted talk': 6}}]);
+						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith('ted talk', 2);
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 6}}]);
 					});
 					it('should keep any other scenes for other storyboards intact', function () {
+						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 1}}]);
 						underTest.addScene(12);
-						expect(activeContent.updateAttr).toHaveBeenCalledWith(12, 'test-scenes', [
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(12, [
 							{storyboards: {'ted talk': 1}},
 							{storyboards: {'ted talk': 11}}
 						]);
@@ -249,7 +239,12 @@ describe('Storyboards', function () {
 			});
 			describe('getScenes', function () {
 				beforeEach(function () {
-					repository.getActiveStoryboardName.and.returnValue('ted talk');
+					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
+					storyboardModel.getScenes.and.returnValue([
+						{ideaId: 12, title: 'already in ted storyboard', index: 1},
+						{ideaId: 13, title: 'in two storyboards', index: 2},
+						{ideaId: 14, title: 'only in bed storyboard', index: 10}
+					]);
 				});
 				it('retrieves a list of scenes for the currently active storyboard', function () {
 					expect(underTest.getScenes()).toEqual([
@@ -257,6 +252,7 @@ describe('Storyboards', function () {
 						{ideaId: 13, title: 'in two storyboards', index: 2},
 						{ideaId: 14, title: 'only in bed storyboard', index: 10}
 					]);
+					expect(storyboardModel.getScenes).toHaveBeenCalledWith('ted talk');
 				});
 			});
 			describe('moveAfter', function () {
@@ -306,7 +302,7 @@ describe('Storyboards', function () {
 			describe('activateSceneAtIndex', function () {
 				var listener;
 				beforeEach(function () {
-					repository.getActiveStoryboardName.and.returnValue('ted talk');
+					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
 					listener = jasmine.createSpy('activeScenesChanged');
 					underTest.addEventListener('activeScenesChanged', listener);
 				});

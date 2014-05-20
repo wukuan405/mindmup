@@ -1,11 +1,11 @@
 /*global jQuery, _*/
-jQuery.fn.storyboardWidget = function (storyboardModel, mapContainer, mapModel, addSceneHotkey) {
+jQuery.fn.storyboardWidget = function (storyboardController, mapContainer, mapModel, addSceneHotkey) {
 	'use strict';
 	var addSceneHandler = function (evt) {
 		var unicode = evt.charCode || evt.keyCode,
 			actualkey = String.fromCharCode(unicode);
 		if (actualkey === addSceneHotkey && mapModel.getInputEnabled()) {
-			storyboardModel.addScene(mapModel.getSelectedNodeId());
+			storyboardController.addScene(mapModel.getSelectedNodeId());
 		}
 	};
 	return jQuery.each(this, function () {
@@ -14,7 +14,7 @@ jQuery.fn.storyboardWidget = function (storyboardModel, mapContainer, mapModel, 
 		    templateParent = template.parent(),
 			rebuildStoryboard = function () {
 				templateParent.empty();
-				_.each(storyboardModel.getScenes(), function (scene) {
+				_.each(storyboardController.getScenes(), function (scene) {
 					template.clone()
 						.appendTo(templateParent)
 						.attr({
@@ -28,11 +28,11 @@ jQuery.fn.storyboardWidget = function (storyboardModel, mapContainer, mapModel, 
 			showStoryboard = function () {
 				rebuildStoryboard();
 				mapContainer.on('keypress', addSceneHandler);
-				storyboardModel.addEventListener('sceneAdded', rebuildStoryboard);
+				storyboardController.addListener(rebuildStoryboard);
 			},
 			hideStoryboard = function () {
 				mapContainer.off('keypress', addSceneHandler);
-				storyboardModel.removeEventListener('sceneAdded', rebuildStoryboard);
+				storyboardController.removeListener(rebuildStoryboard);
 			};
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);

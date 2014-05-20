@@ -1,8 +1,11 @@
 /*global MM, observable, _ */
-MM.StoryboardRepository = function (activeContentListener, storyboardAttrName) {
+MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneAttrName) {
 	'use strict';
-	var self = this,
+	var self = observable(this),
 		activeBoardName,
+		indexMatches = function (idx1, idx2) {
+			return idx1 === idx2;
+		},
 		findMaxIndex = function (arr) {
 			if (!arr) {
 				return 0;
@@ -45,27 +48,9 @@ MM.StoryboardRepository = function (activeContentListener, storyboardAttrName) {
 	self.setActiveStoryboardName = function (name) {
 		activeBoardName = name;
 	};
-	/*
-		getStoryboards()
-		addStoryboard(name)
-		removeStoryboard(name)
-		renameStoryboard(name, newName)
-		cloneStoryboard(name, cloneName)
-		getStoryBoard(name) >> return StoryboardModel
-		addEventListener('storyboard-removed storyboard-added storyboard-renamed', onchangeListener)
-	*/
-};
-
-MM.StoryboardAdapter = function (activeContent, sceneAttrName) {
-	/* simple syntax shugar utility methods */
-	'use strict';
-	var self = this,
-		indexMatches = function (idx1, idx2) {
-			return idx1 === idx2;
-		};
 	self.nextSceneIndex = function (storyboardName) {
 		var index = 0;
-		activeContent.traverse(function (idea) {
+		activeContentListener.getActiveContent().traverse(function (idea) {
 			var scenes = idea.getAttr(sceneAttrName);
 			if (scenes) {
 				_.each(scenes, function (scene) {
@@ -79,14 +64,16 @@ MM.StoryboardAdapter = function (activeContent, sceneAttrName) {
 		return index + 1;
 	};
 	self.getScenesForNodeId = function (nodeId) {
-		return activeContent.getAttrById(nodeId, sceneAttrName) || [];
+		return activeContentListener.getActiveContent().getAttrById(nodeId, sceneAttrName) || [];
 	};
 	self.setScenesForNodeId = function (nodeId, scenes) {
-		activeContent.updateAttr(nodeId, sceneAttrName, scenes);
+		if (activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes)) {
+			self.dispatchEvent('sceneAdded');
+		}
 	};
 	self.insertionIndexAfter = function (storyboardName, indexToInsertAfter) {
 		var nextIndex = 0, indexExists;
-		activeContent.traverse(function (idea) {
+		activeContentListener.getActiveContent().traverse(function (idea) {
 			var scenes = idea.getAttr(sceneAttrName);
 			if (scenes) {
 				_.each(scenes, function (scene) {
@@ -110,7 +97,7 @@ MM.StoryboardAdapter = function (activeContent, sceneAttrName) {
 	};
 	self.getScenes = function (storyboardName) {
 		var result = [];
-		activeContent.traverse(function (idea) {
+		activeContentListener.getActiveContent().traverse(function (idea) {
 			var scenes = idea.getAttr(sceneAttrName);
 			if (scenes) {
 				_.each(scenes, function (scene) {
@@ -124,17 +111,11 @@ MM.StoryboardAdapter = function (activeContent, sceneAttrName) {
 		return _.sortBy(result, 'index');
 	};
 };
-MM.StoryboardModel = function (repository, activeContentListener, sceneAttrName) {
+MM.StoryboardController = function (storyboardModel) {
 	/* workflows, event processing */
 	'use strict';
 	var self = observable(this),
 		activeIndexes = [],
-		getStoryboardAdapter = function () {
-			var content = activeContentListener.getActiveContent();
-			if (content) {
-				return new MM.StoryboardAdapter(content, sceneAttrName);
-			}
-		},
 		buildStoryboardScene = function (storyboardName, index) {
 			var attr = {};
 			attr[storyboardName] = index;
@@ -160,41 +141,38 @@ MM.StoryboardModel = function (repository, activeContentListener, sceneAttrName)
 		return activeIndexes.slice(0);
 	};
 	self.getScenes =  function () {
-		var storyboardName = repository.getActiveStoryboardName(),
-			storyboardAdapter = getStoryboardAdapter();
-		if (storyboardName && storyboardAdapter) {
-			return storyboardAdapter.getScenes(storyboardName);
+		var storyboardName = storyboardModel.getActiveStoryboardName();
+		if (storyboardName) {
+			return storyboardModel.getScenes(storyboardName);
 		}
 		return [];
 	};
 	self.addScene = function (nodeId, optionalIndexToInsertAfter) {
-		var storyboardName = repository.getActiveStoryboardName(),
-			storyboardAdapter = getStoryboardAdapter(),
+		var storyboardName = storyboardModel.getActiveStoryboardName(),
 			scenes,
 			index = 1;
-		if (!storyboardAdapter) {
-			return false;
-		}
 		if (!storyboardName) {
-			storyboardName = repository.createStoryboard();
+			storyboardName = storyboardModel.createStoryboard();
 			scenes = [];
 		} else {
 			if (optionalIndexToInsertAfter) {
-				index = storyboardAdapter.insertionIndexAfter(storyboardName, optionalIndexToInsertAfter);
+				index = storyboardModel.insertionIndexAfter(storyboardName, optionalIndexToInsertAfter);
 			} else if (activeIndexes.length > 0) {
-				index = storyboardAdapter.insertionIndexAfter(storyboardName, _.max(activeIndexes));
+				index = storyboardModel.insertionIndexAfter(storyboardName, _.max(activeIndexes));
 			} else {
-				index = storyboardAdapter.nextSceneIndex(storyboardName);
+				index = storyboardModel.nextSceneIndex(storyboardName);
 			}
-			scenes = storyboardAdapter.getScenesForNodeId(nodeId);
+			scenes = storyboardModel.getScenesForNodeId(nodeId);
 		}
 		scenes.push(buildStoryboardScene(storyboardName, index));
-		storyboardAdapter.setScenesForNodeId(nodeId, scenes);
-		self.dispatchEvent('sceneAdded');
-
+		storyboardModel.setScenesForNodeId(nodeId, scenes);
 	};
-
-
+	self.addListener = function (listener) {
+		storyboardModel.addEventListener('sceneAdded', listener);
+	};
+	self.removeListener = function (listener) {
+		storyboardModel.removeEventListener('sceneAdded', listener);
+	};
 /*
 	addEventListener('active-storyboard-changed scene-added active-scenes-changed scene-contents-changed scene-moved scene-removed', onchangeListener)
 	addScene(nodeId)

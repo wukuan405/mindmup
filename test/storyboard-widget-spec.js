@@ -2,20 +2,20 @@
 describe('Storyboard widget', function () {
 	'use strict';
 	var underTest,
-		storyboardModel,
+		storyboardController,
 		mapModel,
 		mapContainer,
 		template = '<div><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div>';
 	beforeEach(function () {
 		mapContainer = jQuery('<div>').appendTo('body');
-		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'addScene']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'addListener', 'removeListener']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
-		storyboardModel.getScenes.and.returnValue([
+		storyboardController.getScenes.and.returnValue([
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
-		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardModel, mapContainer, mapModel, '+');
+		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, mapContainer, mapModel, '+');
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -23,7 +23,7 @@ describe('Storyboard widget', function () {
 	describe('before shown', function () {
 		it('does not act on add scene key handler', function () {
 			mapContainer.trigger(jQuery.Event('keypress', { charCode: 43 }));
-			expect(storyboardModel.addScene).not.toHaveBeenCalled();
+			expect(storyboardController.addScene).not.toHaveBeenCalled();
 		});
 	});
 	describe('when shown', function () {
@@ -47,24 +47,24 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			mapModel.getSelectedNodeId.and.returnValue(23);
 			mapContainer.trigger(jQuery.Event('keypress', { charCode: 43 }));
-			expect(storyboardModel.addScene).toHaveBeenCalledWith(23);
+			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
 		});
 		it('does not act on add scene key handler if input is disabled', function () {
 			mapModel.getInputEnabled.and.returnValue(false);
 			underTest.trigger('show');
 			mapContainer.trigger(jQuery.Event('keypress', { charCode: 43 }));
-			expect(storyboardModel.addScene).not.toHaveBeenCalled();
+			expect(storyboardController.addScene).not.toHaveBeenCalled();
 		});
 		it('rebuilds a storyboard using new scenes on a sceneAdded event', function () {
 			var scenes;
 			underTest.trigger('show');
 
-			storyboardModel.getScenes.and.returnValue([
+			storyboardController.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
 
-			storyboardModel.dispatchEvent('sceneAdded');
+			storyboardController.addListener.calls.mostRecent().args[0]();
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -84,25 +84,12 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			underTest.trigger('hide');
 			mapContainer.trigger(jQuery.Event('keypress', { charCode: 43 }));
-			expect(storyboardModel.addScene).not.toHaveBeenCalled();
+			expect(storyboardController.addScene).not.toHaveBeenCalled();
 		});
 		it('does not update content on sceneAdded', function () {
-			var scenes;
 			underTest.trigger('show');
 			underTest.trigger('hide');
-
-			storyboardModel.getScenes.and.returnValue([
-				{ideaId: 12, title: 'already in ted storyboard', index: 1},
-				{ideaId: 14, title: 'inside', index: 5}
-			]);
-			storyboardModel.dispatchEvent('sceneAdded');
-
-			scenes = underTest.find('[data-mm-role=scene]');
-
-			expect(scenes.length).toBe(2);
-			expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
-			expect(scenes.last().attr('data-mm-index')).toEqual('2');
-			expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+			expect(storyboardController.removeListener).toHaveBeenCalledWith(storyboardController.addListener.calls.mostRecent().args[0]);
 		});
 	});
 });

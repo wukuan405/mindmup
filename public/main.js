@@ -76,8 +76,8 @@ MM.main = function (config) {
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', activeContentListener, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
-			storyboardRepository = new MM.StoryboardRepository(activeContentListener, 'storyboards'),
-			storyboardModel = new MM.StoryboardModel(storyboardRepository, activeContentListener, 'storyboard-scenes'),
+			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
+			storyboardController = new MM.StoryboardController(storyboardModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -165,7 +165,7 @@ MM.main = function (config) {
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardModel, jQuery('#container'), mapModel, '+');
+				jQuery('#storyboard').storyboardWidget(storyboardController, jQuery('#container'), mapModel, '+');
 
 
 				/* needs to come after all optional content widgets to fire show events */
