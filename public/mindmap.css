@@ -725,3 +725,10 @@ body .modal.huge {
   text-align: center;
   line-height: 20px;
 }
+
+.storyboard-scene-title {
+  display: table-cell;
+  vertical-align: middle;
+  width: 160px;
+  height:120px
+}
