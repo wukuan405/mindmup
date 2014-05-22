@@ -3,6 +3,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	'use strict';
 	var self = observable(this),
 		activeBoardName,
+		isInputEnabled,
 		indexMatches = function (idx1, idx2) {
 			return idx1 === idx2;
 		},
@@ -20,6 +21,13 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			});
 			return maxIndex;
 		};
+	self.setInputEnabled = function (isEnabled) {
+		isInputEnabled = isEnabled;
+		self.dispatchEvent('inputEnabled', isEnabled);
+	};
+	self.getInputEnabled = function () {
+		return isInputEnabled;
+	};
 	self.getActiveStoryboardName = function () {
 		var content = activeContentListener && activeContentListener.getActiveContent(),
 			list = content && content.getAttr(storyboardAttrName);

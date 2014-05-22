@@ -107,7 +107,7 @@ MM.main = function (config) {
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
 				jQuery('body').mapStatusWidget(mapController, activeContentListener);
-				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController);
+				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController).storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
@@ -165,7 +165,7 @@ MM.main = function (config) {
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel,  jQuery('#container'), mapModel, '+');
+				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel);
 
 
 				/* needs to come after all optional content widgets to fire show events */

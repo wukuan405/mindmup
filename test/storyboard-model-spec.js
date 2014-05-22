@@ -33,6 +33,29 @@ describe('Storyboards', function () {
 				expect(underTest.getActiveStoryboardName()).toEqual('mickey mouse');
 			});
 		});
+		describe('setInputEnabled', function () {
+			var listener = jasmine.createSpy('listener');
+			beforeEach(function () {
+				underTest.addEventListener('inputEnabled', listener);
+			});
+			it('should dispatch an InputEnabled event when true', function () {
+				underTest.setInputEnabled(true);
+				expect(listener).toHaveBeenCalledWith(true);
+			});
+			it('should dispatch an InputEnabled event when false', function () {
+				underTest.setInputEnabled(false);
+				expect(listener).toHaveBeenCalledWith(false);
+			});
+		});
+		describe('getIsInputEnabled', function () {
+			it('should be false to begin with', function () {
+				expect(underTest.getInputEnabled()).toBeFalsy();
+			});
+			it('should be true when set', function () {
+				underTest.setInputEnabled(true);
+				expect(underTest.getInputEnabled()).toBe(true);
+			});
+		});
 		describe('createStoryboard', function () {
 			it('should add the new storyboard name to the list of storyboards', function () {
 				underTest.createStoryboard();

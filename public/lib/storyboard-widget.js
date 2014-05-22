@@ -1,13 +1,6 @@
 /*global jQuery, _*/
-jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, mapContainer, mapModel, addSceneHotkey) {
+jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 	'use strict';
-	var addSceneHandler = function (evt) {
-		var unicode = evt.charCode || evt.keyCode,
-			actualkey = String.fromCharCode(unicode);
-		if (actualkey === addSceneHotkey && mapModel.getInputEnabled()) {
-			storyboardController.addScene(mapModel.getSelectedNodeId());
-		}
-	};
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			template = element.find('[data-mm-role=scene-template]'),
@@ -36,15 +29,49 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, ma
 				});
 			},
 			showStoryboard = function () {
+				storyboardModel.setInputEnabled(true);
 				rebuildStoryboard();
-				mapContainer.on('keypress', addSceneHandler);
 				storyboardModel.addEventListener('storyboardRebuilt', rebuildStoryboard);
 			},
 			hideStoryboard = function () {
-				mapContainer.off('keypress', addSceneHandler);
+				storyboardModel.setInputEnabled(false);
 				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
 	});
 };
+
+jQuery.fn.storyboardKeyHandlerWidget = function (storyboardController, storyboardModel, mapModel, addSceneHotkey) {
+	'use strict';
+	var element = this,
+		addSceneHandler = function (evt) {
+		var unicode = evt.charCode || evt.keyCode,
+			actualkey = String.fromCharCode(unicode);
+		if (actualkey === addSceneHotkey && mapModel.getInputEnabled()) {
+			storyboardController.addScene(mapModel.getSelectedNodeId());
+		}
+	};
+	storyboardModel.addEventListener('inputEnabled', function (isEnabled) {
+		if (isEnabled) {
+			element.on('keypress', addSceneHandler);
+		} else {
+			element.off('keypress', addSceneHandler);
+		}
+	});
+	return element;
+};
+
+
+/*
+
+
+ storyboard widget on shown -> notify controller that storyboard is active
+ storyboard widget on hide -> notify controller that storyboard is no longer active
+
+ controller -> model -> active storyboard -> event published
+
+ model event -> addSceneWidget
+	- attach/detach keyboard addSceneHandler
+	- hide/show menu items
+*/
