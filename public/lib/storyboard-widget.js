@@ -4,12 +4,22 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			template = element.find('[data-mm-role=scene-template]'),
-		    templateParent = template.parent(),
+			templateParent = template.parent(),
+			removeSelectedScenes = function () {
+				_.each(templateParent.find('.activated-scene'), function (domScene) {
+					var scene = jQuery(domScene).data('scene');
+					if (scene) {
+						storyboardController.removeScene(scene);
+
+					}
+				});
+			},
 			rebuildStoryboard = function () {
 				templateParent.empty();
 				_.each(storyboardController.getScenes(), function (scene) {
 					var newScene = template.clone()
 						.appendTo(templateParent)
+						.data('scene', scene)
 						.attr({
 							'data-mm-role': 'scene',
 							'data-mm-idea-id': scene.ideaId,
@@ -37,6 +47,8 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				storyboardModel.setInputEnabled(false);
 				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
+		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
+
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
 	});

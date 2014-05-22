@@ -98,10 +98,10 @@ describe('Storyboard widget', function () {
 	var underTest,
 		storyboardController,
 		storyboardModel,
-		template = '<div><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div>';
+		template = '<div><div><a data-mm-role="storyboard-remove-scene"></a></div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
 	beforeEach(function () {
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScene']));
 		storyboardController.getScenes.and.returnValue([
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
@@ -114,7 +114,7 @@ describe('Storyboard widget', function () {
 	describe('when shown', function () {
 		it('removes old scene content and rebuilds the UI using the list of scenes', function () {
 			var scenes;
-			underTest.append('<div data-mm-role="scene">BBB</div>');
+			underTest.find('#sceneParent').append('<div data-mm-role="scene">BBB</div>');
 			underTest.trigger('show');
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -179,6 +179,23 @@ describe('Storyboard widget', function () {
 			expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
 			expect(scenes.last().attr('data-mm-index')).toEqual('2');
 			expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+		});
+	});
+	describe('editing a storyboard', function () {
+		beforeEach(function () {
+			underTest.trigger('show');
+
+			storyboardController.getScenes.and.returnValue([
+				{ideaId: 12, title: 'already in ted storyboard', index: 1},
+				{ideaId: 14, title: 'inside', index: 5}
+			]);
+			storyboardModel.dispatchEvent('storyboardRebuilt');
+			underTest.find('[data-mm-role=scene]').last().focus();
+		});
+		it('should remove scene when storyboard-remove-scene menu item is clicked', function () {
+			underTest.find('[data-mm-role=storyboard-remove-scene]').click();
+			expect(storyboardController.removeScene).toHaveBeenCalledWith({ideaId: 14, title: 'inside', index: 5});
+			expect(storyboardController.removeScene.calls.count()).toBe(1);
 		});
 	});
 });
