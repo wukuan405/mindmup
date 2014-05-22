@@ -1,4 +1,52 @@
 /*global jasmine, describe, it, beforeEach, expect, afterEach, jQuery, expect, observable*/
+describe('storyboardMenuWidget', function () {
+	'use strict';
+	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a></span>',
+		storyboardController,
+		storyboardModel,
+		mapModel,
+		underTest;
+	beforeEach(function () {
+
+		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled', 'getInputEnabled']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
+		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
+		underTest = jQuery(template).appendTo('body').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
+	});
+	afterEach(function () {
+		underTest.remove();
+	});
+	describe('before input is enabled on storyboardModel', function () {
+		it('should be hidden', function () {
+			expect(underTest.css('display')).toBe('none');
+		});
+		it('should be shown if storyboardModel.getInputEnabled is true', function () {
+			storyboardModel.getInputEnabled.and.returnValue(true);
+			underTest.remove();
+			underTest = jQuery(template).appendTo('body').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
+			expect(underTest.css('display')).not.toBe('none');
+		});
+	});
+	describe('after input is enabled on storyboardModel', function () {
+		beforeEach(function () {
+			storyboardModel.dispatchEvent('inputEnabled', true);
+		});
+		it('should be visible', function () {
+			expect(underTest.css('display')).not.toBe('none');
+		});
+		it('should add scene when add-scene link is clicked', function () {
+			mapModel.getSelectedNodeId.and.returnValue(23);
+			underTest.find('[data-mm-role=storyboard-add-scene]').click();
+			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
+		});
+		describe('when subsequently disabled', function () {
+			it('should be hidden', function () {
+				storyboardModel.dispatchEvent('inputEnabled', false);
+				expect(underTest.css('display')).toBe('none');
+			});
+		});
+	});
+});
 describe('storyboardKeyHandlerWidget', function () {
 	'use strict';
 	var storyboardController,
@@ -11,10 +59,6 @@ describe('storyboardKeyHandlerWidget', function () {
 		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
-		storyboardController.getScenes.and.returnValue([
-			{ideaId: 12, title: 'already in ted storyboard', index: 1},
-			{ideaId: 13, title: 'in two storyboards', index: 2}
-		]);
 		underTest = jQuery('<div>').appendTo('body').storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
 	});
 	afterEach(function () {

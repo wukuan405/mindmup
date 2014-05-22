@@ -166,7 +166,7 @@ MM.main = function (config) {
 				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
 				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel);
-
+				jQuery('[data-mm-role=storyboard-menu]').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 
 				/* needs to come after all optional content widgets to fire show events */
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);

@@ -62,7 +62,24 @@ jQuery.fn.storyboardKeyHandlerWidget = function (storyboardController, storyboar
 	return element;
 };
 
+jQuery.fn.storyboardMenuWidget = function (storyboardController, storyboardModel, mapModel) {
+	'use strict';
+	var elements = this,
+		setVisibility  = function (isEnabled) {
+			if (isEnabled) {
+				elements.show();
+			} else {
+				elements.hide();
+			}
+		};
 
+	elements.find('[data-mm-role=storyboard-add-scene]').click(function () {
+		storyboardController.addScene(mapModel.getSelectedNodeId());
+	});
+	storyboardModel.addEventListener('inputEnabled', setVisibility);
+	setVisibility(storyboardModel.getInputEnabled());
+	return elements;
+};
 /*
 
 
