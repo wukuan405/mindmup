@@ -708,6 +708,10 @@ body .modal.huge {
 .storyboard-container {
   padding-left: 10px;
   padding-right: 10px;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 .storyboard-scene {
   display: inline-block;
@@ -724,6 +728,7 @@ body .modal.huge {
   padding:  10px;
   text-align: center;
   line-height: 20px;
+  cursor: move;
 }
 
 .storyboard-scene-title {
@@ -731,4 +736,18 @@ body .modal.huge {
   vertical-align: middle;
   width: 160px;
   height:120px
+}
+.drag-shadow{ 
+  opacity: 0.5;
+  box-shadow: none;
+  outline: none;
+  cursor: move;
+  z-index: 10;
+  position: absolute;
+}
+.potential-drop-left {
+	border: 1px dashed blue;
+}
+.potential-drop-right {
+	border: 1px dashed red;
 }

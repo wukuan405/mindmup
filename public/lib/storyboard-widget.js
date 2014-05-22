@@ -1,4 +1,4 @@
-/*global jQuery, _*/
+/*global jQuery, _, Hammer*/
 jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 	'use strict';
 	return jQuery.each(this, function () {
@@ -10,9 +10,33 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 					var scene = jQuery(domScene).data('scene');
 					if (scene) {
 						storyboardController.removeScene(scene);
-
 					}
 				});
+			},
+			potentialDropTargets = function (dropPosition) {
+				var scenes = templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
+					row = _.filter(scenes, function (sceneDOM) {
+						var scene = jQuery(sceneDOM);
+						var ypos = dropPosition.top - scene.offset().top,
+							sceneHeight =  scene.outerHeight(true),
+							withinRow = (ypos > 0 && ypos < sceneHeight);
+						return withinRow;
+					}),
+					potentialRight = _.filter(row, function (sceneDOM) {
+						var scene = jQuery(sceneDOM);
+						var xpos = dropPosition.left - scene.offset().left,
+							sceneWidth = scene.outerWidth(true),
+							leftMatch = (xpos > -20 && xpos < sceneWidth / 3);
+						return leftMatch;
+					}),
+					potentialLeft = _.filter(row, function (sceneDOM) {
+						var scene = jQuery(sceneDOM);
+						var xpos = dropPosition.left - scene.offset().left,
+							sceneWidth = scene.outerWidth(true),
+							rightMatch = (xpos > sceneWidth * 2 / 3 && xpos < sceneWidth + 20);
+						return rightMatch;
+					});
+				return {left: potentialLeft, right: potentialRight};
 			},
 			rebuildStoryboard = function () {
 				templateParent.empty();
@@ -45,6 +69,21 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 						})
 						.keydown('down', function () {
 							jQuery(this).gridDown().focus();
+						}).shadowDraggable().on('mm:stop-dragging mm:cancel-dragging', function () {
+							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
+						}).on('mm:stop-dragging', function (e) {
+							console.log('stopped dragging at', e.gesture.center);
+						}).on('mm:drag', function (e) {
+							if (e && e.gesture && e.gesture.center) {
+								var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY});
+								jQuery(this).siblings().not(potentialDrops.left).not(potentialDrops.right).removeClass('potential-drop-left potential-drop-right');
+								if (potentialDrops.left) {
+									jQuery(potentialDrops.left).not(jQuery(this).prev()).addClass('potential-drop-left');
+								}
+								if (potentialDrops.right) {
+									jQuery(potentialDrops.right).not(jQuery(this).next()).addClass('potential-drop-right');
+								}
+							}
 						});
 
 
@@ -62,7 +101,8 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
-
+		Hammer(element);
+		element.find('.storyboard-container').simpleDraggableContainer();
 		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
 	});
