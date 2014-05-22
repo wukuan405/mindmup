@@ -1,4 +1,4 @@
-/*global jasmine, describe, it, beforeEach, expect, afterEach, jQuery, expect, observable*/
+/*global jasmine, describe, it, beforeEach, expect, afterEach, jQuery, expect, observable, spyOn*/
 describe('storyboardMenuWidget', function () {
 	'use strict';
 	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a></span>',
@@ -179,6 +179,34 @@ describe('Storyboard widget', function () {
 			expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
 			expect(scenes.last().attr('data-mm-index')).toEqual('2');
 			expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+		});
+	});
+	describe('navigating a stroyboard', function () {
+		var dummyElement, selectedScene;
+		beforeEach(function () {
+			underTest.trigger('show');
+
+			storyboardController.getScenes.and.returnValue([
+				{ideaId: 12, title: 'already in ted storyboard', index: 1},
+				{ideaId: 14, title: 'inside', index: 5}
+			]);
+			storyboardModel.dispatchEvent('storyboardRebuilt');
+			selectedScene = underTest.find('[data-mm-role=scene]').last();
+			selectedScene.focus();
+			dummyElement = underTest.find('[data-mm-role=scene]').first();
+			spyOn(jQuery.fn, 'focus').and.callThrough();
+		});
+		describe('responds to direction keys', [
+			['left', 37, 'prev'],
+			['up', 38, 'gridUp'],
+			['right', 39, 'next'],
+			['down', 40, 'gridDown']
+		], function (keycode, jQueryFunction) {
+			spyOn(jQuery.fn, jQueryFunction).and.returnValue(dummyElement);
+			var evt = jQuery.Event('keydown', {which: keycode});
+			selectedScene.trigger(evt);
+			expect(jQuery.fn[jQueryFunction]).toHaveBeenCalledOnJQueryObject(selectedScene);
+			expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(dummyElement);
 		});
 	});
 	describe('editing a storyboard', function () {

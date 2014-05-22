@@ -33,7 +33,21 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 							storyboardController.removeScene(scene);
 							event.preventDefault();
 							event.stopPropagation();
+						})
+						.keydown('right', function () {
+							jQuery(this).next().focus();
+						})
+						.keydown('left', function () {
+							jQuery(this).prev().focus();
+						})
+						.keydown('up', function () {
+							jQuery(this).gridUp().focus();
+						})
+						.keydown('down', function () {
+							jQuery(this).gridDown().focus();
 						});
+
+
 					newScene.find('[data-mm-role=scene-title]').text(scene.title);
 
 				});

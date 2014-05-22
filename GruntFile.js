@@ -86,6 +86,7 @@ module.exports = function (grunt) {
 						'test-lib/jasmine-describe-batch.js',
 						'test-lib/fake-bootstrap-modal.js',
 						'test-lib/jasmine-tagname-match.js',
+						'test-lib/jquery-extension-matchers.js',
 						'public/mm.js',
 						'public/mapjs-compiled.js',
 					]
