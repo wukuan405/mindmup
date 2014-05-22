@@ -743,7 +743,7 @@ body .modal.huge {
   outline: none;
   cursor: move;
   z-index: 10;
-  position: absolute;
+  position: relative;
 }
 .potential-drop-left {
 	border: 1px dashed blue;

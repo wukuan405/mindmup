@@ -69,10 +69,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 						})
 						.keydown('down', function () {
 							jQuery(this).gridDown().focus();
-						}).shadowDraggable().on('mm:stop-dragging mm:cancel-dragging', function () {
+						}).shadowDraggable().on('mm:cancel-dragging', function () {
 							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
 						}).on('mm:stop-dragging', function (e) {
 							console.log('stopped dragging at', e.gesture.center);
+							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
 						}).on('mm:drag', function (e) {
 							if (e && e.gesture && e.gesture.center) {
 								var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY});
