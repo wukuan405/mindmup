@@ -98,7 +98,11 @@ describe('Storyboard widget', function () {
 	var underTest,
 		storyboardController,
 		storyboardModel,
-		template = '<div><div><a data-mm-role="storyboard-remove-scene"></a></div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
+		template = '<div><div>' +
+					'<a data-mm-role="storyboard-remove-scene"></a>' +
+					'<a data-mm-role="storyboard-move-scene-left"></a>' +
+					'<a data-mm-role="storyboard-move-scene-right"></a>' +
+					'</div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
 	beforeEach(function () {
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled']));
 		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScene', 'moveSceneAfter']));
@@ -244,9 +248,11 @@ describe('Storyboard widget', function () {
 					selectedScene.trigger(evt);
 					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, {ideaId: 14, title: 'inside', index: 5});
 				});
+				it('when  move right control is clicked', function () {
+					underTest.find('[data-mm-role=storyboard-move-scene-right]').click();
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, {ideaId: 14, title: 'inside', index: 5});
+				});
 			});
-
-
 			describe('earlier in the storyboard', function () {
 				var selectedScene, sceneBeingMoved, movedBefore;
 				beforeEach(function () {
@@ -265,6 +271,11 @@ describe('Storyboard widget', function () {
 					selectedScene.trigger(evt);
 					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, movedBefore);
 				});
+				it('when move left control is clicked', function () {
+					underTest.find('[data-mm-role=storyboard-move-scene-left]').click();
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, movedBefore);
+				});
+
 			});
 			describe('the second scene to the start of the list', function () {
 				var selectedScene,
@@ -283,6 +294,10 @@ describe('Storyboard widget', function () {
 				it('when ctrl+left is clicked', function () {
 					var evt = jQuery.Event('keydown', {which: 37, metaKey: true});
 					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, undefined);
+				});
+				it('when move left control is clicked', function () {
+					underTest.find('[data-mm-role=storyboard-move-scene-left]').click();
 					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, undefined);
 				});
 			});

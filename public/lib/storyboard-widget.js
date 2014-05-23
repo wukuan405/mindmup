@@ -13,6 +13,28 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 					}
 				});
 			},
+			moveSceneLeft = function (scene) {
+				var thisScene = scene && scene.data('scene'),
+					prev = thisScene && scene.prev() && scene.prev().prev(),
+					prevScene = prev && prev.data('scene');
+				if (thisScene) {
+					storyboardController.moveSceneAfter(thisScene, prevScene);
+				}
+			},
+			moveSceneRight = function (scene) {
+				var thisScene = scene && scene.data('scene'),
+					next = thisScene && scene.next(),
+					nextScene = next && next.data('scene');
+				if (thisScene && nextScene) {
+					storyboardController.moveSceneAfter(thisScene, nextScene);
+				}
+			},
+			moveFocusSceneLeft = function () {
+				moveSceneLeft(templateParent.find('.activated-scene'));
+			},
+			moveFocusSceneRight = function () {
+				moveSceneRight(templateParent.find('.activated-scene'));
+			},
 			potentialDropTargets = function (dropPosition) {
 				var scenes = templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
 					row = _.filter(scenes, function (sceneDOM) {
@@ -60,20 +82,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 							event.stopPropagation();
 						})
 						.keydown('meta+right ctrl+right', function () {
-							var thisScene = jQuery(this).data('scene'),
-								next = thisScene && jQuery(this).next(),
-								nextScene = next && next.data('scene');
-							if (thisScene && nextScene) {
-								storyboardController.moveSceneAfter(thisScene, nextScene);
-							}
+							moveSceneRight(jQuery(this));
 						})
 						.keydown('meta+left ctrl+left', function () {
-							var thisScene = jQuery(this).data('scene'),
-								prev = thisScene && jQuery(this).prev() && jQuery(this).prev().prev(),
-								prevScene = prev && prev.data('scene');
-							if (thisScene) {
-								storyboardController.moveSceneAfter(thisScene, prevScene);
-							}
+							moveSceneLeft(jQuery(this));
 						})
 						.keydown('right', function () {
 							jQuery(this).next().focus();
@@ -135,6 +147,8 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
+		element.find('[data-mm-role=storyboard-move-scene-left]').click(moveFocusSceneLeft);
+		element.find('[data-mm-role=storyboard-move-scene-right]').click(moveFocusSceneRight);
 		/*jshint newcap:false*/
 		Hammer(element);
 		element.find('.storyboard-container').simpleDraggableContainer();
