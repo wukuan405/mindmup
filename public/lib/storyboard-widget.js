@@ -191,6 +191,10 @@ jQuery.fn.storyboardMenuWidget = function (storyboardController, storyboardModel
 	elements.find('[data-mm-role=storyboard-add-scene]').click(function () {
 		storyboardController.addScene(mapModel.getSelectedNodeId());
 	});
+	elements.find('[data-mm-role=storyboard-remove-scenes-for-idea-id]').click(function () {
+		storyboardController.removeScenesForIdeaId(mapModel.getSelectedNodeId());
+	});
+
 	storyboardModel.addEventListener('inputEnabled', setVisibility);
 	setVisibility(storyboardModel.getInputEnabled());
 	return elements;

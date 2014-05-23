@@ -209,6 +209,29 @@ MM.StoryboardController = function (storyboardModel) {
 		storyboardModel.setScenesForNodeId(sceneToMove.ideaId, scenesForIdea);
 		return true;
 	};
+	self.removeScenesForIdeaId = function (ideaId) {
+		var storyboardName = storyboardModel.getActiveStoryboardName(),
+			scenes = storyboardName && storyboardModel.getScenesForNodeId(ideaId),
+			didRemoveScene;
+
+		if (!storyboardName) {
+			return false;
+		}
+		_.each(scenes, function (scene) {
+			if (scene.storyboards && scene.storyboards[storyboardName]) {
+				delete scene.storyboards[storyboardName];
+				didRemoveScene = true;
+			}
+		});
+		if (!didRemoveScene) {
+			return false;
+		}
+		scenes = _.reject(scenes, function (scene) {
+			return  _.size(scene.storyboards) === 0;
+		});
+		storyboardModel.setScenesForNodeId(ideaId, scenes);
+		return true;
+	};
 	self.removeScene = function (sceneToRemove) {
 		if (!sceneToRemove || !sceneToRemove.ideaId || !sceneToRemove.index) {
 			return false;

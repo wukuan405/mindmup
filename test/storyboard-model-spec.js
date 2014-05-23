@@ -189,7 +189,6 @@ describe('Storyboards', function () {
 			beforeEach(function () {
 				mapController.dispatchEvent('mapLoaded', 'loadedMapid', activeContent);
 			});
-
 			describe('addScene', function () {
 				describe('when no story boards exist', function () {
 					beforeEach(function () {
@@ -275,6 +274,39 @@ describe('Storyboards', function () {
 					expect(storyboardModel.getScenes).toHaveBeenCalledWith('ted talk');
 				});
 			});
+			describe('removeScenesForIdeaId', function () {
+				beforeEach(function () {
+					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
+					storyboardModel.getScenesForNodeId.and.returnValue([
+						{storyboards: {'ted talk': 2, 'red talk': 2}},
+						{storyboards: {'ted talk': 3}},
+						{storyboards: {'red talk': 3}}
+					]);
+				});
+				it('removes all scenes for the active storyboard', function () {
+					expect(underTest.removeScenesForIdeaId(12)).toBeTruthy();
+					expect(storyboardModel.getScenesForNodeId).toHaveBeenCalledWith(12);
+					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(12, [
+						{storyboards: {'red talk': 2}},
+						{storyboards: {'red talk': 3}}
+					]);
+				});
+				it('returns false and does nothing if there is no active storyboard', function () {
+					storyboardModel.getActiveStoryboardName.and.returnValue(undefined);
+					expect(underTest.removeScenesForIdeaId(12)).toBeFalsy();
+					expect(storyboardModel.getScenesForNodeId).not.toHaveBeenCalled();
+					expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+				});
+				it('returns false and does nothing if there are no scenes for the active storyboard', function () {
+					storyboardModel.getScenesForNodeId.and.returnValue([
+						{storyboards: {'red talk': 2}},
+						{storyboards: {'red talk': 3}}
+					]);
+					expect(underTest.removeScenesForIdeaId(12)).toBeFalsy();
+					expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+				});
+			});
+
 			describe('moveSceneAfter', function () {
 				var firstScene, middleScene, lastScene;
 				beforeEach(function () {

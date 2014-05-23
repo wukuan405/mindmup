@@ -1,7 +1,7 @@
 /*global jasmine, describe, it, beforeEach, expect, afterEach, jQuery, expect, observable, spyOn*/
 describe('storyboardMenuWidget', function () {
 	'use strict';
-	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a></span>',
+	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a><a data-mm-role="storyboard-remove-scenes-for-idea-id"></a></span>',
 		storyboardController,
 		storyboardModel,
 		mapModel,
@@ -9,7 +9,7 @@ describe('storyboardMenuWidget', function () {
 	beforeEach(function () {
 
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled', 'getInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScenesForIdeaId']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		underTest = jQuery(template).appendTo('body').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 	});
@@ -38,6 +38,11 @@ describe('storyboardMenuWidget', function () {
 			mapModel.getSelectedNodeId.and.returnValue(23);
 			underTest.find('[data-mm-role=storyboard-add-scene]').click();
 			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
+		});
+		it('should remove scenes for selected idea when remove-scenes link is clicked', function () {
+			mapModel.getSelectedNodeId.and.returnValue(23);
+			underTest.find('[data-mm-role=storyboard-remove-scenes-for-idea-id]').click();
+			expect(storyboardController.removeScenesForIdeaId).toHaveBeenCalledWith(23);
 		});
 		describe('when subsequently disabled', function () {
 			it('should be hidden', function () {
