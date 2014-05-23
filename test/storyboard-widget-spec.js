@@ -101,7 +101,7 @@ describe('Storyboard widget', function () {
 		template = '<div><div><a data-mm-role="storyboard-remove-scene"></a></div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
 	beforeEach(function () {
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScene']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScene', 'moveSceneAfter']));
 		storyboardController.getScenes.and.returnValue([
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
@@ -196,7 +196,7 @@ describe('Storyboard widget', function () {
 			dummyElement = underTest.find('[data-mm-role=scene]').first();
 			spyOn(jQuery.fn, 'focus').and.callThrough();
 		});
-		describe('responds to direction keys', [
+		describe('responds to direction keys for navigation', [
 			['left', 37, 'prev'],
 			['up', 38, 'gridUp'],
 			['right', 39, 'next'],
@@ -215,6 +215,7 @@ describe('Storyboard widget', function () {
 
 			storyboardController.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
+				{ideaId: 15, title: 'inside', index: 3},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
 			storyboardModel.dispatchEvent('storyboardRebuilt');
@@ -224,6 +225,67 @@ describe('Storyboard widget', function () {
 			underTest.find('[data-mm-role=storyboard-remove-scene]').click();
 			expect(storyboardController.removeScene).toHaveBeenCalledWith({ideaId: 14, title: 'inside', index: 5});
 			expect(storyboardController.removeScene.calls.count()).toBe(1);
+		});
+		describe('should move a node', function () {
+			describe('later in the storyboard', function () {
+				var selectedScene, sceneBeingMoved;
+				beforeEach(function () {
+					selectedScene = underTest.find('[data-mm-role=scene]').eq(1);
+					sceneBeingMoved = {ideaId: 15, title: 'inside', index: 3};
+					selectedScene.focus();
+				});
+				it('when meta+right is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 39, metaKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, {ideaId: 14, title: 'inside', index: 5});
+				});
+				it('when ctrl+right is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 39, ctrlKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, {ideaId: 14, title: 'inside', index: 5});
+				});
+			});
+
+
+			describe('earlier in the storyboard', function () {
+				var selectedScene, sceneBeingMoved, movedBefore;
+				beforeEach(function () {
+					selectedScene = underTest.find('[data-mm-role=scene]').last();
+					sceneBeingMoved = {ideaId: 14, title: 'inside', index: 5};
+					movedBefore = {ideaId: 12, title: 'already in ted storyboard', index: 1};
+					selectedScene.focus();
+				});
+				it('when meta+left is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 37, metaKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, movedBefore);
+				});
+				it('when ctrl+left is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 37, ctrlKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, movedBefore);
+				});
+			});
+			describe('the second scene to the start of the list', function () {
+				var selectedScene,
+					sceneBeingMoved;
+
+				beforeEach(function () {
+					selectedScene = underTest.find('[data-mm-role=scene]').eq(1);
+					sceneBeingMoved = {ideaId: 15, title: 'inside', index: 3};
+					selectedScene.focus();
+				});
+				it('when meta+left is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 37, ctrlKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, undefined);
+				});
+				it('when ctrl+left is clicked', function () {
+					var evt = jQuery.Event('keydown', {which: 37, metaKey: true});
+					selectedScene.trigger(evt);
+					expect(storyboardController.moveSceneAfter).toHaveBeenCalledWith(sceneBeingMoved, undefined);
+				});
+			});
 		});
 	});
 });

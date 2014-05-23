@@ -39,6 +39,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				return {left: potentialLeft, right: potentialRight};
 			},
 			rebuildStoryboard = function () {
+				var sceneCount  = templateParent.find('[data-mm-role=scene]').length;
 				templateParent.empty();
 				_.each(storyboardController.getScenes(), function (scene) {
 					var newScene = template.clone()
@@ -57,6 +58,22 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 							storyboardController.removeScene(scene);
 							event.preventDefault();
 							event.stopPropagation();
+						})
+						.keydown('meta+right ctrl+right', function () {
+							var thisScene = jQuery(this).data('scene'),
+								next = thisScene && jQuery(this).next(),
+								nextScene = next && next.data('scene');
+							if (thisScene && nextScene) {
+								storyboardController.moveSceneAfter(thisScene, nextScene);
+							}
+						})
+						.keydown('meta+left ctrl+left', function () {
+							var thisScene = jQuery(this).data('scene'),
+								prev = thisScene && jQuery(this).prev() && jQuery(this).prev().prev(),
+								prevScene = prev && prev.data('scene');
+							if (thisScene) {
+								storyboardController.moveSceneAfter(thisScene, prevScene);
+							}
 						})
 						.keydown('right', function () {
 							jQuery(this).next().focus();
@@ -100,10 +117,13 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 							}
 						});
 
-
 					newScene.find('[data-mm-role=scene-title]').text(scene.title);
 
 				});
+				//focus on last scene if one has been added -- we can remove this when delta changes are in place
+				if (sceneCount < templateParent.find('[data-mm-role=scene]').length) {
+					templateParent.find('[data-mm-role=scene]').last().focus();
+				}
 			},
 			showStoryboard = function () {
 				storyboardModel.setInputEnabled(true);
@@ -115,6 +135,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
 			};
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
+		/*jshint newcap:false*/
 		Hammer(element);
 		element.find('.storyboard-container').simpleDraggableContainer();
 		template.detach();
