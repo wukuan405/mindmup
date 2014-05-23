@@ -147,6 +147,9 @@ describe('Storyboards', function () {
 				expect(underTest.insertionIndexAfter('ted talk', 1)).toBe(1.5);
 				expect(underTest.insertionIndexAfter('ted talk', 2)).toBe(6);
 			});
+			it('calculates the arithmetic median between 0 and the first item if the index is undefined', function () {
+				expect(underTest.insertionIndexAfter('ted talk')).toBe(0.5);
+			});
 			it('adds 1 to the max index if the argument is the last in the list', function () {
 				expect(underTest.insertionIndexAfter('ted talk', 10)).toBe(11);
 			});
@@ -272,29 +275,62 @@ describe('Storyboards', function () {
 					expect(storyboardModel.getScenes).toHaveBeenCalledWith('ted talk');
 				});
 			});
-			describe('moveAfter', function () {
-				it('should move the activated scenes scene after the specified scene ', function () {});
-				it('should move the activated scenes before the first scene if no scene is specified', function () {
-
+			describe('moveSceneAfter', function () {
+				var firstScene, middleScene, lastScene;
+				beforeEach(function () {
+					firstScene = {ideaId: 12, title: 'the first scene', index: 1};
+					middleScene = {ideaId: 13, title: 'the middle scene', index: 2};
+					lastScene = {ideaId: 14, title: 'the last scene', index: 3};
+					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
+					storyboardModel.getScenes.and.returnValue([
+						firstScene,
+						middleScene,
+						lastScene
+					]);
 				});
-				it('should move a set of activated to the front even if first scene is activated and no argument is specified', function () {
-
+				it('should move before the first scene first if no scene to move before is supplied', function () {
+					storyboardModel.insertionIndexAfter.and.returnValue(0.5);
+					storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
+					expect(underTest.moveSceneAfter(middleScene)).toBeTruthy();
+					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(13, [{storyboards: {'ted talk': 0.5}}]);
 				});
-				it('should move a set of activated scenes after a scene even if moving after an activated one', function () {
-
+				it('should move the scene after the specified scene ', function () {
+					storyboardModel.insertionIndexAfter.and.returnValue(4);
+					storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
+					expect(underTest.moveSceneAfter(middleScene, lastScene)).toBeTruthy();
+					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(13, [{storyboards: {'ted talk': 4}}]);
 				});
-				it('preserves the order of activated scenes when moving a whole set', function () {
-
-				});
-				describe('when scenes effectively stay in the same position', function () {
-					it('does not change the numerical index when moving scene after itself', function () {
-
+				describe('should do nothing and return false when scenes effectively stay in the same position because', function () {
+					it('there is no active storyboard', function () {
+						storyboardModel.getActiveStoryboardName.and.returnValue(undefined);
+						expect(underTest.moveSceneAfter(middleScene, firstScene)).toBeFalsy();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
 					});
-					it('does not change the numerical index when moving the first scene to the start', function () {
-
+					it('the scenes to be moved is undefined', function () {
+						expect(underTest.moveSceneAfter(undefined, firstScene)).toBeFalsy();
+						expect(storyboardModel.getScenesForNodeId).not.toHaveBeenCalled();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
 					});
-					it('does not change the numerical index when moving the last scene to the end', function () {
 
+					it('the scenes are already in the correct order', function () {
+						expect(underTest.moveSceneAfter(middleScene, firstScene)).toBeFalsy();
+						expect(storyboardModel.getScenesForNodeId).not.toHaveBeenCalled();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+					});
+					it('the scenes is moved after itself', function () {
+						expect(underTest.moveSceneAfter(middleScene, middleScene)).toBeFalsy();
+						expect(storyboardModel.getScenesForNodeId).not.toHaveBeenCalled();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+					});
+					it('the scenes is moved first when it is already first', function () {
+						expect(underTest.moveSceneAfter(firstScene)).toBeFalsy();
+						expect(storyboardModel.getScenesForNodeId).not.toHaveBeenCalled();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+					});
+					it('the scenes to be moved does not exist in storyboard', function () {
+						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
+						expect(underTest.moveSceneAfter({ideaId: 13, title: 'the middle scene', index: 2.5}, firstScene)).toBeFalsy();
+						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
 					});
 				});
 			});

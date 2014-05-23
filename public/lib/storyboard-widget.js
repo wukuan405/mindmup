@@ -71,8 +71,21 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 							jQuery(this).gridDown().focus();
 						}).shadowDraggable().on('mm:cancel-dragging', function () {
 							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
-						}).on('mm:stop-dragging', function (e) {
-							console.log('stopped dragging at', e.gesture.center);
+						}).on('mm:stop-dragging', function () {
+
+							var dropTarget = jQuery(this),
+								potentialLeft = dropTarget.parent().find('.potential-drop-left'),
+								potentialRight = dropTarget.parent().find('.potential-drop-right');
+							if (potentialLeft && potentialLeft[0]) {
+								storyboardController.moveSceneAfter(dropTarget.data('scene'), potentialLeft.data('scene'));
+							} else if (potentialRight && potentialRight[0]) {
+								potentialLeft = potentialRight.prev();
+								if (potentialLeft && potentialLeft[0]) {
+									storyboardController.moveSceneAfter(dropTarget.data('scene'), potentialLeft.data('scene'));
+								} else {
+									storyboardController.moveSceneAfter(dropTarget.data('scene'));
+								}
+							}
 							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
 						}).on('mm:drag', function (e) {
 							if (e && e.gesture && e.gesture.center) {
