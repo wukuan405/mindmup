@@ -137,14 +137,28 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 					templateParent.find('[data-mm-role=scene]').last().focus();
 				}
 			},
+			addScene = function (scene) {
+				rebuildStoryboard();
+			},
+			removeScene = function (scene) {
+				rebuildStoryboard();
+			},
+			updateScene = function (scene) {
+				rebuildStoryboard();
+			},
 			showStoryboard = function () {
 				storyboardModel.setInputEnabled(true);
 				rebuildStoryboard();
-				storyboardModel.addEventListener('storyboardRebuilt', rebuildStoryboard);
+				storyboardModel.addEventListener('storyboardSceneAdded', addScene);
+				storyboardModel.addEventListener('storyboardSceneRemoved', removeScene);
+				storyboardModel.addEventListener('storyboardSceneContentUpdated', updateScene);
 			},
 			hideStoryboard = function () {
 				storyboardModel.setInputEnabled(false);
-				storyboardModel.removeEventListener('storyboardRebuilt', rebuildStoryboard);
+				storyboardModel.removeEventListener('storyboardSceneAdded', addScene);
+				storyboardModel.removeEventListener('storyboardSceneRemoved', removeScene);
+				storyboardModel.removeEventListener('storyboardSceneContentUpdated', updateScene);
+
 			};
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
 		element.find('[data-mm-role=storyboard-move-scene-left]').click(moveFocusSceneLeft);

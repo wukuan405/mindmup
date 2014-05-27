@@ -107,8 +107,42 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		return scenesForActiveStoryboard;
 	};
 	activeContentListener.addListener(function () {
+
+		var oldScenes = scenesForActiveStoryboard,
+			getSceneDelta = function (oldScenes, newScenes) {
+				var result = {removed: [], added: [], contentUpdated: []};
+				_.each(oldScenes, function (oldScene) {
+					var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title'));
+					if (!newScene) {
+						result.removed.push(oldScene);
+					}
+					else if (newScene.title !== oldScene.title) {
+						result.contentUpdated.push(newScene);
+					}
+				});
+				_.each(newScenes, function (newScene) {
+					var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title'));
+					if (!oldScene) {
+						result.added.push(newScene);
+					}
+
+				});
+				return result;
+			},
+			delta;
 		rebuildScenesForActiveStoryboard();
-		self.dispatchEvent('storyboardRebuilt');
+		delta = getSceneDelta(oldScenes, scenesForActiveStoryboard);
+
+		_.each(delta.removed, function (scene) {
+			self.dispatchEvent('storyboardSceneRemoved', scene);
+		});
+		_.each(delta.added, function (scene) {
+			self.dispatchEvent('storyboardSceneAdded', scene);
+		});
+		_.each(delta.contentUpdated, function (scene) {
+			self.dispatchEvent('storyboardSceneContentUpdated', scene);
+		});
+
 	});
 };
 

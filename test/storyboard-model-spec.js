@@ -12,8 +12,8 @@ describe('Storyboards', function () {
 			ideas: {
 				1: {id: 11, title: 'not in any storyboards'},
 			    2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
-			    3: {id: 14, title: 'only in bed storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 10}}]}},
-				4: {id: 13, title: 'in two storyboards', attr: {'test-scenes': [{storyboards: {'ted talk': 2}}]}}
+			    3: {id: 14, title: 'is in two scenes', attr: {'test-scenes': [{storyboards: {'ted talk': 9}}, {storyboards: {'ted talk': 10}}]}},
+				4: {id: 13, title: 'just another scene', attr: {'test-scenes': [{storyboards: {'ted talk': 2}}]}}
 			}
 		});
 		mapController = observable({});
@@ -113,7 +113,7 @@ describe('Storyboards', function () {
 			});
 			it('calculates the arithmetic median if the index is not the last in the list', function () {
 				expect(underTest.insertionIndexAfter(1)).toBe(1.5);
-				expect(underTest.insertionIndexAfter(2)).toBe(6);
+				expect(underTest.insertionIndexAfter(2)).toBe(5.5);
 			});
 			it('calculates the arithmetic median between 0 and the first item if the index is undefined', function () {
 				expect(underTest.insertionIndexAfter()).toBe(0.5);
@@ -129,13 +129,82 @@ describe('Storyboards', function () {
 			it('retrieves a list of scenes', function () {
 				expect(underTest.getScenes()).toEqual([
 					{ideaId: 12, title: 'already in ted storyboard', index: 1},
-					{ideaId: 13, title: 'in two storyboards', index: 2},
-					{ideaId: 14, title: 'only in bed storyboard', index: 10}
+					{ideaId: 13, title: 'just another scene', index: 2},
+					{ideaId: 14, title: 'is in two scenes', index: 9},
+					{ideaId: 14, title: 'is in two scenes', index: 10}
 				]);
 			});
 			it('should return an empty array if there are no storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.getScenes()).toEqual([]);
+			});
+		});
+		describe('should dispatch events when the storyboard changes', function () {
+			var storyboardSceneAddedListener,
+				storyboardSceneRemovedListener,
+				storyboardSceneContentUpdatedListener;
+			beforeEach(function () {
+				storyboardSceneAddedListener = jasmine.createSpy('storyboardSceneAddedListener');
+				underTest.addEventListener('storyboardSceneAdded', storyboardSceneAddedListener);
+
+				storyboardSceneRemovedListener = jasmine.createSpy('storyboardSceneRemovedListener');
+				underTest.addEventListener('storyboardSceneRemoved', storyboardSceneRemovedListener);
+
+				storyboardSceneContentUpdatedListener = jasmine.createSpy('storyboardSceneContentUpdatedListener');
+				underTest.addEventListener('storyboardSceneContentUpdated', storyboardSceneContentUpdatedListener);
+
+			});
+			it('should dispatch a storyboardSceneAdded events when scenes are added', function () {
+				activeContent.updateAttr(11, 'test-scenes', [{storyboards: {'ted talk': 5.5}}, {storyboards: {'ted talk': 6.5}}]);
+
+				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 11, title: 'not in any storyboards', index: 5.5});
+				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 11, title: 'not in any storyboards', index: 6.5});
+
+				expect(storyboardSceneAddedListener.calls.count()).toBe(2);
+				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneContentUpdatedListener).not.toHaveBeenCalled();
+			});
+			it('should dispatch a storyboardSceneRemoved events when scenes are removed', function () {
+				activeContent.updateAttr(14, 'test-scenes', undefined);
+
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 10});
+
+				expect(storyboardSceneRemovedListener.calls.count()).toBe(2);
+				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneContentUpdatedListener).not.toHaveBeenCalled();
+			});
+
+			it('should dispatch a storyboardSceneRemoved events when ideas are removed', function () {
+				activeContent.removeSubIdea(14);
+
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 10});
+
+				expect(storyboardSceneRemovedListener.calls.count()).toBe(2);
+				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneContentUpdatedListener).not.toHaveBeenCalled();
+
+			});
+			it('should dispatch a storyboardSceneContentUpdated events when scenes titles are changed', function () {
+				activeContent.updateTitle(14, 'booyah');
+
+				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith({ideaId: 14, title: 'booyah', index: 9});
+				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith({ideaId: 14, title: 'booyah', index: 10});
+
+				expect(storyboardSceneContentUpdatedListener.calls.count()).toBe(2);
+				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
+			});
+			it('should dispatch storyboardSceneAdded and storyboardSceneRemoved events when a scene index is changed', function () {
+				activeContent.updateAttr(14, 'test-scenes', [{storyboards: {'ted talk': 7}}, {storyboards: {'ted talk': 10}}]);
+
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
+				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 7});
+
+				expect(storyboardSceneRemovedListener.calls.count()).toBe(1);
+				expect(storyboardSceneAddedListener.calls.count()).toBe(1);
+				expect(storyboardSceneContentUpdatedListener).not.toHaveBeenCalled();
 			});
 		});
 	});

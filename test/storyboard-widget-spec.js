@@ -141,7 +141,7 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			expect(storyboardModel.setInputEnabled).toHaveBeenCalledWith(true);
 		});
-		it('rebuilds a storyboard using new scenes on a sceneAdded event', function () {
+		it('rebuilds a storyboard using new scenes on a storyboardSceneAdded event', function () {
 			var scenes;
 			underTest.trigger('show');
 
@@ -149,7 +149,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardRebuilt');
+			storyboardModel.dispatchEvent('storyboardSceneAdded');
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -180,7 +180,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardRebuilt');
+			storyboardModel.dispatchEvent('storyboardSceneAdded');
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -199,7 +199,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardRebuilt');
+			storyboardModel.dispatchEvent('storyboardSceneAdded');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 			selectedScene.focus();
 			dummyElement = underTest.find('[data-mm-role=scene]').first();
@@ -227,7 +227,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 15, title: 'inside', index: 3},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardRebuilt');
+			storyboardModel.dispatchEvent('storyboardSceneAdded');
 			underTest.find('[data-mm-role=scene]').last().focus();
 		});
 		it('should remove scene when storyboard-remove-scene menu item is clicked', function () {
