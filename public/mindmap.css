@@ -730,7 +730,9 @@ body .modal.huge {
   line-height: 20px;
   cursor: move;
 }
-
+#storyboard {
+	padding-bottom: 45px;
+}
 .storyboard-scene-title {
   display: table-cell;
   vertical-align: middle;
