@@ -746,8 +746,10 @@ body .modal.huge {
   position: relative;
 }
 .potential-drop-left {
-	border: 1px dashed blue;
+	margin-left: 0px;
+	margin-right: 20px;
 }
 .potential-drop-right {
-	border: 1px dashed red;
+	margin-left: 20px;
+	margin-right: 0px;
 }

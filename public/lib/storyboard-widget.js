@@ -60,17 +60,17 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 						var scene = jQuery(sceneDOM);
 						var xpos = dropPosition.left - scene.offset().left,
 							sceneWidth = scene.outerWidth(true),
-							leftMatch = (xpos > -20 && xpos < sceneWidth / 3);
+							leftMatch = (xpos > -40 && xpos < sceneWidth / 3);
 						return leftMatch;
 					}),
 					potentialLeft = _.filter(row, function (sceneDOM) {
 						var scene = jQuery(sceneDOM);
 						var xpos = dropPosition.left - scene.offset().left,
 							sceneWidth = scene.outerWidth(true),
-							rightMatch = (xpos > sceneWidth * 2 / 3 && xpos < sceneWidth + 20);
+							rightMatch = (xpos > sceneWidth * 2 / 3 && xpos < sceneWidth + 40);
 						return rightMatch;
 					});
-				return {left: potentialLeft, right: potentialRight};
+				return {left: _.first(potentialLeft), right: _.first(potentialRight)};
 			},
 			rebuildStoryboard = function () {
 				templateParent.empty();
@@ -136,13 +136,26 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 						jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
 					}).on('mm:drag', function (e) {
 						if (e && e.gesture && e.gesture.center) {
-							var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY});
-							jQuery(this).siblings().not(potentialDrops.left).not(potentialDrops.right).removeClass('potential-drop-left potential-drop-right');
+							var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY}),
+								active = jQuery(this),
+								actualLeft,
+								actualRight;
+
 							if (potentialDrops.left) {
-								jQuery(potentialDrops.left).not(jQuery(this).prev()).addClass('potential-drop-left');
+								actualLeft = jQuery(potentialDrops.left).not(active).not(active.prev());
+								actualRight = actualLeft.next();
 							}
-							if (potentialDrops.right) {
-								jQuery(potentialDrops.right).not(jQuery(this).next()).addClass('potential-drop-right');
+							else if (potentialDrops.right) {
+								actualRight = jQuery(potentialDrops.right).not(active).not(active.next());
+								actualLeft = actualRight.prev();
+							}
+							active.siblings().not(actualLeft).removeClass('potential-drop-left');
+							active.siblings().not(actualRight).removeClass('potential-drop-right');
+							if (actualRight) {
+								actualRight.addClass('potential-drop-right');
+							}
+							if (actualLeft) {
+								actualLeft.addClass('potential-drop-left');
 							}
 						}
 					}),
