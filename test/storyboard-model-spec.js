@@ -6,16 +6,18 @@ describe('Storyboards', function () {
 		activeContent = MAPJS.content({
 			title: 'root',
 			id: 1,
+			attr: {
+				'test-storyboards': ['ted talk']
+			},
 			ideas: {
 				1: {id: 11, title: 'not in any storyboards'},
 			    2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
 			    3: {id: 14, title: 'only in bed storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 10}}]}},
-				4: {id: 13, title: 'in two storyboards', attr: {'test-scenes': [{storyboards: {'ted talk': 2, 'bed talk': 1}}]}}
+				4: {id: 13, title: 'in two storyboards', attr: {'test-scenes': [{storyboards: {'ted talk': 2}}]}}
 			}
 		});
 		mapController = observable({});
 		activeContentListener = new MM.ActiveContentListener(mapController);
-
 	});
 
 	describe('StoryboardModel', function () {
@@ -26,11 +28,11 @@ describe('Storyboards', function () {
 		});
 		describe('getActiveStoryboardName', function () {
 			it('should return undefined if no storyboards are defined', function () {
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.getActiveStoryboardName()).toBeUndefined();
 			});
 			it('should return the first storyboard name by default', function () {
-				activeContent.updateAttr(1, 'test-storyboards', ['mickey mouse', 'donald duck']);
-				expect(underTest.getActiveStoryboardName()).toEqual('mickey mouse');
+				expect(underTest.getActiveStoryboardName()).toEqual('ted talk');
 			});
 		});
 		describe('setInputEnabled', function () {
@@ -58,10 +60,12 @@ describe('Storyboards', function () {
 		});
 		describe('createStoryboard', function () {
 			it('should add the new storyboard name to the list of storyboards', function () {
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				underTest.createStoryboard();
 				expect(activeContent.getAttrById(1, 'test-storyboards')).toEqual(['Storyboard 1']);
 			});
 			it('should return the new storyboard name', function () {
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.createStoryboard()).toEqual('Storyboard 1');
 			});
 			it('should make the new storyboard active', function () {
@@ -81,59 +85,20 @@ describe('Storyboards', function () {
 				expect(underTest.createStoryboard()).toBe('Storyboard 6');
 			});
 		});
-		describe('setActiveStoryboardName', function () {
-			it('should change the active storyboard', function () {
-
-			});
-			it('dispatches an event to widgets', function () {
-
-			});
-		});
-
-
-		describe('getStoryboards', function () {
-			it('should return a list of storyboard names', function () {});
-		});
-		describe('removeStoryboard', function () {
-			it('should remove the new storyboard from the list of storyboards', function () {});
-			it('should remove clean all nodes that were scenes in a storyboard', function () {});
-
-		});
-		describe('renameStoryboard', function () {
-			it('should change the storyboard name in the list of storyboards', function () {});
-		});
-		describe('cloneStoryboard', function () {
-			it('should create a storyboard with a the same scenes as the cloned storyboard', function () {
-			});
-		});
-		describe('getStoryBoard', function () {
-			it('should return a storyboard matching the supplied name', function () {
-				/*
-				It is still not clear what a "storyboard" is
-				- a list of scenes?
-				- a map (containing a list of scenes)?
-				- an object that encapsulates behaviour?
-				*/
-			});
-		});
-		describe('when a new map is loaded', function () {
-
-		});
-
 		describe('nextSceneIndex', function () {
 			it('returns 1 for non existent storyboards', function () {
-				expect(underTest.nextSceneIndex('red talk')).toBe(1);
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
+				expect(underTest.nextSceneIndex()).toBe(1);
 			});
 			it('returns max index + 1 for non empty storyboards', function () {
-				expect(underTest.nextSceneIndex('ted talk')).toBe(11);
-				expect(underTest.nextSceneIndex('bed talk')).toBe(2);
+				expect(underTest.nextSceneIndex()).toBe(11);
 			});
 		});
 		describe('getScenesForNodeId', function () {
 			it('retrieves the value of the scenes attr', function () {
 				expect(underTest.getScenesForNodeId(11)).toEqual([]);
 				expect(underTest.getScenesForNodeId(12)).toEqual([{storyboards: {'ted talk': 1}}]);
-				expect(underTest.getScenesForNodeId(13)).toEqual([{storyboards: {'ted talk': 2, 'bed talk': 1}}]);
+				expect(underTest.getScenesForNodeId(13)).toEqual([{storyboards: {'ted talk': 2}}]);
 			});
 		});
 		describe('setScenesForNodeId', function () {
@@ -143,30 +108,39 @@ describe('Storyboards', function () {
 			});
 		});
 		describe('insertionIndexAfter', function () {
+			it('should return false if there is no active storyboard', function () {
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
+				expect(underTest.insertionIndexAfter(1)).toBeFalsy();
+			});
+			it('should return false if the active storyboard is empty is no active storyboard', function () {
+				activeContent.updateAttr(1, 'test-storyboards', ['xed talk']);
+				expect(underTest.insertionIndexAfter(1)).toBeFalsy();
+			});
 			it('calculates the arithmetic median if the index is not the last in the list', function () {
-				expect(underTest.insertionIndexAfter('ted talk', 1)).toBe(1.5);
-				expect(underTest.insertionIndexAfter('ted talk', 2)).toBe(6);
+				expect(underTest.insertionIndexAfter(1)).toBe(1.5);
+				expect(underTest.insertionIndexAfter(2)).toBe(6);
 			});
 			it('calculates the arithmetic median between 0 and the first item if the index is undefined', function () {
-				expect(underTest.insertionIndexAfter('ted talk')).toBe(0.5);
+				expect(underTest.insertionIndexAfter()).toBe(0.5);
 			});
 			it('adds 1 to the max index if the argument is the last in the list', function () {
-				expect(underTest.insertionIndexAfter('ted talk', 10)).toBe(11);
+				expect(underTest.insertionIndexAfter(10)).toBe(11);
 			});
 			it('returns false if the index is not in the list', function () {
-				expect(underTest.insertionIndexAfter('ted talk', 11)).toBeFalsy();
+				expect(underTest.insertionIndexAfter(11)).toBeFalsy();
 			});
 		});
-		describe('getScenesForStoryboard', function () {
-			it('retrieves a list of scenes for the specified storyboard', function () {
-				expect(underTest.getScenes('ted talk')).toEqual([
+		describe('getScenes', function () {
+			it('retrieves a list of scenes', function () {
+				expect(underTest.getScenes()).toEqual([
 					{ideaId: 12, title: 'already in ted storyboard', index: 1},
 					{ideaId: 13, title: 'in two storyboards', index: 2},
 					{ideaId: 14, title: 'only in bed storyboard', index: 10}
 				]);
 			});
-			it('returns an empty array for a non existing story board', function () {
-				expect(underTest.getScenes('xed talk')).toEqual([]);
+			it('should return an empty array if there are no storyboards', function () {
+				activeContent.updateAttr(1, 'test-storyboards', undefined);
+				expect(underTest.getScenes()).toEqual([]);
 			});
 		});
 	});

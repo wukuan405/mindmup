@@ -26,9 +26,6 @@ describe('Storyboards', function () {
 			it('addScene should return false', function () {
 				expect(underTest.addScene(1)).toBeFalsy();
 			});
-			it('getScenes should return empty array', function () {
-				expect(underTest.getScenes()).toEqual([]);
-			});
 		});
 		describe('when activeContent has been loaded', function () {
 			beforeEach(function () {
@@ -88,7 +85,7 @@ describe('Storyboards', function () {
 					});
 					it('should insert the scene after the optional specified index', function () {
 						underTest.addScene(11, 2);
-						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith('ted talk', 2);
+						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith(2);
 						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 6}}]);
 					});
 					it('should keep any other scenes for other storyboards intact', function () {
@@ -99,24 +96,6 @@ describe('Storyboards', function () {
 							{storyboards: {'ted talk': 11}}
 						]);
 					});
-				});
-			});
-			describe('getScenes', function () {
-				beforeEach(function () {
-					storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
-					storyboardModel.getScenes.and.returnValue([
-						{ideaId: 12, title: 'already in ted storyboard', index: 1},
-						{ideaId: 13, title: 'in two storyboards', index: 2},
-						{ideaId: 14, title: 'only in bed storyboard', index: 10}
-					]);
-				});
-				it('retrieves a list of scenes for the currently active storyboard', function () {
-					expect(underTest.getScenes()).toEqual([
-						{ideaId: 12, title: 'already in ted storyboard', index: 1},
-						{ideaId: 13, title: 'in two storyboards', index: 2},
-						{ideaId: 14, title: 'only in bed storyboard', index: 10}
-					]);
-					expect(storyboardModel.getScenes).toHaveBeenCalledWith('ted talk');
 				});
 			});
 			describe('removeScenesForIdeaId', function () {

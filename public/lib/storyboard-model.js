@@ -56,8 +56,12 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	self.setActiveStoryboardName = function (name) {
 		activeBoardName = name;
 	};
-	self.nextSceneIndex = function (storyboardName) {
-		var index = 0;
+	self.nextSceneIndex = function () {
+		var storyboardName = self.getActiveStoryboardName(),
+			index = 0;
+		if (!storyboardName) {
+			return 1;
+		}
 		activeContentListener.getActiveContent().traverse(function (idea) {
 			var scenes = idea.getAttr(sceneAttrName);
 			if (scenes) {
@@ -78,8 +82,12 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	self.setScenesForNodeId = function (nodeId, scenes) {
 		activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes);
 	};
-	self.insertionIndexAfter = function (storyboardName, indexToInsertAfter) {
-		var nextIndex = 0, indexExists;
+	self.insertionIndexAfter = function (indexToInsertAfter) {
+		var storyboardName = self.getActiveStoryboardName(),
+			nextIndex = 0, indexExists;
+		if (!storyboardName) {
+			return false;
+		}
 		if (!indexToInsertAfter) {
 			indexToInsertAfter = 0;
 			indexExists = true;
@@ -106,8 +114,12 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			return indexToInsertAfter + 1;
 		}
 	};
-	self.getScenes = function (storyboardName) {
-		var result = [];
+	self.getScenes = function () {
+		var storyboardName = self.getActiveStoryboardName(),
+			result = [];
+		if (!storyboardName) {
+			return result;
+		}
 		activeContentListener.getActiveContent().traverse(function (idea) {
 			var scenes = idea.getAttr(sceneAttrName);
 			if (scenes) {

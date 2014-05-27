@@ -63,7 +63,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 			rebuildStoryboard = function () {
 				var sceneCount  = templateParent.find('[data-mm-role=scene]').length;
 				templateParent.empty();
-				_.each(storyboardController.getScenes(), function (scene) {
+				_.each(storyboardModel.getScenes(), function (scene) {
 					var newScene = template.clone()
 						.appendTo(templateParent)
 						.data('scene', scene)

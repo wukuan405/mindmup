@@ -8,8 +8,8 @@ describe('storyboardMenuWidget', function () {
 		underTest;
 	beforeEach(function () {
 
-		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled', 'getInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScenesForIdeaId']));
+		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled', 'getInputEnabled']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene', 'removeScenesForIdeaId']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		underTest = jQuery(template).appendTo('body').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 	});
@@ -60,8 +60,8 @@ describe('storyboardKeyHandlerWidget', function () {
 		underTest;
 	beforeEach(function () {
 
-		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene']));
+		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
 		underTest = jQuery('<div>').appendTo('body').storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
@@ -109,9 +109,9 @@ describe('Storyboard widget', function () {
 					'<a data-mm-role="storyboard-move-scene-right"></a>' +
 					'</div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
 	beforeEach(function () {
-		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['setInputEnabled']));
-		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['getScenes', 'addScene', 'removeScene', 'moveSceneAfter']));
-		storyboardController.getScenes.and.returnValue([
+		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled']));
+		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene', 'removeScene', 'moveSceneAfter']));
+		storyboardModel.getScenes.and.returnValue([
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
@@ -145,7 +145,7 @@ describe('Storyboard widget', function () {
 			var scenes;
 			underTest.trigger('show');
 
-			storyboardController.getScenes.and.returnValue([
+			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
@@ -176,7 +176,7 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			underTest.trigger('hide');
 
-			storyboardController.getScenes.and.returnValue([
+			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
@@ -195,7 +195,7 @@ describe('Storyboard widget', function () {
 		beforeEach(function () {
 			underTest.trigger('show');
 
-			storyboardController.getScenes.and.returnValue([
+			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
@@ -222,7 +222,7 @@ describe('Storyboard widget', function () {
 		beforeEach(function () {
 			underTest.trigger('show');
 
-			storyboardController.getScenes.and.returnValue([
+			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 15, title: 'inside', index: 3},
 				{ideaId: 14, title: 'inside', index: 5}
