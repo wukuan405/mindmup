@@ -82,7 +82,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 					});
 				return _.last(scenesBefore);
 			},
-			addScene = function (scene, appendToEnd) {
+			addScene = function (scene, appendToEnd, hasFocus) {
 				var newScene = template.clone()
 					.data('scene', scene)
 					.attr({
@@ -155,7 +155,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				}
 				newScene.updateScene(scene);
 				if (!appendToEnd) {
-					newScene.scrollSceneIntoFocus().fadeIn();
+					newScene.scrollSceneIntoFocus(hasFocus).fadeIn({duration: 'short', complete: function () {
+						if (hasFocus) {
+							newScene.focus();
+						}
+					}});
 				} else {
 					newScene.show();
 				}
@@ -165,17 +169,26 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 			},
 			removeScene = function (scene) {
 				var sceneJQ = findScene(scene);
-				sceneJQ.fadeOut({complete: function () {
+				sceneJQ.fadeOut({duration: 'short', complete: function () {
 					sceneJQ.remove();
 				}});
 			},
 			updateScene = function (scene) {
 				findScene(scene).updateScene(scene);
 			},
+			moveScene = function (moved) {
+				var oldScene = findScene(moved.from),
+					hasFocus = oldScene.is(':focus');
+				oldScene.fadeOut({duration: 'short', complete: function () {
+					oldScene.remove();
+					addScene(moved.to, false, hasFocus);
+				}});
+			},
 			showStoryboard = function () {
 				storyboardModel.setInputEnabled(true);
 				rebuildStoryboard();
 				storyboardModel.addEventListener('storyboardSceneAdded', addScene);
+				storyboardModel.addEventListener('storyboardSceneMoved', moveScene);
 				storyboardModel.addEventListener('storyboardSceneRemoved', removeScene);
 				storyboardModel.addEventListener('storyboardSceneContentUpdated', updateScene);
 			},

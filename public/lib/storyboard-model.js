@@ -127,6 +127,10 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 					}
 
 				});
+				if (result.added.length === 1 && result.removed.length === 1 && result.contentUpdated.length === 0 &&
+						_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index'))) {
+					return { moved: {from: result.removed[0], to: result.added[0]} };
+				}
 				return result;
 			},
 			delta;
@@ -142,7 +146,9 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		_.each(delta.contentUpdated, function (scene) {
 			self.dispatchEvent('storyboardSceneContentUpdated', scene);
 		});
-
+		if (delta.moved) {
+			self.dispatchEvent('storyboardSceneMoved', delta.moved);
+		}
 	});
 };
 

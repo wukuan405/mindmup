@@ -142,13 +142,17 @@ describe('Storyboards', function () {
 		describe('should dispatch events when the storyboard changes', function () {
 			var storyboardSceneAddedListener,
 				storyboardSceneRemovedListener,
-				storyboardSceneContentUpdatedListener;
+				storyboardSceneContentUpdatedListener,
+				storyboardSceneMovedListener;
 			beforeEach(function () {
 				storyboardSceneAddedListener = jasmine.createSpy('storyboardSceneAddedListener');
 				underTest.addEventListener('storyboardSceneAdded', storyboardSceneAddedListener);
 
 				storyboardSceneRemovedListener = jasmine.createSpy('storyboardSceneRemovedListener');
 				underTest.addEventListener('storyboardSceneRemoved', storyboardSceneRemovedListener);
+
+				storyboardSceneMovedListener = jasmine.createSpy('storyboardSceneMovedListener');
+				underTest.addEventListener('storyboardSceneMoved', storyboardSceneMovedListener);
 
 				storyboardSceneContentUpdatedListener = jasmine.createSpy('storyboardSceneContentUpdatedListener');
 				underTest.addEventListener('storyboardSceneContentUpdated', storyboardSceneContentUpdatedListener);
@@ -196,14 +200,16 @@ describe('Storyboards', function () {
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
 				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
 			});
-			it('should dispatch storyboardSceneAdded and storyboardSceneRemoved events when a scene index is changed', function () {
+			it('should dispatch storyboardSceneMoved only when a scene index is changed', function () {
 				activeContent.updateAttr(14, 'test-scenes', [{storyboards: {'ted talk': 7}}, {storyboards: {'ted talk': 10}}]);
 
-				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
-				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 7});
+				expect(storyboardSceneMovedListener).toHaveBeenCalledWith({
+					from: {ideaId: 14, title: 'is in two scenes', index: 9},
+					to: {ideaId: 14, title: 'is in two scenes', index: 7}
+				});
 
-				expect(storyboardSceneRemovedListener.calls.count()).toBe(1);
-				expect(storyboardSceneAddedListener.calls.count()).toBe(1);
+				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
 				expect(storyboardSceneContentUpdatedListener).not.toHaveBeenCalled();
 			});
 		});
