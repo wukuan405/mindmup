@@ -68,11 +68,6 @@ describe('Storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.createStoryboard()).toEqual('Storyboard 1');
 			});
-			it('should make the new storyboard active', function () {
-				activeContent.updateAttr(1, 'test-storyboards', ['mickey mouse', 'donald duck']);
-				underTest.createStoryboard();
-				expect(underTest.getActiveStoryboardName()).toEqual('Storyboard 3');
-			});
 			it('should name the new storyboard Story Board X, incrementing the counter', function () {
 				activeContent.updateAttr(1, 'test-storyboards', ['mickey mouse', 'donald duck']);
 				var first = underTest.createStoryboard(),

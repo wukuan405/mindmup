@@ -2,8 +2,28 @@
 MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneAttrName) {
 	'use strict';
 	var self = observable(this),
-		activeBoardName,
 		isInputEnabled,
+		scenesForActiveStoryboard,
+		rebuildScenesForActiveStoryboard = function () {
+			var storyboardName = self.getActiveStoryboardName(),
+				result = [];
+			if (!storyboardName) {
+				scenesForActiveStoryboard = result;
+				return;
+			}
+			activeContentListener.getActiveContent().traverse(function (idea) {
+				var scenes = idea.getAttr(sceneAttrName);
+				if (scenes) {
+					_.each(scenes, function (scene) {
+						var sceneIndex = parseFloat(scene.storyboards[storyboardName]);
+						if (sceneIndex) {
+							result.push({ideaId: idea.id, title: idea.title, index: sceneIndex});
+						}
+					});
+				}
+			});
+			scenesForActiveStoryboard = _.sortBy(result, 'index');
+		},
 		indexMatches = function (idx1, idx2) {
 			return idx1 === idx2;
 		},
@@ -32,12 +52,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		var content = activeContentListener && activeContentListener.getActiveContent(),
 			list = content && content.getAttr(storyboardAttrName);
 		if (list && list.length > 0) {
-			if (list.indexOf(activeBoardName) >= 0) {
-				return activeBoardName;
-			}
-			else {
-				return list[0];
-			}
+			return list[0];
 		}
 	};
 	self.createStoryboard = function () {
@@ -50,30 +65,14 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		}
 		boards.push(name);
 		content.updateAttr(content.id, storyboardAttrName, boards);
-		self.setActiveStoryboardName(name);
 		return name;
 	};
-	self.setActiveStoryboardName = function (name) {
-		activeBoardName = name;
-	};
 	self.nextSceneIndex = function () {
-		var storyboardName = self.getActiveStoryboardName(),
-			index = 0;
-		if (!storyboardName) {
+		var lastScene = _.last(scenesForActiveStoryboard);
+		if (!lastScene) {
 			return 1;
 		}
-		activeContentListener.getActiveContent().traverse(function (idea) {
-			var scenes = idea.getAttr(sceneAttrName);
-			if (scenes) {
-				_.each(scenes, function (scene) {
-					var sceneIndex = parseFloat(scene.storyboards[storyboardName]);
-					if (sceneIndex && sceneIndex > index) {
-						index = sceneIndex;
-					}
-				});
-			}
-		});
-		return index + 1;
+		return lastScene.index + 1;
 	};
 	self.getScenesForNodeId = function (nodeId) {
 		var scenes = activeContentListener.getActiveContent().getAttrById(nodeId, sceneAttrName) || [];
@@ -83,26 +82,16 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes);
 	};
 	self.insertionIndexAfter = function (indexToInsertAfter) {
-		var storyboardName = self.getActiveStoryboardName(),
-			nextIndex = 0, indexExists;
-		if (!storyboardName) {
-			return false;
-		}
+		var nextIndex = 0, indexExists;
 		if (!indexToInsertAfter) {
 			indexToInsertAfter = 0;
 			indexExists = true;
 		}
-		activeContentListener.getActiveContent().traverse(function (idea) {
-			var scenes = idea.getAttr(sceneAttrName);
-			if (scenes) {
-				_.each(scenes, function (scene) {
-					var sceneIndex = parseFloat(scene.storyboards[storyboardName]);
-					if (indexMatches(sceneIndex, indexToInsertAfter)) {
-						indexExists = true;
-					} else if (sceneIndex && sceneIndex > indexToInsertAfter && (nextIndex === 0 || sceneIndex < nextIndex)) {
-						nextIndex = sceneIndex;
-					}
-				});
+		_.each(scenesForActiveStoryboard, function (scene) {
+			if (indexMatches(scene.index, indexToInsertAfter)) {
+				indexExists = true;
+			} else if (scene.index > indexToInsertAfter && (nextIndex === 0 || scene.index < nextIndex)) {
+				nextIndex = scene.index;
 			}
 		});
 		if (!indexExists) {
@@ -115,25 +104,10 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		}
 	};
 	self.getScenes = function () {
-		var storyboardName = self.getActiveStoryboardName(),
-			result = [];
-		if (!storyboardName) {
-			return result;
-		}
-		activeContentListener.getActiveContent().traverse(function (idea) {
-			var scenes = idea.getAttr(sceneAttrName);
-			if (scenes) {
-				_.each(scenes, function (scene) {
-					var sceneIndex = parseFloat(scene.storyboards[storyboardName]);
-					if (sceneIndex) {
-						result.push({ideaId: idea.id, title: idea.title, index: sceneIndex});
-					}
-				});
-			}
-		});
-		return _.sortBy(result, 'index');
+		return scenesForActiveStoryboard;
 	};
 	activeContentListener.addListener(function () {
+		rebuildScenesForActiveStoryboard();
 		self.dispatchEvent('storyboardRebuilt');
 	});
 };
