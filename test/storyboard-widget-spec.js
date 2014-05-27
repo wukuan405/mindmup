@@ -192,7 +192,7 @@ describe('Storyboard widget', function () {
 				it('scrollSceneIntoFocus', function () {
 					spyOn(jQuery.fn, 'scrollSceneIntoFocus');
 					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 1.5 });
-					var scenes = underTest.find('[data-mm-role=scene]');
+					var scenes = underTest.find('[data-mm-role=scene]').finish();
 					expect(jQuery.fn.scrollSceneIntoFocus).toHaveBeenCalledOnJQueryObject(scenes.eq(1));
 				});
 			});

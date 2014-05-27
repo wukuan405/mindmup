@@ -705,13 +705,17 @@ body .modal.huge {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #7ab5d3;
   outline: rgb(91, 157, 217) auto 5px;
 }
-.storyboard-container {
-  padding-left: 10px;
-  padding-right: 10px;
+#storyboard {
   user-select: none;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+}
+
+.storyboard-container {
+  padding-left: 10px;
+  padding-right: 10px;
+
 }
 .storyboard-scene {
   display: inline-block;

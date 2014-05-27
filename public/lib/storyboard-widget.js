@@ -8,6 +8,7 @@ jQuery.fn.updateScene = function (scene) {
 jQuery.fn.scrollSceneIntoFocus = function () {
 	'use strict';
 	this.siblings('.activated-scene').removeClass('activated-scene');
+	this[0].scrollIntoView();
 	this.addClass('activated-scene');
 	return this;
 };
@@ -168,9 +169,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				}
 				newScene.updateScene(scene);
 				if (!appendToEnd) {
-					newScene.scrollSceneIntoFocus(hasFocus).fadeIn({duration: 'short', complete: function () {
+					newScene.fadeIn({duration: 'short', complete: function () {
 						if (hasFocus) {
 							newScene.focus();
+						} else {
+							newScene.scrollSceneIntoFocus();
 						}
 					}});
 				} else {
