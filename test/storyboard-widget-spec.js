@@ -141,27 +141,108 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			expect(storyboardModel.setInputEnabled).toHaveBeenCalledWith(true);
 		});
-		it('rebuilds a storyboard using new scenes on a storyboardSceneAdded event', function () {
-			var scenes;
-			underTest.trigger('show');
+		describe('event processing', function () {
+			beforeEach(function () {
+				underTest.trigger('show');
+			});
+			describe('storyboardSceneAdded', function () {
+				it('adds a scene on storyboardSceneAdded', function () {
+					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 1.5 });
 
-			storyboardModel.getScenes.and.returnValue([
-				{ideaId: 12, title: 'already in ted storyboard', index: 1},
-				{ideaId: 14, title: 'inside', index: 5}
-			]);
-			storyboardModel.dispatchEvent('storyboardSceneAdded');
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(3);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.first().attr('data-mm-index')).toEqual('1');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
+					expect(scenes.eq(1).attr('data-mm-idea-id')).toEqual('14');
+					expect(scenes.eq(1).attr('data-mm-index')).toEqual('1.5');
+					expect(scenes.eq(1).find('[data-mm-role=scene-title]').text()).toEqual('new one');
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.last().attr('data-mm-index')).toEqual('2');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+				it('adds a scene to the end if the index is > than max', function () {
 
-			scenes = underTest.find('[data-mm-role=scene]');
+					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 6 });
 
-			expect(scenes.length).toBe(2);
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(3);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.first().attr('data-mm-index')).toEqual('1');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
 
-			expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
-			expect(scenes.first().attr('data-mm-index')).toEqual('1');
-			expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
+					expect(scenes.eq(1).attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.eq(1).attr('data-mm-index')).toEqual('2');
+					expect(scenes.eq(1).find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
 
-			expect(scenes.last().attr('data-mm-idea-id')).toEqual('14');
-			expect(scenes.last().attr('data-mm-index')).toEqual('5');
-			expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('inside');
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('14');
+					expect(scenes.last().attr('data-mm-index')).toEqual('6');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('new one');
+
+				});
+				it('adds a scene to the start of the storyboard', function () {
+					underTest.find('[data-mm-role=scene]').remove();
+					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 6 });
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(1);
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('14');
+					expect(scenes.last().attr('data-mm-index')).toEqual('6');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('new one');
+				});
+				it('scrollSceneIntoFocus', function () {
+					spyOn(jQuery.fn, 'scrollSceneIntoFocus');
+					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 1.5 });
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(jQuery.fn.scrollSceneIntoFocus).toHaveBeenCalledOnJQueryObject(scenes.eq(1));
+				});
+			});
+			describe('storyboardSceneRemoved', function () {
+				it('removes a scene matching index and idea-id, even if the title is different', function () {
+					storyboardModel.dispatchEvent('storyboardSceneRemoved', {ideaId: 12, title: 'non matching', index: 1 });
+					underTest.find('[data-mm-role=scene]').finish();
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(1);
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.last().attr('data-mm-index')).toEqual('2');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+				it('ignores non-matching removals', function () {
+					storyboardModel.dispatchEvent('storyboardSceneRemoved', {ideaId: 14, title: 'already in ted storyboard', index: 1 });
+					var scenes = underTest.find('[data-mm-role=scene]').finish();
+					expect(scenes.length).toBe(2);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.first().attr('data-mm-index')).toEqual('1');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.last().attr('data-mm-index')).toEqual('2');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+			});
+			describe('storyboardSceneContentUpdated', function () {
+				it('updates a title matching the index and idea id', function () {
+					storyboardModel.dispatchEvent('storyboardSceneContentUpdated', {ideaId: 12, title: 'new title', index: 1 });
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(2);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.first().attr('data-mm-index')).toEqual('1');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('new title');
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.last().attr('data-mm-index')).toEqual('2');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+				it('ignores non-matching removals', function () {
+					storyboardModel.dispatchEvent('storyboardSceneContentUpdated', {ideaId: 14, title: 'new title', index: 1 });
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(2);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.first().attr('data-mm-index')).toEqual('1');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
+					expect(scenes.last().attr('data-mm-index')).toEqual('2');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+
+			});
 		});
 	});
 	describe('when hidden', function () {
@@ -220,14 +301,12 @@ describe('Storyboard widget', function () {
 	});
 	describe('editing a storyboard', function () {
 		beforeEach(function () {
-			underTest.trigger('show');
-
 			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 15, title: 'inside', index: 3},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardSceneAdded');
+			underTest.trigger('show');
 			underTest.find('[data-mm-role=scene]').last().focus();
 		});
 		it('should remove scene when storyboard-remove-scene menu item is clicked', function () {

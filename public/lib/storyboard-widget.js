@@ -1,4 +1,16 @@
 /*global jQuery, _, Hammer*/
+jQuery.fn.updateScene = function (scene) {
+	'use strict';
+	this.find('[data-mm-role=scene-title]').text(scene.title);
+
+	return this;
+};
+jQuery.fn.scrollSceneIntoFocus = function () {
+	'use strict';
+	this.siblings('.activated-scene').removeClass('activated-scene');
+	this.addClass('activated-scene');
+	return this;
+};
 jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 	'use strict';
 	return jQuery.each(this, function () {
@@ -61,90 +73,104 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				return {left: potentialLeft, right: potentialRight};
 			},
 			rebuildStoryboard = function () {
-				var sceneCount  = templateParent.find('[data-mm-role=scene]').length;
 				templateParent.empty();
-				_.each(storyboardModel.getScenes(), function (scene) {
-					var newScene = template.clone()
-						.appendTo(templateParent)
-						.data('scene', scene)
-						.attr({
-							'data-mm-role': 'scene',
-							'data-mm-idea-id': scene.ideaId,
-							'data-mm-index': scene.index,
-							'tabindex': 1
-						})
-						.on('focus', function () {
-							templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
-							newScene.addClass('activated-scene');
-						}).keydown('del backspace', function (event) {
-							storyboardController.removeScene(scene);
-							event.preventDefault();
-							event.stopPropagation();
-						})
-						.keydown('meta+right ctrl+right', function () {
-							moveSceneRight(jQuery(this));
-						})
-						.keydown('meta+left ctrl+left', function () {
-							moveSceneLeft(jQuery(this));
-						})
-						.keydown('right', function () {
-							jQuery(this).next().focus();
-						})
-						.keydown('left', function () {
-							jQuery(this).prev().focus();
-						})
-						.keydown('up', function () {
-							jQuery(this).gridUp().focus();
-						})
-						.keydown('down', function () {
-							jQuery(this).gridDown().focus();
-						}).shadowDraggable().on('mm:cancel-dragging', function () {
-							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
-						}).on('mm:stop-dragging', function () {
+				_.each(storyboardModel.getScenes(), function (scene) { addScene(scene, true); });
+			},
+			lastSceneBefore = function (sceneIndex) {
+				var scenesBefore =  _.reject(templateParent.children(), function (sceneDOM) {
+						return sceneIndex <= jQuery(sceneDOM).data('scene').index;
+					});
+				return _.last(scenesBefore);
+			},
+			addScene = function (scene, appendToEnd) {
+				var newScene = template.clone()
+					.data('scene', scene)
+					.attr({
+						'data-mm-role': 'scene',
+						'data-mm-idea-id': scene.ideaId,
+						'data-mm-index': scene.index,
+						'tabindex': 1
+					})
+					.on('focus', function () {
+						templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
+						newScene.addClass('activated-scene');
+					}).keydown('del backspace', function (event) {
+						storyboardController.removeScene(scene);
+						event.preventDefault();
+						event.stopPropagation();
+					})
+					.keydown('meta+right ctrl+right', function () {
+						moveSceneRight(jQuery(this));
+					})
+					.keydown('meta+left ctrl+left', function () {
+						moveSceneLeft(jQuery(this));
+					})
+					.keydown('right', function () {
+						jQuery(this).next().focus();
+					})
+					.keydown('left', function () {
+						jQuery(this).prev().focus();
+					})
+					.keydown('up', function () {
+						jQuery(this).gridUp().focus();
+					})
+					.keydown('down', function () {
+						jQuery(this).gridDown().focus();
+					}).shadowDraggable().on('mm:cancel-dragging', function () {
+						jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
+					}).on('mm:stop-dragging', function () {
 
-							var dropTarget = jQuery(this),
-								potentialLeft = dropTarget.parent().find('.potential-drop-left'),
-								potentialRight = dropTarget.parent().find('.potential-drop-right');
+						var dropTarget = jQuery(this),
+							potentialLeft = dropTarget.parent().find('.potential-drop-left'),
+							potentialRight = dropTarget.parent().find('.potential-drop-right');
+						if (potentialLeft && potentialLeft[0]) {
+							storyboardController.moveSceneAfter(dropTarget.data('scene'), potentialLeft.data('scene'));
+						} else if (potentialRight && potentialRight[0]) {
+							potentialLeft = potentialRight.prev();
 							if (potentialLeft && potentialLeft[0]) {
 								storyboardController.moveSceneAfter(dropTarget.data('scene'), potentialLeft.data('scene'));
-							} else if (potentialRight && potentialRight[0]) {
-								potentialLeft = potentialRight.prev();
-								if (potentialLeft && potentialLeft[0]) {
-									storyboardController.moveSceneAfter(dropTarget.data('scene'), potentialLeft.data('scene'));
-								} else {
-									storyboardController.moveSceneAfter(dropTarget.data('scene'));
-								}
+							} else {
+								storyboardController.moveSceneAfter(dropTarget.data('scene'));
 							}
-							jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
-						}).on('mm:drag', function (e) {
-							if (e && e.gesture && e.gesture.center) {
-								var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY});
-								jQuery(this).siblings().not(potentialDrops.left).not(potentialDrops.right).removeClass('potential-drop-left potential-drop-right');
-								if (potentialDrops.left) {
-									jQuery(potentialDrops.left).not(jQuery(this).prev()).addClass('potential-drop-left');
-								}
-								if (potentialDrops.right) {
-									jQuery(potentialDrops.right).not(jQuery(this).next()).addClass('potential-drop-right');
-								}
+						}
+						jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
+					}).on('mm:drag', function (e) {
+						if (e && e.gesture && e.gesture.center) {
+							var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY});
+							jQuery(this).siblings().not(potentialDrops.left).not(potentialDrops.right).removeClass('potential-drop-left potential-drop-right');
+							if (potentialDrops.left) {
+								jQuery(potentialDrops.left).not(jQuery(this).prev()).addClass('potential-drop-left');
 							}
-						});
-
-					newScene.find('[data-mm-role=scene-title]').text(scene.title);
-
-				});
-				//focus on last scene if one has been added -- we can remove this when delta changes are in place
-				if (sceneCount < templateParent.find('[data-mm-role=scene]').length) {
-					templateParent.find('[data-mm-role=scene]').last().focus();
+							if (potentialDrops.right) {
+								jQuery(potentialDrops.right).not(jQuery(this).next()).addClass('potential-drop-right');
+							}
+						}
+					}),
+					target = !appendToEnd && lastSceneBefore(scene.index);
+				newScene.hide();
+				if (target) {
+					newScene.insertAfter(target);
+				} else {
+					newScene.appendTo(templateParent);
+				}
+				newScene.updateScene(scene);
+				if (!appendToEnd) {
+					newScene.scrollSceneIntoFocus().fadeIn();
+				} else {
+					newScene.show();
 				}
 			},
-			addScene = function (scene) {
-				rebuildStoryboard();
+			findScene = function (scene) {
+				return templateParent.find('[data-mm-role=scene][data-mm-index="' + scene.index + '"][data-mm-idea-id=' + scene.ideaId + ']');
 			},
 			removeScene = function (scene) {
-				rebuildStoryboard();
+				var sceneJQ = findScene(scene);
+				sceneJQ.fadeOut({complete: function () {
+					sceneJQ.remove();
+				}});
 			},
 			updateScene = function (scene) {
-				rebuildStoryboard();
+				findScene(scene).updateScene(scene);
 			},
 			showStoryboard = function () {
 				storyboardModel.setInputEnabled(true);
