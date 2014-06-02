@@ -67,7 +67,7 @@ MM.main = function (config) {
 			activeContentListener = new MM.ActiveContentListener(mapController),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
-			layoutExportController = new MM.LayoutExportController(mapModel, goldApi, s3Api, activityLog),
+			layoutExportController = new MM.LayoutExportController({'png': mapModel.getCurrentLayout, 'pdf': mapModel.getCurrentLayout}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 

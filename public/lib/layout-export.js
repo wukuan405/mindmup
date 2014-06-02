@@ -1,5 +1,5 @@
 /*global jQuery, MM, _ */
-MM.LayoutExportController = function (mapModel, configurationGenerator, storageApi, activityLog) {
+MM.LayoutExportController = function (exportFunctions, configurationGenerator, storageApi, activityLog) {
 	'use strict';
 	var self = this,
 		category = 'Map',
@@ -20,7 +20,7 @@ MM.LayoutExportController = function (mapModel, configurationGenerator, storageA
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
-			layout = _.extend({}, mapModel.getCurrentLayout(), exportProperties);
+			layout = _.extend({}, exportFunctions[format](), exportProperties);
 		activityLog.log(category, eventType + ' started');
 		configurationGenerator.generateExportConfiguration(format).then(
 			function (exportConfig) {
