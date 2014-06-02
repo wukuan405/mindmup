@@ -1,13 +1,9 @@
 /*global jQuery, _, Hammer*/
 jQuery.fn.updateScene = function (scene, dimensionProvider) {
 	'use strict';
-	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.outerWidth(), this.outerHeight());
+	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.innerWidth(), this.innerHeight());
 	this.find('[data-mm-role=scene-title]').text(scene.title).css(dimensions.text);
-	if (scene.image) {
-		this.find('[data-mm-role=scene-image]').attr('src', scene.image.url).css(dimensions.image).show();
-	} else {
-		this.find('[data-mm-role=scene-image]').hide();
-	}
+	this.css(dimensions.image);
 	return this;
 };
 jQuery.fn.scrollSceneIntoFocus = function () {

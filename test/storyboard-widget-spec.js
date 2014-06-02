@@ -11,7 +11,7 @@ describe('updateScene', function () {
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
 			text: {width: '20px'},
-			image: {width: '30px'}
+			image: {width: '40px'}
 		});
 		underTest = jQuery(template).css({width: defaultWidth, height: defaultHeight}).appendTo('body');
 		spyOn(jQuery, 'css').and.callThrough();
@@ -30,25 +30,9 @@ describe('updateScene', function () {
 			expect(underTest.find('div').text()).toEqual('hello ladies');
 		});
 	});
-	describe('image handling', function () {
-		describe('when there is an image in a scene', function () {
-			beforeEach(function () {
-				underTest.updateScene({title: 'hello ladies', image: {url: 'http://fakeurl'}}, dimensionProvider);
-			});
-			it('shows the image', function () {
-				expect(underTest.find('img').css('display')).not.toBe('none');
-			});
-			it('sets the image CSS', function () {
-				expect(underTest.find('img').css('width')).toEqual('30px');
-			});
-			it('sets the image source', function () {
-				expect(underTest.find('img').attr('src')).toEqual('http://fakeurl');
-			});
-		});
-		it('hides the image if there is no image in the scene', function () {
-			underTest.updateScene({title: 'hello ladies'}, dimensionProvider);
-			expect(underTest.find('img').css('display')).toBe('none');
-		});
+	it('applies image styles to the container', function () {
+		underTest.updateScene({title: 'hello ladies'}, dimensionProvider);
+		expect(underTest.css('width')).toBe('40px');
 	});
 });
 describe('storyboardMenuWidget', function () {
