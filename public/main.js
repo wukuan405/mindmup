@@ -67,7 +67,12 @@ MM.main = function (config) {
 			activeContentListener = new MM.ActiveContentListener(mapController),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
-			layoutExportController = new MM.LayoutExportController({'png': mapModel.getCurrentLayout, 'pdf': mapModel.getCurrentLayout}, goldApi, s3Api, activityLog),
+			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
+			layoutExportController = new MM.LayoutExportController({
+				'png': mapModel.getCurrentLayout,
+				'pdf': mapModel.getCurrentLayout,
+				'presentation/pdf':  MM.buildStoryboardExporter(storyboardModel)
+			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 
@@ -76,7 +81,6 @@ MM.main = function (config) {
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', activeContentListener, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
-			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
 			storyboardController = new MM.StoryboardController(storyboardModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,

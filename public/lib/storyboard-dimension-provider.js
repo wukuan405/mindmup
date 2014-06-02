@@ -1,10 +1,10 @@
-/*global MM*/
+/*global MM, _*/
 MM.StoryboardDimensionProvider = function () {
 	'use strict';
-	var self = this,
-		padding = 10;
+	var self = this;
 	self.getDimensionsForScene = function (scene, width, height) {
-		var result = {
+		var padding = width / 16,
+			result = {
 			text:  {'height': height, 'width': width, 'padding-top': 0, 'padding-bottom': 0, 'padding-left': 0, 'padding-right': 0},
 			image: {
 				'background-image': '',
@@ -49,4 +49,17 @@ MM.StoryboardDimensionProvider = function () {
 		return result;
 	};
 
+};
+
+MM.buildStoryboardExporter = function (storyboardModel) {
+	'use strict';
+	return function () {
+		var scenes = storyboardModel.getScenes(),
+			dimensionProvider = new MM.StoryboardDimensionProvider();
+		return {storyboard:
+			_.map(scenes, function (scene) {
+				return _.extend({title: scene.title}, dimensionProvider.getDimensionsForScene(scene, 800, 600));
+			})
+		};
+	};
 };
