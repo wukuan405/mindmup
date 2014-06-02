@@ -13,7 +13,7 @@ describe('Storyboards', function () {
 				1: {id: 11, title: 'not in any storyboards'},
 			    2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
 			    3: {id: 14, title: 'is in two scenes', attr: {'test-scenes': [{storyboards: {'ted talk': 9}}, {storyboards: {'ted talk': 10}}]}},
-				4: {id: 13, title: 'just another scene', attr: {'test-scenes': [{storyboards: {'ted talk': 2}}]}}
+				4: {id: 13, title: 'scene with icon', attr: {icon: {url: 'http://fakeurl', width: 100, height: 200, position: 'left'}, 'test-scenes': [{storyboards: {'ted talk': 2}}]}}
 			}
 		});
 		mapController = observable({});
@@ -129,10 +129,14 @@ describe('Storyboards', function () {
 			it('retrieves a list of scenes', function () {
 				expect(underTest.getScenes()).toEqual([
 					{ideaId: 12, title: 'already in ted storyboard', index: 1},
-					{ideaId: 13, title: 'just another scene', index: 2},
+					{ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 100, height: 200, position: 'left'}},
 					{ideaId: 14, title: 'is in two scenes', index: 9},
 					{ideaId: 14, title: 'is in two scenes', index: 10}
 				]);
+			});
+			it('clones image object disconnecting it from the original', function () {
+				underTest.getScenes()[1].image.url = 'http://changed';
+				expect(activeContent.getAttrById(13, 'icon').url).toEqual('http://fakeurl');
 			});
 			it('should return an empty array if there are no storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
@@ -197,6 +201,17 @@ describe('Storyboards', function () {
 				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith({ideaId: 14, title: 'booyah', index: 10});
 
 				expect(storyboardSceneContentUpdatedListener.calls.count()).toBe(2);
+				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
+				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
+			});
+			it('should dispatch a storyboardSceneContentUpdated events when image changes', function () {
+				activeContent.mergeAttrProperty(13, 'icon', 'width', 200);
+
+				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith(
+					{ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 200, height: 200, position: 'left'}}
+				);
+
+				expect(storyboardSceneContentUpdatedListener.calls.count()).toBe(1);
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
 				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
 			});

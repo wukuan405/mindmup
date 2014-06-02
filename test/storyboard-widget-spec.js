@@ -1,13 +1,65 @@
 /*global jasmine, describe, it, beforeEach, expect, afterEach, jQuery, expect, observable, spyOn*/
+describe('updateScene', function () {
+	'use strict';
+	var template = '<div><img data-mm-role="scene-image"/><div data-mm-role="scene-title" /></div>',
+		underTest,
+		defaultWidth, defaultHeight,
+		dimensionProvider;
+	beforeEach(function () {
+		defaultWidth = 160;
+		defaultHeight = 120;
+		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
+		dimensionProvider.getDimensionsForScene.and.returnValue({
+			text: {width: '20px'},
+			image: {width: '30px'}
+		});
+		underTest = jQuery(template).css({width: defaultWidth, height: defaultHeight}).appendTo('body');
+		spyOn(jQuery, 'css').and.callThrough();
+	});
+	afterEach(function () {
+		underTest.remove();
+	});
+	describe('text handling', function () {
+		beforeEach(function () {
+			underTest.updateScene({title: 'hello ladies'}, dimensionProvider);
+		});
+		it('applies text CSS to the text box', function () {
+			expect(underTest.find('div').css('width')).toEqual('20px');
+		});
+		it('sets the scene text to the text box', function () {
+			expect(underTest.find('div').text()).toEqual('hello ladies');
+		});
+	});
+	describe('image handling', function () {
+		describe('when there is an image in a scene', function () {
+			beforeEach(function () {
+				underTest.updateScene({title: 'hello ladies', image: {url: 'http://fakeurl'}}, dimensionProvider);
+			});
+			it('shows the image', function () {
+				expect(underTest.find('img').css('display')).not.toBe('none');
+			});
+			it('sets the image CSS', function () {
+				expect(underTest.find('img').css('width')).toEqual('30px');
+			});
+			it('sets the image source', function () {
+				expect(underTest.find('img').attr('src')).toEqual('http://fakeurl');
+			});
+		});
+		it('hides the image if there is no image in the scene', function () {
+			underTest.updateScene({title: 'hello ladies'}, dimensionProvider);
+			expect(underTest.find('img').css('display')).toBe('none');
+		});
+	});
+});
 describe('storyboardMenuWidget', function () {
 	'use strict';
 	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a><a data-mm-role="storyboard-remove-scenes-for-idea-id"></a></span>',
 		storyboardController,
 		storyboardModel,
 		mapModel,
+
 		underTest;
 	beforeEach(function () {
-
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled', 'getInputEnabled']));
 		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene', 'removeScenesForIdeaId']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
@@ -103,6 +155,7 @@ describe('Storyboard widget', function () {
 	var underTest,
 		storyboardController,
 		storyboardModel,
+		dimensionProvider,
 		template = '<div><div>' +
 					'<a data-mm-role="storyboard-remove-scene"></a>' +
 					'<a data-mm-role="storyboard-move-scene-left"></a>' +
@@ -115,7 +168,12 @@ describe('Storyboard widget', function () {
 			{ideaId: 12, title: 'already in ted storyboard', index: 1},
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
-		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel);
+		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
+		dimensionProvider.getDimensionsForScene.and.returnValue({
+			text: {width: '20px'},
+			image: {width: '30px'}
+		});
+		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -261,7 +319,7 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardSceneAdded');
+			storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 15, title: 'new one', index: 10 });
 
 			scenes = underTest.find('[data-mm-role=scene]');
 
@@ -280,7 +338,6 @@ describe('Storyboard widget', function () {
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
-			storyboardModel.dispatchEvent('storyboardSceneAdded');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 			selectedScene.focus();
 			dummyElement = underTest.find('[data-mm-role=scene]').first();

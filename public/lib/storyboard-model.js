@@ -15,9 +15,14 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 				var scenes = idea.getAttr(sceneAttrName);
 				if (scenes) {
 					_.each(scenes, function (scene) {
-						var sceneIndex = parseFloat(scene.storyboards[storyboardName]);
+						var sceneIndex = parseFloat(scene.storyboards[storyboardName]), converted, icon;
 						if (sceneIndex) {
-							result.push({ideaId: idea.id, title: idea.title, index: sceneIndex});
+							converted = {ideaId: idea.id, title: idea.title, index: sceneIndex};
+							icon = idea.getAttr('icon');
+							if (icon) {
+								converted.image = icon;
+							}
+							result.push(converted);
 						}
 					});
 				}
@@ -112,16 +117,16 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			getSceneDelta = function (oldScenes, newScenes) {
 				var result = {removed: [], added: [], contentUpdated: []};
 				_.each(oldScenes, function (oldScene) {
-					var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title'));
+					var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title', 'image'));
 					if (!newScene) {
 						result.removed.push(oldScene);
 					}
-					else if (newScene.title !== oldScene.title) {
+					else if (newScene.title !== oldScene.title || ! _.isEqual(newScene.image, oldScene.image)) {
 						result.contentUpdated.push(newScene);
 					}
 				});
 				_.each(newScenes, function (newScene) {
-					var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title'));
+					var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title', 'image'));
 					if (!oldScene) {
 						result.added.push(newScene);
 					}

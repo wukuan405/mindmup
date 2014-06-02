@@ -1,8 +1,13 @@
 /*global jQuery, _, Hammer*/
-jQuery.fn.updateScene = function (scene) {
+jQuery.fn.updateScene = function (scene, dimensionProvider) {
 	'use strict';
-	this.find('[data-mm-role=scene-title]').text(scene.title);
-
+	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.outerWidth(), this.outerHeight());
+	this.find('[data-mm-role=scene-title]').text(scene.title).css(dimensions.text);
+	if (scene.image) {
+		this.find('[data-mm-role=scene-image]').attr('src', scene.image.url).css(dimensions.image).show();
+	} else {
+		this.find('[data-mm-role=scene-image]').hide();
+	}
 	return this;
 };
 jQuery.fn.scrollSceneIntoFocus = function () {
@@ -12,7 +17,7 @@ jQuery.fn.scrollSceneIntoFocus = function () {
 	this.addClass('activated-scene');
 	return this;
 };
-jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
+jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, dimensionProvider) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
@@ -167,7 +172,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				} else {
 					newScene.appendTo(templateParent);
 				}
-				newScene.updateScene(scene);
+				newScene.updateScene(scene, dimensionProvider);
 				if (!appendToEnd) {
 					newScene.fadeIn({duration: 'short', complete: function () {
 						if (hasFocus) {
@@ -190,7 +195,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel) {
 				}});
 			},
 			updateScene = function (scene) {
-				findScene(scene).updateScene(scene);
+				findScene(scene).updateScene(scene, dimensionProvider);
 			},
 			moveScene = function (moved) {
 				var oldScene = findScene(moved.from),
