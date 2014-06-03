@@ -3,7 +3,7 @@ jQuery.fn.updateScene = function (scene, dimensionProvider) {
 	'use strict';
 	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.innerWidth(), this.innerHeight());
 	this.find('[data-mm-role=scene-title]').text(scene.title).css(dimensions.text);
-	this.css(dimensions.image);
+	this.css(dimensions.image.toCss());
 	return this;
 };
 jQuery.fn.scrollSceneIntoFocus = function () {

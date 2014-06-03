@@ -11,7 +11,7 @@ describe('updateScene', function () {
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
 			text: {width: '20px'},
-			image: {width: '40px'}
+			image: {toCss: function () {return {width: '40px'}; }}
 		});
 		underTest = jQuery(template).css({width: defaultWidth, height: defaultHeight}).appendTo('body');
 		spyOn(jQuery, 'css').and.callThrough();
@@ -155,7 +155,7 @@ describe('Storyboard widget', function () {
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
 			text: {width: '20px'},
-			image: {width: '30px'}
+			image: {toCss: function () { return {width: '30px'}; }}
 		});
 		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
 	});
