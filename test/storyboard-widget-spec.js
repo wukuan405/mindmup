@@ -10,7 +10,7 @@ describe('updateScene', function () {
 		defaultHeight = 120;
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
-			text: {width: '20px'},
+			text: {toCss: function () { return {width: '20px'}; }},
 			image: {toCss: function () {return {width: '40px'}; }}
 		});
 		underTest = jQuery(template).css({width: defaultWidth, height: defaultHeight}).appendTo('body');
@@ -154,7 +154,7 @@ describe('Storyboard widget', function () {
 		]);
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
-			text: {width: '20px'},
+			text: {toCss: function () { return {width: '20px'}; }},
 			image: {toCss: function () { return {width: '30px'}; }}
 		});
 		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
@@ -284,6 +284,40 @@ describe('Storyboard widget', function () {
 					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
 				});
 
+			});
+			describe('storyboardSceneMoved', function () {
+				var scene;
+				beforeEach(function () {
+					scene = {ideaId: 14, title: 'new one', index: 6};
+					storyboardModel.dispatchEvent('storyboardSceneAdded', scene);
+				});
+				it('moves before the first scene if index < first scene', function () {
+					storyboardModel.dispatchEvent('storyboardSceneMoved', {from: scene, to: {ideaId: 14, title: 'new one', index: 0.5}});
+					underTest.find('[data-mm-role=scene]').finish();
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(3);
+					expect(scenes.first().attr('data-mm-idea-id')).toEqual('14');
+					expect(scenes.first().attr('data-mm-index')).toEqual('0.5');
+					expect(scenes.first().find('[data-mm-role=scene-title]').text()).toEqual('new one');
+				});
+				it('moves between appropriate scenes the first scene if index > first scene', function () {
+					storyboardModel.dispatchEvent('storyboardSceneMoved', {from: scene, to: {ideaId: 14, title: 'new one', index: 1.5}});
+					underTest.find('[data-mm-role=scene]').finish();
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(3);
+					expect(scenes.eq(1).attr('data-mm-idea-id')).toEqual('14');
+					expect(scenes.eq(1).attr('data-mm-index')).toEqual('1.5');
+					expect(scenes.eq(1).find('[data-mm-role=scene-title]').text()).toEqual('new one');
+				});
+				it('moves to the end index > last scene', function () {
+					storyboardModel.dispatchEvent('storyboardSceneMoved', {from: {ideaId: 12, title: 'already in ted storyboard', index: 1}, to: {ideaId: 12, title: 'already in ted storyboard', index: 7}});
+					underTest.find('[data-mm-role=scene]').finish();
+					var scenes = underTest.find('[data-mm-role=scene]');
+					expect(scenes.length).toBe(3);
+					expect(scenes.last().attr('data-mm-idea-id')).toEqual('12');
+					expect(scenes.last().attr('data-mm-index')).toEqual('7');
+					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('already in ted storyboard');
+				});
 			});
 		});
 	});

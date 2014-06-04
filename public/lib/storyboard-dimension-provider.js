@@ -1,29 +1,58 @@
-/*global MM, _*/
+/*global MM, _, jQuery*/
+/* todo:
+ *  - center image in its half
+ */
 MM.StoryboardDimensionProvider = function () {
 	'use strict';
-	var self = this;
+	var self = this,
+		fakeDIV = jQuery('<div>').attr('data-mm-role', 'storyboard-sizer').addClass('storyboard-scene-title')
+		.css({'z-index': '-99', 'visibility': 'hidden'}),
+		findFontSize = function (title, width, height) {
+			fakeDIV.css({'max-width': width}).appendTo('body').text(title);
+			var result = {fontSize: height * 0.5 },
+				multiplier = 0.9;
+			do {
+				result.fontSize = Math.round(result.fontSize * multiplier);
+				result.lineHeight = Math.floor(result.fontSize * 1.3);
+				fakeDIV.css('font-size', result.fontSize + 'px');
+				fakeDIV.css('line-height', result.lineHeight + 'px');
+			} while ((fakeDIV.height() > height || fakeDIV[0].scrollWidth > width) && result.fontSize > height / 30);
+			result.textWidth = fakeDIV.width();
+			fakeDIV.detach();
+			return result;
+		},
+		hasBullets = function (text) {
+			return /\n-/.test(text);
+		};
 	self.getDimensionsForScene = function (scene, width, height) {
 		var padding = width / 16,
 			result = {
-			text:  {'height': height, 'width': width, 'padding-top': 0, 'padding-bottom': 0, 'padding-left': 0, 'padding-right': 0},
-			image: {
-				toCss: function () {
-					return {
-						'background-image': '',
-						'background-repeat': '',
-						'background-size': '',
-						'background-position': ''
-					};
+				text:  {
+					'height': height - 2 * padding,
+					'width': width - 2 * padding,
+					'padding-top': padding,
+					'padding-bottom': padding,
+					'padding-left': padding,
+					'padding-right': padding,
+					toCss: function () {
+						return _.extend({
+							'font-size': result.text.fontSize + 'px',
+							'line-height': result.text.lineHeight +  'px'
+						}, _.omit(result.text, 'fontSize', 'lineHeight'));
+					}
+				},
+				image: {
+					toCss: function () {
+						return {
+							'background-image': '',
+							'background-repeat': '',
+							'background-size': '',
+							'background-position': ''
+						};
+					}
 				}
-			}
-		},
-		imageScale = 1, maxImageHeight = height - 2 * padding, maxImageWidth = width - 2 * padding,
-		opposite = {
-			'top': 'bottom',
-			'bottom': 'top',
-			'right': 'left',
-			'left': 'right'
-		};
+			},
+			imageScale = 1, maxImageHeight = height, maxImageWidth = width, textDims, additionalPadding;
 
 		if (scene.image) {
 			if (scene.image.position === 'top' || scene.image.position === 'bottom') {
@@ -33,8 +62,7 @@ MM.StoryboardDimensionProvider = function () {
 			}
 			else if (scene.image.position === 'left' || scene.image.position  === 'right') {
 				maxImageWidth = width / 2 - padding;
-				result.text['padding-' + scene.image.position] = width / 2 - padding;
-				result.text['padding-'  + opposite[scene.image.position]] = padding;
+				result.text['padding-' + scene.image.position] = width / 2;
 				result.text.width = width / 2 -  padding;
 			}
 			imageScale = maxImageWidth / scene.image.width;
@@ -73,6 +101,18 @@ MM.StoryboardDimensionProvider = function () {
 					'background-position':  result.image.left + 'px ' + result.image.top + 'px'
 				};
 			};
+		}
+		if (hasBullets(scene.title))  {
+			result.text['text-align'] = 'left';
+		}
+		textDims = findFontSize(scene.title, result.text.width, result.text.height);
+		result.text.fontSize = textDims.fontSize;
+		result.text.lineHeight = textDims.lineHeight;
+		additionalPadding = (result.text.width - textDims.textWidth) / 2;
+		if (additionalPadding > 0) {
+			result.text.width = textDims.textWidth;
+			result.text['padding-left'] += additionalPadding;
+			result.text['padding-right'] += additionalPadding;
 		}
 		return result;
 	};

@@ -1342,10 +1342,7 @@ MAPJS.MemoryClipboard = function () {
 					left: currentDragObject.css('left')
 				};
 				currentDragObject.on('mm:stop-dragging mm:cancel-dragging', function (e) {
-					if (currentDragObject) {
-						currentDragObject.remove();
-					}
-
+					this.remove();
 					target.trigger(e);
 				}).on('mm:drag', function (e) { target.trigger(e); });
 				$(this).on('drag', drag);
@@ -1757,6 +1754,22 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		if (newId) {
 			editNewIdea(newId);
 		}
+	};
+	this.flip = function (source) {
+
+		if (!isEditingEnabled) {
+			return false;
+		}
+		analytic('flip', source);
+		if (!isInputEnabled || currentlySelectedIdeaId === idea.id) {
+			return false;
+		}
+		var node = currentLayout.nodes[currentlySelectedIdeaId];
+		if (!node || node.level !== 2) {
+			return false;
+		}
+
+		return idea.flip(currentlySelectedIdeaId);
 	};
 	this.addSiblingIdeaBefore = function (source) {
 		var newId, parent, contextRank, newRank;
@@ -3997,6 +4010,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			'right': 'selectNodeRight',
 			'shift+right': 'activateNodeRight',
 			'shift+left': 'activateNodeLeft',
+			'meta+right ctrl+right meta+left ctrl+left': 'flip',
 			'shift+up': 'activateNodeUp',
 			'shift+down': 'activateNodeDown',
 			'down': 'selectNodeDown',

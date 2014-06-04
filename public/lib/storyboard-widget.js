@@ -2,7 +2,7 @@
 jQuery.fn.updateScene = function (scene, dimensionProvider) {
 	'use strict';
 	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.innerWidth(), this.innerHeight());
-	this.find('[data-mm-role=scene-title]').text(scene.title).css(dimensions.text);
+	this.find('[data-mm-role=scene-title]').text(scene.title).css(dimensions.text.toCss());
 	this.css(dimensions.image.toCss());
 	return this;
 };
@@ -71,7 +71,17 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 							sceneWidth = scene.outerWidth(true),
 							rightMatch = (xpos > sceneWidth * 2 / 3 && xpos < sceneWidth + 40);
 						return rightMatch;
-					});
+					}),
+					lastInRow = jQuery(_.last(row)),
+					lastScene = scenes.last();
+				if (potentialLeft.length === 0 && potentialRight.length === 0) {
+					if (lastInRow.length > 0 && dropPosition.left > lastInRow.offset().left + lastInRow.width()) {
+						potentialLeft = lastInRow;
+					}
+					else if (lastScene.length > 0 && dropPosition.top > lastScene.offset().top) {
+						potentialLeft = lastScene;
+					}
+				}
 				return {left: _.first(potentialLeft), right: _.first(potentialRight)};
 			},
 			rebuildStoryboard = function () {
@@ -80,7 +90,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			},
 			lastSceneBefore = function (sceneIndex) {
 				var scenesBefore =  _.reject(templateParent.children(), function (sceneDOM) {
-						return sceneIndex <= jQuery(sceneDOM).data('scene').index;
+						return !jQuery(sceneDOM).data('scene') || sceneIndex <= jQuery(sceneDOM).data('scene').index;
 					});
 				return _.last(scenesBefore);
 			},
@@ -165,8 +175,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				newScene.hide();
 				if (target) {
 					newScene.insertAfter(target);
-				} else {
+				} else if (appendToEnd) {
 					newScene.appendTo(templateParent);
+				} else {
+					newScene.prependTo(templateParent);
 				}
 				newScene.updateScene(scene, dimensionProvider);
 				if (!appendToEnd) {
@@ -212,6 +224,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			hideStoryboard = function () {
 				storyboardModel.setInputEnabled(false);
 				storyboardModel.removeEventListener('storyboardSceneAdded', addScene);
+				storyboardModel.removeEventListener('storyboardSceneMoved', moveScene);
 				storyboardModel.removeEventListener('storyboardSceneRemoved', removeScene);
 				storyboardModel.removeEventListener('storyboardSceneContentUpdated', updateScene);
 

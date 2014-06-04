@@ -730,7 +730,6 @@ body .modal.huge {
   color: black;
   margin:  10px;
   text-align: center;
-  line-height: 20px;
   cursor: move;
 }
 #storyboard {
@@ -739,8 +738,8 @@ body .modal.huge {
 .storyboard-scene-title {
   display: table-cell;
   vertical-align: middle;
-  width: 160px;
-  height:120px;
+  white-space: pre-wrap;
+  font-weight: bold;
 }
 .drag-shadow{ 
   opacity: 0.5;
