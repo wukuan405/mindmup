@@ -182,7 +182,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				}
 				newScene.updateScene(scene, dimensionProvider);
 				if (!appendToEnd) {
-					newScene.fadeIn({duration: 'short', complete: function () {
+					newScene.fadeIn({duration: 100, complete: function () {
 						if (hasFocus) {
 							newScene.focus();
 						} else {
@@ -197,8 +197,16 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				return templateParent.find('[data-mm-role=scene][data-mm-index="' + scene.index + '"][data-mm-idea-id=' + scene.ideaId + ']');
 			},
 			removeScene = function (scene) {
-				var sceneJQ = findScene(scene);
-				sceneJQ.fadeOut({duration: 'short', complete: function () {
+				var sceneJQ = findScene(scene),
+					hasFocus = sceneJQ.is(':focus');
+				if (hasFocus) {
+					var sibling = sceneJQ.prev();
+					if (sibling.length === 0) {
+						sibling = sceneJQ.next();
+					}
+					sibling.focus();
+				}
+				sceneJQ.fadeOut({duration: 100, complete: function () {
 					sceneJQ.remove();
 				}});
 			},
@@ -208,7 +216,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			moveScene = function (moved) {
 				var oldScene = findScene(moved.from),
 					hasFocus = oldScene.is(':focus');
-				oldScene.fadeOut({duration: 'short', complete: function () {
+				oldScene.fadeOut({duration: 100, complete: function () {
 					oldScene.remove();
 					addScene(moved.to, false, hasFocus);
 				}});
