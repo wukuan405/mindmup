@@ -103,26 +103,33 @@ describe('Storyboards', function () {
 			});
 		});
 		describe('insertionIndexAfter', function () {
+			var firstScene, secondScene, lastScene;
+			beforeEach(function () {
+				firstScene = {index: 1, ideaId: 12, title: 'already in ted storyboard'};
+				secondScene = {index: 2, ideaId: 13, title: 'scene with icon'};
+				lastScene = {index: 10, ideaId: 14, title: 'is in two scenes'};
+			});
 			it('should return false if there is no active storyboard', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
-				expect(underTest.insertionIndexAfter(1)).toBeFalsy();
+				expect(underTest.insertionIndexAfter()).toBeFalsy();
 			});
-			it('should return false if the active storyboard is empty is no active storyboard', function () {
+			it('should return false if the active storyboard is empty', function () {
 				activeContent.updateAttr(1, 'test-storyboards', ['xed talk']);
-				expect(underTest.insertionIndexAfter(1)).toBeFalsy();
+				expect(underTest.insertionIndexAfter()).toBeFalsy();
 			});
-			it('calculates the arithmetic median if the index is not the last in the list', function () {
-				expect(underTest.insertionIndexAfter(1)).toBe(1.5);
-				expect(underTest.insertionIndexAfter(2)).toBe(5.5);
-			});
-			it('calculates the arithmetic median between 0 and the first item if the index is undefined', function () {
+			it('calculates the arithmetic median between 0 and the first item if the scene argument is not provided', function () {
 				expect(underTest.insertionIndexAfter()).toBe(0.5);
 			});
-			it('adds 1 to the max index if the argument is the last in the list', function () {
-				expect(underTest.insertionIndexAfter(10)).toBe(11);
+			it('calculates the arithmetic median if the provided scene is not the last in the list', function () {
+				expect(underTest.insertionIndexAfter(firstScene)).toBe(1.5);
+				expect(underTest.insertionIndexAfter(secondScene)).toBe(5.5);
 			});
-			it('returns false if the index is not in the list', function () {
-				expect(underTest.insertionIndexAfter(11)).toBeFalsy();
+
+			it('adds 1 to the max index if the argument is the last in the list', function () {
+				expect(underTest.insertionIndexAfter(lastScene)).toBe(11);
+			});
+			it('returns false if the scene is not in the list', function () {
+				expect(underTest.insertionIndexAfter({index: 1, ideaId: 13})).toBeFalsy();
 			});
 		});
 		describe('getScenes', function () {

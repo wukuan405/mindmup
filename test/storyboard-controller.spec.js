@@ -79,14 +79,9 @@ describe('Storyboards', function () {
 						underTest.addScene(11);
 						expect(storyboardModel.createStoryboard).not.toHaveBeenCalled();
 					});
-					it('should add a scene to the end if optional index supplied ', function () {
+					it('should add a scene to the end', function () {
 						underTest.addScene(11);
 						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 11}}]);
-					});
-					it('should insert the scene after the optional specified index', function () {
-						underTest.addScene(11, 2);
-						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith(2);
-						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 6}}]);
 					});
 					it('should keep any other scenes for other storyboards intact', function () {
 						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 1}}]);

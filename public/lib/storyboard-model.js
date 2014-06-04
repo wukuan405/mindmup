@@ -30,7 +30,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			scenesForActiveStoryboard = _.sortBy(result, 'index');
 		},
 		indexMatches = function (idx1, idx2) {
-			return idx1 === idx2;
+			return Math.abs(idx1 - idx2) < 0.0001;
 		},
 		findMaxIndex = function (arr) {
 			if (!arr) {
@@ -86,27 +86,39 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	self.setScenesForNodeId = function (nodeId, scenes) {
 		activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes);
 	};
-	self.insertionIndexAfter = function (indexToInsertAfter) {
-		var nextIndex = 0, indexExists;
-		if (!indexToInsertAfter) {
-			indexToInsertAfter = 0;
-			indexExists = true;
+	self.insertionIndexAfter = function (sceneToInsertAfter) {
+		var sceneToInsertAfterPosition,
+			nextIndex,
+			result,
+			indexToInsertAtStart = function () {
+				var result;
+				if (scenesForActiveStoryboard.length === 0) {
+					return false;
+				} else {
+					result = scenesForActiveStoryboard[0].index / 2;
+					if (indexMatches(result, scenesForActiveStoryboard[0].index)) {
+						return false; /* rebalance required */
+					} else {
+						return result;
+					}
+				}
+			};
+		if (!sceneToInsertAfter) {
+			return indexToInsertAtStart();
 		}
-		_.each(scenesForActiveStoryboard, function (scene) {
-			if (indexMatches(scene.index, indexToInsertAfter)) {
-				indexExists = true;
-			} else if (scene.index > indexToInsertAfter && (nextIndex === 0 || scene.index < nextIndex)) {
-				nextIndex = scene.index;
-			}
-		});
-		if (!indexExists) {
+		sceneToInsertAfterPosition = _.indexOf(scenesForActiveStoryboard, _.find(scenesForActiveStoryboard, function (scene) { return scene.ideaId === sceneToInsertAfter.ideaId && scene.index === sceneToInsertAfter.index; }));
+		if (sceneToInsertAfterPosition < 0) {
 			return false;
 		}
-		if (nextIndex) {
-			return (indexToInsertAfter + nextIndex) / 2;
-		} else {
-			return indexToInsertAfter + 1;
+		if (sceneToInsertAfterPosition === scenesForActiveStoryboard.length - 1) {
+			return sceneToInsertAfter.index + 1;
 		}
+		nextIndex = scenesForActiveStoryboard[sceneToInsertAfterPosition + 1].index;
+		result = (sceneToInsertAfter.index + nextIndex) / 2;
+		if (indexMatches(result, nextIndex) || indexMatches(result, sceneToInsertAfter.index)) {
+			return false;
+		}
+		return result;
 	};
 	self.getScenes = function () {
 		return scenesForActiveStoryboard;
