@@ -48,6 +48,9 @@ describe('storyboardMenuWidget', function () {
 		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene', 'removeScenesForIdeaId']));
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		underTest = jQuery(template).appendTo('body').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
+		mapModel.applyToActivated = function (callback) {
+			callback(23);
+		};
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -71,7 +74,6 @@ describe('storyboardMenuWidget', function () {
 			expect(underTest.css('display')).not.toBe('none');
 		});
 		it('should add scene when add-scene link is clicked', function () {
-			mapModel.getSelectedNodeId.and.returnValue(23);
 			underTest.find('[data-mm-role=storyboard-add-scene]').click();
 			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
 		});
@@ -101,6 +103,9 @@ describe('storyboardKeyHandlerWidget', function () {
 		mapModel = jasmine.createSpyObj('mapModel', ['getSelectedNodeId', 'getInputEnabled']);
 		mapModel.getInputEnabled.and.returnValue(true);
 		underTest = jQuery('<div>').appendTo('body').storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
+		mapModel.applyToActivated = function (callback) {
+			callback(23);
+		};
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -116,7 +121,6 @@ describe('storyboardKeyHandlerWidget', function () {
 			storyboardModel.dispatchEvent('inputEnabled', true);
 		});
 		it('acts on add scene key handler', function () {
-			mapModel.getSelectedNodeId.and.returnValue(23);
 			underTest.trigger(jQuery.Event('keypress', { charCode: 43 }));
 			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
 		});

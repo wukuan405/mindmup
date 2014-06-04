@@ -247,7 +247,7 @@ jQuery.fn.storyboardKeyHandlerWidget = function (storyboardController, storyboar
 		var unicode = evt.charCode || evt.keyCode,
 			actualkey = String.fromCharCode(unicode);
 		if (actualkey === addSceneHotkey && mapModel.getInputEnabled()) {
-			storyboardController.addScene(mapModel.getSelectedNodeId());
+			mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId); });
 		}
 	};
 	storyboardModel.addEventListener('inputEnabled', function (isEnabled) {
@@ -270,9 +270,8 @@ jQuery.fn.storyboardMenuWidget = function (storyboardController, storyboardModel
 				elements.hide();
 			}
 		};
-
 	elements.find('[data-mm-role=storyboard-add-scene]').click(function () {
-		storyboardController.addScene(mapModel.getSelectedNodeId());
+		mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId); });
 	});
 	elements.find('[data-mm-role=storyboard-remove-scenes-for-idea-id]').click(function () {
 		storyboardController.removeScenesForIdeaId(mapModel.getSelectedNodeId());
