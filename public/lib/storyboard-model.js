@@ -45,6 +45,49 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 				}
 			});
 			return maxIndex;
+		},
+		onActiveContentChanged = function () {
+			var oldScenes = scenesForActiveStoryboard,
+				getSceneDelta = function (oldScenes, newScenes) {
+					var result = {removed: [], added: [], contentUpdated: []};
+					_.each(oldScenes, function (oldScene) {
+						var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title', 'image'));
+						if (!newScene) {
+							result.removed.push(oldScene);
+						}
+						else if (newScene.title !== oldScene.title || ! _.isEqual(newScene.image, oldScene.image)) {
+							result.contentUpdated.push(newScene);
+						}
+					});
+					_.each(newScenes, function (newScene) {
+						var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title', 'image'));
+						if (!oldScene) {
+							result.added.push(newScene);
+						}
+
+					});
+					if (result.added.length === 1 && result.removed.length === 1 && result.contentUpdated.length === 0 &&
+							_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index'))) {
+						return { moved: {from: result.removed[0], to: result.added[0]} };
+					}
+					return result;
+				},
+				delta;
+			rebuildScenesForActiveStoryboard();
+			delta = getSceneDelta(oldScenes, scenesForActiveStoryboard);
+
+			_.each(delta.removed, function (scene) {
+				self.dispatchEvent('storyboardSceneRemoved', scene);
+			});
+			_.each(delta.added, function (scene) {
+				self.dispatchEvent('storyboardSceneAdded', scene);
+			});
+			_.each(delta.contentUpdated, function (scene) {
+				self.dispatchEvent('storyboardSceneContentUpdated', scene);
+			});
+			if (delta.moved) {
+				self.dispatchEvent('storyboardSceneMoved', delta.moved);
+			}
 		};
 	self.setInputEnabled = function (isEnabled) {
 		isInputEnabled = isEnabled;
@@ -128,6 +171,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 				scenesOfInterestAfter;
 		activeContent.startBatch();
 		scenesOfInterestAfter = self.rebalance(scenesOfInterest);
+		onActiveContentChanged();
 		applyFunc(scenesOfInterestAfter);
 		activeContent.endBatch();
 	};
@@ -168,50 +212,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	self.getScenes = function () {
 		return scenesForActiveStoryboard;
 	};
-	activeContentListener.addListener(function () {
-
-		var oldScenes = scenesForActiveStoryboard,
-			getSceneDelta = function (oldScenes, newScenes) {
-				var result = {removed: [], added: [], contentUpdated: []};
-				_.each(oldScenes, function (oldScene) {
-					var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title', 'image'));
-					if (!newScene) {
-						result.removed.push(oldScene);
-					}
-					else if (newScene.title !== oldScene.title || ! _.isEqual(newScene.image, oldScene.image)) {
-						result.contentUpdated.push(newScene);
-					}
-				});
-				_.each(newScenes, function (newScene) {
-					var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title', 'image'));
-					if (!oldScene) {
-						result.added.push(newScene);
-					}
-
-				});
-				if (result.added.length === 1 && result.removed.length === 1 && result.contentUpdated.length === 0 &&
-						_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index'))) {
-					return { moved: {from: result.removed[0], to: result.added[0]} };
-				}
-				return result;
-			},
-			delta;
-		rebuildScenesForActiveStoryboard();
-		delta = getSceneDelta(oldScenes, scenesForActiveStoryboard);
-
-		_.each(delta.removed, function (scene) {
-			self.dispatchEvent('storyboardSceneRemoved', scene);
-		});
-		_.each(delta.added, function (scene) {
-			self.dispatchEvent('storyboardSceneAdded', scene);
-		});
-		_.each(delta.contentUpdated, function (scene) {
-			self.dispatchEvent('storyboardSceneContentUpdated', scene);
-		});
-		if (delta.moved) {
-			self.dispatchEvent('storyboardSceneMoved', delta.moved);
-		}
-	});
+	activeContentListener.addListener(onActiveContentChanged);
 };
 
 
