@@ -22,7 +22,8 @@ MM.StoryboardDimensionProvider = function () {
 			return result;
 		},
 		hasBullets = function (text) {
-			return /\n-/.test(text);
+			var result = /\n-/.test(text);
+			return result;
 		};
 	self.getDimensionsForScene = function (scene, width, height) {
 		var padding = width / 16,
