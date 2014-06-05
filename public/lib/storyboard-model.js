@@ -87,6 +87,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			}
 		});
 		self.setScenesForNodeId(sceneToMove.ideaId, scenesForIdea);
+		return _.extend({}, sceneToMove, {index: newIndex});
 	};
 	self.getScenesForNodeId = function (nodeId) {
 		var scenes = activeContentListener.getActiveContent().getAttrById(nodeId, sceneAttrName) || [];
@@ -94,6 +95,41 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 	};
 	self.setScenesForNodeId = function (nodeId, scenes) {
 		activeContentListener.getActiveContent().updateAttr(nodeId, sceneAttrName, scenes);
+	};
+	self.scenesMatch = function (scene1, scene2) {
+		if (!scene1 || !scene2) {
+			return false;
+		}
+		if (scene1.ideaId !== scene2.ideaId) {
+			return false;
+		}
+		if (scene1.index !== scene2.index) {
+			return false;
+		}
+		return true;
+	};
+	self.rebalance = function (scenesOfInterest) {
+		var scenesToReturn = [],
+				nextIndex = 1,
+				storyboard = self.getActiveStoryboardName();
+		_.each(scenesForActiveStoryboard, function (scene) {
+			var sceneOfInterest = _.find(scenesOfInterest, function (sceneOfInterest) { return self.scenesMatch(scene, sceneOfInterest); }),
+					indexOfInterest = sceneOfInterest !== undefined ? _.indexOf(scenesOfInterest, sceneOfInterest) : -1,
+					reIndexedScene = self.updateSceneIndex(scene, nextIndex, storyboard);
+			nextIndex++;
+			if (indexOfInterest >= 0) {
+				scenesToReturn[indexOfInterest] = reIndexedScene;
+			}
+		});
+		return scenesToReturn;
+	};
+	self.rebalanceAndApply = function (scenesOfInterest, applyFunc) {
+		var activeContent = activeContentListener.getActiveContent(),
+				scenesOfInterestAfter;
+		activeContent.startBatch();
+		scenesOfInterestAfter = self.rebalance(scenesOfInterest);
+		applyFunc(scenesOfInterestAfter);
+		activeContent.endBatch();
 	};
 	self.insertionIndexAfter = function (sceneToInsertAfter) {
 		var sceneToInsertAfterPosition,

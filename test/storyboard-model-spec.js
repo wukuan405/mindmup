@@ -1,4 +1,4 @@
-/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable*/
+/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable, spyOn*/
 describe('Storyboards', function () {
 	'use strict';
 	var activeContent, mapController, activeContentListener;
@@ -59,15 +59,62 @@ describe('Storyboards', function () {
 			});
 		});
 		describe('rebalance', function () {
-			it('reinitialises indexes for a storyboard based on array positions', function () {
-
+			it('reinitialises indexes for the active storyboard based on array positions', function () {
+				underTest.rebalance();
+				expect(underTest.getScenes()).toEqual([
+					{ideaId: 12, title: 'already in ted storyboard', index: 1},
+					{ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 100, height: 200, position: 'left'}},
+					{ideaId: 14, title: 'is in two scenes', index: 3},
+					{ideaId: 14, title: 'is in two scenes', index: 4}
+				]);
 			});
 			it('returns scenes with new indexes for any supplied arguments', function () {
-
+				var result = underTest.rebalance([
+					{ideaId: 12, title: 'already in ted storyboard', index: 1},
+					{ideaId: 12, title: 'some unknown scene', index: 55},
+					undefined,
+					{ideaId: 14, title: 'is in two scenes', index: 10}
+				]);
+				expect(result).toEqual([
+					{ideaId: 12, title: 'already in ted storyboard', index: 1},
+					undefined,
+					undefined,
+					{ideaId: 14, title: 'is in two scenes', index: 4}
+				]);
 			});
 		});
 		describe('rebalanceAndApply', function () {
-
+			var applySpy,
+					interestingScenes;
+			beforeEach(function () {
+				applySpy = jasmine.createSpy('applied');
+				interestingScenes = [
+					{ideaId: 12, title: 'already in ted storyboard', index: 1},
+					{ideaId: 14, title: 'is in two scenes', index: 10}
+				];
+			});
+			it('starts a batch in active content', function () {
+				spyOn(activeContent, 'startBatch').and.callThrough();
+				underTest.rebalanceAndApply(interestingScenes, applySpy);
+				expect(activeContent.startBatch).toHaveBeenCalled();
+			});
+			it('rebalances the active storyboard', function () {
+				spyOn(underTest, 'rebalance').and.callThrough();
+				underTest.rebalanceAndApply(interestingScenes, applySpy);
+				expect(underTest.rebalance).toHaveBeenCalledWith(interestingScenes);
+			});
+			it('applies the supplied function', function () {
+				underTest.rebalanceAndApply(interestingScenes, applySpy);
+				expect(applySpy).toHaveBeenCalledWith([
+					{ideaId: 12, title: 'already in ted storyboard', index: 1},
+					{ideaId: 14, title: 'is in two scenes', index: 4}
+				]);
+			});
+			it('completes the batch', function () {
+				spyOn(activeContent, 'endBatch').and.callThrough();
+				underTest.rebalanceAndApply(interestingScenes, applySpy);
+				expect(activeContent.endBatch).toHaveBeenCalled();
+			});
 		});
 		describe('createStoryboard', function () {
 			it('should add the new storyboard name to the list of storyboards', function () {
