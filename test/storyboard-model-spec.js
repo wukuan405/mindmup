@@ -1,4 +1,104 @@
 /*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable, spyOn*/
+describe('MM.Storyboard.scene', function () {
+	'use strict';
+	it('should return mixin of same object', function () {
+		var base = {ideaId: 12, title: 'a', index: 1};
+		expect(MM.Storyboard.scene(base)).toBe(base);
+	});
+	it('should return undefined if applied ot undefined', function () {
+		expect(MM.Storyboard.scene(undefined)).toBeUndefined();
+	});
+	describe('matchesScene', function () {
+		var underTest;
+		beforeEach(function () {
+			underTest = MM.Storyboard.scene({ideaId: 12, title: 'a', index: 1});
+		});
+		it('should match same scene', function () {
+			expect(underTest.matchesScene({ideaId: 12, title: 'a', index: 1})).toBeTruthy();
+		});
+		it('should match same scene if ideaId is a string', function () {
+			expect(underTest.matchesScene({ideaId: '12', title: 'a', index: 1})).toBeTruthy();
+		});
+		it('should match same scene ignoring title has changed', function () {
+			expect(underTest.matchesScene({ideaId: 12, title: 'b', index: 1})).toBeTruthy();
+		});
+		it('should not match scene with different index', function () {
+			expect(underTest.matchesScene({ideaId: 12, title: 'a', index: 1.1})).toBeFalsy();
+		});
+		it('should not match scene with different ideaId', function () {
+			expect(underTest.matchesScene({ideaId: 13, title: 'a', index: 1})).toBeFalsy();
+		});
+		it('should not match undefined with different ideaId', function () {
+			expect(underTest.matchesScene({ideaId: 13, title: 'a', index: 1})).toBeFalsy();
+		});
+	});
+	describe('clone', function () {
+		it('should return a clone of the scene', function () {
+			var base = {ideaId: 12, title: 'a', index: 1},
+					scene = MM.Storyboard.scene(base),
+					clone = scene.clone();
+			base.ideaId = 13;
+			base.title = 'b';
+			base.index = 2;
+
+			expect(scene.ideaId).toBe(13);
+			expect(clone.ideaId).toBe(12);
+			expect(scene.title).toBe('b');
+			expect(clone.title).toBe('a');
+			expect(scene.index).toBe(2);
+			expect(clone.index).toBe(1);
+			expect(clone.clone).not.toBeUndefined();
+			expect(clone.matchesScene).not.toBeUndefined();
+		});
+	});
+});
+describe('MM.Storyboard.sceneList', function () {
+	'use strict';
+	var underTest;
+	beforeEach(function () {
+		underTest = MM.Storyboard.sceneList([
+			{ideaId: 12, title: 'a', index: 1},
+			{ideaId: 12, title: 'a', index: 2},
+			undefined,
+			{ideaId: 13, title: 'a', index: 3},
+			{ideaId: 13, title: 'a', index: 3}
+		]);
+	});
+	describe('findScene', function () {
+		it('should find a scene matching by ideaId and index', function () {
+			var toFind = {ideaId: 12, title: 'b', index: 2},
+					found = underTest.findScene(toFind);
+			expect(found).toBe(underTest[1]);
+			expect(found).not.toBe(toFind);
+		});
+		it('should return undefined if no scene is found', function () {
+			expect(underTest.findScene({ideaId: 12, title: 'a', index: 3})).toBeUndefined();
+		});
+		it('should return undefined if passed an undefined', function () {
+			expect(underTest.findScene(undefined)).toBeUndefined();
+		});
+		it('should return the first matching scene found', function () {
+			var toFind = {ideaId: 13, title: 'a', index: 3},
+					found = underTest.findScene(toFind);
+			expect(found).toBe(underTest[3]);
+			expect(found).not.toBe(underTest[4]);
+		});
+	});
+	describe('indexOfScene', function () {
+		it('should return index of matching scene', function () {
+			expect(underTest.indexOfScene({ideaId: 12, title: 'b', index: 2})).toBe(1);
+		});
+		it('should return -1 if no scene is found', function () {
+			expect(underTest.indexOfScene({ideaId: 12, title: 'a', index: 3})).toBe(-1);
+		});
+		it('should return -1 if passed an undefined', function () {
+			expect(underTest.indexOfScene(undefined)).toBe(-1);
+		});
+		it('should return the index of first matching scene found', function () {
+			expect(underTest.indexOfScene({ideaId: 13, title: 'a', index: 3})).toBe(3);
+		});
+	});
+});
 describe('Storyboards', function () {
 	'use strict';
 	var activeContent, mapController, activeContentListener;

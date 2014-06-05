@@ -1,4 +1,52 @@
 /*global MM, observable, _ */
+MM.Storyboard = {};
+
+MM.Storyboard.scene = function (sceneMap) {
+	'use strict';
+	if (!sceneMap) {
+		return undefined;
+	}
+	sceneMap.matchesScene = function (anotherScene) {
+		if (!sceneMap || !anotherScene) {
+			return false;
+		}
+		/*jslint eqeq:true */
+		if (sceneMap.ideaId != anotherScene.ideaId) {
+			return false;
+		}
+		if (sceneMap.index !== anotherScene.index) {
+			return false;
+		}
+		return true;
+	};
+	sceneMap.clone = function () {
+		return MM.Storyboard.scene(_.extend({}, sceneMap));
+	};
+	return sceneMap;
+};
+
+MM.Storyboard.sceneList = function (listOfScenes) {
+	'use strict';
+	listOfScenes.findScene = function (sceneToFind) {
+		if (!sceneToFind) {
+			return undefined;
+		}
+		MM.Storyboard.scene(sceneToFind);
+		return _.find(listOfScenes, function (sceneInList) { return sceneToFind.matchesScene(sceneInList); });
+	};
+	listOfScenes.indexOfScene = function (sceneToIndex) {
+		if (!sceneToIndex) {
+			return -1;
+		}
+		var found = listOfScenes.findScene(sceneToIndex);
+		if (found) {
+			return _.indexOf(listOfScenes, found);
+		}
+		return -1;
+	};
+	return listOfScenes;
+};
+
 MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneAttrName) {
 	'use strict';
 	var self = observable(this),
@@ -8,7 +56,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			var storyboardName = self.getActiveStoryboardName(),
 				result = [];
 			if (!storyboardName) {
-				scenesForActiveStoryboard = result;
+				scenesForActiveStoryboard = MM.Storyboard.sceneList(result);
 				return;
 			}
 			activeContentListener.getActiveContent().traverse(function (idea) {
@@ -27,7 +75,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 					});
 				}
 			});
-			scenesForActiveStoryboard = _.sortBy(result, 'index');
+			scenesForActiveStoryboard = MM.Storyboard.sceneList(_.sortBy(result, 'index'));
 		},
 		indexMatches = function (idx1, idx2) {
 			return Math.abs(idx1 - idx2) < 0.0001;
