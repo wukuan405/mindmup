@@ -19,7 +19,7 @@ describe('Storyboards', function () {
 	describe('StoryboardController', function () {
 		var underTest, storyboardModel;
 		beforeEach(function () {
-			storyboardModel = new jasmine.createSpyObj('storyboardModel', ['getActiveStoryboardName', 'getScenes', 'createStoryboard', 'getScenesForNodeId', 'insertionIndexAfter', 'setScenesForNodeId', 'nextSceneIndex']);
+			storyboardModel = new jasmine.createSpyObj('storyboardModel', ['getActiveStoryboardName', 'updateSceneIndex', 'rebalanceAndApply', 'getScenes', 'createStoryboard', 'getScenesForNodeId', 'insertionIndexAfter', 'setScenesForNodeId', 'nextSceneIndex']);
 			underTest = new MM.StoryboardController(storyboardModel);
 		});
 		describe('when active content is not loaded', function () {
@@ -143,13 +143,13 @@ describe('Storyboards', function () {
 					storyboardModel.insertionIndexAfter.and.returnValue(0.5);
 					storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
 					expect(underTest.moveSceneAfter(middleScene)).toBeTruthy();
-					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(13, [{storyboards: {'ted talk': 0.5}}]);
+					expect(storyboardModel.updateSceneIndex).toHaveBeenCalledWith(middleScene, 0.5, 'ted talk');
 				});
 				it('should move the scene after the specified scene ', function () {
 					storyboardModel.insertionIndexAfter.and.returnValue(4);
 					storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
 					expect(underTest.moveSceneAfter(middleScene, lastScene)).toBeTruthy();
-					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(13, [{storyboards: {'ted talk': 4}}]);
+					expect(storyboardModel.updateSceneIndex).toHaveBeenCalledWith(middleScene, 4, 'ted talk');
 				});
 				describe('should do nothing and return false when scenes effectively stay in the same position because', function () {
 					it('there is no active storyboard', function () {
@@ -182,6 +182,28 @@ describe('Storyboards', function () {
 						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
 						expect(underTest.moveSceneAfter({ideaId: 13, title: 'the middle scene', index: 2.5}, firstScene)).toBeFalsy();
 						expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+					});
+				});
+				describe('when insertion index cannot be calculated', function () {
+					beforeEach(function () {
+						storyboardModel.insertionIndexAfter.and.returnValue(false);
+						storyboardModel.getScenesForNodeId.and.returnValue([{storyboards: {'ted talk': 2}}]);
+						underTest.moveSceneAfter(middleScene, lastScene);
+					});
+					it('does not update the index directly, rebalances instead', function () {
+						expect(storyboardModel.rebalanceAndApply).toHaveBeenCalledWith([middleScene, lastScene], jasmine.any(Function));
+						expect(storyboardModel.updateSceneIndex).not.toHaveBeenCalled();
+					});
+
+					it('invokes a callback after rebalancing to update the scene index', function () {
+						var newMiddleScene = {ideaId: 13, title: 'the middle scene', index: 11},
+							newLastScene = {ideaId: 14, title: 'last', index: 33};
+						storyboardModel.insertionIndexAfter.calls.reset();
+						storyboardModel.insertionIndexAfter.and.returnValue(2.5);
+						storyboardModel.rebalanceAndApply.calls.mostRecent().args[1]([newMiddleScene, newLastScene]);
+
+						expect(storyboardModel.insertionIndexAfter).toHaveBeenCalledWith(newLastScene);
+						expect(storyboardModel.updateSceneIndex).toHaveBeenCalledWith(newMiddleScene, 2.5, 'ted talk');
 					});
 				});
 			});

@@ -58,6 +58,17 @@ describe('Storyboards', function () {
 				expect(underTest.getInputEnabled()).toBe(true);
 			});
 		});
+		describe('rebalance', function () {
+			it('reinitialises indexes for a storyboard based on array positions', function () {
+
+			});
+			it('returns scenes with new indexes for any supplied arguments', function () {
+
+			});
+		});
+		describe('rebalanceAndApply', function () {
+
+		});
 		describe('createStoryboard', function () {
 			it('should add the new storyboard name to the list of storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);

@@ -79,6 +79,15 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		}
 		return lastScene.index + 1;
 	};
+	self.updateSceneIndex = function (sceneToMove, newIndex, storyboardName) {
+		var scenesForIdea = self.getScenesForNodeId(sceneToMove.ideaId);
+		_.each(scenesForIdea, function (scene) {
+			if (scene.storyboards && scene.storyboards[storyboardName] && scene.storyboards[storyboardName] === sceneToMove.index) {
+				scene.storyboards[storyboardName] = newIndex;
+			}
+		});
+		self.setScenesForNodeId(sceneToMove.ideaId, scenesForIdea);
+	};
 	self.getScenesForNodeId = function (nodeId) {
 		var scenes = activeContentListener.getActiveContent().getAttrById(nodeId, sceneAttrName) || [];
 		return JSON.parse(JSON.stringify(scenes));
