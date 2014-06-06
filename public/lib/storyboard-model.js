@@ -27,6 +27,9 @@ MM.Storyboard.scene = function (sceneMap) {
 
 MM.Storyboard.sceneList = function (listOfScenes) {
 	'use strict';
+	if (!listOfScenes) {
+		return undefined;
+	}
 	listOfScenes.findScene = function (sceneToFind) {
 		if (!sceneToFind) {
 			return undefined;
@@ -44,6 +47,14 @@ MM.Storyboard.sceneList = function (listOfScenes) {
 		}
 		return -1;
 	};
+	listOfScenes.nextSceneIndex = function () {
+		var maxScene = _.max(listOfScenes, function (scene) { return scene && scene.index; });
+		if (!maxScene || !maxScene.index) {
+			return 1;
+		}
+		return maxScene.index + 1;
+	};
+
 	return listOfScenes;
 };
 
@@ -98,8 +109,9 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			var oldScenes = scenesForActiveStoryboard,
 				getSceneDelta = function (oldScenes, newScenes) {
 					var result = {removed: [], added: [], contentUpdated: []};
+					MM.Storyboard.sceneList(newScenes);
 					_.each(oldScenes, function (oldScene) {
-						var newScene  = _.findWhere(newScenes, _.omit(oldScene, 'title', 'image'));
+						var newScene = newScenes && newScenes.findScene(oldScene);
 						if (!newScene) {
 							result.removed.push(oldScene);
 						}
@@ -115,7 +127,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 
 					});
 					if (result.added.length === 1 && result.removed.length === 1 && result.contentUpdated.length === 0 &&
-							_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index'))) {
+							_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index', 'matchesScene', 'clone'))) {
 						return { moved: {from: result.removed[0], to: result.added[0]} };
 					}
 					return result;
@@ -164,11 +176,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		return name;
 	};
 	self.nextSceneIndex = function () {
-		var lastScene = _.last(scenesForActiveStoryboard);
-		if (!lastScene) {
-			return 1;
-		}
-		return lastScene.index + 1;
+		return scenesForActiveStoryboard && scenesForActiveStoryboard.nextSceneIndex();
 	};
 	self.updateSceneIndex = function (sceneToMove, newIndex, storyboardName) {
 		var scenesForIdea = self.getScenesForNodeId(sceneToMove.ideaId);

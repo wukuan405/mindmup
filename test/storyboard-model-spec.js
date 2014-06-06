@@ -1,4 +1,4 @@
-/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable, spyOn*/
+/*global describe, it, MM, expect, beforeEach, jasmine, MAPJS, observable, spyOn, _*/
 describe('MM.Storyboard.scene', function () {
 	'use strict';
 	it('should return mixin of same object', function () {
@@ -98,6 +98,15 @@ describe('MM.Storyboard.sceneList', function () {
 			expect(underTest.indexOfScene({ideaId: 13, title: 'a', index: 3})).toBe(3);
 		});
 	});
+	describe('nextSceneIndex', function () {
+		it('returns 1 for empty list', function () {
+			expect(MM.Storyboard.sceneList([]).nextSceneIndex()).toBe(1);
+		});
+		it('returns max index + 1 for non empty storyboards', function () {
+			expect(underTest.nextSceneIndex()).toBe(4);
+		});
+	});
+
 });
 describe('Storyboards', function () {
 	'use strict';
@@ -121,7 +130,23 @@ describe('Storyboards', function () {
 	});
 
 	describe('StoryboardModel', function () {
-		var underTest;
+		var underTest,
+				sceneMatcher = function (scene) {
+					scene.clone = jasmine.any(Function);
+					scene.matchesScene = jasmine.any(Function);
+					return scene;
+				},
+				toRawScene = function (scene) {
+					if (!scene) {
+						return undefined;
+					}
+					return _.extend({}, _.omit(scene, ['matchesScene', 'clone']));
+				},
+				toRawList = function (sceneList) {
+					return _.map(sceneList, function (scene) {
+						return toRawScene(scene);
+					});
+				};
 		beforeEach(function () {
 			underTest = new MM.StoryboardModel(activeContentListener, 'test-storyboards', 'test-scenes');
 			mapController.dispatchEvent('mapLoaded', 'loadedMapid', activeContent);
@@ -175,7 +200,7 @@ describe('Storyboards', function () {
 					undefined,
 					{ideaId: 14, title: 'is in two scenes', index: 10}
 				]);
-				expect(result).toEqual([
+				expect(toRawList(result)).toEqual([
 					{ideaId: 12, title: 'already in ted storyboard', index: 1},
 					undefined,
 					undefined,
@@ -340,8 +365,8 @@ describe('Storyboards', function () {
 			it('should dispatch a storyboardSceneRemoved events when scenes are removed', function () {
 				activeContent.updateAttr(14, 'test-scenes', undefined);
 
-				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
-				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 10});
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 9}));
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 10}));
 
 				expect(storyboardSceneRemovedListener.calls.count()).toBe(2);
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
@@ -351,8 +376,8 @@ describe('Storyboards', function () {
 			it('should dispatch a storyboardSceneRemoved events when ideas are removed', function () {
 				activeContent.removeSubIdea(14);
 
-				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 9});
-				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith({ideaId: 14, title: 'is in two scenes', index: 10});
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 9}));
+				expect(storyboardSceneRemovedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 10}));
 
 				expect(storyboardSceneRemovedListener.calls.count()).toBe(2);
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
@@ -384,7 +409,7 @@ describe('Storyboards', function () {
 				activeContent.updateAttr(14, 'test-scenes', [{storyboards: {'ted talk': 7}}, {storyboards: {'ted talk': 10}}]);
 
 				expect(storyboardSceneMovedListener).toHaveBeenCalledWith({
-					from: {ideaId: 14, title: 'is in two scenes', index: 9},
+					from: sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 9}),
 					to: {ideaId: 14, title: 'is in two scenes', index: 7}
 				});
 
