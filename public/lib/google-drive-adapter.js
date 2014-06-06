@@ -30,7 +30,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					'immediate': !showDialog
 				},
 				function (authResult) {
-					if (authResult) {
+					if (authResult && !authResult.error) {
 						deferred.resolve();
 					} else {
 						deferred.reject('not-authenticated');
@@ -80,6 +80,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 								deferred.reject('no-access-allowed');
 							}
 						} else if (resp.error.code === 401) {
+
 							checkAuth(false).then(
 								function () {
 									saveFile(contentToSave, mapId, fileName).then(deferred.resolve, deferred.reject, deferred.notify);
