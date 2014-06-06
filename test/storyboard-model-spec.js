@@ -186,7 +186,7 @@ describe('Storyboards', function () {
 		describe('rebalance', function () {
 			it('reinitialises indexes for the active storyboard based on array positions', function () {
 				underTest.rebalance();
-				expect(underTest.getScenes()).toEqual([
+				expect(toRawList(underTest.getScenes())).toEqual([
 					{ideaId: 12, title: 'already in ted storyboard', index: 1},
 					{ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 100, height: 200, position: 'left'}},
 					{ideaId: 14, title: 'is in two scenes', index: 3},
@@ -355,8 +355,8 @@ describe('Storyboards', function () {
 			it('should dispatch a storyboardSceneAdded events when scenes are added', function () {
 				activeContent.updateAttr(11, 'test-scenes', [{storyboards: {'ted talk': 5.5}}, {storyboards: {'ted talk': 6.5}}]);
 
-				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 11, title: 'not in any storyboards', index: 5.5});
-				expect(storyboardSceneAddedListener).toHaveBeenCalledWith({ideaId: 11, title: 'not in any storyboards', index: 6.5});
+				expect(storyboardSceneAddedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 11, title: 'not in any storyboards', index: 5.5}));
+				expect(storyboardSceneAddedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 11, title: 'not in any storyboards', index: 6.5}));
 
 				expect(storyboardSceneAddedListener.calls.count()).toBe(2);
 				expect(storyboardSceneRemovedListener).not.toHaveBeenCalled();
@@ -387,8 +387,8 @@ describe('Storyboards', function () {
 			it('should dispatch a storyboardSceneContentUpdated events when scenes titles are changed', function () {
 				activeContent.updateTitle(14, 'booyah');
 
-				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith({ideaId: 14, title: 'booyah', index: 9});
-				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith({ideaId: 14, title: 'booyah', index: 10});
+				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'booyah', index: 9}));
+				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith(sceneMatcher({ideaId: 14, title: 'booyah', index: 10}));
 
 				expect(storyboardSceneContentUpdatedListener.calls.count()).toBe(2);
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();
@@ -398,7 +398,7 @@ describe('Storyboards', function () {
 				activeContent.mergeAttrProperty(13, 'icon', 'width', 200);
 
 				expect(storyboardSceneContentUpdatedListener).toHaveBeenCalledWith(
-					{ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 200, height: 200, position: 'left'}}
+					sceneMatcher({ideaId: 13, title: 'scene with icon', index: 2, image: {url: 'http://fakeurl', width: 200, height: 200, position: 'left'}})
 				);
 
 				expect(storyboardSceneContentUpdatedListener.calls.count()).toBe(1);
@@ -410,7 +410,7 @@ describe('Storyboards', function () {
 
 				expect(storyboardSceneMovedListener).toHaveBeenCalledWith({
 					from: sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 9}),
-					to: {ideaId: 14, title: 'is in two scenes', index: 7}
+					to: sceneMatcher({ideaId: 14, title: 'is in two scenes', index: 7})
 				});
 
 				expect(storyboardSceneAddedListener).not.toHaveBeenCalled();

@@ -109,6 +109,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 			var oldScenes = scenesForActiveStoryboard,
 				getSceneDelta = function (oldScenes, newScenes) {
 					var result = {removed: [], added: [], contentUpdated: []};
+					MM.Storyboard.sceneList(oldScenes);
 					MM.Storyboard.sceneList(newScenes);
 					_.each(oldScenes, function (oldScene) {
 						var newScene = newScenes && newScenes.findScene(oldScene);
@@ -120,14 +121,14 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 						}
 					});
 					_.each(newScenes, function (newScene) {
-						var oldScene  = _.findWhere(oldScenes, _.omit(newScene, 'title', 'image'));
+						var oldScene  = oldScenes && oldScenes.findScene(newScene);
 						if (!oldScene) {
 							result.added.push(newScene);
 						}
 
 					});
 					if (result.added.length === 1 && result.removed.length === 1 && result.contentUpdated.length === 0 &&
-							_.isEqual(_.omit(result.added[0], 'index'), _.omit(result.removed[0], 'index', 'matchesScene', 'clone'))) {
+							result.added[0].ideaId === result.removed[0].ideaId) {
 						return { moved: {from: result.removed[0], to: result.added[0]} };
 					}
 					return result;
