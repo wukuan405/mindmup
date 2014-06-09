@@ -18,6 +18,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			template = element.find('[data-mm-role=scene-template]'),
+		    noScenes = element.find('[data-mm-role=no-scenes]').detach(),
 			templateParent = template.parent(),
 			removeSelectedScenes = function () {
 				_.each(templateParent.find('.activated-scene'), function (domScene) {
@@ -85,8 +86,13 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				return {left: _.first(potentialLeft), right: _.first(potentialRight)};
 			},
 			rebuildStoryboard = function () {
+				var scenes = storyboardModel.getScenes();
 				templateParent.empty();
-				_.each(storyboardModel.getScenes(), function (scene) { addScene(scene, true); });
+				if (scenes && scenes.length) {
+					_.each(scenes, function (scene) { addScene(scene, true); });
+				} else {
+					noScenes.appendTo(templateParent).show();
+				}
 			},
 			lastSceneBefore = function (sceneIndex) {
 				var scenesBefore =  _.reject(templateParent.children(), function (sceneDOM) {
@@ -172,6 +178,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 						}
 					}),
 					target = !appendToEnd && lastSceneBefore(scene.index);
+				noScenes.detach();
 				newScene.hide();
 				if (target) {
 					newScene.insertAfter(target);
@@ -240,13 +247,13 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				storyboardModel.removeEventListener('storyboardSceneContentUpdated', updateScene);
 
 			};
+		template.detach();
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
 		element.find('[data-mm-role=storyboard-move-scene-left]').click(moveFocusSceneLeft);
 		element.find('[data-mm-role=storyboard-move-scene-right]').click(moveFocusSceneRight);
 		/*jshint newcap:false*/
 		Hammer(element);
 		element.find('.storyboard-container').simpleDraggableContainer();
-		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
 	});
 };

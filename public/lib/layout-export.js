@@ -20,7 +20,11 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
-			layout = _.extend({}, exportFunctions[format](), exportProperties);
+			exported = exportFunctions[format](),
+			layout = _.extend({}, exported, exportProperties);
+		if (_.isEmpty(exported)) {
+			return deferred.reject('empty').promise();
+		}
 		activityLog.log(category, eventType + ' started');
 		configurationGenerator.generateExportConfiguration(format).then(
 			function (exportConfig) {

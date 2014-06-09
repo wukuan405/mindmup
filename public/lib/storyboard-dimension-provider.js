@@ -125,6 +125,9 @@ MM.buildStoryboardExporter = function (storyboardModel) {
 	return function () {
 		var scenes = storyboardModel.getScenes(),
 			dimensionProvider = new MM.StoryboardDimensionProvider();
+		if (_.isEmpty(scenes)) {
+			return {};
+		}
 		return {storyboard:
 			_.map(scenes, function (scene) {
 				return _.extend({title: scene.title}, dimensionProvider.getDimensionsForScene(scene, 800, 600));
