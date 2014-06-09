@@ -164,8 +164,6 @@
 }
 #container {
 	background-color: #FFFFFF;
-	height: 100%;
-	width: 100%;
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	-ms-user-select: none;

@@ -167,7 +167,6 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
-				jQuery('#splittable').splittableWidget(splittableController, jQuery('#topbar').outerHeight());
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
 				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, new MM.StoryboardDimensionProvider());
 				jQuery('[data-mm-role=storyboard-menu]').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
