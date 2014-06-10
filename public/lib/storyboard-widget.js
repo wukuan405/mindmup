@@ -291,7 +291,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					actualLeft.addClass('potential-drop-left');
 				}
 			}
-		}).on('mm:cancel-dragging', function (e) {
+		}).on('mm:stop-dragging', function (e) {
 			var target = jQuery(e.target);
 			if (target.attr('data-mapjs-role') === 'node') {
 				if (insideWidget(e)) {
@@ -300,7 +300,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				}
 				templateParent.children().removeClass('potential-drop-left potential-drop-right');
 			}
-
+		}).on('mm:cancel-dragging', function (e) {
+			var target = jQuery(e.target);
+			if (target.attr('data-mapjs-role') === 'node') {
+				templateParent.children().removeClass('potential-drop-left potential-drop-right');
+			}
 		});
 
 	});
