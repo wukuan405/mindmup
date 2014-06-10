@@ -71,7 +71,7 @@ MM.main = function (config) {
 			layoutExportController = new MM.LayoutExportController({
 				'png': mapModel.getCurrentLayout,
 				'pdf': mapModel.getCurrentLayout,
-				'presentation/pdf':  MM.buildStoryboardExporter(storyboardModel)
+				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel)
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
