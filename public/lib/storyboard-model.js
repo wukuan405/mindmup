@@ -266,6 +266,27 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		}
 		return result;
 	};
+	self.insertionIndexBefore = function (sceneToInsertBefore) {
+		var sceneToInsertBeforePosition,
+			previousIndex = 0,
+			result;
+		if (!sceneToInsertBefore) {
+			return false;
+		}
+		sceneToInsertBeforePosition = scenesForActiveStoryboard.indexOfScene(sceneToInsertBefore);
+		if (sceneToInsertBeforePosition < 0) {
+			return false;
+		}
+		if (sceneToInsertBeforePosition !== 0) {
+			previousIndex = scenesForActiveStoryboard[sceneToInsertBeforePosition - 1].index;
+		}
+		result = (sceneToInsertBefore.index + previousIndex) / 2;
+		if (indexMatches(result, previousIndex) || indexMatches(result, sceneToInsertBefore.index)) {
+			return false;
+		}
+		return result;
+
+	};
 	self.getScenes = function () {
 		return scenesForActiveStoryboard;
 	};

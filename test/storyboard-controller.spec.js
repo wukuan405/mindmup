@@ -19,7 +19,7 @@ describe('Storyboards', function () {
 	describe('StoryboardController', function () {
 		var underTest, storyboardModel;
 		beforeEach(function () {
-			storyboardModel = new jasmine.createSpyObj('storyboardModel', ['getActiveStoryboardName', 'updateSceneIndex', 'rebalanceAndApply', 'getScenes', 'createStoryboard', 'getScenesForNodeId', 'insertionIndexAfter', 'setScenesForNodeId', 'nextSceneIndex']);
+			storyboardModel = new jasmine.createSpyObj('storyboardModel', ['insertionIndexBefore', 'getActiveStoryboardName', 'updateSceneIndex', 'rebalanceAndApply', 'getScenes', 'createStoryboard', 'getScenesForNodeId', 'insertionIndexAfter', 'setScenesForNodeId', 'nextSceneIndex']);
 			underTest = new MM.StoryboardController(storyboardModel);
 		});
 		describe('when active content is not loaded', function () {
@@ -32,6 +32,10 @@ describe('Storyboards', function () {
 				mapController.dispatchEvent('mapLoaded', 'loadedMapid', activeContent);
 			});
 			describe('addScene', function () {
+				beforeEach(function () {
+					storyboardModel.getScenesForNodeId.and.returnValue([]);
+					storyboardModel.nextSceneIndex.and.returnValue(1);
+				});
 				describe('when no story boards exist', function () {
 					beforeEach(function () {
 						storyboardModel.getActiveStoryboardName.and.returnValue(undefined);
@@ -48,8 +52,6 @@ describe('Storyboards', function () {
 				describe('when the active storyboard exists but is blank', function () {
 					beforeEach(function () {
 						storyboardModel.getActiveStoryboardName.and.returnValue('red talk');
-						storyboardModel.getScenesForNodeId.and.returnValue([]);
-						storyboardModel.nextSceneIndex.and.returnValue(1);
 					});
 					it('should not try to create a new storyboard', function () {
 						underTest.addScene(11);
@@ -70,7 +72,6 @@ describe('Storyboards', function () {
 				});
 				describe('when the active storyboard exists but is not blank', function () {
 					beforeEach(function () {
-						storyboardModel.getScenesForNodeId.and.returnValue([]);
 						storyboardModel.getActiveStoryboardName.and.returnValue('ted talk');
 						storyboardModel.nextSceneIndex.and.returnValue(11);
 						storyboardModel.insertionIndexAfter.and.returnValue(6);
@@ -90,6 +91,34 @@ describe('Storyboards', function () {
 							{storyboards: {'ted talk': 1}},
 							{storyboards: {'ted talk': 11}}
 						]);
+					});
+					describe('when the target scene is provided', function () {
+						var beforeScene = {ideaId: 13, index: 2.4};
+						it('should add a scene before a target scene', function () {
+							storyboardModel.insertionIndexBefore.and.returnValue(2.1);
+							underTest.addScene(11, beforeScene);
+							expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 2.1}}]);
+							expect(storyboardModel.insertionIndexBefore).toHaveBeenCalledWith(beforeScene);
+						});
+						describe('when insertion index cannot be calculated', function () {
+							beforeEach(function () {
+								storyboardModel.insertionIndexBefore.and.returnValue(false);
+								underTest.addScene(11, beforeScene);
+							});
+							it('does not update the index directly, rebalances instead', function () {
+								expect(storyboardModel.rebalanceAndApply).toHaveBeenCalledWith([beforeScene], jasmine.any(Function));
+								expect(storyboardModel.setScenesForNodeId).not.toHaveBeenCalled();
+							});
+							it('invokes a callback after rebalancing to update the scene index', function () {
+								var newBeforeScene = {ideaId: 13, index: 11};
+								storyboardModel.insertionIndexBefore.calls.reset();
+								storyboardModel.insertionIndexBefore.and.returnValue(8);
+								storyboardModel.rebalanceAndApply.calls.mostRecent().args[1]([newBeforeScene]);
+
+								expect(storyboardModel.insertionIndexBefore).toHaveBeenCalledWith(newBeforeScene);
+								expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'ted talk': 8}}]);
+							});
+						});
 					});
 				});
 			});
