@@ -285,34 +285,77 @@ describe('Storyboards', function () {
 				expect(activeContent.getAttrById(12, 'test-scenes')).toEqual([{storyboards: {'xed talk': 5}}]);
 			});
 		});
-		describe('insertionIndexAfter', function () {
-			var firstScene, secondScene, lastScene;
+		describe('index calculation', function () {
+			var firstScene, secondScene, thirdScene, lastScene;
 			beforeEach(function () {
 				firstScene = {index: 1, ideaId: 12, title: 'already in ted storyboard'};
 				secondScene = {index: 2, ideaId: 13, title: 'scene with icon'};
+				thirdScene = {index: 9, ideaId: 14, title: 'is in two scenes'};
 				lastScene = {index: 10, ideaId: 14, title: 'is in two scenes'};
 			});
-			it('should return false if there is no active storyboard', function () {
-				activeContent.updateAttr(1, 'test-storyboards', undefined);
-				expect(underTest.insertionIndexAfter()).toBeFalsy();
-			});
-			it('should return false if the active storyboard is empty', function () {
-				activeContent.updateAttr(1, 'test-storyboards', ['xed talk']);
-				expect(underTest.insertionIndexAfter()).toBeFalsy();
-			});
-			it('calculates the arithmetic median between 0 and the first item if the scene argument is not provided', function () {
-				expect(underTest.insertionIndexAfter()).toBe(0.5);
-			});
-			it('calculates the arithmetic median if the provided scene is not the last in the list', function () {
-				expect(underTest.insertionIndexAfter(firstScene)).toBe(1.5);
-				expect(underTest.insertionIndexAfter(secondScene)).toBe(5.5);
-			});
+			describe('insertionIndexAfter', function () {
+				it('should return false if there is no active storyboard', function () {
+					activeContent.updateAttr(1, 'test-storyboards', undefined);
+					expect(underTest.insertionIndexAfter()).toBeFalsy();
+				});
+				it('should return false if the active storyboard is empty', function () {
+					activeContent.updateAttr(1, 'test-storyboards', ['xed talk']);
+					expect(underTest.insertionIndexAfter()).toBeFalsy();
+				});
+				it('calculates the arithmetic median between 0 and the first item if the scene argument is not provided', function () {
+					expect(underTest.insertionIndexAfter()).toBe(0.5);
+				});
+				it('calculates the arithmetic median if the provided scene is not the last in the list', function () {
+					expect(underTest.insertionIndexAfter(firstScene)).toBe(1.5);
+					expect(underTest.insertionIndexAfter(secondScene)).toBe(5.5);
+				});
 
-			it('adds 1 to the max index if the argument is the last in the list', function () {
-				expect(underTest.insertionIndexAfter(lastScene)).toBe(11);
+				it('adds 1 to the max index if the argument is the last in the list', function () {
+					expect(underTest.insertionIndexAfter(lastScene)).toBe(11);
+				});
+				it('returns false if the scene is not in the list', function () {
+					expect(underTest.insertionIndexAfter({index: 1, ideaId: 13})).toBeFalsy();
+				});
+				it('returns false if the arg is not provided and first scene is too close to 0', function () {
+					underTest.updateSceneIndex(firstScene, 0.0001, 'ted talk');
+					expect(underTest.insertionIndexAfter()).toBeFalsy();
+				});
+				it('returns false if the argument is too close to the next scene in the list', function () {
+					var moved = underTest.updateSceneIndex(firstScene, 1.9999, 'ted talk');
+					expect(underTest.insertionIndexAfter(moved)).toBeFalsy();
+				});
 			});
-			it('returns false if the scene is not in the list', function () {
-				expect(underTest.insertionIndexAfter({index: 1, ideaId: 13})).toBeFalsy();
+			describe('insertionIndexBefore', function () {
+				it('should return false if there is no active storyboard', function () {
+					activeContent.updateAttr(1, 'test-storyboards', undefined);
+					expect(underTest.insertionIndexBefore()).toBeFalsy();
+				});
+				it('should return false if the active storyboard is empty', function () {
+					activeContent.updateAttr(1, 'test-storyboards', ['xed talk']);
+					expect(underTest.insertionIndexBefore()).toBeFalsy();
+				});
+				it('returns false if the argument is not provided', function () {
+					expect(underTest.insertionIndexBefore()).toBeFalsy();
+				});
+				it('calculates the arithmetic median if the provided scene is not the first in the list', function () {
+					expect(underTest.insertionIndexBefore(thirdScene)).toBe(5.5);
+					expect(underTest.insertionIndexBefore(secondScene)).toBe(1.5);
+				});
+
+				it('calculates the arithmetic median between 0 and scene index if it the argument is the first scene in the list', function () {
+					expect(underTest.insertionIndexBefore(firstScene)).toBe(0.5);
+				});
+				it('returns false if the scene is not in the list', function () {
+					expect(underTest.insertionIndexBefore({index: 1, ideaId: 13})).toBeFalsy();
+				});
+				it('returns false if the scene before is too close to 0', function () {
+					var moved = underTest.updateSceneIndex(firstScene, 0.0001, 'ted talk');
+					expect(underTest.insertionIndexBefore(moved)).toBeFalsy();
+				});
+				it('returns false if the scene before is too close to the previous scene in the list', function () {
+					var moved = underTest.updateSceneIndex(secondScene, 1.00001, 'ted talk');
+					expect(underTest.insertionIndexBefore(moved)).toBeFalsy();
+				});
 			});
 		});
 		describe('getScenes', function () {

@@ -1296,6 +1296,7 @@ MAPJS.MemoryClipboard = function () {
 	$.fn.simpleDraggableContainer = function () {
 		var currentDragObject,
 			originalDragObjectPosition,
+			container = this,
 			drag = function (event) {
 				if (currentDragObject && event.gesture) {
 					var scale = currentDragObject.parent().data('scale') || 1,
@@ -1308,18 +1309,24 @@ MAPJS.MemoryClipboard = function () {
 					if (event.gesture) {
 						event.gesture.preventDefault();
 					}
+					event.stopPropagation();
+					return false;
 				}
 			},
-			rollback = function () {
+			rollback = function (e) {
 				var target = currentDragObject; // allow it to be cleared while animating
-				target.animate(originalDragObjectPosition, {
-					complete: function () {
-						target.trigger('mm:cancel-dragging');
-					},
-					progress: function () {
-						target.trigger('mm:drag');
-					}
-				});
+				if (target.attr('mapjs-drag-role') !== 'shadow') {
+					target.animate(originalDragObjectPosition, {
+						complete: function () {
+							target.trigger($.Event('mm:cancel-dragging', {gesture: e.gesture}));
+						},
+						progress: function () {
+							target.trigger('mm:drag');
+						}
+					});
+				} else {
+					target.trigger($.Event('mm:cancel-dragging', {gesture: e.gesture}));
+				}
 			};
 		return Hammer($(this), {'drag_min_distance': 2}).on('mm:start-dragging', function (event) {
 			if (!currentDragObject) {
@@ -1333,7 +1340,7 @@ MAPJS.MemoryClipboard = function () {
 		}).on('mm:start-dragging-shadow', function (event) {
 			var target = $(event.relatedTarget),
 				clone = function () {
-					return target.clone().addClass('drag-shadow').appendTo(target.parent()).offset(target.offset());
+					return target.clone().addClass('drag-shadow').appendTo(container).offset(target.offset()).data(target.data()).attr('mapjs-drag-role', 'shadow');
 				};
 			if (!currentDragObject) {
 				currentDragObject = clone();
@@ -1353,14 +1360,14 @@ MAPJS.MemoryClipboard = function () {
 			if (currentDragObject) {
 				currentDragObject.trigger(evt);
 				if (evt.result === false) {
-					rollback();
+					rollback(e);
 				}
 				currentDragObject = undefined;
 			}
-		}).on('mouseleave', function () {
+		}).on('mouseleave', function (e) {
 			if (currentDragObject) {
 				$(this).off('drag', drag);
-				rollback();
+				rollback(e);
 				currentDragObject = undefined;
 			}
 		}).attr('data-drag-role', 'container');
@@ -3423,7 +3430,7 @@ jQuery.fn.editNode = function () {
 			textBox.css('word-break', '');
 			textBox.removeAttr('contenteditable');
 			if (node.attr('mapjs-level') > 1) {
-				node.simpleDraggable();
+				node.shadowDraggable();
 			}
 		},
 		finishEditing = function () {
@@ -3477,7 +3484,7 @@ jQuery.fn.editNode = function () {
 	if (unformattedText) {
 		textBox.placeCaretAtEnd();
 	}
-	node.simpleDraggable({disable: true});
+	node.shadowDraggable({disable: true});
 	return result.promise();
 };
 
@@ -3813,7 +3820,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		}
 		element.css('min-width', element.css('width'));
 		if (mapModel.isEditingEnabled() && node.level > 1) {
-			element.simpleDraggable();
+			element.shadowDraggable();
 		}
 	});
 	mapModel.addEventListener('nodeSelectionChanged', function (ideaId, isSelected) {
@@ -3998,7 +4005,7 @@ jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer) {
 	'use strict';
 	var hotkeyEventHandlers = {
 			'return': 'addSiblingIdea',
@@ -4061,13 +4068,31 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				'height': element.innerHeight(),
 				'scale': 1
 			}).updateStage(),
+			scrollLeftStop,
+		    scrollTopStop,
+		    scrollKilled = false,
+			killThem = function () {
+				element.scrollLeft(scrollLeftStop);
+				element.scrollTop(scrollTopStop);
+			},
 			previousPinchScale = false;
 		element.css('overflow', 'auto').attr('tabindex', 1);
 		if (mapModel.isEditingEnabled()) {
-			element.simpleDraggableContainer();
+			(dragContainer || element)
+			.on('mm:start-dragging mm:start-dragging-shadow', function () {
+				scrollLeftStop = element.scrollLeft();
+				scrollTopStop = element.scrollTop();
+				scrollKilled = true;
+				element.on('scroll', killThem);
+			}).on('mm:stop-dragging mm:cancel-dragging', function () {
+				scrollKilled = false;
+				element.off('scroll', killThem);
+			}).simpleDraggableContainer();
 		}
 		if (!touchEnabled) {
-			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
+			element.scrollWhenDragging(function () {
+				return !scrollKilled && mapModel.getInputEnabled();
+			}); //no need to do this for touch, this is native
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {

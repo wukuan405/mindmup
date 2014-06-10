@@ -54,6 +54,13 @@ describe('LayoutExport', function () {
 			expect(storageApi.save).toHaveBeenCalledWith(JSON.stringify({'a': 'b', 'foo': 'bar'}), saveConfiguration, saveOptions);
 			expect(currentLayout).toEqual({'a': 'b'});
 		});
+		it('immediately rejects with an error if the export result is empty', function () {
+			var rejected = jasmine.createSpy('rejected');
+			exportFunctions.pdf.and.returnValue({});
+			underTest.startExport('pdf', {'foo': 'bar'}).fail(rejected);
+			expect(storageApi.save).not.toHaveBeenCalled();
+			expect(rejected).toHaveBeenCalledWith('empty');
+		});
 		it('polls for result and error when the request is started', function () {
 			spyOn(storageApi, 'poll').and.callThrough();
 			underTest.startExport('pdf');

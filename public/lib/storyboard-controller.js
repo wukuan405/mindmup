@@ -9,20 +9,31 @@ MM.StoryboardController = function (storyboardModel) {
 			return {
 				'storyboards': attr
 			};
+		},
+		appendScene = function (storyboardName, nodeId, index) {
+			var scenes = storyboardModel.getScenesForNodeId(nodeId),
+				result = buildStoryboardScene(storyboardName, index);
+			scenes.push(result);
+			storyboardModel.setScenesForNodeId(nodeId, scenes);
 		};
-	self.addScene = function (nodeId) {
+	self.addScene = function (nodeId, beforeScene) {
 		var storyboardName = storyboardModel.getActiveStoryboardName(),
-			scenes,
 			index = 1;
 		if (!storyboardName) {
 			storyboardName = storyboardModel.createStoryboard();
-			scenes = [];
+		}
+		if (beforeScene) {
+			index = storyboardModel.insertionIndexBefore(beforeScene);
 		} else {
 			index = storyboardModel.nextSceneIndex();
-			scenes = storyboardModel.getScenesForNodeId(nodeId);
 		}
-		scenes.push(buildStoryboardScene(storyboardName, index));
-		storyboardModel.setScenesForNodeId(nodeId, scenes);
+		if (!index) {
+			storyboardModel.rebalanceAndApply([beforeScene], function (newScenes) {
+				appendScene(storyboardName, nodeId, storyboardModel.insertionIndexBefore(newScenes[0]));
+			});
+		} else {
+			appendScene(storyboardName, nodeId, index);
+		}
 	};
 	self.moveSceneAfter = function (sceneToMove, afterScene) {
 		if (!sceneToMove) {

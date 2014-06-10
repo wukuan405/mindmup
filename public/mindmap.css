@@ -624,6 +624,13 @@ body .modal.huge {
   border-left: 1px;
 }
 
+#measuresSheet  {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
 .table-container {
   margin-right: 5px;
 }
@@ -741,4 +748,11 @@ body .modal.huge {
 }
 .splittable-optional .content-container {
   height: 100%;
+}
+
+.pull-middle {
+	display:table; height: 100%;
+}
+.pull-middle > div {
+	display:table-cell; vertical-align:middle; padding-left:20%; padding-right:20%;
 }

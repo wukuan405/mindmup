@@ -144,11 +144,14 @@ describe('Storyboard widget', function () {
 		storyboardController,
 		storyboardModel,
 		dimensionProvider,
+		noScenes,
 		template = '<div><div>' +
 					'<a data-mm-role="storyboard-remove-scene"></a>' +
 					'<a data-mm-role="storyboard-move-scene-left"></a>' +
 					'<a data-mm-role="storyboard-move-scene-right"></a>' +
-					'</div><div id="sceneParent"><div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
+					'</div><div id="sceneParent">' +
+					' <div data-mm-role="no-scenes">NO SCENES!</div>' +
+					' <div data-mm-role="scene-template"><span data-mm-role="scene-title"></span></div></div></div>';
 	beforeEach(function () {
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled']));
 		storyboardController = observable(jasmine.createSpyObj('storyboardController', ['addScene', 'removeScene', 'moveSceneAfter']));
@@ -161,12 +164,25 @@ describe('Storyboard widget', function () {
 			text: {toCss: function () { return {width: '20px'}; }},
 			image: {toCss: function () { return {width: '30px'}; }}
 		});
-		underTest = jQuery(template).appendTo('body').storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
+		underTest = jQuery(template).appendTo('body');
+		noScenes = underTest.find('[data-mm-role=no-scenes]');
+		underTest.storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
 	});
 	afterEach(function () {
 		underTest.remove();
 	});
 	describe('when shown', function () {
+		it('shows the no-scenes section if there are no scenes', function () {
+			storyboardModel.getScenes.and.returnValue(undefined);
+			underTest.trigger('show');
+			var scenes = underTest.find('[data-mm-role=scene]');
+			expect(scenes.length).toBe(0);
+			expect(underTest.find('[data-mm-role=no-scenes]').css('display')).not.toBe('none');
+		});
+		it('hides the no-scenes section if there are scenes', function () {
+			underTest.trigger('show');
+			expect(underTest.find('[data-mm-role=no-scenes]').length).toBe(0);
+		});
 		it('removes old scene content and rebuilds the UI using the list of scenes', function () {
 			var scenes;
 			underTest.find('#sceneParent').append('<div data-mm-role="scene">BBB</div>');
@@ -206,6 +222,11 @@ describe('Storyboard widget', function () {
 					expect(scenes.last().attr('data-mm-idea-id')).toEqual('13');
 					expect(scenes.last().attr('data-mm-index')).toEqual('2');
 					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
+				});
+				it('hides the no-scenes section', function () {
+					noScenes.appendTo(underTest);
+					storyboardModel.dispatchEvent('storyboardSceneAdded', {ideaId: 14, title: 'new one', index: 1.5 });
+					expect(underTest.find('[data-mm-role=no-scenes]').length).toBe(0);
 				});
 				it('adds a scene to the end if the index is > than max', function () {
 

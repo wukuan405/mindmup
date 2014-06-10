@@ -111,7 +111,7 @@ MM.main = function (config) {
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
 				jQuery('body').mapStatusWidget(mapController, activeContentListener);
-				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController).storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
+				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController, jQuery('#splittable')).storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;

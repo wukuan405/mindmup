@@ -1,4 +1,4 @@
-/*global jQuery, _, Hammer*/
+/*global jQuery, _*/
 jQuery.fn.updateScene = function (scene, dimensionProvider) {
 	'use strict';
 	var dimensions = dimensionProvider.getDimensionsForScene(scene, this.innerWidth(), this.innerHeight());
@@ -18,6 +18,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			template = element.find('[data-mm-role=scene-template]'),
+		    noScenes = element.find('[data-mm-role=no-scenes]').detach(),
 			templateParent = template.parent(),
 			removeSelectedScenes = function () {
 				_.each(templateParent.find('.activated-scene'), function (domScene) {
@@ -48,6 +49,15 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			},
 			moveFocusSceneRight = function () {
 				moveSceneRight(templateParent.find('.activated-scene'));
+			},
+			insideWidget = function (e) {
+				if (!e.gesture || !e.gesture.center) {
+					return false;
+				}
+				var offset = element.offset(),
+					left = e.gesture.center.pageX - offset.left,
+					top =  e.gesture.center.pageY - offset.top;
+				return left > 0 && left < element.width() && top > 0 && top < element.height();
 			},
 			potentialDropTargets = function (dropPosition) {
 				var scenes = templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
@@ -85,8 +95,13 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				return {left: _.first(potentialLeft), right: _.first(potentialRight)};
 			},
 			rebuildStoryboard = function () {
+				var scenes = storyboardModel.getScenes();
 				templateParent.empty();
-				_.each(storyboardModel.getScenes(), function (scene) { addScene(scene, true); });
+				if (scenes && scenes.length) {
+					_.each(scenes, function (scene) { addScene(scene, true); });
+				} else {
+					noScenes.appendTo(templateParent).show();
+				}
 			},
 			lastSceneBefore = function (sceneIndex) {
 				var scenesBefore =  _.reject(templateParent.children(), function (sceneDOM) {
@@ -172,6 +187,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 						}
 					}),
 					target = !appendToEnd && lastSceneBefore(scene.index);
+				noScenes.detach();
 				newScene.hide();
 				if (target) {
 					newScene.insertAfter(target);
@@ -240,14 +256,53 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				storyboardModel.removeEventListener('storyboardSceneContentUpdated', updateScene);
 
 			};
+		template.detach();
 		element.find('[data-mm-role=storyboard-remove-scene]').click(removeSelectedScenes);
 		element.find('[data-mm-role=storyboard-move-scene-left]').click(moveFocusSceneLeft);
 		element.find('[data-mm-role=storyboard-move-scene-right]').click(moveFocusSceneRight);
 		/*jshint newcap:false*/
-		Hammer(element);
-		element.find('.storyboard-container').simpleDraggableContainer();
-		template.detach();
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
+
+		element.parents('[data-drag-role=container]').on('mm:drag', function (e) {
+			var target = jQuery(e.target);
+			if (!insideWidget(e)) {
+				return;
+			}
+			if (target.attr('data-mapjs-role') === 'node') {
+				var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY}),
+					actualLeft,
+					actualRight,
+					scenes = templateParent.find('[data-mm-role=scene]');
+
+				if (potentialDrops.left) {
+					actualLeft = jQuery(potentialDrops.left);
+					actualRight = actualLeft.next();
+				}
+				else if (potentialDrops.right) {
+					actualRight = jQuery(potentialDrops.right);
+					actualLeft = actualRight.prev();
+				}
+				scenes.not(actualLeft).removeClass('potential-drop-left');
+				scenes.not(actualRight).removeClass('potential-drop-right');
+				if (actualRight) {
+					actualRight.addClass('potential-drop-right');
+				}
+				if (actualLeft) {
+					actualLeft.addClass('potential-drop-left');
+				}
+			}
+		}).on('mm:cancel-dragging', function (e) {
+			var target = jQuery(e.target);
+			if (target.attr('data-mapjs-role') === 'node') {
+				if (insideWidget(e)) {
+					var	potentialRight = templateParent.find('.potential-drop-right');
+					storyboardController.addScene(target.data('nodeId'), potentialRight && potentialRight.data('scene'));
+				}
+				templateParent.children().removeClass('potential-drop-left potential-drop-right');
+			}
+
+		});
+
 	});
 };
 

@@ -76,20 +76,20 @@ MM.StoryboardDimensionProvider = function () {
 				'width': (imageScale * scene.image.width),
 			};
 			if (scene.image.position === 'top') {
-				result.image.top = padding;
+				result.image.top =  0.25 * height - result.image.height * 0.5;
 				result.image.left = (width - result.image.width) / 2;
 			}
 			else if (scene.image.position === 'bottom') {
-				result.image.top = height - result.image.height - padding;
+				result.image.top =  0.75 * height - result.image.height * 0.5;
 				result.image.left = (width - result.image.width) / 2;
 			}
 			else if (scene.image.position === 'left') {
 				result.image.top = (height - result.image.height) / 2;
-				result.image.left = padding;
+				result.image.left = (width / 2 - result.image.width) / 2;
 			}
 			else if (scene.image.position === 'right') {
 				result.image.top = (height - result.image.height) / 2;
-				result.image.left = width - padding - result.image.width;
+				result.image.left = 0.75 * width - result.image.width * 0.5;
 			} else {
 				result.image.top = (height - result.image.height) / 2;
 				result.image.left = (width - result.image.width) / 2;
@@ -125,6 +125,9 @@ MM.buildStoryboardExporter = function (storyboardModel) {
 	return function () {
 		var scenes = storyboardModel.getScenes(),
 			dimensionProvider = new MM.StoryboardDimensionProvider();
+		if (_.isEmpty(scenes)) {
+			return {};
+		}
 		return {storyboard:
 			_.map(scenes, function (scene) {
 				return _.extend({title: scene.title}, dimensionProvider.getDimensionsForScene(scene, 800, 600));
