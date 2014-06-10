@@ -1306,11 +1306,11 @@ MAPJS.MemoryClipboard = function () {
 			originalDragObjectPosition,
 			container = this,
 			drag = function (event) {
+
 				if (currentDragObject && event.gesture) {
-					var scale = currentDragObject.parent().data('scale') || 1,
-						newpos = {
-							top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY / scale),
-							left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX / scale)
+					var newpos = {
+							top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY),
+							left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX)
 						};
 					currentDragObject.css(newpos).trigger($.Event('mm:drag', {gesture: event.gesture}));
 					if (event.gesture) {
@@ -1347,7 +1347,15 @@ MAPJS.MemoryClipboard = function () {
 		}).on('mm:start-dragging-shadow', function (event) {
 			var target = $(event.relatedTarget),
 				clone = function () {
-					return target.clone().addClass('drag-shadow').appendTo(container).offset(target.offset()).data(target.data()).attr('mapjs-drag-role', 'shadow');
+					var result = target.clone().addClass('drag-shadow').appendTo(container).offset(target.offset()).data(target.data()).attr('mapjs-drag-role', 'shadow'),
+						scale = target.parent().data('scale') || 1;
+					if (scale !== 0) {
+						result.css({
+							'transform': 'scale(' + scale + ')',
+							'transform-origin': 'top left'
+						});
+					}
+					return result;
 				};
 			if (!currentDragObject) {
 				currentDragObject = clone();
@@ -1362,9 +1370,12 @@ MAPJS.MemoryClipboard = function () {
 				$(this).on('drag', drag);
 			}
 		}).on('dragend', function (e) {
-			var evt = $.Event('mm:stop-dragging', {gesture: e.gesture});
 			$(this).off('drag', drag);
 			if (currentDragObject) {
+				var evt = $.Event('mm:stop-dragging', {
+					gesture: e.gesture,
+					finalPosition: currentDragObject.offset()
+				});
 				currentDragObject.trigger(evt);
 				if (evt.result === false) {
 					rollback(e);
@@ -3727,7 +3738,6 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node)
 			.on('tap', function (evt) {
-				element.focus();
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				if (realEvent.button) {
 					return;
@@ -3759,7 +3769,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			})
 			.each(ensureSpaceForNode)
 			.each(updateScreenCoordinates)
-			.on('mm:start-dragging', function () {
+			.on('mm:start-dragging mm:start-dragging-shadow', function () {
 				mapModel.selectNode(node.id);
 				element.addClass('dragging');
 			})
@@ -3793,6 +3803,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				var isShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey,
 					stageDropCoordinates = stagePositionForPointEvent(evt),
 					nodeAtDrop = mapModel.getNodeIdAtPosition(stageDropCoordinates.x, stageDropCoordinates.y),
+					finalPosition = stagePositionForPointEvent({pageX: evt.finalPosition.left, pageY: evt.finalPosition.top}),
 					dropResult;
 				clearCurrentDroppable();
 				if (!stageDropCoordinates) {
@@ -3802,12 +3813,12 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 					if (!isShift) {
 						return false;
 					}
-					dropResult = mapModel.positionNodeAt(node.id, element.getBox().left, element.getBox().top, !!isShift);
+					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, !!isShift);
 				}
 				else if (nodeAtDrop) {
 					dropResult = mapModel.dropNode(node.id, nodeAtDrop, !!isShift);
 				} else if (node.level > 1) {
-					dropResult = mapModel.positionNodeAt(node.id, element.getBox().left, element.getBox().top, !!isShift);
+					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, !!isShift);
 				} else {
 					dropResult = false;
 				}
@@ -4088,7 +4099,11 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 
 		if (!touchEnabled) {
 			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
-			element.on('mousedown', function (e) { e.preventDefault(); if (e.gesture) { e.gesture.preventDefault(); }});
+			element.on('mousedown', function () {
+				element.css('overflow', 'hidden');
+			}).on('mouseup', function () {
+				element.css('overflow', 'auto');
+			});
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
