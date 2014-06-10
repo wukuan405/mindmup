@@ -176,6 +176,9 @@ MM.main = function (config) {
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
 			};
+		config.activeContentConfiguration = {
+			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
+		};
 		jQuery.fn.colorPicker.defaults.colors = [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
 			'808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
@@ -192,6 +195,7 @@ MM.main = function (config) {
 		MM.MapController.alerts(mapController, alert, modalConfirm);
 		MM.measuresModelMediator(mapModel, measuresModel);
 		mapController.addEventListener('mapLoaded', function (mapId, idea) {
+			idea.setConfiguration(config.activeContentConfiguration);
 			mapModel.setIdea(idea);
 		});
 		if (browserStorage.fake) {

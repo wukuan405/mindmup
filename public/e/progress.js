@@ -702,6 +702,7 @@ MM.Extensions.progress = function () {
 			calcWidget.find('[data-mm-role=filter-widget]').progressFilterWidget(calcModel, updater);
 			MM.progressCalcChangeMediator(calcModel, activeContentListener, mapModel, updater);
 		};
+	MM.Extensions.mmConfig.activeContentConfiguration.nonClonedAttributes.push(statusConfigurationAttributeName);
 	$.get(MM.Extensions.mmConfig.publicUrl + '/e/progress.html', loadUI);
 	$('<link rel="stylesheet" href="' +  MM.Extensions.mmConfig.publicUrl + '/e/progress.css" />').appendTo($('body'));
 };

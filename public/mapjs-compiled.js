@@ -302,7 +302,11 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			var dotIndex = String(id).indexOf('.');
 			return dotIndex > 0 && id.substr(dotIndex + 1);
 		},
-		commandProcessors = {};
+		commandProcessors = {},
+		configuration = {};
+	contentAggregate.setConfiguration = function (config) {
+		configuration = config || {};
+	};
 	contentAggregate.getSessionKey = function () {
 		return sessionKey;
 	};
@@ -468,7 +472,11 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	commandProcessors.paste = function (originSession, parentIdeaId, jsonToPaste, initialId) {
 		var pasteParent = (parentIdeaId == contentAggregate.id) ?  contentAggregate : contentAggregate.findSubIdeaById(parentIdeaId),
 			cleanUp = function (json) {
-				var result =  _.omit(json, 'ideas', 'id'), index = 1, childKeys, sortedChildKeys;
+				var result =  _.omit(json, 'ideas', 'id', 'attr'), index = 1, childKeys, sortedChildKeys;
+				result.attr = _.omit(json.attr, configuration.nonClonedAttributes);
+				if (_.isEmpty(result.attr)) {
+					delete result.attr;
+				}
 				if (json.ideas) {
 					childKeys = _.groupBy(_.map(_.keys(json.ideas), parseFloat), function (key) { return key > 0; });
 					sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
@@ -1305,11 +1313,9 @@ MAPJS.MemoryClipboard = function () {
 							left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX / scale)
 						};
 					currentDragObject.css(newpos).trigger($.Event('mm:drag', {gesture: event.gesture}));
-					event.preventDefault();
 					if (event.gesture) {
 						event.gesture.preventDefault();
 					}
-					event.stopPropagation();
 					return false;
 				}
 			},
@@ -1328,7 +1334,8 @@ MAPJS.MemoryClipboard = function () {
 					target.trigger($.Event('mm:cancel-dragging', {gesture: e.gesture}));
 				}
 			};
-		return Hammer($(this), {'drag_min_distance': 2}).on('mm:start-dragging', function (event) {
+		Hammer(this, {'drag_min_distance': 2});
+		return this.on('mm:start-dragging', function (event) {
 			if (!currentDragObject) {
 				currentDragObject = $(event.relatedTarget);
 				originalDragObjectPosition = {
@@ -1380,8 +1387,10 @@ MAPJS.MemoryClipboard = function () {
 				})
 			);
 			e.stopPropagation();
+			e.preventDefault();
 			if (e.gesture) {
 				e.gesture.stopPropagation();
+				e.gesture.preventDefault();
 			}
 		}, onShadowDrag = function (e) {
 			$(this).trigger(
@@ -1390,8 +1399,10 @@ MAPJS.MemoryClipboard = function () {
 				})
 			);
 			e.stopPropagation();
+			e.preventDefault();
 			if (e.gesture) {
 				e.gesture.stopPropagation();
+				e.gesture.preventDefault();
 			}
 		};
 	$.fn.simpleDraggable = function (options) {
@@ -3429,9 +3440,7 @@ jQuery.fn.editNode = function () {
 			detachListeners();
 			textBox.css('word-break', '');
 			textBox.removeAttr('contenteditable');
-			if (node.attr('mapjs-level') > 1) {
-				node.shadowDraggable();
-			}
+			node.shadowDraggable();
 		},
 		finishEditing = function () {
 			if (textBox.text() === unformattedText) {
@@ -3718,6 +3727,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node)
 			.on('tap', function (evt) {
+				element.focus();
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				if (realEvent.button) {
 					return;
@@ -3796,8 +3806,10 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				}
 				else if (nodeAtDrop) {
 					dropResult = mapModel.dropNode(node.id, nodeAtDrop, !!isShift);
-				} else {
+				} else if (node.level > 1) {
 					dropResult = mapModel.positionNodeAt(node.id, element.getBox().left, element.getBox().top, !!isShift);
+				} else {
+					dropResult = false;
 				}
 				return dropResult;
 			})
@@ -3819,7 +3831,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			});
 		}
 		element.css('min-width', element.css('width'));
-		if (mapModel.isEditingEnabled() && node.level > 1) {
+		if (mapModel.isEditingEnabled()) {
 			element.shadowDraggable();
 		}
 	});
@@ -4068,31 +4080,15 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				'height': element.innerHeight(),
 				'scale': 1
 			}).updateStage(),
-			scrollLeftStop,
-		    scrollTopStop,
-		    scrollKilled = false,
-			killThem = function () {
-				element.scrollLeft(scrollLeftStop);
-				element.scrollTop(scrollTopStop);
-			},
 			previousPinchScale = false;
 		element.css('overflow', 'auto').attr('tabindex', 1);
 		if (mapModel.isEditingEnabled()) {
-			(dragContainer || element)
-			.on('mm:start-dragging mm:start-dragging-shadow', function () {
-				scrollLeftStop = element.scrollLeft();
-				scrollTopStop = element.scrollTop();
-				scrollKilled = true;
-				element.on('scroll', killThem);
-			}).on('mm:stop-dragging mm:cancel-dragging', function () {
-				scrollKilled = false;
-				element.off('scroll', killThem);
-			}).simpleDraggableContainer();
+			(dragContainer || element).simpleDraggableContainer();
 		}
+
 		if (!touchEnabled) {
-			element.scrollWhenDragging(function () {
-				return !scrollKilled && mapModel.getInputEnabled();
-			}); //no need to do this for touch, this is native
+			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
+			element.on('mousedown', function (e) { e.preventDefault(); if (e.gesture) { e.gesture.preventDefault(); }});
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
