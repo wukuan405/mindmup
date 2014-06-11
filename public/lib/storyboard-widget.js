@@ -59,8 +59,8 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					top =  e.gesture.center.pageY - offset.top;
 				return left > 0 && left < element.width() && top > 0 && top < element.height();
 			},
-			potentialDropTargets = function (dropPosition) {
-				var scenes = templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
+			potentialDropTargets = function (dropPosition, includeActivated) {
+				var scenes = includeActivated ? templateParent.find('[data-mm-role=scene]').not('.drag-shadow') : templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
 					row = _.filter(scenes, function (sceneDOM) {
 						var scene = jQuery(sceneDOM);
 						var ypos = dropPosition.top - scene.offset().top,
@@ -146,7 +146,6 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					}).shadowDraggable().on('mm:cancel-dragging', function () {
 						jQuery(this).siblings().removeClass('potential-drop-left potential-drop-right');
 					}).on('mm:stop-dragging', function () {
-
 						var dropTarget = jQuery(this),
 							potentialLeft = dropTarget.parent().find('.potential-drop-left'),
 							potentialRight = dropTarget.parent().find('.potential-drop-right');
@@ -272,10 +271,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 		element.parents('[data-drag-role=container]').on('mm:drag', function (e) {
 			var target = jQuery(e.target);
 			if (!insideWidget(e)) {
+				templateParent.find('[data-mm-role=scene]').removeClass('potential-drop-left potential-drop-right');
 				return;
 			}
 			if (target.attr('data-mapjs-role') === 'node') {
-				var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY}),
+				var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY}, true),
 					actualLeft,
 					actualRight,
 					scenes = templateParent.find('[data-mm-role=scene]');
@@ -304,13 +304,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					var	potentialRight = templateParent.find('.potential-drop-right');
 					storyboardController.addScene(target.data('nodeId'), potentialRight && potentialRight.data('scene'));
 				}
-				templateParent.children().removeClass('potential-drop-left potential-drop-right');
 			}
-		}).on('mm:cancel-dragging', function (e) {
-			var target = jQuery(e.target);
-			if (target.attr('data-mapjs-role') === 'node') {
-				templateParent.children().removeClass('potential-drop-left potential-drop-right');
-			}
+			templateParent.children().removeClass('potential-drop-left potential-drop-right');
+		}).on('mm:cancel-dragging', function () {
+			templateParent.children().removeClass('potential-drop-left potential-drop-right');
 		});
 
 	});
