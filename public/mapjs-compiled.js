@@ -4117,7 +4117,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 					element.css('overflow', 'hidden');
 				}
 			});
-			element.on('mouseup', function () {
+			jQuery(document).on('mouseup', function () {
 				if (element.css('overflow') !== 'auto') {
 					element.css('overflow', 'auto');
 				}
