@@ -210,7 +210,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				}
 			},
 			findScene = function (scene) {
-				return templateParent.find('[data-mm-role=scene][data-mm-index="' + scene.index + '"][data-mm-idea-id=' + scene.ideaId + ']');
+				return templateParent.find('[data-mm-role=scene][data-mm-index="' + scene.index + '"][data-mm-idea-id="' + scene.ideaId + '"]');
 			},
 			removeScene = function (scene) {
 				var sceneJQ = findScene(scene),
