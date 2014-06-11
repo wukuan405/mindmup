@@ -273,6 +273,17 @@ describe('Storyboard widget', function () {
 					expect(scenes.last().attr('data-mm-index')).toEqual('2');
 					expect(scenes.last().find('[data-mm-role=scene-title]').text()).toEqual('in two storyboards');
 				});
+				it('focusses on the scene before the removed scene if the removed scene was activated', function () {
+					underTest.find('[data-mm-idea-id=12][data-mm-index=1]').focus();
+					spyOn(jQuery.fn, 'focus');
+					storyboardModel.dispatchEvent('storyboardSceneRemoved', {ideaId: 12, title: 'non matching', index: 1 });
+					expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(underTest.find('[data-mm-idea-id=13][data-mm-index=2]'));
+				});
+				it('does not focusses on the scene before the removed scene if the removed scene was not activated', function () {
+					spyOn(jQuery.fn, 'focus');
+					storyboardModel.dispatchEvent('storyboardSceneRemoved', {ideaId: 12, title: 'non matching', index: 1 });
+					expect(jQuery.fn.focus).not.toHaveBeenCalledOnJQueryObject(underTest.find('[data-mm-idea-id=13][data-mm-index=2]'));
+				});
 				it('ignores non-matching removals', function () {
 					storyboardModel.dispatchEvent('storyboardSceneRemoved', {ideaId: 14, title: 'already in ted storyboard', index: 1 });
 					var scenes = underTest.find('[data-mm-role=scene]').finish();

@@ -215,13 +215,19 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			},
 			removeScene = function (scene) {
 				var sceneJQ = findScene(scene),
-					hasFocus = sceneJQ.is(':focus');
-				if (hasFocus) {
+					hasFocus = sceneJQ.is(':focus'),
+					isActive = sceneJQ.hasClass('activated-scene');
+				if (hasFocus || isActive) {
 					var sibling = sceneJQ.prev();
 					if (sibling.length === 0) {
 						sibling = sceneJQ.next();
 					}
-					sibling.focus();
+					if (hasFocus) {
+						sibling.focus();
+					}
+					else if (isActive && jQuery(':focus').length === 0) {
+						sibling.focus();
+					}
 				}
 				sceneJQ.finish();
 				sceneJQ.fadeOut({duration: 100, complete: function () {
