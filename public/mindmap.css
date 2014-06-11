@@ -685,7 +685,7 @@ body .modal.huge {
   white-space: pre-wrap;
   font-weight: bold;
 }
-.drag-shadow{ 
+.drag-shadow{
   opacity: 0.5;
   box-shadow: none;
   outline: none;
@@ -706,6 +706,7 @@ body .modal.huge {
 #splittable {
   width:100%; height: calc(100% - 41px);
   margin-top: 41px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .splittable-optional .navbar {

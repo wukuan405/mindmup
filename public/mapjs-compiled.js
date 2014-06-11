@@ -1660,7 +1660,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			this.toggleAddLinkMode();
 		} else {
 			this.selectNode(id);
-			if (button && isInputEnabled) {
+			if (button && button !== -1 && isInputEnabled) {
 				self.dispatchEvent('contextMenuRequested', id, event.layerX, event.layerY);
 			}
 		}
@@ -3752,8 +3752,9 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node)
 			.on('tap', function (evt) {
+
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
-				if (realEvent.button) {
+				if (realEvent.button && realEvent.button !== -1) {
 					return;
 				}
 				mapModel.clickNode(node.id, realEvent);
