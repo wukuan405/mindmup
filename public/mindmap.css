@@ -730,6 +730,10 @@ body .modal.huge {
   float:right;height:100%; width:50%; display:block;
 }
 
+.splittable-primary {
+  height: 100%; width:100%;
+}
+
 .row-split .splittable-primary {
   height:50%; overflow:scroll; width:100%;
 }
@@ -737,9 +741,6 @@ body .modal.huge {
   height:50%; width:100%; display: block;
 }
 
-.no-split .splittable-primary {
-  height: 100%; width:100%;
-}
 
 #optionalPane {
   background-color: rgb(245, 245, 245);
