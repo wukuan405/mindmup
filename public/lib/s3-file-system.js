@@ -30,7 +30,8 @@ MM.S3FileSystem = function (publishingConfigGenerator, prefix, description) {
 	'use strict';
 
 	var properties = {editable: true},
-		s3Api = new MM.S3Api();
+		s3Api = new MM.S3Api(),
+		lastSavePublishingConfig;
 	this.description = description;
 	this.prefix = prefix;
 	this.recognises = function (mapId) {
@@ -52,6 +53,7 @@ MM.S3FileSystem = function (publishingConfigGenerator, prefix, description) {
 	this.saveMap = function (contentToSave, mapId, fileName, showAuthenticationDialog) {
 		var deferred = jQuery.Deferred(),
 			submitS3Form = function (publishingConfig) {
+				lastSavePublishingConfig = publishingConfig;
 				s3Api.save(contentToSave, publishingConfig, {'isPrivate': false}).then(
 					function () {
 						deferred.resolve(publishingConfig.mapId, _.extend(publishingConfig, properties));
@@ -65,6 +67,8 @@ MM.S3FileSystem = function (publishingConfigGenerator, prefix, description) {
 		);
 		return deferred.promise();
 	};
-
+	this.destroyLastSave = function () {
+		return s3Api.save('{"title": "This map was removed by its author"}', lastSavePublishingConfig, {'isPrivate': false});
+	};
 };
 

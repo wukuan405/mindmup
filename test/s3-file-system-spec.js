@@ -72,7 +72,7 @@ describe('MM.S3FileSystem', function () {
 			});
 		});
 	});
-	describe('publishMap', function () {
+	describe('saveMap', function () {
 		describe('uses configGenerator to generate publishing config', function () {
 			describe('passes, mapId, filename, prefix and showAuthenticationDialog to configGenerator', function () {
 				_.each([true, false], function (arg) {
@@ -110,6 +110,25 @@ describe('MM.S3FileSystem', function () {
 					expect(resolveSpy).toHaveBeenCalledWith(publishingConfig.mapId, {mapId: publishingConfig.mapId, editable: true});
 				});
 			});
+		});
+	});
+	describe('destroyLastSave', function () {
+		beforeEach(function () {
+			underTest.saveMap(mapContent, mapId, fileName);
+			configGenerator.generateDeferred.resolve(publishingConfig);
+			s3Api.save.calls.reset();
+			underTest.destroyLastSave().then(resolveSpy, rejectSpy);
+		});
+		it('saves over the last saved configuration', function () {
+			expect(s3Api.save).toHaveBeenCalledWith(jasmine.any(String), publishingConfig, {'isPrivate': false});
+		});
+		it('resolves when s3api save resolves', function () {
+			s3Api.saveDeferred.resolve();
+			expect(resolveSpy).toHaveBeenCalled();
+		});
+		it('rejects when s3api save rejects', function () {
+			s3Api.saveDeferred.reject('noreason');
+			expect(rejectSpy).toHaveBeenCalledWith('noreason');
 		});
 	});
 });
