@@ -67,6 +67,9 @@ body {
   }
 }
 @media (max-height: 320px) {
+	.form-horizontal .control-group {
+	margin-bottom: 0px;
+	}
 	.hidden-phone-landscape {
 	  display: none;
 	}
