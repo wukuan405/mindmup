@@ -131,19 +131,19 @@
 			</p>
 			<form class="form-horizontal">
 			  <div class="control-group">
-				<label class="control-label" for="gold-register-account-name">Account name</label>
+				<label class="control-label hidden-phone" for="gold-register-account-name">Account name</label>
 				<div class="controls">
 				  <input type="text" id="gold-register-account-name" placeholder="Account name" name="account-name"/>
 				</div>
 			  </div>
 			  <div class="control-group">
-				<label class="control-label" for="gold-register-email">E-mail</label>
+				<label class="control-label hidden-phone" for="gold-register-email">E-mail</label>
 				<div class="controls">
 				  <input type="text" id="gold-register-email" placeholder="youremail@server.com" name="email"/>
 				</div>
 			  </div>
 			  <div class="control-group">
-				<label class="control-label">Subscription</label>
+				<label class="control-label hidden-phone">Subscription</label>
 				<div class="controls">
 					<select data-mm-role="form-input-updater" data-mm-form="#license-purchase-form" data-mm-form-field="subscription-code">
 						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
