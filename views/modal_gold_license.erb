@@ -136,6 +136,16 @@
 				</div>
 			  </div>
 			  <div class="control-group">
+				<label class="control-label">Subscription</label>
+				<div class="controls">
+					<select data-mm-role="form-input-updater" data-mm-form="#license-renewal-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+					</select>
+				</div>
+			  </div>
+
+			  <div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
 						<input type="checkbox" id="gold-register-terms" name="terms"/>
@@ -181,13 +191,16 @@
 	<button data-category="Gold Click" data-event-type="Log In" data-mm-section="code-sent" data-mm-role="restore-license-with-code" class="btn btn-primary" tabstop="1">Log In</button>
 	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
 
-	<a data-category="Gold Click" data-event-type="Proceed to payment" target="_blank" href="#" data-mm-section="registration-success" data-mm-role="license-payment-url" class="btn btn-success" tabstop="2">Proceed to payment</a>
+	<button data-category="Gold Click" data-event-type="Proceed to payment" data-mm-section="registration-success" class="btn btn-success" tabstop="2" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Proceed to payment</button>
+
 	<button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Renew</button>
 	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-renewal-form">Purchase Subscription</button>
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+
 	<form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
 		<input type="hidden" data-mm-role="license-text" name="license">
+		<input type="hidden" data-mm-role="subscription-code" name="subscription">
 	</form>
 	<form id="change-card-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/change_card">
 		<input type="hidden" data-mm-role="license-text" name="license">

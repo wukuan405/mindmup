@@ -64,8 +64,14 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-grace-period"/>' +
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
-					'<a data-mm-role="license-payment-url" href="http://payment" target="_blank">Payment</a>' +
 					'</span>' +
+					'<select data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
+						'<option value="FOO">foo</option>' +
+						'<option selected value="NUMBERWANG">numberwang</option>' +
+					'</select>' +
+					'<form id="form-to-update">' +
+						'<input data-mm-role="field-to-update"/>' +
+					'</form>' +
 					'</div>',
 		licenseManager,
 		underTest,
@@ -132,7 +138,20 @@ describe('Gold License Widget', function () {
 			underTest.modal('hide');
 			expect(licenseManager.cancelLicenseEntry).toHaveBeenCalled();
 		});
+		it('applies form-input-updater', function () {
+			licenseManager.dispatchEvent('license-entry-required');
+			expect(underTest.find('[data-mm-role="field-to-update"]').val()).toBe('NUMBERWANG');
+		});
 	});
+	it('applies form-input-updater when value is changed', function () {
+		licenseManager.dispatchEvent('license-entry-required');
+		var select = underTest.find('[data-mm-role="form-input-updater"]');
+		select.val('FOO');
+		select.trigger(jQuery.Event('change'));
+
+		expect(underTest.find('[data-mm-role="field-to-update"]').val()).toBe('FOO');
+	});
+
 	describe('when invoked by menu directly', function () {
 		beforeEach(function () {
 			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
@@ -507,13 +526,12 @@ describe('Gold License Widget', function () {
 			registerDeferred.resolve({});
 			checkSectionShown('registration-success');
 		});
-		it('fills in license-capacity, grace-period, email, license-text and payment-url when registration succeeds', function () {
+		it('fills in license-capacity, grace-period, email, license-text when registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
 				'grace-period': 'grace',
 				'email': 'em',
-				'payment-url': 'purl',
 				'license': 'new license'
 			});
 			checkSectionShown('registration-success');
@@ -522,15 +540,13 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-role=license-grace-period]').text()).toEqual('grace');
 			expect(underTest.find('[data-mm-role=license-email]').text()).toEqual('em');
 			expect(underTest.find('[data-mm-role=license-text]').val()).toEqual('new license');
-			expect(underTest.find('[data-mm-role=license-payment-url]').attr('href')).toEqual('purl');
 		});
 		it('hides grace period wording if license does not have grace period because expiry is -1', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
 				'expiry': -1,
-				'email': 'em',
-				'payment-url': 'purl'
+				'email': 'em'
 			});
 			checkSectionShown('registration-success');
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
@@ -539,8 +555,7 @@ describe('Gold License Widget', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
 				'capacity': 'cap',
-				'email': 'em',
-				'payment-url': 'purl'
+				'email': 'em'
 			});
 			checkSectionShown('registration-success');
 			expect(underTest.find('[data-mm-role=license-has-grace-period]').is(':visible')).toBeFalsy();
