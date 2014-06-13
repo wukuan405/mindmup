@@ -1,4 +1,15 @@
 /*global jQuery, window, _*/
+
+jQuery.fn.mmUpdateInputField = function () {
+	'use strict';
+	return this.each(function () {
+		var element = jQuery(this),
+				form = jQuery(element.data('mm-form')),
+				field = form.find('[data-mm-role="' + element.data('mm-form-field') + '"]');
+		field.val(element.val());
+	});
+};
+
 jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget) {
 	'use strict';
 	messageTarget = messageTarget || window;
@@ -76,12 +87,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				self.find('[data-mm-role~=subscription-name]').val('').text('');
 				self.find('[data-mm-role~=renewal-price]').val('').text('');
 			}
-			self.find('[data-mm-role~=form-input-updater]').each(function () {
-				var elem = jQuery(this),
-						form = jQuery(elem.data('mm-form')),
-						field = form.find('[data-mm-role="' + elem.data('mm-form-field') + '"]');
-				field.val(elem.val());
-			});
+			self.find('[data-mm-role~=form-input-updater]').mmUpdateInputField();
 		},
 		showSection = function (sectionName) {
 			currentSection = sectionName;
@@ -174,10 +180,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		jQuery(id).submit();
 	});
 	self.find('[data-mm-role~=form-input-updater]').change(function () {
-		var elem = jQuery(this),
-				form = jQuery(elem.data('mm-form')),
-				field = form.find('[data-mm-role="' + elem.data('mm-form-field') + '"]');
-		field.val(elem.val());
+		jQuery(this).mmUpdateInputField();
 	});
 
 	self.on('show', function () {
