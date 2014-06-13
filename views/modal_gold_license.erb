@@ -80,6 +80,15 @@
 				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
 				</div>
 			  </div>
+			  <div class="control-group">
+				<label class="control-label">Subscription</label>
+				<div class="controls">
+					<select data-mm-role="form-input-updater" data-mm-form="#licence-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+					</select>
+				</div>
+			  </div>
 			 </form>
 			<p class="hidden-phone">Click on <strong>Log Out</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
