@@ -119,6 +119,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 
 			self.find('[data-mm-role=license-account]').text(account);
 			showSection('registration-success');
+			// jQuery('[data-mm-role="licence-purchase-form"]').submit();
 		},
 		regFail = function (apiReason) {
 			self.find('[data-mm-section=registration-fail] .alert [data-mm-role]').hide();

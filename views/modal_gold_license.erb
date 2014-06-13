@@ -173,7 +173,7 @@
 		</div>
 		<div data-mm-section="registration-success">
 			<p>You have registered for MindMup Gold as <strong data-mm-role="license-account"></strong>.</p>
-			<p>Please click on <strong>Proceed to payment</strong> and select a subscription using our secure payment page.</p>
+			<p>Please click on <strong>Proceed to payment</strong> to complete your subscription using our secure payment page.</p>
 		</div>
 	</div>
     <div class="modal-footer">
@@ -198,7 +198,7 @@
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 
-	<form id="license-renewal-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
+	<form id="license-renewal-form" data-mm-role="licence-purchase-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/renew_license">
 		<input type="hidden" data-mm-role="license-text" name="license">
 		<input type="hidden" data-mm-role="subscription-code" name="subscription">
 	</form>
