@@ -2,7 +2,7 @@
 /* todo:
  *  - center image in its half
  */
-MM.StoryboardDimensionProvider = function () {
+MM.StoryboardDimensionProvider = function (resourceManager) {
 	'use strict';
 	var self = this,
 		fakeDIV = jQuery('<div>').attr('data-mm-role', 'storyboard-sizer').addClass('storyboard-scene-title')
@@ -96,7 +96,7 @@ MM.StoryboardDimensionProvider = function () {
 			}
 			result.image.toCss = function () {
 				return {
-					'background-image': 'url("' + scene.image.url + '")',
+					'background-image': 'url("' + resourceManager.getResource(scene.image.url) + '")',
 					'background-repeat': 'no-repeat',
 					'background-size': (imageScale * scene.image.width) + 'px ' + (imageScale * scene.image.height) + 'px',
 					'background-position':  result.image.left + 'px ' + result.image.top + 'px'
@@ -120,11 +120,10 @@ MM.StoryboardDimensionProvider = function () {
 
 };
 
-MM.buildStoryboardExporter = function (storyboardModel) {
+MM.buildStoryboardExporter = function (storyboardModel, dimensionProvider) {
 	'use strict';
 	return function () {
-		var scenes = storyboardModel.getScenes(),
-			dimensionProvider = new MM.StoryboardDimensionProvider();
+		var scenes = storyboardModel.getScenes();
 		if (_.isEmpty(scenes)) {
 			return {};
 		}

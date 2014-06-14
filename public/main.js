@@ -65,15 +65,17 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource()
 			]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
+			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
+			storyboardDimensionProvider = new MM.StoryboardDimensionProvider(activeContentResourceManager),
 			layoutExportController = new MM.LayoutExportController({
-				'png': mapModel.getCurrentLayout,
-				'pdf': mapModel.getCurrentLayout,
-				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel)
+				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager),
+				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager),
+				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider)
 			}, goldApi, s3Api, activityLog),
-			iconEditor = new MM.iconEditor(mapModel),
+			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
@@ -111,7 +113,7 @@ MM.main = function (config) {
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
 				jQuery('body').mapStatusWidget(mapController, activeContentListener);
-				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController, jQuery('#splittable')).storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
+				jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, stageImageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource).storyboardKeyHandlerWidget(storyboardController, storyboardModel, mapModel, '+');
 				jQuery('#welcome_message[data-message]').welcomeMessageWidget(activityLog);
 				jQuery('#topbar').mapToolbarWidget(mapModel);
 				oldShowPalette = jQuery.fn.colorPicker.showPalette;
@@ -168,7 +170,7 @@ MM.main = function (config) {
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, new MM.StoryboardDimensionProvider());
+				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, storyboardDimensionProvider);
 				jQuery('[data-mm-role=storyboard-menu]').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 
 				/* needs to come after all optional content widgets to fire show events */

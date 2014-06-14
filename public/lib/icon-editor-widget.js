@@ -1,11 +1,13 @@
-/*global jQuery, MAPJS, MM, observable */
+/*global _, jQuery, MAPJS, MM, observable */
 
-MM.iconEditor = function (mapModel) {
+MM.iconEditor = function (mapModel, resourceManager) {
 	'use strict';
 	observable(this);
 	var currentDeferred,
 		self = this;
 	this.editIcon = function (icon) {
+		var clone = _.without(icon, 'url');
+		clone.url = resourceManager.getResource(icon.url);
 		currentDeferred = jQuery.Deferred();
 		this.dispatchEvent('iconEditRequested', icon);
 		return currentDeferred.promise();
@@ -21,7 +23,7 @@ MM.iconEditor = function (mapModel) {
 		var icon = mapModel.getIcon();
 		self.editIcon(icon).then(function (result) {
 			if (result) {
-				mapModel.setIcon('icon-editor', result.url, result.width, result.height, result.position);
+				mapModel.setIcon('icon-editor', resourceManager.storeResource(result.url), result.width, result.height, result.position);
 			} else {
 				mapModel.setIcon(false);
 			}
