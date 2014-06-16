@@ -1,27 +1,27 @@
 /*global MM */
 /* todo:
- * - embedded maps config
  * - protect against false cache hits when a map is reloaded (eg instert an index of map loaded in front of every resource)
  * - collab maps - transfer resources
  */
 MM.ActiveContentResourceManager = function (activeContentListener, prefixTemplate) {
 	'use strict';
 	var self = this,
-		index = 0,
-		prefixMatcher,
-		prefix,
-		buildPrefixMatcher = function () {
-			index++;
-			prefix = prefixTemplate + ':' + index + ':';
-			prefixMatcher = new RegExp('^' + prefix);
+		prefix = prefixTemplate + ':',
+		prefixMatcher = new RegExp('^' + prefix),
+		folder,
+		buildUniqueString = function () {
+			return 'xxxxxxxx-yxxx-yxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				return v.toString(16);
+			});
 		};
 	activeContentListener.addListener(function (content, isNew) {
 		if (isNew) {
-			buildPrefixMatcher();
+			folder = buildUniqueString() + '/';
 		}
 	});
 	self.storeResource = function (resourceURL) {
-		return prefix + activeContentListener.getActiveContent().storeResource(resourceURL);
+		return prefix + folder + activeContentListener.getActiveContent().storeResource(resourceURL);
 	};
 	self.getResource = function (resourceURL) {
 		if (prefixMatcher.test(resourceURL)) {

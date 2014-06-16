@@ -13,7 +13,7 @@ describe('MM.ActiveContentResourceManager', function () {
 		it('delegates call to activeContent', function () {
 			activeContent.storeResource.and.returnValue('xxx');
 			var result = underTest.storeResource('abc');
-			expect(result).toBe('internal:1:xxx');
+			expect(result).not.toBeUndefined();
 			expect(activeContent.storeResource).toHaveBeenCalledWith('abc');
 		});
 	});
@@ -26,44 +26,48 @@ describe('MM.ActiveContentResourceManager', function () {
 		});
 		it('delegates recognised URLs to active content and returns result', function () {
 			activeContent.getResource.and.returnValue('xxx');
-			var result = underTest.getResource('internal:1:abc');
+			activeContent.storeResource.and.returnValue('abc');
+			var id = underTest.storeResource('xxx'),
+				result = underTest.getResource(id);
 			expect(result).toBe('xxx');
-			expect(activeContent.getResource).toHaveBeenCalledWith('abc');
+			expect(activeContent.getResource.calls.mostRecent().args[0]).toMatch(/^[a-f0-9][a-f0-9-]*[a-f0-9]\/abc$/);
 		});
 	});
 	describe('event processing', function () {
-		describe('increments internal prefix when a new map is loaded', function () {
+		var oldId;
+		beforeEach(function () {
+			activeContent.storeResource.and.returnValue('xxx');
+			oldId = underTest.storeResource('abc');
+			activeContent.getResource.and.returnValue('abc');
+		});
+		describe('when a map is changed', function () {
 			beforeEach(function () {
 				fakeMapController.dispatchEvent('mapLoaded', 'i2', activeContent);
 			});
-			it('does not increment internal prefix for storeResource', function () {
-				activeContent.storeResource.and.returnValue('xxx');
+			it('storeResource returns a different URL for storeResource to avoid fake caching', function () {
 				var result = underTest.storeResource('abc');
-				expect(result).toBe('internal:2:xxx');
 				expect(activeContent.storeResource).toHaveBeenCalledWith('abc');
+				expect(result).not.toEqual(oldId);
 			});
-			it('does not increment internal prefix for getResource', function () {
-				activeContent.getResource.and.returnValue('xxx');
-				var result = underTest.getResource('internal:2:abc');
-				expect(result).toBe('xxx');
-				expect(activeContent.getResource).toHaveBeenCalledWith('abc');
+			it('will still retrieve the resource using the recorded URL from content', function () {
+				var result = underTest.getResource(oldId);
+				expect(result).toBe('abc');
+				expect(activeContent.getResource.calls.mostRecent().args[0]).toMatch(/^[a-f0-9][a-f0-9-]*[a-f0-9]\/xxx$/);
 			});
 		});
-		describe('does not increment internal prefix on a internal map change', function () {
+		describe('when the content is changed', function () {
 			beforeEach(function () {
 				activeContent.dispatchEvent('changed', 'updateTitle', [1, 'x'], 'sessionKey');
 			});
-			it('does not increment internal prefix for storeResource', function () {
-				activeContent.storeResource.and.returnValue('xxx');
+			it('storeResource does not change the URL scheme', function () {
 				var result = underTest.storeResource('abc');
-				expect(result).toBe('internal:1:xxx');
+				expect(result).toEqual(oldId);
 				expect(activeContent.storeResource).toHaveBeenCalledWith('abc');
 			});
-			it('does not increment internal prefix for getResource', function () {
-				activeContent.getResource.and.returnValue('xxx');
-				var result = underTest.getResource('internal:1:abc');
-				expect(result).toBe('xxx');
-				expect(activeContent.getResource).toHaveBeenCalledWith('abc');
+			it('will still retrieve the resource using the recorded URL from content', function () {
+				var result = underTest.getResource(oldId);
+				expect(result).toBe('abc');
+				expect(activeContent.getResource.calls.mostRecent().args[0]).toMatch(/^[a-f0-9][a-f0-9-]*[a-f0-9]\/xxx$/);
 			});
 		});
 	});
