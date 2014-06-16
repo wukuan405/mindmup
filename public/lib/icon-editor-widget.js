@@ -6,8 +6,11 @@ MM.iconEditor = function (mapModel, resourceManager) {
 	var currentDeferred,
 		self = this;
 	this.editIcon = function (icon) {
-		var clone = _.without(icon, 'url');
-		clone.url = resourceManager.getResource(icon.url);
+		var clone;
+		if (icon) {
+			clone =  _.without(icon, 'url');
+			clone.url = resourceManager.getResource(icon.url);
+		}
 		currentDeferred = jQuery.Deferred();
 		this.dispatchEvent('iconEditRequested', icon);
 		return currentDeferred.promise();

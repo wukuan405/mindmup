@@ -109,8 +109,11 @@
               activityLog = console,
               s3FileSystem = new MM.S3FileSystem(new MM.EmbeddedMapUrlGenerator({'a': {prefix: 'http://<%= settings.s3_website %>/<%= settings.s3_upload_folder %>/'  , postfix: '.json'}, 'b': {prefix: 'https://<%= ENV['GOLD_BUCKET_NAME'] %>.s3.amazonaws.com/', remove: 2}}), 'a', 'S3_CORS'),
               mapLoader = new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3FileSystem)),
-              mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
-            jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}));
+			  mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
+			  fakeMapController = observable({}),
+			  activeContentListener = new MM.ActiveContentListener(fakeMapController),
+			  activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal');
+		    jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), activeContentResourceManager.getResource);
             jQuery('.close.attachment').click(function () {
               jQuery('.attachment').hide();
               jQuery('.map').show();
@@ -144,6 +147,7 @@
           jQuery('#container').show();
           var topPosition = Math.max(0, ($('#container').outerHeight() - 150)/2);
           jQuery('#rightmenu').css('top', topPosition).show().mapToolbarWidget(mapModel);
+		  fakeMapController.dispatchEvent('mapLoaded', mapId, idea);
           mapModel.setIdea(idea);
           _gaq.push(['_trackEvent','Embedded Map', 'Loaded', mapId]);
         }, function (reason) {
@@ -154,6 +158,7 @@
         });
       },
       scriptError = function (err) {
+        console.dir(err.stack);
         var d=document.createElement("div"),
             c=document.createElement('div'),
             tryToNotifyGoogleAnalytics=function(){
