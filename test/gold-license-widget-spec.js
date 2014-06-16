@@ -65,7 +65,11 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
 					'</span>' +
-					'<select data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
+					'<select id="form-input-updater1" data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
+						'<option value="FOO">foo</option>' +
+						'<option selected value="NUMBERWANG">numberwang</option>' +
+					'</select>' +
+					'<select id="form-input-updater2" data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
 						'<option value="FOO">foo</option>' +
 						'<option selected value="NUMBERWANG">numberwang</option>' +
 					'</select>' +
@@ -145,13 +149,20 @@ describe('Gold License Widget', function () {
 	});
 	it('applies form-input-updater when value is changed', function () {
 		licenseManager.dispatchEvent('license-entry-required');
-		var select = underTest.find('[data-mm-role="form-input-updater"]');
+		var select = underTest.find('#form-input-updater1');
 		select.val('FOO');
 		select.trigger(jQuery.Event('change'));
 
 		expect(underTest.find('[data-mm-role="field-to-update"]').val()).toBe('FOO');
 	});
+	it('keeps form-input-updaters synchronised when value is changed', function () {
+		licenseManager.dispatchEvent('license-entry-required');
+		var select = underTest.find('#form-input-updater1');
+		select.val('FOO');
+		select.trigger(jQuery.Event('change'));
 
+		expect(underTest.find('#form-input-updater2').val()).toBe('FOO');
+	});
 	describe('when invoked by menu directly', function () {
 		beforeEach(function () {
 			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});

@@ -5,8 +5,10 @@ jQuery.fn.mmUpdateInputField = function () {
 	return this.each(function () {
 		var element = jQuery(this),
 				form = jQuery(element.data('mm-form')),
-				field = form.find('[data-mm-role="' + element.data('mm-form-field') + '"]');
+				field = form.find('[data-mm-role="' + element.data('mm-form-field') + '"]'),
+				siblingSelector = '[data-mm-role="form-input-updater"][data-mm-form="' + element.data('mm-form') + '"][data-mm-form-field="' + element.data('mm-form-field') + '"]';
 		field.val(element.val());
+		jQuery(siblingSelector).not(element).val(element.val());
 	});
 };
 

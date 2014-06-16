@@ -50,7 +50,7 @@
 		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.</p>
 
-		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current license. </p>
+		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current subscription. </p>
 		<form class="form-horizontal">
 		  <div class="control-group">
 			<label class="control-label" for="gold-view-account-name">Account name</label>
@@ -59,17 +59,17 @@
 			</div>
 		  </div>
 		 </form>
-		<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+		<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 
 
 		</div>
 		<div data-mm-section="invalid-license">
 			<p class="alert alert-error alert-block">This license is invalid or expired</p>
 			<p>Click on <strong>Log Out</strong> to change the active license in this browser. </p>
-			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="license-server-unavailable">
-			<p>This license server is unavailable at the moment. Please try again later. If the problem persists, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+			<p>This license server is unavailable at the moment. Please try again later. If the problem persists, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="license-purchase-required">
 			<p class="alert alert-error alert-block">A subscription has not been purchased for this license</p>
@@ -91,12 +91,12 @@
 			  </div>
 			 </form>
 			<p class="hidden-phone">Click on <strong>Log Out</strong> to remove this license from your browser or <strong>Purchase Subscription</strong> to proceed to our secure payment page. </p>
-			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
 
 		<div data-mm-section="expired-license">
 			<p class="alert alert-error alert-block">This license has expired</p>
-			<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current license. </p>
+			<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current subscription. </p>
 			<form class="form-horizontal">
 			  <div class="control-group">
 				<label class="control-label" for="gold-view-account-name">Account name</label>
@@ -105,7 +105,7 @@
 				</div>
 			  </div>
 			 </form>
-			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a> and include your current license.</p>
+			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="cancelling-subscription">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, we are cancelling your subscription</p>
@@ -180,6 +180,13 @@
 		</div>
 		<div data-mm-section="registration-success">
 			<p>You have registered for MindMup Gold as <strong data-mm-role="license-account"></strong>.</p>
+			<div>You have selected the
+				<select data-mm-role="form-input-updater" data-mm-form="#license-purchase-form" data-mm-form-field="subscription-code">
+					<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+					<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+				</select>
+				subscription.
+			</div>
 			<p>Please click on <strong>Proceed to payment</strong> to complete your subscription using our secure payment page.</p>
 		</div>
 	</div>
