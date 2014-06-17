@@ -96,6 +96,11 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 											events.push({cmd: command, args: params});
 										}
 									});
+									contentAggregate.addEventListener('resourceStored', function (resourceBody, resourceId, session) {
+										if (session === localSessionId) {
+											events.push({cmd: 'storeResource', args: [resourceBody, resourceId]});
+										}
+									});
 									events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, onEventAdded);
 									deferred.resolve(contentAggregate, mindMupId, properties);
 									$(window).off('error', realtimeError);
