@@ -120,7 +120,7 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 
 };
 
-MM.buildStoryboardExporter = function (storyboardModel, dimensionProvider) {
+MM.buildStoryboardExporter = function (storyboardModel, dimensionProvider, resourceTranslator) {
 	'use strict';
 	return function () {
 		var scenes = storyboardModel.getScenes();
@@ -129,7 +129,11 @@ MM.buildStoryboardExporter = function (storyboardModel, dimensionProvider) {
 		}
 		return {storyboard:
 			_.map(scenes, function (scene) {
-				return _.extend({title: scene.title}, dimensionProvider.getDimensionsForScene(scene, 800, 600));
+				var result = _.extend({title: scene.title}, dimensionProvider.getDimensionsForScene(scene, 800, 600));
+				if (result.image && result.image.url) {
+					result.image.url = resourceTranslator(result.image.url);
+				}
+				return result;
 			})
 		};
 	};

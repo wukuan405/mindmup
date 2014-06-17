@@ -118,14 +118,14 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 		});
 	});
 };
-MM.buildMapLayoutExporter = function (mapModel, resourceManager) {
+MM.buildMapLayoutExporter = function (mapModel, resourceTranslator) {
 	'use strict';
 	return function () {
 		var layout = mapModel.getCurrentLayout();
 		if (layout && layout.nodes) {
 			_.each(layout.nodes, function (node) {
 				if (node.attr && node.attr.icon && node.attr.icon.url) {
-					node.attr.icon.url = resourceManager.getResource(node.attr.icon.url);
+					node.attr.icon.url = resourceTranslator(node.attr.icon.url);
 				}
 			});
 		}

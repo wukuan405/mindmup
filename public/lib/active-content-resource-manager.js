@@ -1,8 +1,6 @@
 /*global MM */
 /* todo:
- * - collab maps - transfer resources
- * - gc resources? -  avoid gc progress
- * - reuse unique resources?
+ * - gc unused resources -  avoid gc for progress
  */
 MM.ActiveContentResourceManager = function (activeContentListener, prefixTemplate) {
 	'use strict';

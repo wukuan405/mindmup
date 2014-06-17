@@ -71,9 +71,9 @@ MM.main = function (config) {
 			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
 			storyboardDimensionProvider = new MM.StoryboardDimensionProvider(activeContentResourceManager),
 			layoutExportController = new MM.LayoutExportController({
-				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager),
-				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager),
-				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider)
+				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
+				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
+				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource)
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),

@@ -139,11 +139,11 @@ describe('LayoutExport', function () {
 });
 describe('MM.buildMapLayoutExporter', function () {
 	'use strict';
-	var underTest, mapModel, resourceManager;
+	var underTest, mapModel, resourceTranslator;
 	beforeEach(function () {
 		mapModel = jasmine.createSpyObj('mapModel', ['getCurrentLayout']);
-		resourceManager = { getResource: function (x) { return 'get+' + x; }};
-		underTest = MM.buildMapLayoutExporter(mapModel, resourceManager);
+		resourceTranslator = function (x) { return 'get+' + x; };
+		underTest = MM.buildMapLayoutExporter(mapModel, resourceTranslator);
 	});
 	it('replaces all icon URLs in the layout nodes with resource URLs', function () {
 		mapModel.getCurrentLayout.and.returnValue({nodes: { 1: { title: 'first', attr: {icon: { url: 'x1'}}}, 2: {title: 'no icon'}, 3: { title: 'another', attr: {icon: { url: 'x2'}}}}});
