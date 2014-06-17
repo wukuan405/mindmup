@@ -948,6 +948,14 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('storeResource', arguments);
 	};
 	commandProcessors.storeResource = function (originSession, resourceBody, optionalKey) {
+		if (!optionalKey && contentAggregate.resources) {
+			var existingId = _.find(_.keys(contentAggregate.resources), function (key) {
+				return contentAggregate.resources[key] === resourceBody;
+			});
+			if (existingId) {
+				return existingId;
+			}
+		}
 		var maxIdForSession = function () {
 				if (_.isEmpty(contentAggregate.resources)) {
 					return 0;
@@ -2824,7 +2832,7 @@ MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 	domImg.src = src;
 	return deferred.promise();
 };
-MAPJS.ImageInsertController = function (corsProxyUrl) {
+MAPJS.ImageInsertController = function (corsProxyUrl, resourceConverter) {
 	'use strict';
 	var self = observable(this),
 		readFileIntoDataUrl = function (fileInfo) {
@@ -2842,7 +2850,11 @@ MAPJS.ImageInsertController = function (corsProxyUrl) {
 		self.dispatchEvent('imageLoadStarted');
 		MAPJS.getDataURIAndDimensions(dataUrl, corsProxyUrl).then(
 			function (result) {
-				self.dispatchEvent('imageInserted', result.dataUri, result.width, result.height, evt);
+				var storeUrl = result.dataUri;
+				if (resourceConverter) {
+					storeUrl = resourceConverter(storeUrl);
+				}
+				self.dispatchEvent('imageInserted', storeUrl, result.width, result.height, evt);
 			},
 			function (reason) {
 				self.dispatchEvent('imageInsertError', reason);
@@ -3781,9 +3793,8 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	viewPort.on('scroll', function () { viewPortDimensions = undefined; });
 	if (imageInsertController) {
 		imageInsertController.addEventListener('imageInserted', function (dataUrl, imgWidth, imgHeight, evt) {
-			var point = stagePositionForPointEvent(evt),
-				translatedUrl = resourceTranslator ? resourceTranslator(dataUrl) : dataUrl;
-			mapModel.dropImage(translatedUrl, imgWidth, imgHeight, point.x, point.y);
+			var point = stagePositionForPointEvent(evt);
+			mapModel.dropImage(dataUrl, imgWidth, imgHeight, point.x, point.y);
 		});
 	}
 	mapModel.addEventListener('nodeCreated', function (node) {

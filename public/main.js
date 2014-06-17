@@ -77,9 +77,8 @@ MM.main = function (config) {
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
-
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
-			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl),
+			stageImageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
 			measuresModel = new MM.MeasuresModel('measurements-config', 'measurements', activeContentListener, new MM.MeasuresModel.ActivatedNodesFilter(mapModel)),
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),

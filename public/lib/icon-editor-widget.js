@@ -1,4 +1,4 @@
-/*global _, jQuery, MAPJS, MM, observable */
+/*global jQuery, MAPJS, MM, observable */
 
 MM.iconEditor = function (mapModel, resourceManager) {
 	'use strict';
@@ -6,10 +6,8 @@ MM.iconEditor = function (mapModel, resourceManager) {
 	var currentDeferred,
 		self = this;
 	this.editIcon = function (icon) {
-		var clone;
 		if (icon) {
-			clone =  _.without(icon, 'url');
-			clone.url = resourceManager.getResource(icon.url);
+			icon.url = resourceManager.getResource(icon.url);
 		}
 		currentDeferred = jQuery.Deferred();
 		this.dispatchEvent('iconEditRequested', icon);
