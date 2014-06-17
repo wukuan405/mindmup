@@ -303,7 +303,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return dotIndex > 0 && id.substr(dotIndex + 1);
 		},
 		commandProcessors = {},
-		configuration = {};
+		configuration = {},
+		uniqueResourcePostfix = '/xxxxxxxx-yxxx-yxxx-yxxx-xxxxxxxxxxxx/'.replace(/[xy]/g, function (c) {
+			/*jshint bitwise: false*/
+			var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		}) + (sessionKey || '');
 	contentAggregate.setConfiguration = function (config) {
 		configuration = config || {};
 	};
@@ -939,11 +944,10 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 		return false;
 	};
-	if (contentAggregate.formatVersion != 2) {
-		upgrade(contentAggregate);
-		contentAggregate.formatVersion = 2;
-	}
-	contentAggregate.storeResource = function (resourceBody) {
+	contentAggregate.storeResource = function (/*resourceBody, optionalKey*/) {
+		return contentAggregate.execCommand('storeResource', arguments);
+	};
+	commandProcessors.storeResource = function (originSession, resourceBody, optionalKey) {
 		var maxIdForSession = function () {
 				if (_.isEmpty(contentAggregate.resources)) {
 					return 0;
@@ -952,26 +956,27 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 						return parseInt(string, 10);
 					},
 					keys = _.keys(contentAggregate.resources),
-					filteredKeys = sessionKey ? _.filter(keys, RegExp.prototype.test.bind(new RegExp('\\.' + sessionKey + '$'))) : keys,
+					filteredKeys = sessionKey ? _.filter(keys, RegExp.prototype.test.bind(new RegExp('\\/' + sessionKey + '$'))) : keys,
 					intKeys = _.map(filteredKeys, toInt);
 				return _.isEmpty(intKeys) ? 0 : _.max(intKeys);
 			},
 			nextResourceId = function () {
 				var intId = maxIdForSession() + 1;
-				if (!sessionKey) {
-					return String(intId);
-				}
-				return intId + '.' + sessionKey;
+				return intId + uniqueResourcePostfix;
 			},
-			id = nextResourceId();
+			id = optionalKey || nextResourceId();
 		contentAggregate.resources = contentAggregate.resources || {};
 		contentAggregate.resources[id] = resourceBody;
-		contentAggregate.dispatchEvent('resourceAdded', id, resourceBody);
+		contentAggregate.dispatchEvent('resourceStored', resourceBody, id, originSession);
 		return id;
 	};
 	contentAggregate.getResource = function (id) {
 		return contentAggregate.resources && contentAggregate.resources[id];
 	};
+	if (contentAggregate.formatVersion != 2) {
+		upgrade(contentAggregate);
+		contentAggregate.formatVersion = 2;
+	}
 	init(contentAggregate);
 	return contentAggregate;
 };
@@ -2880,6 +2885,7 @@ jQuery.fn.imageDropWidget = function (imageInsertController) {
 };
 /*global jQuery, Color, _, MAPJS, document, window*/
 MAPJS.DOMRender = {
+	svgPixel: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
 	nodeCacheMark: function (idea, levelOverride) {
 		'use strict';
 		return {
@@ -2893,6 +2899,9 @@ MAPJS.DOMRender = {
 	dimensionProvider: function (idea, level) {
 		'use strict'; /* support multiple stages? */
 		var textBox = jQuery(document).nodeWithId(idea.id),
+			translateToPixel = function () {
+				return MAPJS.DOMRender.svgPixel;
+			},
 			result;
 		if (textBox && textBox.length > 0) {
 			if (_.isEqual(textBox.data('nodeCacheMark'), MAPJS.DOMRender.nodeCacheMark(idea, level))) {
@@ -2900,7 +2909,7 @@ MAPJS.DOMRender = {
 			}
 		}
 		textBox = MAPJS.DOMRender.dummyTextBox;
-		textBox.attr('mapjs-level', level).appendTo('body').updateNodeContent(idea);
+		textBox.attr('mapjs-level', level).appendTo('body').updateNodeContent(idea, translateToPixel);
 		result = {
 			width: textBox.outerWidth(true),
 			height: textBox.outerHeight(true)
@@ -3772,8 +3781,9 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	viewPort.on('scroll', function () { viewPortDimensions = undefined; });
 	if (imageInsertController) {
 		imageInsertController.addEventListener('imageInserted', function (dataUrl, imgWidth, imgHeight, evt) {
-			var point = stagePositionForPointEvent(evt);
-			mapModel.dropImage(dataUrl, imgWidth, imgHeight, point.x, point.y);
+			var point = stagePositionForPointEvent(evt),
+				translatedUrl = resourceTranslator ? resourceTranslator(dataUrl) : dataUrl;
+			mapModel.dropImage(translatedUrl, imgWidth, imgHeight, point.x, point.y);
 		});
 	}
 	mapModel.addEventListener('nodeCreated', function (node) {
