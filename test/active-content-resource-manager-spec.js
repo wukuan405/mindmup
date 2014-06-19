@@ -1,4 +1,4 @@
-/*global MM, describe, beforeEach, it, jasmine, expect, observable*/
+/*global MM, describe, beforeEach, it, jasmine, expect, observable, MAPJS */
 describe('MM.ActiveContentResourceManager', function () {
 	'use strict';
 	var underTest, activeContentListener, activeContent, fakeMapController;
@@ -31,6 +31,38 @@ describe('MM.ActiveContentResourceManager', function () {
 				result = underTest.getResource(id);
 			expect(result).toBe('xxx');
 			expect(activeContent.getResource).toHaveBeenCalledWith('abc');
+		});
+	});
+	describe('on new map load', function () {
+		var withResources;
+		beforeEach(function () {
+			withResources = {
+				title: 'test',
+				attr: {icon: {url: 'internal:5/1/session1' }},
+				ideas: {
+					1: {
+						attr: {icon: {url: 'internal:7/2/session1' }},
+					},
+					2: {
+						attr: {icon: {url: 'internal:9/2/session2' }},
+					},
+					3: {
+						attr: {icon: {url: 'internal:10' }},
+					}
+				},
+				resources: {'5/1/session1': 'r1', '7/2/session1': 'r2', '9/2/session2': 'r3', '10': 'r4', '3/3/3': 'toBeRemoved'}
+			};
+			activeContent = MAPJS.content(withResources, 'session1');
+			fakeMapController.dispatchEvent('mapLoaded', 'i2', activeContent);
+		});
+		it('does not clean up resources used with attr.icon.url in root', function () {
+			expect(activeContent.resources['5/1/session1']).toBe('r1');
+		});
+		it('does not clean up resources used with attr.icon.url in children', function () {
+			expect(activeContent.resources['7/2/session1']).toBe('r2');
+		});
+		it('cleans up resources not used in any nodes', function () {
+			expect(activeContent.resources['3/3/3']).toBeFalsy();
 		});
 	});
 });
