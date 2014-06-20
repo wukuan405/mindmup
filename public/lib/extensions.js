@@ -138,13 +138,6 @@ MM.Extensions.config = {
 			'use strict';
 			return (/^d1/).test(mapId);
 		}
-	},
-	'kinetic': {
-		name: 'Old MindMup Layout (Deprecated)',
-		script: '/e/kinetic-all.js',
-		icon: 'icon-thumbs-down',
-		doc: 'http://blog.mindmup.com/p/new-drawing-engine.html',
-		desc: 'Switch back to old MindMup layout temporarily'
 	}
 };
 jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
