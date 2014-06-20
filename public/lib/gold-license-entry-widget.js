@@ -103,11 +103,27 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 			self.find('[data-mm-role~=form-input-updater]').mmUpdateInputField();
 		},
+		pollerIntervalId = false,
 		showSection = function (sectionName) {
+			var section = self.find('[data-mm-section~=' + sectionName + ']');
+			if (pollerIntervalId) {
+				window.clearInterval(pollerIntervalId);
+			}
+
 			currentSection = sectionName;
 			audit('license-section', sectionName);
 			self.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').hide();
-			self.find('[data-mm-section~=' + sectionName + ']').show();
+			section.show();
+			if (section.data('mm-poll-for-subscription')) {
+				pollerIntervalId = window.setInterval(
+					function () {
+						goldApi.getSubscription().then(checkForPurchasedSubscription);
+					},
+				5000);
+				//poll till a license is paid for
+				//or showsection is called
+				//or widget is closed
+			}
 		},
 		initialSection = function (hasLicense, wasEntryRequired) {
 			if (wasEntryRequired) {
@@ -172,26 +188,31 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			goldApi.register(accountNameField.val(), emailField.val()).then(regSuccess, regFail);
 			showSection('registration-progress');
 		},
+		checkForPurchasedSubscription = function (subscription) {
+			var expiryTs = subscription && subscription.expiry;
+			if (expiryTs > Date.now() / 1000) {
+				licenseManager.completeLicenseEntry();
+				if (currentSection === 'view-license') {
+					displaySubscription(subscription, 'view-license');
+				} else {
+					displaySubscription(subscription, 'payment-complete');
+				}
+
+			}
+		},
 		onWindowMessage = function (windowMessageEvt) {
 			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
 				audit('license-message', windowMessageEvt.data.goldApi);
-				goldApi.getSubscription().then(function (subscription) {
-					var expiryTs = subscription && subscription.expiry;
-					if (expiryTs > Date.now() / 1000) {
-						licenseManager.completeLicenseEntry();
-						if (currentSection === 'view-license') {
-							displaySubscription(subscription, 'view-license');
-						} else {
-							displaySubscription(subscription, 'payment-complete');
-						}
-
-					}
-				});
+				goldApi.getSubscription().then(checkForPurchasedSubscription);
 			}
 		};
 	self.find('form').submit(function () {return this.action; });
 	self.find('[data-mm-role~=form-submit]').click(function () {
-		var id = jQuery(this).data('mm-form');
+		var id = jQuery(this).data('mm-form'),
+				form = jQuery(id);
+		if (form.data('mm-next-section')) {
+			showSection(form.data('mm-next-section'));
+		}
 		jQuery(id).submit();
 	});
 	self.find('[data-mm-role~=form-input-updater]').change(function () {
@@ -213,6 +234,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 
 	self.on('hidden', function () {
 		licenseManager.cancelLicenseEntry();
+		if (pollerIntervalId) {
+			window.clearInterval(pollerIntervalId);
+		}
 		remove.show();
 		openFromLicenseManager = false;
 	});

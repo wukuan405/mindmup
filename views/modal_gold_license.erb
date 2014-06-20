@@ -123,6 +123,11 @@
 			<p class="alert alert-block alert-success">Your Mindmup Gold subscription was successful</p>
 			<p>Thank you for your payment. You are now ready to start using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong></p>
 		</div>
+
+		<div data-mm-section="waiting-for-payment" mm-poll-for-subscription="true">
+			<p><i class="icon-spinner icon-spin"></i>&nbsp;Waiting for payment to be processed for <strong><span data-mm-role="account-name"></span></strong></p>
+		</div>
+
 		<div data-mm-section="loading-subscription">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, we are loading the subscription information for <strong><span data-mm-role="account-name"></span></strong></p>
 		</div>
@@ -214,7 +219,7 @@
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 
-	<form id="license-purchase-form" data-mm-role="license-purchase-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/buy_subscription">
+	<form id="license-purchase-form" data-mm-role="license-purchase-form" data-mm-next-section="waiting-for-payment" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/buy_subscription">
 		<input type="hidden" data-mm-role="license-text" name="license">
 		<input type="hidden" data-mm-role="subscription-code" name="subscription">
 	</form>
@@ -224,7 +229,7 @@
 
 
 	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
-	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription" class="btn hidden-phone-portrait" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
     </div>
   </div>
 
