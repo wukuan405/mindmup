@@ -40,6 +40,18 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			if (subscription.paymentType) {
 				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-type-block]').show();
 				self.find('[data-mm-role~=payment-type]').text(subscription.paymentType);
+				if (subscription.paymentType === 'PayPal') {
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').show();
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
+				} else {
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').show();
+				}
+				if (subscription.canChangeCard) {
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').show();
+				} else {
+					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
+				}
 			} else {
 				self.find('[data-mm-role~=payment-type-block]').hide();
 			}
