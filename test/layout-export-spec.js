@@ -137,3 +137,20 @@ describe('LayoutExport', function () {
 		});
 	});
 });
+describe('MM.buildMapLayoutExporter', function () {
+	'use strict';
+	var underTest, mapModel, resourceTranslator;
+	beforeEach(function () {
+		mapModel = jasmine.createSpyObj('mapModel', ['getCurrentLayout']);
+		resourceTranslator = function (x) { return 'get+' + x; };
+		underTest = MM.buildMapLayoutExporter(mapModel, resourceTranslator);
+	});
+	it('replaces all icon URLs in the layout nodes with resource URLs', function () {
+		mapModel.getCurrentLayout.and.returnValue({nodes: { 1: { title: 'first', attr: {icon: { url: 'x1'}}}, 2: {title: 'no icon'}, 3: { title: 'another', attr: {icon: { url: 'x2'}}}}});
+		expect(underTest()).toEqual({nodes: { 1: { title: 'first', attr: {icon: { url: 'get+x1'}}}, 2: {title: 'no icon'}, 3: { title: 'another', attr: {icon: { url: 'get+x2'}}}}});
+	});
+	it('survives no nodes', function () {
+		mapModel.getCurrentLayout.and.returnValue({links: []});
+		expect(underTest()).toEqual({links: []});
+	});
+});

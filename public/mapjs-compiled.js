@@ -303,7 +303,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return dotIndex > 0 && id.substr(dotIndex + 1);
 		},
 		commandProcessors = {},
-		configuration = {};
+		configuration = {},
+		uniqueResourcePostfix = '/xxxxxxxx-yxxx-yxxx-yxxx-xxxxxxxxxxxx/'.replace(/[xy]/g, function (c) {
+			/*jshint bitwise: false*/
+			var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		}) + (sessionKey || '');
 	contentAggregate.setConfiguration = function (config) {
 		configuration = config || {};
 	};
@@ -938,6 +943,43 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return true;
 		}
 		return false;
+	};
+	contentAggregate.storeResource = function (/*resourceBody, optionalKey*/) {
+		return contentAggregate.execCommand('storeResource', arguments);
+	};
+	commandProcessors.storeResource = function (originSession, resourceBody, optionalKey) {
+		if (!optionalKey && contentAggregate.resources) {
+			var existingId = _.find(_.keys(contentAggregate.resources), function (key) {
+				return contentAggregate.resources[key] === resourceBody;
+			});
+			if (existingId) {
+				return existingId;
+			}
+		}
+		var maxIdForSession = function () {
+				if (_.isEmpty(contentAggregate.resources)) {
+					return 0;
+				}
+				var toInt = function (string) {
+						return parseInt(string, 10);
+					},
+					keys = _.keys(contentAggregate.resources),
+					filteredKeys = sessionKey ? _.filter(keys, RegExp.prototype.test.bind(new RegExp('\\/' + sessionKey + '$'))) : keys,
+					intKeys = _.map(filteredKeys, toInt);
+				return _.isEmpty(intKeys) ? 0 : _.max(intKeys);
+			},
+			nextResourceId = function () {
+				var intId = maxIdForSession() + 1;
+				return intId + uniqueResourcePostfix;
+			},
+			id = optionalKey || nextResourceId();
+		contentAggregate.resources = contentAggregate.resources || {};
+		contentAggregate.resources[id] = resourceBody;
+		contentAggregate.dispatchEvent('resourceStored', resourceBody, id, originSession);
+		return id;
+	};
+	contentAggregate.getResource = function (id) {
+		return contentAggregate.resources && contentAggregate.resources[id];
 	};
 	if (contentAggregate.formatVersion != 2) {
 		upgrade(contentAggregate);
@@ -2790,7 +2832,7 @@ MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 	domImg.src = src;
 	return deferred.promise();
 };
-MAPJS.ImageInsertController = function (corsProxyUrl) {
+MAPJS.ImageInsertController = function (corsProxyUrl, resourceConverter) {
 	'use strict';
 	var self = observable(this),
 		readFileIntoDataUrl = function (fileInfo) {
@@ -2808,7 +2850,11 @@ MAPJS.ImageInsertController = function (corsProxyUrl) {
 		self.dispatchEvent('imageLoadStarted');
 		MAPJS.getDataURIAndDimensions(dataUrl, corsProxyUrl).then(
 			function (result) {
-				self.dispatchEvent('imageInserted', result.dataUri, result.width, result.height, evt);
+				var storeUrl = result.dataUri;
+				if (resourceConverter) {
+					storeUrl = resourceConverter(storeUrl);
+				}
+				self.dispatchEvent('imageInserted', storeUrl, result.width, result.height, evt);
 			},
 			function (reason) {
 				self.dispatchEvent('imageInsertError', reason);
@@ -2851,6 +2897,7 @@ jQuery.fn.imageDropWidget = function (imageInsertController) {
 };
 /*global jQuery, Color, _, MAPJS, document, window*/
 MAPJS.DOMRender = {
+	svgPixel: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
 	nodeCacheMark: function (idea, levelOverride) {
 		'use strict';
 		return {
@@ -2864,6 +2911,9 @@ MAPJS.DOMRender = {
 	dimensionProvider: function (idea, level) {
 		'use strict'; /* support multiple stages? */
 		var textBox = jQuery(document).nodeWithId(idea.id),
+			translateToPixel = function () {
+				return MAPJS.DOMRender.svgPixel;
+			},
 			result;
 		if (textBox && textBox.length > 0) {
 			if (_.isEqual(textBox.data('nodeCacheMark'), MAPJS.DOMRender.nodeCacheMark(idea, level))) {
@@ -2871,7 +2921,7 @@ MAPJS.DOMRender = {
 			}
 		}
 		textBox = MAPJS.DOMRender.dummyTextBox;
-		textBox.attr('mapjs-level', level).appendTo('body').updateNodeContent(idea);
+		textBox.attr('mapjs-level', level).appendTo('body').updateNodeContent(idea, translateToPixel);
 		result = {
 			width: textBox.outerWidth(true),
 			height: textBox.outerHeight(true)
@@ -3245,7 +3295,7 @@ jQuery.fn.addNodeCacheMark = function (idea) {
 	this.data('nodeCacheMark', MAPJS.DOMRender.nodeCacheMark(idea));
 };
 
-jQuery.fn.updateNodeContent = function (nodeContent) {
+jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 	'use strict';
 	var MAX_URL_LENGTH = 25,
 		self = jQuery(this),
@@ -3369,7 +3419,7 @@ jQuery.fn.updateNodeContent = function (nodeContent) {
 				textWidth = textBox.outerWidth();
 				maxTextWidth = parseInt(textBox.css('max-width'), 10);
 				_.extend(selfProps, {
-					'background-image': 'url("' + icon.url + '")',
+					'background-image': 'url("' + (resourceTranslator ? resourceTranslator(icon.url) : icon.url) + '")',
 					'background-repeat': 'no-repeat',
 					'background-size': icon.width + 'px ' + icon.height + 'px',
 					'background-position': 'center center'
@@ -3567,7 +3617,7 @@ jQuery.fn.editNode = function () {
 
 })();
 
-MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController) {
+MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator) {
 	'use strict';
 	var viewPort = stageElement.parent(),
 		connectorsForAnimation = jQuery(),
@@ -3750,7 +3800,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('nodeCreated', function (node) {
 		var element = stageElement.createNode(node)
 			.queueFadeIn(nodeAnimOptions)
-			.updateNodeContent(node)
+			.updateNodeContent(node, resourceTranslator)
 			.on('tap', function (evt) {
 
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
@@ -3888,7 +3938,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		}
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
-		stageElement.nodeWithId(n.id).updateNodeContent(n);
+		stageElement.nodeWithId(n.id).updateNodeContent(n, resourceTranslator);
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		var element = stageElement.createConnector(connector).queueFadeIn(nodeAnimOptions).updateConnector(true);
@@ -4042,7 +4092,7 @@ jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator) {
 	'use strict';
 	var hotkeyEventHandlers = {
 			'return': 'addSiblingIdea',
@@ -4152,7 +4202,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			});
 
 		}
-		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController);
+		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {

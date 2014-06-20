@@ -49,7 +49,13 @@ describe('MM.ActiveContentListener', function () {
 			expect(onChangeFunction1).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
 			expect(onChangeFunction2).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
 		});
-
+		it('should ignore session ID when included in the change event', function () {
+			onChangeFunction1.calls.reset();
+			onChangeFunction2.calls.reset();
+			activeContent.dispatchEvent('changed', 'methodarg', ['foo', 'bar'], 'sessionkey');
+			expect(onChangeFunction1).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
+			expect(onChangeFunction2).toHaveBeenCalledWith(activeContent, false, 'methodarg', ['foo', 'bar']);
+		});
 		describe('when subsequent maps are loaded', function () {
 			var newActiveContent;
 			beforeEach(function () {
@@ -73,6 +79,15 @@ describe('MM.ActiveContentListener', function () {
 				onChangeFunction1.calls.reset();
 				onChangeFunction2.calls.reset();
 				newActiveContent.dispatchEvent('changed', 'newmethodarg', ['bar', 'foo']);
+				expect(onChangeFunction1.calls.count()).toBe(1);
+				expect(onChangeFunction2.calls.count()).toBe(1);
+				expect(onChangeFunction1).toHaveBeenCalledWith(newActiveContent, false, 'newmethodarg', ['bar', 'foo']);
+				expect(onChangeFunction2).toHaveBeenCalledWith(newActiveContent, false, 'newmethodarg', ['bar', 'foo']);
+			});
+			it('should ignore session key', function () {
+				onChangeFunction1.calls.reset();
+				onChangeFunction2.calls.reset();
+				newActiveContent.dispatchEvent('changed', 'newmethodarg', ['bar', 'foo'], 'sessionkey');
 				expect(onChangeFunction1.calls.count()).toBe(1);
 				expect(onChangeFunction2.calls.count()).toBe(1);
 				expect(onChangeFunction1).toHaveBeenCalledWith(newActiveContent, false, 'newmethodarg', ['bar', 'foo']);
