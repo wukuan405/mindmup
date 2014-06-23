@@ -260,6 +260,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 		);
 	});
+	self.find('button[data-mm-role~=go-back]').click(function () {
+		var element = jQuery(this),
+				backToSection = element.data('mm-back-to-section');
+		if (backToSection) {
+			showSection(backToSection);
+		}
+	});
 	self.find('button[data-mm-role=kickoff-sign-up]').click(function () {
 		var entered = self.find('[data-mm-role=gold-account-identifier]').val(),
 			isEmail = _.include(entered, '@');

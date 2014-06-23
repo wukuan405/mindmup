@@ -37,6 +37,7 @@ describe('Gold License Widget', function () {
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
+					'<button data-mm-role="go-back" data-mm-back-to-section="registration-success" />' +
 					'<button data-mm-role="kickoff-sign-up"/>' +
 					'<button data-mm-role="kickoff-restore-license"/>' +
 					'<button data-mm-role="restore-license-with-code"/>' +
@@ -532,11 +533,17 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=email-exists]').is(':visible')).toBeFalsy();
 			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=network-error]').is(':visible')).toBeTruthy();
 		});
+		it('shows section defined in data-mm-back-to-section if go-back is clicked', function () {
+			underTest.find('[data-mm-section]').hide();
+			underTest.find('[data-mm-role=go-back]').click();
+			checkSectionShown('registration-success');
+		});
 		it('shows registration-success section if registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({});
 			checkSectionShown('registration-success');
 		});
+
 		it('fills in license-capacity, grace-period, email, license-text when registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();
 			registerDeferred.resolve({
