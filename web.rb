@@ -42,6 +42,9 @@ configure do
   set :publishing_config_url, '/publishingConfig'
   set :async_scripts, '//www.google-analytics.com/ga.js'
   set :online, "offline" != ENV['OFFLINE']
+  set :paypal_recipient, ENV['PAYPAL_ID']
+  set :paypal_url, ENV['PAYPAL_URL']
+  set :paypal_return_url, ENV['PAYPAL_RETURN_URL']
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]

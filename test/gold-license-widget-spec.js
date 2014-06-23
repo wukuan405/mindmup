@@ -37,7 +37,7 @@ describe('Gold License Widget', function () {
 					'<input type="text" data-mm-role="account-name" value="dirty"/>' +
 					'<span data-mm-role="expired">expired!</span>' +
 					'<button data-mm-role="remove"/>' +
-					'<button data-mm-role="go-back" data-mm-back-to-section="registration-success" />' +
+					'<button data-mm-role="go-back" />' +
 					'<button data-mm-role="kickoff-sign-up"/>' +
 					'<button data-mm-role="kickoff-restore-license"/>' +
 					'<button data-mm-role="restore-license-with-code"/>' +
@@ -66,15 +66,15 @@ describe('Gold License Widget', function () {
 					'<span data-mm-role="license-email"/>' +
 					'<span data-mm-role="license-expiry"/>' +
 					'</span>' +
-					'<select id="form-input-updater1" data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
+					'<select id="form-input-updater1" data-mm-role="form-input-updater" data-mm-form="form-to-update" data-mm-form-field="field-to-update">' +
 						'<option value="FOO">foo</option>' +
 						'<option selected value="NUMBERWANG">numberwang</option>' +
 					'</select>' +
-					'<select id="form-input-updater2" data-mm-role="form-input-updater" data-mm-form="#form-to-update" data-mm-form-field="field-to-update">' +
+					'<select id="form-input-updater2" data-mm-role="form-input-updater" data-mm-form="form-to-update" data-mm-form-field="field-to-update">' +
 						'<option value="FOO">foo</option>' +
 						'<option selected value="NUMBERWANG">numberwang</option>' +
 					'</select>' +
-					'<form id="form-to-update">' +
+					'<form data-mm-role="form-to-update">' +
 						'<input data-mm-role="field-to-update"/>' +
 					'</form>' +
 					'</div>',
@@ -533,10 +533,12 @@ describe('Gold License Widget', function () {
 			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=email-exists]').is(':visible')).toBeFalsy();
 			expect(underTest.find('[data-mm-section=registration-fail] [data-mm-role=network-error]').is(':visible')).toBeTruthy();
 		});
-		it('shows section defined in data-mm-back-to-section if go-back is clicked', function () {
-			underTest.find('[data-mm-section]').hide();
+		it('shows previous section if go-back is clicked', function () {
+			licenseManager.getLicense.and.returnValue(undefined);
+			underTest.modal('show');
+			underTest.find('[data-mm-role=register]').click();
 			underTest.find('[data-mm-role=go-back]').click();
-			checkSectionShown('registration-success');
+			checkSectionShown('no-license');
 		});
 		it('shows registration-success section if registration succeeds', function () {
 			underTest.find('[data-mm-role=register]').click();

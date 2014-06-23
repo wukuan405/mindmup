@@ -4,10 +4,10 @@ jQuery.fn.mmUpdateInputField = function () {
 	'use strict';
 	return this.each(function () {
 		var element = jQuery(this),
-				form = jQuery(element.data('mm-form')),
-				field = form.find('[data-mm-role="' + element.data('mm-form-field') + '"]'),
+				fieldSelector = 'form[data-mm-role=' + element.data('mm-form') + '] [data-mm-role="' + element.data('mm-form-field') + '"]',
+				field = jQuery(fieldSelector),
 				siblingSelector = '[data-mm-role="form-input-updater"][data-mm-form="' + element.data('mm-form') + '"][data-mm-form-field="' + element.data('mm-form-field') + '"]';
-		field.val(element.val());
+		field.attr('value', element.val());
 		jQuery(siblingSelector).not(element).val(element.val());
 	});
 };
@@ -91,12 +91,14 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
 			if (license) {
 				self.find('[data-mm-role~=license-text]').val(JSON.stringify(license));
+				self.find('[data-mm-role~=account-name]').val(license.account).text(license.account);
 				if (currentSection === 'view-license') {// || currentSection === 'unauthorised-license') {
 					showSection('loading-subscription');
 					goldApi.getSubscription().then(showSubscription, failExpiry);
 				}
 			}  else {
 				self.find('[data-mm-role~=license-text]').val('');
+				self.find('[data-mm-role~=account-name]').val('').text('');
 				self.find('[data-mm-role~=expiry-date]').val('').text('');
 				self.find('[data-mm-role~=subscription-name]').val('').text('');
 				self.find('[data-mm-role~=renewal-price]').val('').text('');
@@ -104,12 +106,13 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			self.find('[data-mm-role~=form-input-updater]').mmUpdateInputField();
 		},
 		pollerIntervalId = false,
+		previousSection,
 		showSection = function (sectionName) {
 			var section = self.find('[data-mm-section~=' + sectionName + ']');
 			if (pollerIntervalId) {
 				window.clearInterval(pollerIntervalId);
 			}
-
+			previousSection = currentSection;
 			currentSection = sectionName;
 			audit('license-section', sectionName);
 			self.find('[data-mm-section]').not('[data-mm-section~=' + sectionName + ']').hide();
@@ -120,9 +123,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 						goldApi.getSubscription().then(checkForPurchasedSubscription);
 					},
 				5000);
-				//poll till a license is paid for
-				//or showsection is called
-				//or widget is closed
 			}
 		},
 		initialSection = function (hasLicense, wasEntryRequired) {
@@ -146,10 +146,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				self.find('[data-mm-role=license-has-grace-period]').hide();
 			}
 			self.find('[data-mm-role=license-email]').text(apiResponse['email']);
-
-			self.find('[data-mm-role=license-account]').text(account);
+			self.find('[data-mm-role=account-name]').text(account).val(account);
 			showSection('registration-success');
-			// jQuery('[data-mm-role="licence-purchase-form"]').submit();
 		},
 		regFail = function (apiReason) {
 			self.find('[data-mm-section=registration-fail] .alert [data-mm-role]').hide();
@@ -207,9 +205,18 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 		};
 	self.find('form').submit(function () {return this.action; });
+
 	self.find('[data-mm-role~=form-submit]').click(function () {
 		var id = jQuery(this).data('mm-form'),
-				form = jQuery(id);
+				form = jQuery(id),
+				subscriptionCode = form.find('[data-mm-role="subscription-code"]').val(),
+				subscriptionInfo = subscriptionCode && form.find('[data-mm-subscription-code="' + subscriptionCode + '"]');
+
+		if (subscriptionInfo) {
+			form.find('[data-mm-role="subscription-description"]').val(subscriptionInfo.text());
+			form.find('[data-mm-role="subscription-amount-dollars"]').val(subscriptionInfo.data('mm-subscription-amount-dollars'));
+			form.find('[data-mm-role="subscription-period"]').val(subscriptionInfo.data('mm-subscription-period'));
+		}
 		if (form.data('mm-next-section')) {
 			showSection(form.data('mm-next-section'));
 		}
@@ -261,10 +268,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		);
 	});
 	self.find('button[data-mm-role~=go-back]').click(function () {
-		var element = jQuery(this),
-				backToSection = element.data('mm-back-to-section');
-		if (backToSection) {
-			showSection(backToSection);
+		if (previousSection) {
+			showSection(previousSection);
 		}
 	});
 	self.find('button[data-mm-role=kickoff-sign-up]').click(function () {

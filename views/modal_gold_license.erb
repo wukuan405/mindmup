@@ -83,8 +83,8 @@
 			  <div class="control-group">
 				<label class="control-label">Subscription</label>
 				<div class="controls">
-					<select data-mm-role="form-input-updater" data-mm-form="#license-purchase-form" data-mm-form-field="subscription-code">
-						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+					<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
 						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
 					</select>
 				</div>
@@ -151,8 +151,8 @@
 			  <div class="control-group">
 				<label class="control-label hidden-phone-portrait">Subscription</label>
 				<div class="controls">
-					<select data-mm-role="form-input-updater" data-mm-form="#license-purchase-form" data-mm-form-field="subscription-code">
-						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+					<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
 						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
 					</select>
 				</div>
@@ -185,10 +185,10 @@
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, processing your registration</p>
 		</div>
 		<div data-mm-section="registration-success">
-			<p>You have registered for MindMup Gold as <strong data-mm-role="license-account"></strong>.</p>
+			<p>You have registered for MindMup Gold as <strong data-mm-role="account-name"></strong>.</p>
 			<div>You have selected the
-				<select data-mm-role="form-input-updater" data-mm-form="#license-purchase-form" data-mm-form-field="subscription-code">
-					<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH'] %> monthly</option>
+				<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+					<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
 					<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
 				</select>
 				subscription.
@@ -212,12 +212,12 @@
 	<button data-category="Gold Click" data-event-type="Log In" data-mm-section="code-sent" data-mm-role="restore-license-with-code" class="btn btn-primary" tabstop="1">Log In</button>
 	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
 
-	<button data-category="Gold Click" data-event-type="Proceed to payment" data-mm-section="registration-success" class="btn btn-success" tabstop="2" data-mm-role="form-submit" data-mm-form="#license-purchase-form">Proceed to payment</button>
 
-	<button data-category="Gold Click" data-event-type="Renew" data-mm-section="expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form">Renew</button>
-	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form">Purchase Subscription</button>
+	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required registration-success expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form-paypal">Pay with PayPal</button>
 
-	<button data-category="Gold Click" data-event-type="Back" data-mm-section="waiting-for-payment" data-mm-role="go-back" data-mm-back-to-section="registration-success" class="btn btn-primary" tabstop="6">Back</button>
+	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required registration-success expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form">Pay with Card</button>
+
+	<button data-category="Gold Click" data-event-type="Back" data-mm-section="waiting-for-payment" data-mm-role="go-back" class="btn btn-primary" tabstop="6">Back</button>
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 
@@ -228,6 +228,30 @@
 	<form id="change-card-form" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/change_card">
 		<input type="hidden" data-mm-role="license-text" name="license">
 	</form>
+
+	<form id="license-purchase-form-paypal" data-mm-role="license-purchase-form" data-mm-next-section="waiting-for-payment" name="_xclick" target="_blank" class="hide" action="<%=settings.paypal_url%>/cgi-bin/webscr" method="post">
+		<span class="hide" data-mm-subscription-code="<%=ENV['STRIPE_PLAN_MONTH']%>" data-mm-subscription-amount-dollars="2.99" data-mm-subscription-period="M"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</span>
+		<span class="hide" data-mm-subscription-code="<%=ENV['STRIPE_PLAN_YEAR']%>" data-mm-subscription-amount-dollars="25.00" data-mm-subscription-period="Y"><%= ENV['STRIPE_PRICE_YEAR']%> monthly</span>
+		<input data-mm-role="subscription-code">
+		<input type="hidden" name="cmd" value="_xclick-subscriptions">
+		<input type="hidden" name="item_name" data-mm-role="subscription-description">
+		<input type="hidden" name="business" value="<%=settings.paypal_recipient%>">
+		<input type="hidden" name="currency_code" value="USD">
+		<input type="hidden" name="no_shipping" value="1">
+		<input type="hidden" name="a3" data-mm-role="subscription-amount-dollars">
+		<input type="hidden" name="p3" value="1">
+		<input type="hidden" name="t3" data-mm-role="subscription-period">
+		<input type="hidden" name="src" value="1">
+		<input type="hidden" name="sra" value="1">
+		<input type="hidden" name="no_note" value="1">
+		<input type="hidden" name="disp_tot" value="Y">
+		<input type="hidden" name="custom" data-mm-role="account-name">
+		<input type="hidden" name="return" value="<%=settings.paypal_return_url%>/form/paypal_complete">
+		<input type="hidden" name="cancel_return" value="<%=settings.paypal_return_url%>/form/paypal_cancel">
+		<input type="hidden" name="rm" value="2">
+		<!-- <button type="submit" class="btn btn-primary" style="width:250px">Pay with Paypal</button> -->
+	</form>
+
 
 
 	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
