@@ -1354,7 +1354,7 @@ MAPJS.MemoryClipboard = function () {
 							top: Math.round(parseInt(originalDragObjectPosition.top, 10) + event.gesture.deltaY),
 							left: Math.round(parseInt(originalDragObjectPosition.left, 10) + event.gesture.deltaX)
 						};
-					currentDragObject.css(newpos).trigger($.Event('mm:drag', {gesture: event.gesture}));
+					currentDragObject.css(newpos).trigger($.Event('mm:drag', {currentPosition: newpos, gesture: event.gesture}));
 					if (event.gesture) {
 						event.gesture.preventDefault();
 					}
@@ -1442,7 +1442,8 @@ MAPJS.MemoryClipboard = function () {
 	var onDrag = function (e) {
 			$(this).trigger(
 				$.Event('mm:start-dragging', {
-					relatedTarget: this
+					relatedTarget: this,
+					gesture: e.gesture
 				})
 			);
 			e.stopPropagation();
@@ -1454,7 +1455,8 @@ MAPJS.MemoryClipboard = function () {
 		}, onShadowDrag = function (e) {
 			$(this).trigger(
 				$.Event('mm:start-dragging-shadow', {
-					relatedTarget: this
+					relatedTarget: this,
+					gesture: e.gesture
 				})
 			);
 			e.stopPropagation();
@@ -1481,10 +1483,11 @@ MAPJS.MemoryClipboard = function () {
 })();
 /*jslint forin: true, nomen: true*/
 /*global _, MAPJS, observable*/
-MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvider) {
+MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvider, defaultReorderMargin) {
 	'use strict';
 	var self = this,
 		layoutCalculator = layoutCalculatorArg,
+		reorderMargin = defaultReorderMargin || 20,
 		clipboard = clipboardProvider || new MAPJS.MemoryClipboard(),
 		analytic,
 		currentLayout = {
@@ -2450,6 +2453,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				verticallyClosestNode = node;
 			}
 		});
+		if (!manualPosition && validReposition()) {
+			self.autoPosition(nodeId);
+		}
 		result = idea.positionBefore(nodeId, verticallyClosestNode.id) || result;
 		if (manualPosition && validReposition()) {
 			if (x < parentNode.x) {
@@ -2516,6 +2522,51 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	self.setLabelGenerator = function (labelGenerator) {
 		currentLabelGenerator = labelGenerator;
 		self.rebuildRequired();
+	};
+	self.getReorderBoundary = function (nodeId) {
+		var isRoot = function (nodeId) {
+				/*jslint eqeq: true*/
+				return nodeId == idea.id;
+			},
+			isRightHalf = function (nodeId) {
+				return currentLayout.nodes[nodeId].x >= currentLayout.nodes[idea.id].x;
+			},
+			parentIdea,
+			parentNode,
+			tops,
+			bottoms,
+			siblings,
+			result = {};
+		if (isRoot(nodeId)) {
+			return false;
+		}
+		parentIdea = idea.findParent(currentlySelectedIdeaId);
+		parentNode = currentLayout.nodes[parentIdea.id];
+		siblings = _.map(idea.sameSideSiblingIds(nodeId), function (id) {
+			return currentLayout.nodes[id];
+		});
+		if (siblings.length === 0) {
+			return false;
+		}
+		tops = _.map(siblings, function (node) {
+			return node.y;
+		});
+		bottoms = _.map(siblings, function (node) {
+			return node.y + node.height;
+		});
+		result = {
+			'minY': _.min(tops) -  reorderMargin - currentLayout.nodes[nodeId].height,
+			'maxY': _.max(bottoms) +  reorderMargin,
+			'margin': reorderMargin
+		};
+		if (isRightHalf(nodeId)) {
+			result.edge = 'left';
+			result.x = parentNode.x + parentNode.width + reorderMargin;
+		} else {
+			result.edge = 'right';
+			result.x = parentNode.x - reorderMargin;
+		}
+		return result;
 	};
 };
 /*global _, MAPJS, jQuery*/
@@ -3581,7 +3632,21 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 	node.shadowDraggable({disable: true});
 	return result.promise();
 };
+jQuery.fn.updateReorderBounds = function (reorderBounds, currentPosition, node) {
+	'use strict';
+	var element = this;
+	if (!reorderBounds) {
+		element.hide();
+		return;
+	}
+	element.show();
+	element.attr('mapjs-edge', reorderBounds.edge);
+	element.css({
+		top: currentPosition.y + node.height / 2 - element.height() / 2,
+		left: reorderBounds.x + (reorderBounds.edge === 'left' ? -1 : 1) * element.width(),
+	});
 
+};
 
 (function () {
 	'use strict';
@@ -3632,7 +3697,13 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 	jQuery.fn.findLink = function (linkObj) {
 		return this.find('#' + linkKey(linkObj));
 	};
-
+	jQuery.fn.createReorderBounds = function () {
+		var result = jQuery('<div>').attr({
+			'data-mapjs-role': 'reorder-bounds',
+			'class': 'mapjs-reorder-bounds'
+		}).hide().css('position', 'absolute').appendTo(this);
+		return result;
+	};
 })();
 
 MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator) {
@@ -3640,7 +3711,8 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	var viewPort = stageElement.parent(),
 		connectorsForAnimation = jQuery(),
 		linksForAnimation = jQuery(),
-		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' };
+		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' },
+		reorderBounds = stageElement.createReorderBounds();
 
 	var getViewPortDimensions = function () {
 			if (viewPortDimensions) {
@@ -3807,7 +3879,22 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			currentDroppable = nodeId;
 		},
 		currentDroppable = false,
-		viewPortDimensions;
+		viewPortDimensions,
+		withinReorderBoundary = function (reorderBoundary, nodePosition, node) {
+			if (!reorderBoundary) {
+				return false;
+			}
+			if (!nodePosition) {
+				return false;
+			}
+			var nodeX = nodePosition.x;
+			if (reorderBoundary.edge === 'right') {
+				nodeX += node.width;
+			}
+			return Math.abs(nodeX - reorderBoundary.x) < reorderBoundary.margin * 2 &&
+				nodePosition.y < reorderBoundary.maxY &&
+				nodePosition.y > reorderBoundary.minY;
+		};
 	viewPort.on('scroll', function () { viewPortDimensions = undefined; });
 	if (imageInsertController) {
 		imageInsertController.addEventListener('imageInserted', function (dataUrl, imgWidth, imgHeight, evt) {
@@ -3816,7 +3903,8 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		});
 	}
 	mapModel.addEventListener('nodeCreated', function (node) {
-		var element = stageElement.createNode(node)
+		var currentReorderBoundary,
+			element = stageElement.createNode(node)
 			.queueFadeIn(nodeAnimOptions)
 			.updateNodeContent(node, resourceTranslator)
 			.on('tap', function (evt) {
@@ -3854,16 +3942,26 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.each(updateScreenCoordinates)
 			.on('mm:start-dragging mm:start-dragging-shadow', function () {
 				mapModel.selectNode(node.id);
+				currentReorderBoundary = mapModel.getReorderBoundary(node.id);
 				element.addClass('dragging');
 			})
 			.on('mm:drag', function (evt) {
 				var dropCoords = stagePositionForPointEvent(evt),
+					currentPosition = evt.currentPosition && stagePositionForPointEvent({pageX: evt.currentPosition.left, pageY: evt.currentPosition.top}),
 					nodeId;
 				if (!dropCoords) {
 					clearCurrentDroppable();
 					return;
 				}
 				nodeId = mapModel.getNodeIdAtPosition(dropCoords.x, dropCoords.y);
+				if (!nodeId && currentPosition && withinReorderBoundary(
+						currentReorderBoundary,
+						currentPosition,
+						node)) {
+					reorderBounds.updateReorderBounds(currentReorderBoundary, currentPosition, node);
+				} else {
+					reorderBounds.hide();
+				}
 				if (!nodeId || nodeId === node.id) {
 					clearCurrentDroppable();
 				}
@@ -3883,25 +3981,24 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			})
 			.on('mm:stop-dragging', function (evt) {
 				element.removeClass('dragging');
+				reorderBounds.hide();
 				var isShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey,
 					stageDropCoordinates = stagePositionForPointEvent(evt),
-					nodeAtDrop, finalPosition, dropResult;
+					nodeAtDrop, finalPosition, dropResult, manualPosition;
 				clearCurrentDroppable();
 				if (!stageDropCoordinates) {
 					return;
 				}
 				nodeAtDrop = mapModel.getNodeIdAtPosition(stageDropCoordinates.x, stageDropCoordinates.y);
 				finalPosition = stagePositionForPointEvent({pageX: evt.finalPosition.left, pageY: evt.finalPosition.top});
-				if (nodeAtDrop === node.id) {
-					if (!isShift) {
-						return false;
-					}
-					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, !!isShift);
-				}
-				else if (nodeAtDrop) {
+				if (nodeAtDrop && nodeAtDrop !== node.id) {
 					dropResult = mapModel.dropNode(node.id, nodeAtDrop, !!isShift);
 				} else if (node.level > 1) {
-					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, !!isShift);
+					manualPosition = (!!isShift) || !withinReorderBoundary(
+						currentReorderBoundary,
+						finalPosition,
+						node);
+					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, manualPosition);
 				} else if (node.level === 1 && evt.gesture) {
 					var vpCenter = stagePointAtViewportCenter();
 					vpCenter.x -= evt.gesture.deltaX || 0;
@@ -3916,6 +4013,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.on('mm:cancel-dragging', function () {
 				clearCurrentDroppable();
 				element.removeClass('dragging');
+				reorderBounds.hide();
 			});
 		if (touchEnabled) {
 			element.on('hold', function (evt) {
