@@ -3712,7 +3712,10 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		connectorsForAnimation = jQuery(),
 		linksForAnimation = jQuery(),
 		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' },
+		reorderBounds = jQuery('<div>');
+	if (mapModel.isEditingEnabled()) {
 		reorderBounds = stageElement.createReorderBounds();
+	}
 
 	var getViewPortDimensions = function () {
 			if (viewPortDimensions) {

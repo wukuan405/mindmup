@@ -38,9 +38,9 @@
         MM.layoutStaticCustomStyle(layout);
         MAPJS.DOMRender.stageMargin = {top: 10, left: 10, bottom: 15, right: 15};
         MAPJS.DOMRender.fixedLayout = true;
-        MAPJS.DOMRender.viewController(fakeMapModel, stage, false, fakeImageController);
-
         fakeMapModel.isEditingEnabled = function () { return false;}
+
+        MAPJS.DOMRender.viewController(fakeMapModel, stage, false, fakeImageController);
         fakeMapModel.dispatchEvent('layoutChangeStarting');
 
         _.each(layout.nodes, function(node) { fakeMapModel.dispatchEvent('nodeCreated', node) });
