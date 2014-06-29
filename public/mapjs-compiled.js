@@ -2540,7 +2540,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		if (isRoot(nodeId)) {
 			return false;
 		}
-		parentIdea = idea.findParent(currentlySelectedIdeaId);
+		parentIdea = idea.findParent(nodeId);
 		parentNode = currentLayout.nodes[parentIdea.id];
 		siblings = _.map(idea.sameSideSiblingIds(nodeId), function (id) {
 			return currentLayout.nodes[id];
@@ -3951,13 +3951,14 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			.on('mm:drag', function (evt) {
 				var dropCoords = stagePositionForPointEvent(evt),
 					currentPosition = evt.currentPosition && stagePositionForPointEvent({pageX: evt.currentPosition.left, pageY: evt.currentPosition.top}),
-					nodeId;
+					nodeId,
+					hasShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey;
 				if (!dropCoords) {
 					clearCurrentDroppable();
 					return;
 				}
 				nodeId = mapModel.getNodeIdAtPosition(dropCoords.x, dropCoords.y);
-				if (!nodeId && currentPosition && withinReorderBoundary(
+				if (!hasShift && !nodeId && currentPosition && withinReorderBoundary(
 						currentReorderBoundary,
 						currentPosition,
 						node)) {
