@@ -4,6 +4,9 @@ $.fn.commandLineWidget = function (keyBinding, mapModel) {
 	'use strict';
 	var element = this;
 	element.keydown(keyBinding, function (event) {
+		if (!mapModel.getInputEnabled()) {
+			return;
+		}
 		if (event) {
 			event.preventDefault();
 			event.stopPropagation();
