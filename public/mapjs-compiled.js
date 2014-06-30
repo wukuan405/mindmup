@@ -4187,6 +4187,9 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				}
 			});
 		});
+		jQuery(window).on('orientationchange', function () {
+			mapModel.resetView();
+		});
 		jQuery(document).on('keydown', function (e) {
 			var functions = {
 				'U+003D': 'scaleUp',
