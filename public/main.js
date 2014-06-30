@@ -107,7 +107,7 @@ MM.main = function (config) {
 				}
 
 				MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
-				MAPJS.DOMRender.stageMargin = {top: 50, left: 10, bottom: 20, right: 20};
+				MAPJS.DOMRender.stageMargin = {top: 0, left: 0, bottom: 0, right: 0};
 
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
