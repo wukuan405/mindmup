@@ -106,8 +106,8 @@ MM.main = function (config) {
 					jQuery('[rel=tooltip]').tooltip();
 				}
 
-				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
 				MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 10, bottom: 20, right: 20};
+				MAPJS.DOMRender.stageMargin = {top: 50, left: 10, bottom: 20, right: 20};
 
 
 				jQuery('[data-mm-layout][data-mm-layout!=' + config.layout + ']').remove();
