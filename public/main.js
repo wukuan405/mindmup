@@ -95,9 +95,7 @@ MM.main = function (config) {
 				'activeContentListener': activeContentListener
 			}),
 			loadWidgets = function () {
-				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android'),
-					horizontalMargin = jQuery(document).innerHeight() * 0.8,
-					verticalMargin = jQuery(document).innerWidth() * 0.8;
+				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
 				if (isTouch) {
 					jQuery('[data-mm-role-touch]').attr('data-mm-role', function () {
 						return jQuery(this).attr('data-mm-role-touch');
