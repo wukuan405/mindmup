@@ -3651,9 +3651,10 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 					x: viewPort.innerWidth() / 2,
 					y: viewPort.innerHeight() / 2
 				},
-				newLeftScroll, newTopScroll;
+				newLeftScroll, newTopScroll,
+        margin = MAPJS.DOMRender.stageVisibilityMargin || {top: 0, left: 0, bottom: 0, right: 0};
 			ensureSpaceForPoint(x - viewPortCenter.x / stage.scale, y - viewPortCenter.y / stage.scale);
-			ensureSpaceForPoint(x + viewPortCenter.x / stage.scale, y + viewPortCenter.y / stage.scale);
+			ensureSpaceForPoint(x + viewPortCenter.x / stage.scale - margin.left, y + viewPortCenter.y / stage.scale - margin.top);
 
 			newLeftScroll = stage.scale * (x + stage.offsetX) - viewPortCenter.x;
 			newTopScroll = stage.scale * (y + stage.offsetY) - viewPortCenter.y;
@@ -4126,8 +4127,8 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			}).attr('data-mapjs-role', 'stage').appendTo(element).data({
 				'offsetX': element.innerWidth() / 2,
 				'offsetY': element.innerHeight() / 2,
-				'width': element.innerWidth(),
-				'height': element.innerHeight(),
+				'width': 0,
+				'height': 0,
 				'scale': 1
 			}).updateStage(),
 			previousPinchScale = false;
@@ -4187,7 +4188,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				}
 			});
 		});
-		jQuery(window).on('orientationchange', function () {
+		jQuery(window).on('orientationchange resize', function () {
 			mapModel.resetView();
 		});
 		jQuery(document).on('keydown', function (e) {
