@@ -118,7 +118,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		}
 	});
 	this.on('show', function () {
-		fileUpload.css('opacity', 0);
+		fileUpload.css('opacity', 0).val('');
 	});
 	this.on('shown', function () {
 		confirmElement.focus();
