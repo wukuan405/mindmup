@@ -231,7 +231,7 @@
 
 	<form id="license-purchase-form-paypal" data-mm-role="license-purchase-form" data-mm-next-section="waiting-for-payment" name="_xclick" target="_blank" class="hide" action="<%=settings.paypal_url%>/cgi-bin/webscr" method="post">
 		<span class="hide" data-mm-subscription-code="<%=ENV['STRIPE_PLAN_MONTH']%>" data-mm-subscription-amount-dollars="2.99" data-mm-subscription-period="M"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</span>
-		<span class="hide" data-mm-subscription-code="<%=ENV['STRIPE_PLAN_YEAR']%>" data-mm-subscription-amount-dollars="25.00" data-mm-subscription-period="Y"><%= ENV['STRIPE_PRICE_YEAR']%> monthly</span>
+		<span class="hide" data-mm-subscription-code="<%=ENV['STRIPE_PLAN_YEAR']%>" data-mm-subscription-amount-dollars="25.00" data-mm-subscription-period="Y"><%= ENV['STRIPE_PRICE_YEAR']%> yearly</span>
 		<input data-mm-role="subscription-code">
 		<input type="hidden" name="cmd" value="_xclick-subscriptions">
 		<input type="hidden" name="item_name" data-mm-role="subscription-description">
