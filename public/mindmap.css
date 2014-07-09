@@ -711,6 +711,11 @@ body .modal.huge {
   margin-top: 41px;
   -webkit-tap-highlight-color: transparent;
 }
+#splittable.ios-wkwebview {
+  width:100%; height: calc(100%);
+  margin-top: 0px;
+  -webkit-tap-highlight-color: transparent;
+}
 
 .splittable-optional .navbar {
   width:100%;
@@ -719,6 +724,12 @@ body .modal.huge {
 .splittable-optional .content {
   overflow:scroll; height:calc(100% - 41px);
 }
+
+.ios-wkwebview .splittable-optional .content {
+  overflow:scroll;
+  height:100%;
+}
+
 .splittable-primary {
   outline:1px solid #d4d4d4;
 }

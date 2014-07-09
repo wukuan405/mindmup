@@ -4,11 +4,14 @@
         <%= erb :css %>
     </head>
     <body>
-        <div id="container"></div>
+        <div id="splittable" class="ios-wkwebview">
+            <div class="splittable-primary" id="container" data-mm-role="default"></div>
+            <div class="splittable-optional" id="optionalPane" data-mm-role="optional"></div>
+        </div>
         <%= erb :scripts_ios %>
         <script id="main">
             window.onload = function () {
-
+                MM.main();
             };
         </script>
     </body>
