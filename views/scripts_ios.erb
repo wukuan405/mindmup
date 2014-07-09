@@ -1,0 +1,11 @@
+<script src="<%=settings.static_host%>/external-ios.js" ></script>
+<% if production? then %>
+    <script src="<%=settings.public_url%>/mm-ios-compiled.min.js" ></script>
+<% else %>
+      <script src="/mm.js" ></script>
+      <script src="/mapjs-compiled.js" ></script>
+      <% development_lib('-ios').each do |script| %>
+          <script src="<%=script%>" ></script>
+      <% end %>
+      <script src="/main-ios.js" ></script>
+<% end%>

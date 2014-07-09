@@ -43,13 +43,18 @@ module.exports = function (grunt) {
 			lib: {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js',
+			},
+			libios: {
+				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib-ios/*.js', 'public/main-ios.js'],
+				dest: 'compiled/mm-ios-compiled.js',
 			}
 		},
 		uglify: {
 			compiled: {
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
-					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js']
+					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
+					'compiled/mm-ios-compiled.min.js': ['compiled/mm-ios-compiled.js']
 				}
 			},
 		},
@@ -65,6 +70,7 @@ module.exports = function (grunt) {
 			all: {
 				src: [
 					'public/lib/*.js',
+					'public/lib-ios/*.js',
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
@@ -94,7 +100,7 @@ module.exports = function (grunt) {
 			}
 		}
 	});
-	grunt.registerTask('compile', ['jasmine', 'concat', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile', ['jasmine', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');

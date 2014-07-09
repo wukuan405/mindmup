@@ -132,7 +132,9 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
-
+get '/ios/page' do
+  erb :ios
+end
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
 include Sinatra::UserAgentHelpers
@@ -168,9 +170,9 @@ helpers do
      session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
      session["cohort"]
   end
-  def development_lib
-      files = Dir.entries("#{settings.public_folder}/lib").reject{|d| File.extname(d) != '.js' }
-      return files.map {|f| "/lib/#{f}"}
+  def development_lib optional=''
+      files = Dir.entries("#{settings.public_folder}/lib#{optional}").reject{|d| File.extname(d) != '.js' }
+      return files.map {|f| "/lib#{optional}/#{f}"}
   end
   def load_prefix
     if (!settings.online) then
