@@ -3,11 +3,12 @@
 
 MM.main = function () {
 	'use strict';
+	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
 			container = jQuery('#container'),
 			horizontalMargin = 0,
 			verticalMargin = 0,
-			mapjson = MM.IOS.mapToLoad && MM.IOS.mapToLoad() || MM.IOS.defaultMap(),
+			mapjson = (MM.IOS.mapToLoad && MM.IOS.mapToLoad()) || MM.IOS.defaultMap(),
 			idea = MAPJS.content(mapjson),
 			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
