@@ -3,8 +3,14 @@
         <meta name="viewport" content="user-scalable=no, minimum-scale=1, maximum-scale=1, width=768, height=984">
         <%= erb :css %>
     </head>
-    <body>
-        <div id="splittable" class="ios-wkwebview">
+    <body class="ios-wkwebview">
+        <div data-mm-role="ios-menu-toggle" class="ios-corner-icon">
+            <img  src="<%=settings.static_image_host%>/Mindwap.logo.squ.svg"/>
+            <div class="ios-icon-label">Menu</div>
+        </div>
+        <div data-mm-role"ios-menu ios-menu-horizontal" class="hide"></div>
+        <div data-mm-role"ios-menu ios-menu-vertical" class="hide"></div>
+        <div id="splittable" >
             <div class="splittable-primary" id="container" data-mm-role="default"></div>
             <div class="splittable-optional" id="optionalPane" data-mm-role="optional"></div>
         </div>

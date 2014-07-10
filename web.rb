@@ -132,7 +132,7 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
-get '/ios/page' do
+get '/ios/map' do
   erb :ios
 end
 include MindMup::GithubRoutes
