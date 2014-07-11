@@ -718,9 +718,12 @@ body .modal.huge {
 .ios-wkwebview > #splittable {
   width:100%; height: calc(100%);
   margin-top: 0px;
-  -webkit-tap-highlight-color: transparent;
 }
 
+.ios-wkwebview {
+  -webkit-tap-highlight-color: transparent;
+
+}
 .splittable-optional .navbar {
   width:100%;
   margin-bottom: 0;
@@ -825,14 +828,14 @@ body .modal.huge {
 	text-align: center;
 	line-height: 1.2;
 	top: calc(100% - 22px);
-	width: 60px;
+	width: 50px;
+	left: 5px;
 	height: 22px;
 }
 
 .ios-toolbar-item {
 	display: inline-block;
 	position: relative;
-	cursor: pointer ;
 	top: 0;
 	height: 75px;
 	width: 60px;
