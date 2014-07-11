@@ -296,7 +296,9 @@ body.ipad  {
   margin: 1px; /* ios performance fix for scrolling on ipad */
 }
 body.ios-wkwebview {
-  margin: 0px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 .image-render-visible {
 	display: none;
@@ -775,27 +777,70 @@ body .modal.huge {
 	display:table-cell; vertical-align:middle; padding-left:20%; padding-right:20%;
 }
 
+.ios-menu-toggle-container {
+	position:absolute;
+	height: 90px;
+	width: 75px;
+	top: calc(100% - 90px);
+	left: 0;
+	overflow: hidden;
+	z-index:999;
+}
+.ios-corner-icon-container {
+	position: absolute;
+	height: 100px;
+	width: 75px;
+	top: 5;
+	left: -11px;
+	border: 1px solid #22AAE0;
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+.ios-menu-toggle {
+	position: absolute;
+	top: 5;
+	left: 12;
+	height: 73px;
+	width: 65px;
+}
+.ios-toolbar {
+	position: absolute;
+	box-shadow: 0 -1px 0 #22AAE0;
+	background-color: #FFFFFF;
+	top: calc(100% - 80px);
+	left: 65px;
+	width: calc(100% - 65px);
+	height: 80px;
+	z-index:998;
+	overflow: scroll;
+}
+
 .ios-icon-label {
+	position: absolute;
 	font-family: Helvetica, "Arial Unicode MS", sans-serif;
 	font-size: 8pt;
 	color: #22AAE0;
-	font-weight: bold;
+	font-weight: normal;
 	text-align: center;
-	line-height: 2;
-}
-.ios-corner-icon {
-	position:absolute;
-	top: calc(100% - 70px);
-	left: -10;
-	padding: 10px 10px 15px 15px;
-	z-index:999;
-	border: 1px solid #22AAE0;
-	background-color: #FFFFFF;
-	border-radius: 10px;
-	box-shadow: 5px 5px 5px rgba(204, 204, 204, 0.8);
+	line-height: 1.2;
+	top: calc(100% - 22px);
+	width: 60px;
+	height: 22px;
 }
 
-.ios-corner-icon > img {
+.ios-toolbar-item {
+	display: inline-block;
+	position: relative;
+	cursor: pointer ;
+	top: 0;
+	height: 75px;
+	width: 60px;
+}
+.ios-toolbar-icon {
+	position: absolute;
+	left:10px;
+	top: 8px;
 	height:40px;
 	width:40px
 }

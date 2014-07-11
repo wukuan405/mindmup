@@ -4,12 +4,32 @@
         <%= erb :css %>
     </head>
     <body class="ios-wkwebview">
-        <div data-mm-role="ios-menu-toggle" class="ios-corner-icon">
-            <img  src="<%=settings.static_image_host%>/Mindwap.logo.squ.svg"/>
-            <div class="ios-icon-label">Menu</div>
+        <div class="ios-menu-toggle-container">
+            <div class="ios-corner-icon-container">
+                 <div data-mm-role="ios-menu-toggle" class="ios-menu-toggle">
+                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/Mindwap.logo.squ.svg"/>
+                    <div class="ios-icon-label">Menu</div>
+                 </div>
+             </div>
         </div>
-        <div data-mm-role"ios-menu ios-menu-horizontal" class="hide"></div>
-        <div data-mm-role"ios-menu ios-menu-vertical" class="hide"></div>
+             <div data-mm-role="ios-toolbar" class="ios-toolbar" >
+                <span class="ios-toolbar-item">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
+                    <div class="ios-icon-label">Add child</div>
+                </span>
+                <span class="ios-toolbar-item">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_sibling.svg">
+                    <div class="ios-icon-label">Add sibling</div>
+                </span>
+                <span class="ios-toolbar-item">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_parent.svg">
+                    <div class="ios-icon-label">Add parent</div>
+                </span>
+                <span class="ios-toolbar-item">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
+                    <div class="ios-icon-label">Delete selected</div>
+                </span>
+            </div>
         <div id="splittable" >
             <div class="splittable-primary" id="container" data-mm-role="default"></div>
             <div class="splittable-optional" id="optionalPane" data-mm-role="optional"></div>
