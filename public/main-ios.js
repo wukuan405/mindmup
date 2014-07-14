@@ -15,7 +15,7 @@ MM.main = function () {
 			showMap = function () {
 				container.domMapWidget(console, mapModel, true, imageInsertController);
 				// MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
-				// MAPJS.DOMRender.stageVisibilityMargin = {top: 0, left: 0, bottom: 0, right: 0};
+				MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 20, bottom: 50, right: 20};
 				mapModel.setIdea(idea);
 			};
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel);
@@ -28,6 +28,12 @@ MM.main = function () {
 		else if (command.type === 'setViewport') {
 			jQuery('meta[name=viewport]').attr('content', command.args);
 			//mapModel.resetView('ios');
+		}
+		else if (command.type === 'keyboardShown') {
+			jQuery('[data-mm-role="ios-menu"]').hide();
+		}
+		else if (command.type === 'keyboardHidden') {
+			jQuery('[data-mm-role="ios-menu"]').show();
 		}
 		else if (command.type === 'prepareForSave') {
 			jQuery('[data-mm-role="ios-menu"]').hide();

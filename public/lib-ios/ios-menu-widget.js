@@ -6,6 +6,8 @@ $.fn.iosMenuWidget = function (mapModel) {
 				defaultMenuName = element.data('mm-default-menu'),
 				toolbar = element.find('[data-mm-role="ios-toolbar"]'),
 				menuTitle = element.find('[data-mm-role="ios-menu-title"]'),
+				source = element.data('mm-source') || 'ios',
+				defaultToggleText = menuTitle.text(),
 				menuStack = [],
 				showMenu = function (menuName, pushToStack) {
 					element.find('[data-mm-menu][data-mm-menu!="' + menuName + '"]').hide();
@@ -14,7 +16,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 						menuStack.push(menuName);
 					}
 					if (menuStack.length === 0) {
-						menuTitle.text('Hide Menu');
+						menuTitle.text(defaultToggleText);
 					} else {
 						menuTitle.text('Back');
 					}
@@ -23,7 +25,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 		element.find('[data-mm-menu][data-mm-menu!="' + defaultMenuName + '"]').hide();
 		element.find('[data-mm-role="ios-menu-toggle"]').click(function () {
 			if (!toolbar.is(':visible')) {
-				menuTitle.text('Hide Menu');
+				menuTitle.text(defaultToggleText);
 				toolbar.show();
 			} else {
 				if (menuStack.length > 0) {
@@ -50,7 +52,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 			var clickElement = $(this),
 					action = clickElement.data('mm-action');
 			if (action && mapModel && mapModel[action]) {
-				mapModel[action]('ios');
+				mapModel[action](source);
 			}
 		});
 
