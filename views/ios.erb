@@ -9,24 +9,32 @@
                 <div class="ios-corner-icon-container">
                      <div data-mm-role="ios-menu-toggle" class="ios-menu-toggle">
                          <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/Mindwap.logo.squ.svg"/>
-                        <div data-mm-role="ios-menu-title" class="ios-icon-label">Show Menu</div>
+                        <div data-mm-role="ios-menu-title" class="ios-icon-label" data-mm-toggled-text="Hide Menu">Show Menu</div>
                      </div>
                  </div>
             </div>
             <div data-mm-role="ios-toolbar" class="ios-toolbar" style="display:none;" >
-                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="node-maintenance" >
+                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="edit" >
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_edit.svg">
+                    <div class="ios-icon-label">Edit</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="sendMessage" data-mm-message-type="SaveAndExit" >
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_exit.svg">
+                    <div class="ios-icon-label">Save and Exit</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="node-maintenance" >
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_edit_nodes.svg">
                     <div class="ios-icon-label">Edit Map</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction" data-mm-action="undo" >
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="modelAction" data-mm-action="undo" >
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_undo.svg">
                     <div class="ios-icon-label">Undo</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction" data-mm-action="redo" >
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="modelAction" data-mm-action="redo" >
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
                     <div class="ios-icon-label">Redo</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="clipboardMenu" >
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="clipboardMenu" >
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
                     <div class="ios-icon-label">Clipboard</div>
                 </a>

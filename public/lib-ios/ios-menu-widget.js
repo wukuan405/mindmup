@@ -1,5 +1,5 @@
 /*global $*/
-$.fn.iosMenuWidget = function (mapModel) {
+$.fn.iosMenuWidget = function (mapModel, messageSender) {
 	'use strict';
 	return $(this).each(function () {
 		var element = $(this),
@@ -8,6 +8,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 				menuTitle = element.find('[data-mm-role="ios-menu-title"]'),
 				source = element.data('mm-source') || 'ios',
 				defaultToggleText = menuTitle.text(),
+				altToggleText = menuTitle.data('mm-toggled-text'),
 				menuStack = [],
 				showMenu = function (menuName, pushToStack) {
 					element.find('[data-mm-menu][data-mm-menu!="' + menuName + '"]').hide();
@@ -16,7 +17,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 						menuStack.push(menuName);
 					}
 					if (menuStack.length === 0) {
-						menuTitle.text(defaultToggleText);
+						menuTitle.text(altToggleText);
 					} else {
 						menuTitle.text('Back');
 					}
@@ -25,7 +26,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 		element.find('[data-mm-menu][data-mm-menu!="' + defaultMenuName + '"]').hide();
 		element.find('[data-mm-role="ios-menu-toggle"]').click(function () {
 			if (!toolbar.is(':visible')) {
-				menuTitle.text(defaultToggleText);
+				menuTitle.text(altToggleText);
 				toolbar.show();
 			} else {
 				if (menuStack.length > 0) {
@@ -37,7 +38,7 @@ $.fn.iosMenuWidget = function (mapModel) {
 					}
 				} else {
 					toolbar.hide();
-					menuTitle.text('Show Menu');
+					menuTitle.text(defaultToggleText);
 				}
 			}
 		});
@@ -54,6 +55,15 @@ $.fn.iosMenuWidget = function (mapModel) {
 			if (action && mapModel && mapModel[action]) {
 				mapModel[action](source);
 			}
+		});
+		element.find('[data-mm-menu-role="sendMessage"]').click(function () {
+			var clickElement = $(this),
+					msg = {'type': clickElement.data('mm-message-type')},
+					argsText = clickElement.data('mm-message-args');
+			if (argsText) {
+				msg.args = argsText.split(',');
+			}
+			messageSender.sendMessage(msg);
 		});
 
 	});

@@ -6,19 +6,19 @@ MM.main = function () {
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
 			container = jQuery('#container'),
-			// horizontalMargin = 0,
-			// verticalMargin = 0,
+			horizontalMargin = 10,
+			verticalMargin = 0,
 			mapjson = (MM.IOS.mapToLoad && MM.IOS.mapToLoad()) || MM.IOS.defaultMap(),
 			idea = MAPJS.content(mapjson),
 			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
 			showMap = function () {
 				container.domMapWidget(console, mapModel, true, imageInsertController);
-				// MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
-				MAPJS.DOMRender.stageVisibilityMargin = {top: 50, left: 20, bottom: 50, right: 20};
+				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
+				MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
 				mapModel.setIdea(idea);
 			};
-	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel);
+	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	window.setTimeout(showMap, 250);
 	mmProxy.onCommand(function (command) {
 		// var commandText = JSON.stringify(command) || command;
@@ -27,7 +27,7 @@ MM.main = function () {
 		}
 		else if (command.type === 'setViewport') {
 			jQuery('meta[name=viewport]').attr('content', command.args);
-			//mapModel.resetView('ios');
+			mapModel.resetView('ios');
 		}
 		else if (command.type === 'keyboardShown') {
 			jQuery('[data-mm-role="ios-menu"]').hide();

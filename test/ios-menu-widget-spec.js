@@ -8,12 +8,15 @@ describe('iosMenuWidget', function () {
 											'<div id="defaultMenuItem" data-mm-menu="showsByDefault" style"display:none" data-mm-menu-role="showMenu" data-mm-action="notshownByDefault"></div>' +
 											'<div id="nonDefaultMenuItem" data-mm-menu="notshownByDefault" data-mm-menu-role="showMenu" data-mm-action="subsubmenu"></div>' +
 											'<div data-mm-menu="subsubmenu" data-mm-menu-role="modelAction" data-mm-action="someMethod"></div>' +
+											'<div id="sendMessageWithArgs" data-mm-menu="hiddenMenu" data-mm-menu-role="sendMessage" data-mm-message-type="hello" data-mm-message-args="you,there!"></div>' +
+											'<div id="sendMessageWithNoArgs" data-mm-menu="hiddenMenu" data-mm-menu-role="sendMessage" data-mm-message-type="hello"></div>' +
 										'</div>' +
 									'</div>',
 			mapModel = jasmine.createSpyObj('mapModel', ['someMethod']),
+			messageSender = jasmine.createSpyObj('messageSender', ['sendMessage']),
 			underTest;
 	beforeEach(function () {
-		underTest = jQuery(template).appendTo('body').iosMenuWidget(mapModel);
+		underTest = jQuery(template).appendTo('body').iosMenuWidget(mapModel, messageSender);
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -32,6 +35,16 @@ describe('iosMenuWidget', function () {
 	it('should execute a mapModel action when a modelAction menu item is clicked', function () {
 		underTest.find('[data-mm-menu-role="modelAction"]').click();
 		expect(mapModel.someMethod).toHaveBeenCalledWith('menuwidget');
+	});
+	describe('menu items that send messages', function () {
+		it('should send a message with args when a sendMessage menu item is clicked', function () {
+			underTest.find('#sendMessageWithArgs').click();
+			expect(messageSender.sendMessage).toHaveBeenCalledWith({type: 'hello',  args: ['you', 'there!']});
+		});
+		it('should send a message with no args when a sendMessage menu item is clicked', function () {
+			underTest.find('#sendMessageWithNoArgs').click();
+			expect(messageSender.sendMessage).toHaveBeenCalledWith({type: 'hello'});
+		});
 	});
 	describe('menu toggle button', function () {
 		it('should change the menu title to "back" when a sub menu is shown', function () {
