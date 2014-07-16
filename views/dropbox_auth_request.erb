@@ -4,6 +4,7 @@
   </head>
   <body>
     <script>
+    <% puts "ACTUAL_PROTO #{@actual_proto}" %>
     <% if @actual_proto == 'https' %>
       var baseurl = window.location.origin,
     <% else %>
