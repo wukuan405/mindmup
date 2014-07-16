@@ -68,6 +68,7 @@ get '/' do
   show_map
 end
 get '/legal/privacy' do
+  puts "ORIGINAL PROTOCOL #{request.scheme}"
   erb :privacy
 end
 get '/gd' do
