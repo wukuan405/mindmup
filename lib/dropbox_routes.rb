@@ -1,6 +1,7 @@
 module MindMup
   module DropboxRoutes
     get '/dropbox' do
+      @actual_proto = params[:p] || 'http'
       erb :dropbox_auth_request
     end
     get '/dropbox-complete' do
