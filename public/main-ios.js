@@ -18,6 +18,7 @@ MM.main = function () {
 				MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
 				mapModel.setIdea(idea);
 			};
+	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	window.setTimeout(showMap, 250);
 	mmProxy.onCommand(function (command) {

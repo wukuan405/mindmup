@@ -810,7 +810,7 @@ body .modal.huge {
 .ios-toolbar {
 	position: absolute;
 	box-shadow: 0 -1px 0 #22AAE0;
-	background-color: rgba(255, 255, 255, 0.8);
+	background-color: rgba(255, 255, 255, 0.85);
 	top: calc(100% - 80px);
 	left: 65px;
 	width: calc(100% - 65px);
@@ -847,3 +847,58 @@ body .modal.huge {
 	height:40px;
 	width:40px
 }
+.ios-modal {
+	z-index: 1090;
+	position: absolute;
+	overflow: hidden;
+	left:0;
+	top: 0;
+	height:100%;
+	width:100%;
+	background-color: rgba(255, 255, 255, 0.85);
+}
+.ios-modal-close {
+	position: absolute;
+	top: 20;
+	left: calc(100% - 45px);
+	height: 40px;
+	width: 40px;
+}
+.ios-modal-title {
+	position: absolute;
+	left: 45px;
+	top: 30px;
+	height: 40px;
+	width: calc(100% - 90px);
+	text-align: center;
+	font-family: Helvetica, "Arial Unicode MS", sans-serif;
+	font-size: 12pt;
+	color: #22AAE0;
+	font-weight: bold;
+	line-height: 1.2;
+}
+.ios-modal-content {
+	z-index: 1095;
+	position: absolute;
+	top: 80px;
+	height: calc(100% - 75px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	background-color: #FFFFFF;
+	border: 1px solid #22AAE0;
+	border-radius: 5px;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+@media (min-width: 601px) {
+	.ios-modal-content {
+		left: calc(50% - 300px);
+		width: 600px;
+	}
+}
+@media (max-width: 600px) {
+	.ios-modal-content {
+		left: calc(50% - 150px);
+		width: 300px;
+	}
+}
+

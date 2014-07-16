@@ -10,16 +10,20 @@ describe('iosMenuWidget', function () {
 											'<div data-mm-menu="subsubmenu" data-mm-menu-role="modelAction" data-mm-action="someMethod"></div>' +
 											'<div id="sendMessageWithArgs" data-mm-menu="hiddenMenu" data-mm-menu-role="sendMessage" data-mm-message-type="hello" data-mm-message-args="you,there!"></div>' +
 											'<div id="sendMessageWithNoArgs" data-mm-menu="hiddenMenu" data-mm-menu-role="sendMessage" data-mm-message-type="hello"></div>' +
+											'<div id="showWidget" data-mm-menu="hiddenMenu" data-mm-menu-role="showWidget" data-mm-widget-role="some-widget"></div>' +
 										'</div>' +
 									'</div>',
+			widget,
 			mapModel = jasmine.createSpyObj('mapModel', ['someMethod']),
 			messageSender = jasmine.createSpyObj('messageSender', ['sendMessage']),
 			underTest;
 	beforeEach(function () {
+		widget = jQuery('<div id="widgetToShow" data-mm-role="some-widget" style="display:none"></div>').appendTo('body');
 		underTest = jQuery(template).appendTo('body').iosMenuWidget(mapModel, messageSender);
 	});
 	afterEach(function () {
 		underTest.remove();
+		widget.remove();
 	});
 	it('shows the default menu initially', function () {
 		expect(underTest.find('#defaultMenuItem').is(':visible')).toBeTruthy();
@@ -45,6 +49,10 @@ describe('iosMenuWidget', function () {
 			underTest.find('#sendMessageWithNoArgs').click();
 			expect(messageSender.sendMessage).toHaveBeenCalledWith({type: 'hello'});
 		});
+	});
+	it('should show an element when a showWidget menu item is clicked', function () {
+		underTest.find('#showWidget').click();
+		expect(jQuery('#widgetToShow').is(':visible')).toBeTruthy();
 	});
 	describe('menu toggle button', function () {
 		it('should change the menu title to "back" when a sub menu is shown', function () {

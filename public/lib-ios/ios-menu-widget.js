@@ -1,8 +1,8 @@
-/*global $*/
-$.fn.iosMenuWidget = function (mapModel, messageSender) {
+/*global jQuery*/
+jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 	'use strict';
-	return $(this).each(function () {
-		var element = $(this),
+	return jQuery(this).each(function () {
+		var element = jQuery(this),
 				defaultMenuName = element.data('mm-default-menu'),
 				toolbar = element.find('[data-mm-role="ios-toolbar"]'),
 				menuTitle = element.find('[data-mm-role="ios-menu-title"]'),
@@ -43,21 +43,26 @@ $.fn.iosMenuWidget = function (mapModel, messageSender) {
 			}
 		});
 		element.find('[data-mm-menu-role="showMenu"]').click(function () {
-			var clickElement = $(this),
+			var clickElement = jQuery(this),
 					menu = clickElement.data('mm-action');
 			if (menu) {
 				showMenu(menu, true);
 			}
 		});
 		element.find('[data-mm-menu-role="modelAction"]').click(function () {
-			var clickElement = $(this),
+			var clickElement = jQuery(this),
 					action = clickElement.data('mm-action');
 			if (action && mapModel && mapModel[action]) {
 				mapModel[action](source);
 			}
 		});
+		element.find('[data-mm-menu-role="showWidget"]').click(function () {
+			var clickElement = jQuery(this),
+					widgetRole = clickElement.data('mm-widget-role');
+			jQuery('[data-mm-role~="' + widgetRole + '"]').show();
+		});
 		element.find('[data-mm-menu-role="sendMessage"]').click(function () {
-			var clickElement = $(this),
+			var clickElement = jQuery(this),
 					msg = {'type': clickElement.data('mm-message-type')},
 					argsText = clickElement.data('mm-message-args');
 			if (argsText) {
