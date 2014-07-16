@@ -4,7 +4,7 @@ module MindMup
       @actual_proto = 'http'
       erb :dropbox_auth_request
     end
-    get '/dropbox-via-(.*)' do |proto|
+    get %r{/dropbox-via-(.*)} do |proto|
       @actual_proto = proto 
       erb :dropbox_auth_request
     end
