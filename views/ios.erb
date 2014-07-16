@@ -1,6 +1,6 @@
 <html>
     <head>
-        <meta name="viewport" content="user-scalable=no, minimum-scale=1, maximum-scale=1, width=768, height=984">
+        <meta name="viewport" content="user-scalable=no, minimum-scale=1, maximum-scale=1, width=device-width">
         <%= erb :css %>
     </head>
     <body class="ios-wkwebview">
@@ -22,10 +22,20 @@
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_exit.svg">
                     <div class="ios-icon-label">Save and Exit</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="node-maintenance" >
-                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_edit_nodes.svg">
-                    <div class="ios-icon-label">Edit Map</div>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="addNodes" >
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_node.svg">
+                    <div class="ios-icon-label">Add Node</div>
                 </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="selectNodes" >
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_nodes.svg">
+                    <div class="ios-icon-label">Select Nodes</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="editSelected" >
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_edit_node.svg">
+                    <div class="ios-icon-label">Edit Selected</div>
+                </a>
+
+
                 <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="modelAction" data-mm-action="undo" >
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_undo.svg">
                     <div class="ios-icon-label">Undo</div>
@@ -52,21 +62,33 @@
                     <div class="ios-icon-label">Paste</div>
                 </a>
 
-                <a href="#"  class="ios-toolbar-item" data-mm-menu="node-maintenance" data-mm-menu-role="modelAction" data-mm-action="addSubIdea">
+                <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="addSubIdea">
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
                     <div class="ios-icon-label">Add child</div>
                 </a>
-                <a href="#"  class="ios-toolbar-item" data-mm-menu="node-maintenance" data-mm-menu-role="modelAction" data-mm-action="addSiblingIdea">
+                <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="addSiblingIdea">
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_sibling.svg">
                     <div class="ios-icon-label">Add sibling</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="node-maintenance" data-mm-menu-role="modelAction" data-mm-action="insertIntermediate">
+                <a href="#" class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="insertIntermediate">
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_parent.svg">
                     <div class="ios-icon-label">Add parent</div>
                 </a>
-                <a href="#" class="ios-toolbar-item" data-mm-menu="node-maintenance" data-mm-menu-role="modelAction" data-mm-action="removeSubIdea">
+                <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction" data-mm-action="removeSubIdea">
                     <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
                     <div class="ios-icon-label">Remove</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction" data-mm-action="activateNodeAndChildren">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_branch.svg">
+                    <div class="ios-icon-label">Select Subtree</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction" data-mm-action="activateChildren">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_children.svg">
+                    <div class="ios-icon-label">Select Children</div>
+                </a>
+                <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction" data-mm-action="activateSiblingNodes">
+                    <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_siblings.svg">
+                    <div class="ios-icon-label">Select Siblings</div>
                 </a>
             </div>
         </div>
