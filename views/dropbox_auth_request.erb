@@ -4,14 +4,18 @@
   </head>
   <body>
     <script>
-		var httpsite = window.location.origin.replace(/^https:/,'http:'),
+    <% if @actual_proto == 'https' %>
+      var baseurl = window.location.origin,
+    <% else %>
+      var baseurl = window.location.origin.replace(/^https:/,'http:'),
+    <% end %>
 			authCallback = function (dropboxError, client) {
 			if (dropboxError) {
-				window.location.replace(httpsite+"/dropbox-error#"+escape(JSON.stringify(dropboxError)));
+				window.location.replace(baseurl+"/dropbox-error#"+escape(JSON.stringify(dropboxError)));
 			} else if (!client.isAuthenticated()) {
 				client.authenticate({interactive: true});
 			} else {
-				window.location.replace(httpsite+"/dropbox-complete#"+escape(JSON.stringify(client.credentials())));
+				window.location.replace(baseurl+"/dropbox-complete#"+escape(JSON.stringify(client.credentials())));
 			}
       };
       window.onload = function () {

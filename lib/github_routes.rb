@@ -4,14 +4,22 @@ module MindMup
       set :github_key, UUID.new.generate(:compact)
     end
     get '/github/login' do
-      redirect "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{settings.github_key}"
+      redirect "https://github.com/login/oauth/authorize?client_id=#{ENV["GITHUB_CLIENT_ID"]}&scope=repo&state=#{request.scheme}-#{settings.github_key}"
     end
     get '/github/postback' do
+      if params[:state].nil?
+        erb :github_response, :locals => { :response => {"error" => "Invalid response from Github" } }
+        return
+      end
+      if params[:state].split('-')[0] == 'http' && request.scheme == 'https'
+        redirect "#{settings.base_url.sub(/^https/,'http')}github/postback?#{request.query_string}"
+        return
+      end
       if params[:error]
         erb :github_response, :locals => { :response => {"error" => params[:error] } }
       elsif params[:code].nil?
         erb :github_response, :locals => { :response => {"error" => "Invalid response from Github" } }
-      elsif (params[:state]!= settings.github_key) then
+      elsif (params[:state].split('-')[1] != settings.github_key) then
         redirect "/github/login"
       else
         begin
