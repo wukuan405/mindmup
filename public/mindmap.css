@@ -889,10 +889,30 @@ body .modal.huge {
 	border-radius: 5px;
 	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
 }
+.ios-color-selector {
+	display: inline-block;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+.ios-color-palette {
+	display: block;
+	text-align: center;
+}
 @media (min-width: 601px) {
 	.ios-modal-content {
 		left: calc(50% - 300px);
 		width: 600px;
+	}
+	.ios-color-palette {
+		margin-top: 20px;
+		margin-left: 50px;
+		margin-right: 50px;
+		margin-bottom: 20px;
+	}
+	.ios-color-selector {
+		margin: 20px;
+		height: 80px;
+		width: 80px;
+		border-radius: 40px;
 	}
 }
 @media (max-width: 600px) {
@@ -900,5 +920,18 @@ body .modal.huge {
 		left: calc(50% - 150px);
 		width: 300px;
 	}
+	.ios-color-palette {
+		margin-top: 10px;
+		margin-left: 20px;
+		margin-right: 20px;
+		margin-bottom: 10px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+
 }
 
