@@ -67,6 +67,12 @@ MM.navigation = function (storage, mapController) {
 		mapController.loadMap(newMapId);
 		return true;
 	};
-	window.addEventListener('hashchange', self.hashChange);
+	self.off = function () {
+		window.removeEventListener('hashchange', self.hashChange);
+	};
+	self.on = function () {
+		window.addEventListener('hashchange', self.hashChange);
+	};
+	self.on();
 	return self;
 };
