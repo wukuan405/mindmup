@@ -3243,13 +3243,14 @@ jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 		updateText = function (title) {
 			var text = MAPJS.URLHelper.stripLink(title) ||
 					(title.length < MAX_URL_LENGTH ? title : (title.substring(0, MAX_URL_LENGTH) + '...')),
-				element = textSpan(),
-				domElement = element[0];
+					nodeTextPadding = MAPJS.DOMRender.nodeTextPadding || 11,
+					element = textSpan(),
+					domElement = element[0];
 
 			element.text(text.trim());
 			self.data('title', title);
 			element.css({'max-width': '', 'min-width': ''});
-			if ((domElement.scrollWidth - 10) > domElement.offsetWidth) {
+			if ((domElement.scrollWidth - nodeTextPadding) > domElement.offsetWidth) {
 				element.css('max-width', domElement.scrollWidth + 'px');
 			}
 			else {
@@ -4127,8 +4128,8 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			}).attr('data-mapjs-role', 'stage').appendTo(element).data({
 				'offsetX': element.innerWidth() / 2,
 				'offsetY': element.innerHeight() / 2,
-				'width': 0,
-				'height': 0,
+				'width': element.innerWidth() - 20 ,
+				'height': element.innerHeight() - 20 ,
 				'scale': 1
 			}).updateStage(),
 			previousPinchScale = false;
