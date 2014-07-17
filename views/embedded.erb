@@ -137,7 +137,7 @@
         jQuery('#rightmenu').hide();
         jQuery('#container').hide();
         jQuery('#loading').show();
-		MAPJS.DOMRender.stageMargin = 50;
+        MAPJS.DOMRender.stageMargin = {top: 50, left: 50, bottom: 50, right: 50};
   		  window.mmtimestamp.log('embedded ui loaded');
         mapLoader.loadMap(mapId).then(function (idea) {
 		  if (idea.getAttr('customCSS')) {
