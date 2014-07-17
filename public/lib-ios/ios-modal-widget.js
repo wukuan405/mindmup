@@ -5,7 +5,37 @@ jQuery.fn.iosModalWidget = function () {
 		var element = jQuery(this);
 		element.hide();
 		element.find('[data-mm-role="modal-close"]').click(function () {
-			element.hide();
+			element.hideModal();
 		});
+	});
+};
+
+jQuery.fn.showModal = function () {
+	'use strict';
+	return jQuery(this).each(function () {
+		var element = jQuery(this),
+				wasHidden = !element.is(':visible');
+		if (wasHidden) {
+			element.trigger(jQuery.Event(':modal-will-show'));
+		}
+		element.show();
+		if (wasHidden) {
+			element.trigger(jQuery.Event(':modal-shown'));
+		}
+	});
+};
+
+jQuery.fn.hideModal = function () {
+	'use strict';
+	return jQuery(this).each(function () {
+		var element = jQuery(this),
+				wasVisible = element.is(':visible');
+		if (wasVisible) {
+			element.trigger(jQuery.Event(':modal-will-hide'));
+		}
+		element.hide();
+		if (wasVisible) {
+			element.trigger(jQuery.Event(':modal-hidden'));
+		}
 	});
 };

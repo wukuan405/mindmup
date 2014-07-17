@@ -891,7 +891,7 @@ body .modal.huge {
 }
 .ios-color-selector {
 	display: inline-block;
-	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.7);
 }
 .ios-color-palette {
 	display: block;
