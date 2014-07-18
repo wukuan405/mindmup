@@ -16,11 +16,11 @@ jQuery.fn.showModal = function () {
 		var element = jQuery(this),
 				wasHidden = !element.is(':visible');
 		if (wasHidden) {
-			element.trigger(jQuery.Event(':modal-will-show'));
+			element.trigger(jQuery.Event('show'));
 		}
 		element.show();
 		if (wasHidden) {
-			element.trigger(jQuery.Event(':modal-shown'));
+			element.trigger(jQuery.Event('shown'));
 		}
 	});
 };
@@ -31,11 +31,12 @@ jQuery.fn.hideModal = function () {
 		var element = jQuery(this),
 				wasVisible = element.is(':visible');
 		if (wasVisible) {
-			element.trigger(jQuery.Event(':modal-will-hide'));
+			element.trigger(jQuery.Event('hide'));
 		}
 		element.hide();
 		if (wasVisible) {
-			element.trigger(jQuery.Event(':modal-hidden'));
+			element.trigger(jQuery.Event('hidden'));
 		}
 	});
 };
+

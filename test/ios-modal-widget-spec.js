@@ -19,21 +19,21 @@ describe('ios-modal-widget', function () {
 			underTest.find('#testHideButton').click();
 			expect(underTest.is(':visible')).toBeFalsy();
 		});
-		it('should trigger modal-will-hide event before hiding', function () {
-			var listenerSpy = jasmine.createSpy('modal-will-hide'),
+		it('should trigger hide event before hiding', function () {
+			var listenerSpy = jasmine.createSpy('hide'),
 					listener = function () {
 						expect(underTest.is(':visible')).toBeTruthy();
 					};
-			underTest.on(':modal-will-hide', listenerSpy).on(':modal-will-hide', listener);
+			underTest.on('hide', listenerSpy).on('hide', listener);
 			underTest.find('#testHideButton').click();
 			expect(listenerSpy).toHaveBeenCalled();
 		});
-		it('should trigger modal-hidden event after hiding', function () {
-			var listenerSpy = jasmine.createSpy('modal-hidden'),
+		it('should trigger hidden event after hiding', function () {
+			var listenerSpy = jasmine.createSpy('hidden'),
 					listener = function () {
 						expect(underTest.is(':visible')).toBeFalsy();
 					};
-			underTest.on(':modal-hidden', listenerSpy).on(':modal-hidden', listener);
+			underTest.on('hidden', listenerSpy).on('hidden', listener);
 			underTest.find('#testHideButton').click();
 			expect(listenerSpy).toHaveBeenCalled();
 		});
@@ -47,35 +47,35 @@ describe('ios-modal-widget', function () {
 				underTest.showModal();
 				expect(underTest.is(':visible')).toBeTruthy();
 			});
-			it('should trigger modal-will-show event before showing', function () {
-				var listenerSpy = jasmine.createSpy('modal-will-show'),
+			it('should trigger show event before showing', function () {
+				var listenerSpy = jasmine.createSpy('show'),
 						listener = function () {
 							expect(underTest.is(':visible')).toBeFalsy();
 						};
-				underTest.on(':modal-will-show', listenerSpy).on(':modal-will-show', listener);
+				underTest.on('show', listenerSpy).on('show', listener);
 				underTest.showModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});
-			it('should trigger modal-shown event after showing', function () {
-				var listenerSpy = jasmine.createSpy('modal-shown'),
+			it('should trigger shown event after showing', function () {
+				var listenerSpy = jasmine.createSpy('shown'),
 						listener = function () {
 							expect(underTest.is(':visible')).toBeTruthy();
 						};
-				underTest.on(':modal-shown', listenerSpy).on(':modal-shown', listener);
+				underTest.on('shown', listenerSpy).on('shown', listener);
 				underTest.showModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});
 		});
 		describe('hideModal', function () {
-			it('should not trigger modal-will-hide event', function () {
-				var listenerSpy = jasmine.createSpy('modal-will-hide');
-				underTest.on(':modal-will-show', listenerSpy);
+			it('should not trigger hide event', function () {
+				var listenerSpy = jasmine.createSpy('hide');
+				underTest.on('show', listenerSpy);
 				underTest.hideModal();
 				expect(listenerSpy).not.toHaveBeenCalled();
 			});
-			it('should not trigger modal-hidden event', function () {
-				var listenerSpy = jasmine.createSpy('modal-hidden');
-				underTest.on(':modal-hidden', listenerSpy);
+			it('should not trigger hidden event', function () {
+				var listenerSpy = jasmine.createSpy('hidden');
+				underTest.on('hidden', listenerSpy);
 				underTest.hideModal();
 				expect(listenerSpy).not.toHaveBeenCalled();
 			});
@@ -91,15 +91,15 @@ describe('ios-modal-widget', function () {
 			underTest.show();
 		});
 		describe('showModal', function () {
-			it('should not trigger modal-will-show event', function () {
-				var listenerSpy = jasmine.createSpy('modal-will-show');
-				underTest.on(':modal-will-show', listenerSpy);
+			it('should not trigger show event', function () {
+				var listenerSpy = jasmine.createSpy('show');
+				underTest.on('show', listenerSpy);
 				underTest.showModal();
 				expect(listenerSpy).not.toHaveBeenCalled();
 			});
-			it('should not trigger modal-shown event', function () {
-				var listenerSpy = jasmine.createSpy('modal-shown');
-				underTest.on(':modal-shown', listenerSpy);
+			it('should not trigger shown event', function () {
+				var listenerSpy = jasmine.createSpy('shown');
+				underTest.on('shown', listenerSpy);
 				underTest.showModal();
 				expect(listenerSpy).not.toHaveBeenCalled();
 			});
@@ -113,21 +113,21 @@ describe('ios-modal-widget', function () {
 				underTest.hideModal();
 				expect(underTest.is(':visible')).toBeFalsy();
 			});
-			it('should trigger modal-will-hide event before hiding', function () {
-				var listenerSpy = jasmine.createSpy('modal-will-hide'),
+			it('should trigger hide event before hiding', function () {
+				var listenerSpy = jasmine.createSpy('hide'),
 						listener = function () {
 							expect(underTest.is(':visible')).toBeTruthy();
 						};
-				underTest.on(':modal-will-hide', listenerSpy).on(':modal-will-hide', listener);
+				underTest.on('hide', listenerSpy).on('hide', listener);
 				underTest.hideModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});
-			it('should trigger modal-hidden event after hiding', function () {
-				var listenerSpy = jasmine.createSpy('modal-hidden'),
+			it('should trigger hidden event after hiding', function () {
+				var listenerSpy = jasmine.createSpy('hidden'),
 						listener = function () {
 							expect(underTest.is(':visible')).toBeFalsy();
 						};
-				underTest.on(':modal-hidden', listenerSpy).on(':modal-hidden', listener);
+				underTest.on('hidden', listenerSpy).on('hidden', listener);
 				underTest.hideModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});

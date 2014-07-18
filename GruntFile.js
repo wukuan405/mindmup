@@ -45,7 +45,7 @@ module.exports = function (grunt) {
 				dest: 'compiled/mm-compiled.js',
 			},
 			libios: {
-				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib-ios/*.js', 'public/main-ios.js'],
+				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib-ios/*.js', 'public/main-ios.js', 'public/lib/icon-editor-widget.js'],
 				dest: 'compiled/mm-ios-compiled.js',
 			}
 		},
@@ -62,6 +62,7 @@ module.exports = function (grunt) {
 			combine: {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
+					'compiled/combined-ios.css': ['public/mindmap-ios.css', 'public/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
 				}
 			}

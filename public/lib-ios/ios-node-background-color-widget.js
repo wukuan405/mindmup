@@ -7,7 +7,7 @@ jQuery.fn.iosBackgroundColorWidget = function (mapModel, colors, source) {
 				template = element.find('[data-mm-role="ios-color-selector-template"]').detach(),
 				contentContainer = element.find('[data-mm-role="ios-modal-content"]');
 		source = source || 'ios';
-		element.on(':modal-will-hide', function () {
+		element.on('hide', function () {
 			contentContainer.scrollTop(0);
 			return true;
 		});

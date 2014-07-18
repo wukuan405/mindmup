@@ -2,10 +2,7 @@
 	<img class="ios-modal-close" data-mm-role="modal-close" src="<%=settings.static_image_host%>/ios_icon_close.svg"/>
 	<div class="ios-modal-title">Tap the dashed area to select an image</div>
 	<div class="ios-modal-content" data-mm-role="ios-modal-content">
-<!--       <div class="control-group">
-        <label class="control-label">
-          Icon:
-        </label>
+       <div class="control-group">
         <div class="controls">
           <div data-mm-role="drop-zone" class="file-drop-zone">
 			  <img data-mm-role="img-preview"/>
@@ -14,9 +11,6 @@
         </div>
       </div>
       <div class="control-group" data-mm-role="attribs">
-        <label class="control-label">
-          Position:
-        </label>
         <div class="controls">
           <select name="position">
             <option value="top">Above text</option>
@@ -28,14 +22,16 @@
         </div>
       </div>
       <div class="control-group" data-mm-role="attribs">
-        <label class="control-label">
-          Size:
-        </label>
         <div class="controls">
 			<input type="text" style="width:50px" name="width" placeholder="width"/>&nbsp;x&nbsp;<input type="text" style="width:50px" name="height" placeholder="height"/>
 			<input type="checkbox" name="keepratio" checked="true" /> Keep proportions
         </div>
       </div>
- -->
+      <div class="modal-footer">
+        <a tabstop="1" href="#" class="btn btn-primary" data-mm-role="confirm" data-dismiss="modal">Save</a>
+        <a tabstop="2" href="#" class="btn btn-danger" data-mm-role="clear" data-dismiss="modal">Remove</a>
+        <a tabstop="3" href="#" class="btn" data-dismiss="modal">Cancel</a>
+      </div>
+
 	</div>
 </div>

@@ -1,7 +1,21 @@
 /*jslint nomen: true*/
 /*global MM, jQuery, MAPJS, console, window*/
+jQuery.fn.modal = function (options) {
+	'use strict';
+	return jQuery(this).each(function () {
+		var element = jQuery(this);
+		if (!options) {
+			return;
+		}
+		if (options.show || options === 'show') {
+			element.showModal();
+		} else {
+			element.hideModal();
+		}
+	});
+};
 
-MM.main = function () {
+MM.main = function (config) {
 	'use strict';
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
@@ -12,12 +26,14 @@ MM.main = function () {
 			idea = MAPJS.content(mapjson),
 			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
+			iconEditor = new MM.iconEditor(mapModel, idea),
 			showMap = function () {
 				container.domMapWidget(console, mapModel, true, imageInsertController);
 				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
 				MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
 				mapModel.setIdea(idea);
 			};
+	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	jQuery('[data-mm-role~="ios-node-background-color-picker"]').iosBackgroundColorWidget(mapModel, [
