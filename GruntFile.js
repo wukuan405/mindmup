@@ -45,7 +45,16 @@ module.exports = function (grunt) {
 				dest: 'compiled/mm-compiled.js',
 			},
 			libios: {
-				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib-ios/*.js', 'public/main-ios.js', 'public/lib/icon-editor-widget.js'],
+				src: [
+					'public/mapjs-compiled.js',
+					'public/mm.js',
+					'public/lib-ios/*.js',
+					'public/main-ios.js',
+					'public/lib/icon-editor-widget.js',
+					'public/lib/active-content-resource-manager.js',
+					'public/lib/active-content-listener.js',
+					'public/lib/map-controller.js'
+				],
 				dest: 'compiled/mm-ios-compiled.js',
 			}
 		},

@@ -15,7 +15,10 @@
         <script id="main">
             window.onload = function () {
                 MM.main({
-                    corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>'
+                    corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
+                    activeContentConfiguration: {
+                            nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
+                    }
                 });
             };
         </script>

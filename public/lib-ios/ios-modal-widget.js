@@ -4,7 +4,7 @@ jQuery.fn.iosModalWidget = function () {
 	return jQuery(this).each(function () {
 		var element = jQuery(this);
 		element.hide();
-		element.find('[data-mm-role="modal-close"]').click(function () {
+		element.find('[data-mm-role~="dismiss-modal"]').click(function () {
 			element.hideModal();
 		});
 	});

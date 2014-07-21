@@ -20,19 +20,28 @@ MM.main = function (config) {
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
 			container = jQuery('#container'),
-			horizontalMargin = 10,
-			verticalMargin = 0,
+			horizontalMargin = 20,
+			verticalMargin = 20,
 			mapjson = (MM.IOS.mapToLoad && MM.IOS.mapToLoad()) || MM.IOS.defaultMap(),
 			idea = MAPJS.content(mapjson),
-			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
+			mapController = new MM.MapController([new MM.IOSMapSource(idea)]),
+			activeContentListener = new MM.ActiveContentListener(mapController),
+			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),
+			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
-			iconEditor = new MM.iconEditor(mapModel, idea),
+			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			showMap = function () {
-				container.domMapWidget(console, mapModel, true, imageInsertController);
+				container.domMapWidget(console, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
 				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
 				MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
-				mapModel.setIdea(idea);
+				mapController.loadMap('ios');
 			};
+	mapController.addEventListener('mapLoaded', function (mapId, idea) {
+		idea.setConfiguration(config.activeContentConfiguration);
+		mapModel.setIdea(idea);
+	});
+
+
 	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);

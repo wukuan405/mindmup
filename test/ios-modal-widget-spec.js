@@ -2,7 +2,7 @@
 describe('ios-modal-widget', function () {
 	'use strict';
 	var template = '<div id="modalWidget">' +
-									'<a id="testHideButton" data-mm-role="modal-close"></a>' +
+									'<a id="testHideButton" data-mm-role="dismiss-modal"></a>' +
 									'</div>',
 			underTest;
 	beforeEach(function () {
