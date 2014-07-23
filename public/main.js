@@ -175,6 +175,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
+        jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
