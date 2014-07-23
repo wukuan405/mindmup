@@ -35,11 +35,11 @@ MM.iconEditor = function (mapModel, resourceManager) {
 jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 	'use strict';
 	var self = this,
-		confirmElement = self.find('[data-mm-role=confirm]'),
+		confirmElement = self.find('[data-mm-role~=confirm]'),
 		sizeSelect = self.find('form select[name=size]'),
 		customSizeBox = self.find('[data-mm-role=custom-size-enter]'),
 		imgPreview = self.find('[data-mm-role=img-preview]'),
-		clearButton = self.find('[data-mm-role=clear]'),
+		clearButton = self.find('[data-mm-role~=clear]'),
 		positionSelect = self.find('select[name=position]'),
 		widthBox = self.find('input[name=width]'),
 		heightBox = self.find('input[name=height]'),
@@ -62,6 +62,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 				imgPreview.hide();
 				self.find('[data-mm-role=attribs]').hide();
 				clearButton.hide();
+				confirmElement.hide();
 			} else {
 				imgPreview.show();
 				imgPreview.attr('src', icon.url);
@@ -71,6 +72,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 				heightBox.val(icon.height);
 				fileUpload.val('');
 				clearButton.show();
+				confirmElement.show();
 			}
 		},
 		insertController = new MAPJS.ImageInsertController(corsProxyUrl);
@@ -81,6 +83,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 			heightBox.val(imgHeight);
 			self.find('[data-mm-role=attribs]').show();
 			imgPreview.show();
+			confirmElement.show();
 		}
 	);
 	dropZone.imageDropWidget(insertController);
