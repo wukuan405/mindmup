@@ -14,14 +14,15 @@ jQuery.fn.modal = function (options) {
 		}
 	});
 };
+MAPJS.DOMRender = MAPJS.DOMRender || {};
+MAPJS.DOMRender.stageMargin = {top: 60, left: 20, bottom: 100, right: 20};
+MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
 
 MM.main = function (config) {
 	'use strict';
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
 			container = jQuery('#container'),
-			horizontalMargin = 20,
-			verticalMargin = 20,
 			mapjson = (MM.IOS.mapToLoad && MM.IOS.mapToLoad()) || MM.IOS.defaultMap(),
 			idea = MAPJS.content(mapjson),
 			mapController = new MM.MapController([new MM.IOSMapSource(idea)]),
@@ -32,19 +33,19 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			showMap = function () {
 				container.domMapWidget(console, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
-				MAPJS.DOMRender.stageMargin = {top: horizontalMargin, left: verticalMargin, bottom: horizontalMargin, right: verticalMargin};
-				MAPJS.DOMRender.stageVisibilityMargin = {top: 20, left: 20, bottom: 20, right: 20};
 				mapController.loadMap('ios');
 			};
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
+
 	});
 
 
 	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
+	jQuery('[data-mm-role="mode-indicator"]').iosModeIndicatorWidget(mapModel);
 	jQuery('[data-mm-role~="ios-node-background-color-picker"]').iosBackgroundColorWidget(mapModel, [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
 			'808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
@@ -52,7 +53,7 @@ MM.main = function (config) {
 			'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
-	window.setTimeout(showMap, 250);
+	window.setTimeout(showMap, 350);
 	mmProxy.onCommand(function (command) {
 		// var commandText = JSON.stringify(command) || command;
 		if (command.type === 'ping') {
@@ -60,7 +61,12 @@ MM.main = function (config) {
 		}
 		else if (command.type === 'setViewport') {
 			jQuery('meta[name=viewport]').attr('content', command.args);
-			mapModel.resetView('ios');
+			window.setTimeout(function	() {
+				if (mapModel && mapModel.resetView && mapModel.getIdea()) {
+					mapModel.resetView('ios');
+				}
+
+			}, 100);
 		}
 		else if (command.type === 'keyboardShown') {
 			jQuery('[data-mm-role="ios-menu"]').hide();
@@ -69,11 +75,12 @@ MM.main = function (config) {
 			jQuery('[data-mm-role="ios-menu"]').show();
 		}
 		else if (command.type === 'prepareForSave') {
+			mapModel.resetView();
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
 			window.setTimeout(function () {
 				mmProxy.sendMessage({type: 'save-content', args: {'idea': JSON.stringify(idea)}});
-			}, 100);
+			}, 200);
 
 		}
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {

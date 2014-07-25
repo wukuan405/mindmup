@@ -215,6 +215,39 @@ span.repo-g, span.repo-a, span.repo-o, span.repo-b, span.repo-p {
 	display:table-cell; vertical-align:middle; padding-left:20%; padding-right:20%;
 }
 
+.modeIndicator {
+	position:absolute;
+	width: 100%;
+	top: 0;
+	left: 0;
+	z-index: 2000;
+	background-color: rgb(1,1,1);
+	background-color: rgba(255,255,255,0.6);
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+.mode {
+	position:absolute;
+	left:0;
+	width: 100%;
+	text-align: center;
+}
+
+@media (max-height: 320px) {
+	.modeIndicator {
+		height: 20px;
+	}
+	.mode {
+		top: 5px;
+	}
+}
+@media (min-height: 321px) {
+	.modeIndicator {
+		height: 40px;
+	}
+	.mode {
+		top: 25px;
+	}
+}
 .ios-menu-toggle-container {
 	position:absolute;
 	height: 90px;
