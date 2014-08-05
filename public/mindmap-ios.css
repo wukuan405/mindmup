@@ -405,6 +405,74 @@ a:focus {
 		width: 40px;
 		border-radius: 20px;
 	}
+}
+.iosContextMenu {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3000;
+	height: 100%;
+	width: 100%;
+}
+.iosPopupToolbarPointerTop {
+	position: absolute;
+	z-index: 3030;
+	left: 145px;
+	top: 0;
+	width: 21px;
+	height: 21px;
+}
+.iosPopupToolbarPointerBottom {
+	position: absolute;
+	z-index: 3030;
+	left: 140px;
+	top: 106;
+	width: 21px;
+	height: 21px;
+}
+.iosPopupToolbar {
+	position: absolute;
+	z-index: 3020;
+}
+.iosPopupToolContainer {
+	position: absolute;
+	z-index: 3020;
+	top: 20px;
+	border: 1px solid #22AAE0;
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	overflow:scroll;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+
+@media (min-width: 601px) {
+	.iosPopupToolbar {
+		width: 700px;
+		height: 125px;
+
+	}
+	.iosPopupToolContainer {
+		width: 700px;
+		height: 85px;
+	}
+	.iosPopupToolbarPointerBottom {
+		top: 106;
+	}
 
 }
 
+@media (max-width: 600px) {
+	.iosPopupToolbar {
+		width: 300px;
+		height: 210px;
+
+	}
+	.iosPopupToolContainer {
+		width: 300px;
+		height: 170px;
+	}
+	.iosPopupToolbarPointerBottom {
+		top: 191;
+	}
+
+}

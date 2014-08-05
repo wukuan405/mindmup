@@ -12,6 +12,11 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_edit.svg">
             <div class="ios-icon-label">Edit</div>
         </a>
+        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="clipboardMenu" >
+            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
+            <div class="ios-icon-label">Clipboard</div>
+        </a>
+
         <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="sendMessage" data-mm-message-type="SaveAndExit" >
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_exit.svg">
             <div class="ios-icon-label">Save and Exit</div>
@@ -38,10 +43,6 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
             <div class="ios-icon-label">Redo</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="edit" data-mm-menu-role="showMenu" data-mm-action="clipboardMenu" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
-            <div class="ios-icon-label">Clipboard</div>
-        </a>
         <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="copy" >
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
             <div class="ios-icon-label">Copy</div>
@@ -56,36 +57,36 @@
             <div class="ios-icon-label">Paste</div>
         </a>
 
-        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="addSubIdea">
+        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="addSubIdea">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
             <div class="ios-icon-label">Add child</div>
         </a>
-        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="addSiblingIdea">
+        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="addSiblingIdea">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_sibling.svg">
             <div class="ios-icon-label">Add sibling</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="insertIntermediate">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="insertIntermediate">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_parent.svg">
             <div class="ios-icon-label">Add parent</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="showWidget" data-mm-widget-role="ios-node-background-color-picker">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="showWidget context-menu" data-mm-widget-role="ios-node-background-color-picker">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_color.svg">
             <div class="ios-icon-label">Node Color</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction" data-mm-action="editIcon">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu" data-mm-action="editIcon">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_image.svg">
             <div class="ios-icon-label">Node Picture</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction" data-mm-action="toggleAddLinkMode">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu" data-mm-action="toggleAddLinkMode">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_connect.svg">
             <div class="ios-icon-label">Add Link</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction" data-mm-action="toggleCollapse">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu" data-mm-action="toggleCollapse">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_collapse.svg">
             <div class="ios-icon-label">Toggle Collapse</div>
         </a>
 
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction" data-mm-action="removeSubIdea">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu" data-mm-action="removeSubIdea">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
             <div class="ios-icon-label">Remove</div>
         </a>

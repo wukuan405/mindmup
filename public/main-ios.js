@@ -45,6 +45,7 @@ MM.main = function (config) {
 	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
+	jQuery('[data-mm-role="ios-context-menu"]').iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
 	jQuery('[data-mm-role="mode-indicator"]').iosModeIndicatorWidget(mapModel);
 	jQuery('[data-mm-role~="ios-node-background-color-picker"]').iosBackgroundColorWidget(mapModel, [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
@@ -91,7 +92,6 @@ MM.main = function (config) {
 		var args = Array.prototype.slice.call(arguments, 0);
 		mmProxy.sendMessage({type: 'analytic', args: args});
 	});
-
 	mapModel.addEventListener('changed', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
 		mmProxy.sendMessage({type: 'changed', args: args});
