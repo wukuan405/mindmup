@@ -71,10 +71,9 @@ get '/legal/privacy' do
   erb :privacy
 end
 get '/gd' do
-
   begin
-    state = JSON.parse(params[:state])
-    if state.nil? || state['action']=='create' then
+    state = params[:state] && JSON.parse(params[:state])
+    if !state || state['action']=='create' then
       mapid = "new-g"
     else
       mapid = "g1" + state['ids'][0]
