@@ -2,9 +2,9 @@
   "name": "MindMup - Free Mind Map web site",
   "short_name": "MindMup",
   "description": "Free online mind mapping. Google Drive or Dropbox mindmap storage, realtime collaborative mindmapping, Freemind mind map import",
-  "version": "0.0.0.14",
+  "version": "0.0.0.16",
   "manifest_version": 2,
-  "container" : "GOOGLE_DRIVE",
+  "container" : ["DOMAIN_INSTALLABLE", "GOOGLE_DRIVE"],
   "api_console_project_id" : "399581875395",
   "gdrive_mime_types": {
     "http://drive.google.com/intents/opendrivedoc": [{ 
