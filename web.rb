@@ -74,7 +74,7 @@ get '/gd' do
 
   begin
     state = JSON.parse(params[:state])
-    if state['action']=='create' then
+    if state.nil? || state['action']=='create' then
       mapid = "new-g"
     else
       mapid = "g1" + state['ids'][0]
