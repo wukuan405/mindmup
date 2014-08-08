@@ -434,7 +434,7 @@ a:focus {
 	position: absolute;
 	z-index: 3020;
 	width: 300px;
-	height: 125px;
+	height: 120px;
 }
 .iosPopupToolContainer {
 	position: absolute;
@@ -446,35 +446,30 @@ a:focus {
 	overflow:scroll;
 	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
 	width: 300px;
-	height: 85px;
+	height: 80px;
+}
+.iosPopupToolbarPointerBottom {
+	top: 101px;
 }
 
-@media (min-width: 601px) {
+@media (min-width: 501px) {
 	.iosPopupToolbarLarge {
-		width: 700px;
-		height: 125px;
+		width: 500px;
 	}
 	.iosPopupToolContainerLarge {
-		width: 700px;
-		height: 85px;
+		width: 500px;
 	}
-	.iosPopupToolbarPointerBottom {
-		top: 106;
-	}
-
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
 	.iosPopupToolbarLarge {
-		width: 300px;
 		height: 210px;
 	}
 	.iosPopupToolContainerLarge {
-		width: 300px;
 		height: 170px;
 	}
-	.iosPopupToolbarPointerBottom {
-		top: 191;
+	.iosPopupToolbarLarge .iosPopupToolbarPointerBottom {
+		top: 191px;
 	}
 
 }

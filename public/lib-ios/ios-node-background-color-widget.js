@@ -5,7 +5,8 @@ jQuery.fn.iosBackgroundColorWidget = function (mapModel, colors, source) {
 		var element = jQuery(this),
 				palette = element.find('[data-mm-role="ios-color-palette"]'),
 				template = element.find('[data-mm-role="ios-color-selector-template"]').detach(),
-				contentContainer = element.find('[data-mm-role="ios-modal-content"]');
+				contentContainer = element.find('[data-mm-role="ios-modal-content"]'),
+				modelMethod = element.data('mm-model-method') || 'updateStyle';
 		source = source || 'ios';
 		element.on('hide', function () {
 			contentContainer.scrollTop(0);
@@ -20,7 +21,8 @@ jQuery.fn.iosBackgroundColorWidget = function (mapModel, colors, source) {
 			}
 			colorSelector.css('background-color', colorHash);
 			colorSelector.appendTo(palette).show().click(function () {
-				mapModel.updateStyle(source, 'background', colorHash);
+				var args = element.data('mm-model-args') || ['background'];
+				mapModel[modelMethod].apply(mapModel, [source].concat(args).concat(colorHash));
 				element.hideModal();
 			});
 		});

@@ -44,11 +44,11 @@ MM.main = function (config) {
 
 	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
-	jQuery('[data-mm-role="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
+	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget().iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
-	jQuery('[data-mm-role="ios-link-editor"]').iosPopoverMenuWidget().iosLinkEditWidget(mapModel);
+	jQuery('[data-mm-role="ios-link-editor"]').iosPopoverMenuWidget().iosMenuWidget(mapModel, mmProxy).iosLinkEditWidget(mapModel);
 	jQuery('[data-mm-role="mode-indicator"]').iosModeIndicatorWidget(mapModel);
-	jQuery('[data-mm-role~="ios-node-background-color-picker"]').iosBackgroundColorWidget(mapModel, [
+	jQuery('[data-mm-role~="ios-color-picker"]').iosBackgroundColorWidget(mapModel, [
 			'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
 			'808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
 			'99CC00', '339966', '33CCCC', '3366FF', '800080', '999999', 'FF00FF', 'FFCC00',

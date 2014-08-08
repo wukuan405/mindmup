@@ -19,6 +19,7 @@ jQuery.fn.iosPopoverMenuWidget = function () {
 			e.preventDefault();
 			e.stopPropagation();
 		});
+		element.find('[data-mm-role~="popover-close"]').click(hideToolbar);
 		element.on('hidePopover', function () {
 			hideToolbar();
 		});
@@ -43,7 +44,7 @@ jQuery.fn.iosPopoverMenuWidget = function () {
 				bottomPointer.hide();
 				topPointer.css('left', pointerLeft + 'px');
 			}
-			toolbar.css({'top': top + 'px', 'left': left + 'px'});
+			toolbar.css({'top': Math.max(-20, top) + 'px', 'left': left + 'px'});
 			//stop the click handler being added to soon or it fires immediately
 			window.setTimeout(function () {
 				if (element.is(':visible')) {

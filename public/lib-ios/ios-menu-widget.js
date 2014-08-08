@@ -21,6 +21,14 @@ jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 					} else {
 						menuTitle.text('Back');
 					}
+				},
+				goBackToMenuInStack = function () {
+					menuStack.pop();
+					if (menuStack.length > 0) {
+						showMenu(menuStack[menuStack.length - 1]);
+					} else {
+						showMenu(defaultMenuName);
+					}
 				};
 
 		element.find('[data-mm-menu][data-mm-menu!="' + defaultMenuName + '"]').hide();
@@ -30,12 +38,7 @@ jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 				toolbar.show();
 			} else {
 				if (menuStack.length > 0) {
-					menuStack.pop();
-					if (menuStack.length > 0) {
-						showMenu(menuStack[menuStack.length - 1]);
-					} else {
-						showMenu(defaultMenuName);
-					}
+					goBackToMenuInStack();
 				} else {
 					toolbar.hide();
 					menuTitle.text(defaultToggleText);
@@ -51,15 +54,19 @@ jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 		});
 		element.find('[data-mm-menu-role~="modelAction"]').click(function () {
 			var clickElement = jQuery(this),
-					action = clickElement.data('mm-action');
+					action = clickElement.data('mm-action'),
+					additionalArgs = clickElement.data('mm-model-args') || [],
+					args = [source].concat(additionalArgs);
 			if (action && mapModel && mapModel[action]) {
-				mapModel[action](source);
+				mapModel[action].apply(mapModel, args);
 			}
 		});
 		element.find('[data-mm-menu-role~="showWidget"]').click(function () {
 			var clickElement = jQuery(this),
-					widgetRole = clickElement.data('mm-widget-role');
-			jQuery('[data-mm-role~="' + widgetRole + '"]').show();
+					widgetRole = clickElement.data('mm-widget-role'),
+					widget = jQuery('[data-mm-role~="' + widgetRole + '"]');
+			widget.data('mm-model-args', clickElement.data('mm-model-args'));
+			widget.show();
 		});
 		element.find('[data-mm-menu-role~="sendMessage"]').click(function () {
 			var clickElement = jQuery(this),
