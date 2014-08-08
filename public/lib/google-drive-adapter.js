@@ -103,12 +103,16 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			return deferred.promise();
 		},
 		downloadFile = function (file) {
-			var deferred = jQuery.Deferred();
+			var deferred = jQuery.Deferred(),
+          fileSize = file && file.fileSize && parseFloat(file.fileSize),
+          progressMessage = function (evt) {
+            deferred.notify({total: fileSize, loaded: evt.loaded});
+          };
 			if (file.downloadUrl) {
-				jQuery.ajax(
+			  jQuery.ajax(
 					file.downloadUrl,
 					{
-						progress: deferred.notify,
+						progress: progressMessage,
 						headers: {'Authorization': 'Bearer ' + gapi.auth.getToken().access_token }
 					}
 				).then(
