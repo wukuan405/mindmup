@@ -3,9 +3,9 @@ jQuery.fn.iosPopoverMenuWidget = function () {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this),
-				toolbar = element.find('[data-mm-role~="context-menu-toolbar"]'),
-				topPointer = element.find('[data-mm-role="toolbar-pointer-top"]'),
-				bottomPointer = element.find('[data-mm-role="toolbar-pointer-bottom"]'),
+				toolbar = element.find('[data-mm-role~="popover-toolbar"]'),
+				topPointer = element.find('[data-mm-role="popover-pointer-top"]'),
+				bottomPointer = element.find('[data-mm-role="popover-pointer-bottom"]'),
 				hideToolbar = function () {
 					if (element.is(':visible')) {
 						element.unbind('click');

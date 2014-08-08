@@ -2,9 +2,10 @@
 jQuery.fn.iosLinkEditWidget = function (mapModel) {
 	'use strict';
 	return jQuery(this).each(function () {
-		// var element = jQuery(this);
+		var element = jQuery(this);
 		mapModel.addEventListener('linkSelected', function (link, selectionPoint, linkStyle) {
 			console.log('linkSelected', link, selectionPoint, linkStyle);
+			element.trigger(jQuery.Event('showPopover', selectionPoint));
 		});
 	});
 };
