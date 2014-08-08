@@ -131,6 +131,9 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
+get '/trouble' do
+  erb :trouble
+end
 
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
@@ -155,7 +158,7 @@ helpers do
     !(session["browserok"].nil?)
   end
   def browser_supported?
-    browser.chrome? || browser.gecko? || browser.safari?
+    browser.chrome? || browser.gecko? || browser.safari? || browser.ios?
   end
   def json_fail message
     halt %Q!{"error":"#{message}"}!
