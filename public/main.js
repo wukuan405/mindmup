@@ -92,7 +92,8 @@ MM.main = function (config) {
 				'container': jQuery('#container'),
 				'iconEditor': iconEditor,
 				'measuresModel' : measuresModel,
-				'activeContentListener': activeContentListener
+				'activeContentListener': activeContentListener,
+				'navigation': navigation
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
@@ -174,6 +175,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
+        jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

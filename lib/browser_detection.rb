@@ -90,6 +90,9 @@ class UserAgent
     (v >= from) and (v < to)
   end
 
+  def detected?
+    @ua.detect { |p| p }
+  end
   # Returns the list of applicable browser features.
   #
   # == Examples

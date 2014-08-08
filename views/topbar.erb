@@ -8,10 +8,10 @@
           <ul class="dropdown-menu" role="menu" id="listBookmarks">
             <li class="template" style="display:none"><a data-category="Top Bar" data-event-type="Bookmark click" class="repo"><button data-mm-role='bookmark-delete' class='btn-inline pull-right icon-remove' rel='tooltip' data-title='Remove bookmark'></button></a></li>
 
-            <li> <a href="#m:new" data-category="Top Bar" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
+            <li> <a href="#" data-category="Top Bar" data-mm-role="new-map" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
             <li> <a href="#" data-mm-role="new-from-clipboard" data-category="Top Bar" data-event-type="New From Clipboard"><i class="icon-paste"></i>&nbsp;New&nbsp;From&nbsp;Clipboard</a> </li>
 
-		  <li class="dropdown-submenu">
+		  <li class="dropdown-submenu visible-online">
 			<a href="#"><i class="icon-cloud-upload"></i>&nbsp;Open/Import</a>
 			<ul data-mm-role="open-sources" class="dropdown-menu" role="menu">
 				<li  class="hidden-touch">
@@ -28,14 +28,14 @@
                           </li>
 			</ul>
 		  </li>
-            <li class="divider hidden-touch"></li>
+            <li class="divider hidden-touch visible-online"></li>
 			<li class="hidden-map-changed disabled">
 			<a><i class="icon-save"></i>&nbsp;Save</a>
 			</li>
 			<li data-mm-role="save" class="visible-map-changed">
 			  <a data-mm-role="publish" data-category="Top Bar" data-event-type="Save Map"><span data-mm-role="currentrepo" class="repo repo-a"></span>&nbsp;Save</a>
 			</li>
-            <li class="dropdown-submenu">
+            <li class="dropdown-submenu visible-online">
               <a href="#"><i class="icon-save"></i>&nbsp;Save As</a>
               <ul data-mm-role="save" class="dropdown-menu" role="menu">
 				<li><a data-mm-repository='a' href="#" data-category="Top Bar" data-event-type="Save to MindMup">MindMup</a></li>
@@ -45,22 +45,22 @@
 				<li><a data-mm-repository='o' href="#" data-category="Top Bar" data-event-type="Save to Browser Storage">Browser&nbsp;Storage</a></li>
 			  </ul>
 			</li>
-            <li class="hidden-touch dropdown-submenu">
+            <li class="hidden-touch dropdown-submenu visible-online">
               <a href="#"><i class="icon-download-alt"></i>&nbsp;Export Map</a>
               <ul class="dropdown-menu" role="menu">
                 <li><a data-mm-role="remote-export"  data-mm-format="mup"  data-category="Top Bar" data-event-type="Export MindMup">MindMup</a> </li>
                 <li><a data-mm-role="remote-export"  data-mm-format="mm"   data-category="Top Bar" data-event-type="Export FreeMind">FreeMind</a> </li>
-                <li><a href="#" data-target="#modalImageExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export Image">Image (PNG)</a> </li>
-                <li><a href="#" data-target="#modalPDFExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export PDF">PDF</a> </li>
+                <li class="visible-online"><a href="#" data-target="#modalImageExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export Image">Image (PNG)</a> </li>
+                <li class="visible-online"><a href="#" data-target="#modalPDFExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export PDF">PDF</a> </li>
                 <li><a data-mm-role="remote-export"  data-mm-format="html" data-category="Top Bar" data-event-type="Export Html">HTML</a> </li>
                 <li><a data-mm-role="remote-export"  data-mm-format="txt"  data-category="Top Bar" data-event-type="Export CSV">Text (tab separated)</a> </li>
                 <li><a data-mm-role="remote-export"  data-mm-format="measures-all" data-mm-extension="txt" data-category="Top Bar" data-event-type="Export measures for entire map">Measures (tab separated)</a> </li>
-				<li><a href="#" data-target="#modalPresentationExport" data-toggle="modal"  data-category="Top Bar" data-event-type="Export presentation slides">Presentation Slides (PDF)</a></li>
+				<li class="visible-online"><a href="#" data-target="#modalPresentationExport" data-toggle="modal"  data-category="Top Bar" data-event-type="Export presentation slides">Presentation Slides (PDF)</a></li>
 
 
               </ul>
             </li>
-            <li class="dropdown-submenu">
+            <li class="dropdown-submenu visible-online">
               <a href="#"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
               <ul class="dropdown-menu" role="menu" id="sharelinks" data-mm-role="sharelinks">
                 <li class="visible-map-source-a hidden-map-changed"><a data-target="#modalEmbedMap" data-toggle="modal" data-category='Top Bar' data-event-type='Embed this map'><i class="icon-code"></i>&nbsp;Embed this map</a></li>
@@ -83,11 +83,11 @@
                 <li class="visible-map-source-n" data-mm-role="save"><a data-mm-role="publish">Save this map to share or embed it</a></li>
               </ul>
             </li>
-            <li>
+            <li class="visible-online">
               <a data-event-type="Pin" data-mm-role="bookmark-pin" data-category="Top Bar"><i class="icon-pushpin"></i>&nbsp;Bookmark this map</a>
             </li>
-            <li class="divider"  />
-            <li data-mm-role="bookmark"><a>Save a map and it will appear here</a></li>
+            <li class="divider visible-online"  />
+            <li data-mm-role="bookmark" class="visible-online"><a>Save a map and it will appear here</a></li>
           </ul>
         </li>
 
@@ -182,8 +182,8 @@
               <span class="topbar-autohide">Auto Hide</span><span class="topbar-fixed">Always show</span>&nbsp;menu</a></li>
 
             <li class="hidden-touch" rel="tooltip"><a href="http://blog.mindmup.com/p/keyboard-shortcuts.html" target="_blank"><i class="icon-keyboard"></i>&nbsp;Show&nbsp;Hotkeys</a></li>
-            <li class="divider hidden-touch"></li>
-          <li> <a href="#" class="menuAbout" data-target="#modalGoldLicense" data-toggle="modal" data-category="About" data-event-type="MindMup Gold License"><i class="icon-key"></i>&nbsp;MindMup Gold</a> </li>
+            <li class="divider hidden-touch visible-online"></li>
+          <li class="visible-online"> <a href="#" class="menuAbout" data-target="#modalGoldLicense" data-toggle="modal" data-category="About" data-event-type="MindMup Gold License"><i class="icon-key"></i>&nbsp;MindMup Gold</a> </li>
 
                 <li class="dropdown-submenu" data-mm-layout="dom" data-mm-role="measures-display-control">
 				<a href="#"><i class="icon-tags"></i>&nbsp;Measure Labels</a>
@@ -193,22 +193,14 @@
                     <li data-mm-role="measurement-activation-template"><a data-category="Measurements" data-event-type="Show On Map" data-mm-role="show-measure"><span class="show-active"><i class="icon-check"></i>&nbsp;</span><span data-mm-role="measure-name"></span></a></li>
                  </ul>
                 </li>
-
-				<li class="dropdown-submenu" data-mm-layout="kinetic">
-				<a href="#"><i class="icon-tags"></i>&nbsp;Measure Labels</a>
-                 <ul class="dropdown-menu" role="menu">
-					 <li><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Turn off the old layout to use this function</a></li>
-                 </ul>
-                </li>
-
-          </ul>
-        </li>
-        <li class="hidden-phone-portrait"><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Extensions</a></li>
+              </ul>
+            </li>
+        <li class="hidden-phone-portrait visible-online"><a data-toggle="modal" data-target="#modalExtensions" href="#" data-title="Extensions" data-category="Top Bar" data-event-type="Extensions">Extensions</a></li>
 
       </ul>
 
       <ul class="nav pull-right">
-        <li data-mm-role="save" class="pull-left btn-group">
+        <li data-mm-role="save" class="pull-left btn-group visible-online">
           <button class="btn btn-primary" data-mm-role="publish" data-category="Top Bar" data-event-type="Save Map">Save</button>
           <button class="btn dropdown-toggle" data-toggle='dropdown'><span data-mm-role='currentrepo' class='repo repo-a'>&nbsp;</span><b class="caret"></b></button>
           <ul class="dropdown-menu">
@@ -225,13 +217,13 @@
           <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             <li> <a href="http://blog.mindmup.com/p/documentation.html" target="_blank" data-category="About" data-event-type="Help"><i class="icon-ambulance"></i>&nbsp;Help and Hints</a> </li>
             <li> <a href="#" class="menuAbout" data-target="#modalAbout" data-toggle="modal" data-category="About" data-event-type="What is MindMup"><i class="icon-info"></i>&nbsp;What is MindMup</a> </li>
-            <li> <a href="#" class="menuAbout" data-target="#modalGoldLicense" data-toggle="modal" data-category="About" data-event-type="MindMup Gold License"><i class="icon-key"></i>&nbsp;MindMup Gold</a> </li>
+            <li class="visible-online"> <a href="#" class="menuAbout" data-target="#modalGoldLicense" data-toggle="modal" data-category="About" data-event-type="MindMup Gold License"><i class="icon-key"></i>&nbsp;MindMup Gold</a> </li>
             <li> <a target="_blank" data-category="About" href="http://mindmup.uservoice.com/" data-event-type="Vote on features"><i class="icon-bullhorn"></i>&nbsp;Vote on features</a> </li>
             <li> <a href="#" class="menuterms" data-target="#modalTerms" data-toggle="modal" data-category="About" data-event-type="Legal info"><i class="icon-legal"></i>&nbsp;Terms of use</a> </li>
-            <li> <a href="/legal/privacy" class="menuterms" target="_blank" data-category="About" data-event-type="Privacy Policy"><i class="icon-lock"></i>&nbsp;Privacy Policy</a> </li>
+            <li class="visible-online"> <a href="/legal/privacy" class="menuterms" target="_blank" data-category="About" data-event-type="Privacy Policy"><i class="icon-lock"></i>&nbsp;Privacy Policy</a> </li>
             <li> <a href="http://blog.mindmup.com" target="_blank" data-category="About" data-event-type="News/Blog"><i class="icon-rss"></i>&nbsp;News/Blog</a> </li>
             <li> <a href="http://github.com/mindmup" target="_blank" data-category="About" data-event-type="Source Code"><i class="icon-github-sign"></i>&nbsp;Source Code</a> </li>
-            <li> <a href="#" id="menuFeedback" data-target="#modalFeedback" data-toggle="modal" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-envelope"></i>&nbsp;Talk to Us</a> </li>
+            <li class="visible-online"> <a href="#" id="menuFeedback" data-target="#modalFeedback" data-toggle="modal" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-envelope"></i>&nbsp;Talk to Us</a> </li>
           </ul>
         </li>
         <li class="hidden-narrow-screen">
