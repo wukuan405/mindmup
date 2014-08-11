@@ -447,6 +447,7 @@ a:focus {
 	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
 	width: 300px;
 	height: 80px;
+	text-align: center;
 }
 .iosPopupToolbarPointerBottom {
 	top: 101px;
@@ -467,6 +468,7 @@ a:focus {
 	}
 	.iosPopupToolContainerLarge {
 		height: 170px;
+		text-align: left;
 	}
 	.iosPopupToolbarLarge .iosPopupToolbarPointerBottom {
 		top: 191px;
