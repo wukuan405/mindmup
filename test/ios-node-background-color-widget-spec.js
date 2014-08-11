@@ -10,7 +10,7 @@ describe('iosBackgroundColorWidget', function () {
 			underTest,
 			palette;
 	beforeEach(function () {
-		mapModel = jasmine.createSpyObj('mapModel', ['updateStyle']);
+		mapModel = jasmine.createSpyObj('mapModel', ['updateStyle', 'anotherMethod']);
 		underTest = jQuery(template).appendTo('body').iosBackgroundColorWidget(mapModel, ['000000', 'FFFFFF', 'transparent'], 'ios-test');
 		palette = underTest.find('[data-mm-role="ios-color-palette"]');
 	});
@@ -40,6 +40,25 @@ describe('iosBackgroundColorWidget', function () {
 			it('clears the background color when it is a transparent', function () {
 				jQuery(selectors[2]).click();
 				expect(mapModel.updateStyle).toHaveBeenCalledWith('ios-test', 'background', '');
+			});
+			describe('when a different mapModel method is configured', function () {
+				beforeEach(function () {
+					underTest.remove();
+					underTest = jQuery(template).appendTo('body');
+					underTest.data('mm-model-method', 'anotherMethod');
+					underTest.iosBackgroundColorWidget(mapModel, ['000000', 'FFFFFF', 'transparent'], 'ios-test');
+					palette = underTest.find('[data-mm-role="ios-color-palette"]');
+					selectors = palette.find('[data-mm-role="ios-color-selector-template"]');
+				});
+				it('uses the configured mapModel method', function () {
+					jQuery(selectors[0]).click();
+					expect(mapModel.anotherMethod).toHaveBeenCalledWith('ios-test', 'background', '#000000');
+				});
+				it('passes additional arguments if specified', function () {
+					underTest.data('mm-model-args', ['a', 1]);
+					jQuery(selectors[0]).click();
+					expect(mapModel.anotherMethod).toHaveBeenCalledWith('ios-test', 'a', 1, '#000000');
+				});
 			});
 			it('hides the widget', function () {
 				jQuery(selectors[1]).click();

@@ -36,9 +36,16 @@ describe('iosMenuWidget', function () {
 		expect(underTest.find('#defaultMenuItem').is(':visible')).toBeFalsy();
 		expect(underTest.find('#nonDefaultMenuItem').is(':visible')).toBeTruthy();
 	});
-	it('should execute a mapModel action when a modelAction menu item is clicked', function () {
-		underTest.find('[data-mm-menu-role="modelAction"]').click();
-		expect(mapModel.someMethod).toHaveBeenCalledWith('menuwidget');
+	describe('menu items that call mapModel', function () {
+		it('should execute a mapModel action when a modelAction menu item is clicked', function () {
+			underTest.find('[data-mm-menu-role="modelAction"]').click();
+			expect(mapModel.someMethod).toHaveBeenCalledWith('menuwidget');
+		});
+		it('should pass additional arguments if specified', function () {
+			underTest.find('[data-mm-menu-role="modelAction"]').data('mm-model-args', ['a', 1]);
+			underTest.find('[data-mm-menu-role="modelAction"]').click();
+			expect(mapModel.someMethod).toHaveBeenCalledWith('menuwidget', 'a', 1);
+		});
 	});
 	describe('menu items that send messages', function () {
 		it('should send a message with args when a sendMessage menu item is clicked', function () {
@@ -50,9 +57,17 @@ describe('iosMenuWidget', function () {
 			expect(messageSender.sendMessage).toHaveBeenCalledWith({type: 'hello'});
 		});
 	});
-	it('should show an element when a showWidget menu item is clicked', function () {
-		underTest.find('#showWidget').click();
-		expect(jQuery('#widgetToShow').is(':visible')).toBeTruthy();
+	describe('menu items that show widgets', function () {
+		it('should show an element when a showWidget menu item is clicked', function () {
+			underTest.find('#showWidget').click();
+			expect(jQuery('#widgetToShow').is(':visible')).toBeTruthy();
+		});
+		it('should pass additional arguments if specified', function () {
+			jQuery('#widgetToShow').data('mm-model-args', undefined);
+			underTest.find('#showWidget').data('mm-model-args', ['a', 1]);
+			underTest.find('#showWidget').click();
+			expect(jQuery('#widgetToShow').data('mm-model-args')).toEqual(['a', 1]);
+		});
 	});
 	describe('menu toggle button', function () {
 		it('should change the menu title to "back" when a sub menu is shown', function () {
