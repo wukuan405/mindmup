@@ -14,6 +14,11 @@ jQuery.fn.iosPopoverMenuWidget = function () {
 				},
 				backgroundClick = function () {
 					hideToolbar();
+				},
+				setupBackgroundClick = function (ignoreVisibility) {
+					if (ignoreVisibility ||  element.is(':visible')) {
+						element.click(backgroundClick);
+					}
 				};
 		toolbar.click(function (e) {
 			e.preventDefault();
@@ -46,11 +51,11 @@ jQuery.fn.iosPopoverMenuWidget = function () {
 			}
 			toolbar.css({'top': Math.max(-20, top) + 'px', 'left': left + 'px'});
 			//stop the click handler being added to soon or it fires immediately
-			window.setTimeout(function () {
-				if (element.is(':visible')) {
-					element.click(backgroundClick);
-				}
-			}, 1000);
+			if (evt.noDelay) {
+				setupBackgroundClick(true);
+			} else {
+				window.setTimeout(setupBackgroundClick, 1000);
+			}
 			element.show();
 		});
 	});
