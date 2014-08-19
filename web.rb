@@ -136,6 +136,14 @@ get '/ios/map' do
   erb :ios
 end
 
+get '/ios/config' do
+  content_type 'text/json'
+  config = {
+    anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
+  }
+  halt 200, config.to_json
+end
+
 get '/trouble' do
   erb :trouble
 end
