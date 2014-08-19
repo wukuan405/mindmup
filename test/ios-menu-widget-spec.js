@@ -14,10 +14,12 @@ describe('iosMenuWidget', function () {
 										'</div>' +
 									'</div>',
 			widget,
-			mapModel = jasmine.createSpyObj('mapModel', ['someMethod']),
-			messageSender = jasmine.createSpyObj('messageSender', ['sendMessage']),
+			mapModel,
+			messageSender,
 			underTest;
 	beforeEach(function () {
+		mapModel = jasmine.createSpyObj('mapModel', ['someMethod']);
+		messageSender = jasmine.createSpyObj('messageSender', ['sendMessage']);
 		widget = jQuery('<div id="widgetToShow" data-mm-role="some-widget" style="display:none"></div>').appendTo('body');
 		underTest = jQuery(template).appendTo('body').iosMenuWidget(mapModel, messageSender);
 	});
