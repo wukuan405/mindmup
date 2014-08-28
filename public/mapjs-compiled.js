@@ -1694,7 +1694,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 	};
 	this.clickNode = function (id, event) {
-		var button = event && event.button;
+		var button = event && event.button && event.button !== -1;
 		if (event && event.altKey) {
 			self.addLink('mouse', id);
 		} else if (event && event.shiftKey) {
@@ -3409,6 +3409,15 @@ jQuery.fn.selectAll = function () {
         textRange.select();
     }
 };
+jQuery.fn.innerText = function () {
+  'use strict';
+  var htmlContent = this.html(),
+      containsBr = /<br\/?>/.test(htmlContent);
+  if (!containsBr) {
+    return this.text();
+  }
+  return htmlContent.replace(/<br\/?>/gi,'\n').replace(/(<([^>]+)>)/gi, '');
+};
 jQuery.fn.editNode = function (shouldSelectAll) {
 	'use strict';
 	var node = this,
@@ -3426,8 +3435,9 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 			if (textBox.text() === unformattedText) {
 				return cancelEditing();
 			}
+      var content = textBox.innerText();
 			clear();
-			result.resolve(textBox.text());
+			result.resolve(content);
 		},
 		cancelEditing = function () {
 			clear();
@@ -4189,7 +4199,13 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				}
 			});
 		});
-		jQuery(window).on('orientationchange resize', function () {
+		if (!touchEnabled) {
+			jQuery(window).on('resize', function () {
+				mapModel.resetView();
+			});
+		}
+
+		jQuery(window).on('orientationchange', function () {
 			mapModel.resetView();
 		});
 		jQuery(document).on('keydown', function (e) {
