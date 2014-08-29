@@ -3432,10 +3432,10 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 			node.shadowDraggable();
 		},
 		finishEditing = function () {
-			if (textBox.text() === unformattedText) {
+      var content = textBox.innerText();
+			if (content === unformattedText) {
 				return cancelEditing();
 			}
-      var content = textBox.innerText();
 			clear();
 			result.resolve(content);
 		},
