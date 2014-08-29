@@ -1,11 +1,22 @@
-<div id="modalPresentationExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="presentation.pdf">
+<div id="modalPresentationExport" data-mm-role="layout-export" class="modal hide fade">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Export to Slideshow PDF</h3>
+    <h3>Export slideshow </h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
-      <p>Click the Export button to securely upload the storyboard for conversion to Slideshow PDF.</p>
+      <p>Please select slideshow format and click the Export button to securely upload the storyboard for conversion:</p>
+      <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label" for="slideshowFormatSelector">Slideshow format</label>
+        <div class="controls">
+            <select data-mm-role="format-selector" id="slideshowFormatSelector">
+              <option value="presentation.pdf">PDF</option>
+              <option value="presentation.pptx">Powerpoint (Beta)</option>
+            </select>
+        </div>
+      </div>
+      </form>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
       <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the storyboard...
@@ -14,12 +25,12 @@
       <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
     </div>
     <div class="visible error alert alert-error alert-block">
-      <h4>Unable to export Slideshow PDF:</h4>
+      <h4>Unable to export Slideshow:</h4>
       <br/>
 
       <span data-mm-role="error-message"></span>
       <span data-mm-role="generation-error">
-        This storyboard contains a feature not currently supported by Slideshow PDF export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+        This storyboard contains a feature not currently supported by slideshow export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
       </span>
       <span data-mm-role="file-too-large">
          <p>
@@ -28,7 +39,7 @@
               <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
               <li><a href="http://discover.mindmup.com/mindmup-gold" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size.to_i/(1024*1024)%> Mb</li>
            </ul>
-           <p>For storyboards larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+           <p>For storyboards larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20Slideshow%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
 
          </p>
       </span>
