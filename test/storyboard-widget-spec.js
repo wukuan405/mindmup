@@ -37,7 +37,7 @@ describe('updateScene', function () {
 });
 describe('storyboardMenuWidget', function () {
 	'use strict';
-	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a><a data-mm-role="storyboard-remove-scenes-for-idea-id"></a></span>',
+	var template = '<span id="test-menu"><a data-mm-role="storyboard-add-scene"></a><a data-mm-role="storyboard-remove-scenes-for-idea-id"></a><a data-mm-role="storyboard-add-scene-children"></a></span>',
 		storyboardController,
 		storyboardModel,
 		mapModel,
@@ -76,6 +76,10 @@ describe('storyboardMenuWidget', function () {
 		it('should add scene when add-scene link is clicked', function () {
 			underTest.find('[data-mm-role=storyboard-add-scene]').click();
 			expect(storyboardController.addScene).toHaveBeenCalledWith(23);
+		});
+		it('should add scene when add-scene-children link is clicked', function () {
+			underTest.find('[data-mm-role=storyboard-add-scene-children]').click();
+			expect(storyboardController.addScene).toHaveBeenCalledWith(23, false, 'with-children');
 		});
 		it('should remove scenes for selected idea when remove-scenes link is clicked', function () {
 			mapModel.getSelectedNodeId.and.returnValue(23);

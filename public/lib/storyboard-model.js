@@ -65,7 +65,16 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		scenesForActiveStoryboard,
 		rebuildScenesForActiveStoryboard = function () {
 			var storyboardName = self.getActiveStoryboardName(),
-				result = [];
+				result = [],
+                getTitle = function (idea, sceneType) {
+                  var result = idea.title;
+                  if (sceneType === 'with-children') {
+                   _.each(idea.sortedSubIdeas(), function (subIdea) {
+                     result = result + '\n- ' + subIdea.title;
+                   });
+                  }
+                  return result;
+                };
 			if (!storyboardName) {
 				scenesForActiveStoryboard = MM.Storyboard.sceneList(result);
 				return;
@@ -76,7 +85,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 					_.each(scenes, function (scene) {
 						var sceneIndex = parseFloat(scene.storyboards[storyboardName]), converted, icon;
 						if (sceneIndex) {
-							converted = {ideaId: idea.id, title: idea.title, index: sceneIndex};
+							converted = {ideaId: idea.id, title: getTitle(idea, scene.type), index: sceneIndex};
 							icon = idea.getAttr('icon');
 							if (icon) {
 								converted.image = icon;

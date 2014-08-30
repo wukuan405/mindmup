@@ -34,12 +34,13 @@ describe('MM.Storyboard.scene', function () {
 	});
 	describe('clone', function () {
 		it('should return a clone of the scene', function () {
-			var base = {ideaId: 12, title: 'a', index: 1},
+			var base = {ideaId: 12, title: 'a', index: 1, type: 'xxx'},
 					scene = MM.Storyboard.scene(base),
 					clone = scene.clone();
 			base.ideaId = 13;
 			base.title = 'b';
 			base.index = 2;
+            base.type= 'zzz';
 
 			expect(scene.ideaId).toBe(13);
 			expect(clone.ideaId).toBe(12);
@@ -47,6 +48,8 @@ describe('MM.Storyboard.scene', function () {
 			expect(clone.title).toBe('a');
 			expect(scene.index).toBe(2);
 			expect(clone.index).toBe(1);
+            expect(scene.type).toBe('zzz');
+            expect(clone.type).toBe('xxx');
 			expect(clone.clone).not.toBeUndefined();
 			expect(clone.matchesScene).not.toBeUndefined();
 		});
@@ -375,6 +378,13 @@ describe('Storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.getScenes()).toEqual([]);
 			});
+            it('generates a title using a list of children for with-children nodes', function () {
+                activeContent.addSubIdea(12, 'first child');
+                activeContent.addSubIdea(12, 'second child');
+                activeContent.addSubIdea(12, 'third child');
+                activeContent.updateAttr(12, 'test-scenes', [{storyboards: {'ted talk': 1}, type: 'with-children'}]);
+                expect(underTest.getScenes()[0].title).toEqual('already in ted storyboard\n- first child\n- second child\n- third child');
+            });
 		});
 		describe('should dispatch events when the storyboard changes', function () {
 			var storyboardSceneAddedListener,
