@@ -3,7 +3,10 @@
         <div class="navbar-inner">
             <ul class="nav pull-left" data-mm-role="storyboard-menu">
                 <li >
-                    <a href="#" data-mm-role="storyboard-add-scene"><i class="icon-plus-sign" data-category="Storyboard" data-event-type="Add to storyboard"></i><span class="hidden-narrow-screen">&nbsp;Add&nbsp;selected&nbsp;node</span></a>
+                    <a href="#" data-mm-role="storyboard-add-scene"><i class="icon-plus-sign" data-category="Storyboard" data-event-type="Add to storyboard"></i><span class="hidden-narrow-screen">&nbsp;Add&nbsp;node</span></a>
+                </li>
+                <li >
+                    <a href="#" data-mm-role="storyboard-add-scene-children"><i class="icon-list-ul" data-category="Storyboard" data-event-type="Add bullets to storyboard"></i><span class="hidden-narrow-screen">&nbsp;Add&nbsp;with&nbsp;children</span></a>
                 </li>
                 <li >
                     <a href="#" data-mm-role="storyboard-move-scene-left"><i class="icon-arrow-left" data-category="Storyboard" data-event-type="Move storyboard scene left"></i><span class="hidden-narrow-screen">&nbsp;Move&nbsp;left</span></a>
@@ -16,16 +19,13 @@
                     <a href="#" data-mm-role="storyboard-remove-scene"><i class="icon-minus-sign" data-category="Storyboard" data-event-type="Remove from storyboard"></i><span class="hidden-narrow-screen">&nbsp;Remove</span></a>
                 </li>
             </ul>
-			<ul class="nav pull-right">
-				<li class="dropdown" class="hidden-touch visible-online">
-                 <a class="dropdown-toggle" data-toggle="dropdown" href="#" >
-                   <i class="icon-download-alt"></i><span class="hidden-narrow-screen">&nbsp;Export&nbsp;</span><b class="caret"></b>
+            <ul class="nav pull-right">
+              <li class="hidden-touch">
+                <a href="#" tabindex="4" data-target="#modalPresentationExport" data-toggle="modal"  data-category="Storyboard" data-event-type="Export presentation slides">
+                   <i class="icon-download-alt"></i>
+                   <span class="hidden-narrow-screen">&nbsp;Export&nbsp;</span>
                  </a>
-                 <ul class="dropdown-menu" role="menu">
-					 <li><a href="#" tabindex="4" data-target="#modalPresentationExport" data-toggle="modal"  data-category="Storyboard" data-event-type="Export presentation slides">Presentation Slides</a></li>
-                 </ul>
-                </li>
-
+              </li>
                 <li class="hidden-phone">
                 <a href="#" data-mm-role="storyboard-toggler"><i class="icon-remove"></i></a>
                 </li>
@@ -38,8 +38,11 @@
 			<div>
 				<div class="alert alert-info alert-block">
 					<h4>Add some scenes</h4>
-					<p>At the moment, your storyboard has no scenes. Add scenes using the <strong><i class="icon-plus-sign"></i>&nbsp;Add&nbsp;Scene</strong> button in the upper right corner of this window, or right click a map node and add select <strong>Storyboard-&gt;Add&nbsp;Node</strong>. 
-					For more information on how to use this feature, see our <a href="http://blog.mindmup.com/p/storyboards.html" target="_blank">Storyboards documentation page</a>.</p>
+          <p>At the moment, your storyboard has no scenes.</p>
+          <p>Add scenes using the <strong><i class="icon-plus-sign"></i>&nbsp;Add&nbsp;Node</strong> button in the upper right corner of this window, or right click a map node and add select <strong>Storyboard-&gt;Add&nbsp;Node</strong>. 
+          </p>
+          <p>
+					For more information on how to use this feature, see our <a href="http://discover.mindmup.com/storyboards" target="_blank">Storyboards documentation page</a>.</p>
 				</div>
 			</div>
 		</div>

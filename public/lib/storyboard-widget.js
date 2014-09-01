@@ -346,6 +346,9 @@ jQuery.fn.storyboardMenuWidget = function (storyboardController, storyboardModel
 	elements.find('[data-mm-role=storyboard-add-scene]').click(function () {
 		mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId); });
 	});
+	elements.find('[data-mm-role=storyboard-add-scene-children]').click(function () {
+		mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId, false, 'with-children'); });
+	});
 	elements.find('[data-mm-role=storyboard-remove-scenes-for-idea-id]').click(function () {
 		storyboardController.removeScenesForIdeaId(mapModel.getSelectedNodeId());
 	});

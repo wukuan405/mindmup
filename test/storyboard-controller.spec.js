@@ -121,6 +121,15 @@ describe('Storyboards', function () {
 						});
 					});
 				});
+        describe('when the scene type is provided', function () {
+          beforeEach(function () {
+            storyboardModel.getActiveStoryboardName.and.returnValue('zed talk');
+          });
+          it('adds a scene by declaring the additional scene type', function () {
+            underTest.addScene(11, undefined, 'with-children');
+            expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'zed talk': 1}, type: 'with-children'}]);
+          });
+        });
 			});
 			describe('removeScenesForIdeaId', function () {
 				beforeEach(function () {

@@ -3409,6 +3409,15 @@ jQuery.fn.selectAll = function () {
         textRange.select();
     }
 };
+jQuery.fn.innerText = function () {
+  'use strict';
+  var htmlContent = this.html(),
+      containsBr = /<br\/?>/.test(htmlContent);
+  if (!containsBr) {
+    return this.text();
+  }
+  return htmlContent.replace(/<br\/?>/gi,'\n').replace(/(<([^>]+)>)/gi, '');
+};
 jQuery.fn.editNode = function (shouldSelectAll) {
 	'use strict';
 	var node = this,
@@ -3423,11 +3432,12 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 			node.shadowDraggable();
 		},
 		finishEditing = function () {
-			if (textBox.text() === unformattedText) {
+      var content = textBox.innerText();
+			if (content === unformattedText) {
 				return cancelEditing();
 			}
 			clear();
-			result.resolve(textBox.text());
+			result.resolve(content);
 		},
 		cancelEditing = function () {
 			clear();

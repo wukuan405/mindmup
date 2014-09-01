@@ -3,20 +3,24 @@ MM.StoryboardController = function (storyboardModel) {
 	/* workflows, event processing */
 	'use strict';
 	var self = observable(this),
-		buildStoryboardScene = function (storyboardName, index) {
-			var attr = {};
+		buildStoryboardScene = function (storyboardName, index, sceneType) {
+			var attr = {}, result;
 			attr[storyboardName] = index;
-			return {
+			result = {
 				'storyboards': attr
 			};
+            if (sceneType) {
+                result.type = sceneType;
+            }
+            return result;
 		},
-		appendScene = function (storyboardName, nodeId, index) {
+		appendScene = function (storyboardName, nodeId, index, sceneType) {
 			var scenes = storyboardModel.getScenesForNodeId(nodeId),
-				result = buildStoryboardScene(storyboardName, index);
+				result = buildStoryboardScene(storyboardName, index, sceneType);
 			scenes.push(result);
 			storyboardModel.setScenesForNodeId(nodeId, scenes);
 		};
-	self.addScene = function (nodeId, beforeScene) {
+	self.addScene = function (nodeId, beforeScene, sceneType) {
 		var storyboardName = storyboardModel.getActiveStoryboardName(),
 			index = 1;
 		if (!storyboardName) {
@@ -29,10 +33,10 @@ MM.StoryboardController = function (storyboardModel) {
 		}
 		if (!index) {
 			storyboardModel.rebalanceAndApply([beforeScene], function (newScenes) {
-				appendScene(storyboardName, nodeId, storyboardModel.insertionIndexBefore(newScenes[0]));
+				appendScene(storyboardName, nodeId, storyboardModel.insertionIndexBefore(newScenes[0]), sceneType);
 			});
 		} else {
-			appendScene(storyboardName, nodeId, index);
+			appendScene(storyboardName, nodeId, index, sceneType);
 		}
 	};
 	self.moveSceneAfter = function (sceneToMove, afterScene) {
