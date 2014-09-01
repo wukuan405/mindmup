@@ -139,7 +139,10 @@ end
 get '/ios/config' do
   content_type 'text/json'
   config = {
+    anonymousPostUrl: "http://#{settings.s3_website}/",
     anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
+    publishingConfigUrl: "#{settings.base_url}publishingConfig",
+    sharingUrl: "#{settings.base_url}#m:"
   }
   halt 200, config.to_json
 end
