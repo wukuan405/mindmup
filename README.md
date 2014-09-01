@@ -57,15 +57,6 @@ See [Heroku Configiration Local Setup](https://devcenter.heroku.com/articles/con
 
 Note: Unless RACK_ENV is production, Google analytics is not used, the analytics information is instead logged to the JavaScript console.
 
-
-Running offline
----------------
-
-We don't package any of third party javascript dependencies (and there are plenty). In order to deploy faster and provide users with a better
-page loading experience, all third party dependencies are retrieved from CDNs where available or the S3 file storage. To run offline, set the environment
-variable OFFLINE to true, and run the setup_offline.sh script in the root folder to download all the dependencies to /public/offline. This enables
-development and testing without an internet connection.
-
 Executing tests
 ---------------
 
