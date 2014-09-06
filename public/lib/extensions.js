@@ -183,6 +183,9 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
 		var required = extensions.requiredExtension(newMapId);
 		alert.hide(alertId);
+        if (newMapId && newMapId[0] === 'o') { /* ignore former offline map URLs */
+            return;
+        }
 		if (required) {
 			showAlertWithCallBack(
 				'This map requires an extension to load!',
