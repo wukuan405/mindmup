@@ -1,6 +1,6 @@
 if ENV["FORCE_SSL"] === "YES" then
  require 'rack/ssl-enforcer'
- use Rack::SslEnforcer
+ use Rack::SslEnforcer, :ignore => ['/export_browser_maps', '/publishingConfig', '/static', '/cache_news', '/trouble']
 end
 require File.dirname(__FILE__)+'/web.rb'
 $stdout.sync = true
