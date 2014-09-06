@@ -26,12 +26,45 @@
   <div class="container">
     <div class="row">
       <h1>Export Browser Maps</h1>
-      <p>This page allows you to export maps stored in your local browser profile. Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
-      button next to the map name to save the file to your local disk.</p>
+      <p>This page allows you to export maps stored in your local browser profile. 
 
-      <p>Browsers keep separate profiles for HTTP and HTTPS access. If you cannot find your map in the list, select a different tab from the list below. </p>
+  
+    <% if browser.safari? || browser.ios? %> 
+      It is important that you follow all the steps below as described:</p>
+        <ol>
+          <li>
+            Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
+            button next to the map name to save the file to your local disk.
+          </li>
+          <li>
+            Safari will open a new window with the map file. Click on <strong>File-&gt;Save As</strong> to save the file to disk.
+            <img style="border: 1px solid black; height: 150px" src="<%=settings.static_image_host%>/safari_save_as.png"/>
+          </li>
+          <li>
+            In the popup dialog, select <strong>Page Source</strong> in the format drop-down. </li>
+            <img style="border: 1px solid black; height: 130px" src="<%=settings.static_image_host%>/safari_page_source.png"/>
+          </li>
+          <li>Enter a file name <strong>ending with .mup</strong>, and click on <strong>Save</strong></li>
+          <li>If another dialog pops up, similar to the picture below, choose <strong>Don't Append</strong>
+            <img style="border: 1px solid black; height: 100px" src="<%=settings.static_image_host%>/safari_plain_text.png"/>
+          </li>
+        </ol>
+    <% else %>
+      
+        Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
+        button next to the map name to save the file to your local disk.
+      
+    <% end %>
+    </p>
+
     </div>
+
+
+
     <div class="row">
+      <p>
+      Browsers keep separate profiles for HTTP and HTTPS access. If you cannot find your map in the list, select a different tab from the list below.</p> 
+      </p>
       <ul class="nav nav-tabs">
       <li id="httptab">
         <a href="#">HTTP</a>
@@ -42,26 +75,37 @@
     <div class="row" id="no-maps">
       <p>There are no browser storage maps in this profile. If you can't find the map you are looking for, please contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
     </div>
-    <div class="row">
-      <table class="table table-condensed table-striped hide" id="maps">
+    <div class="row hide" id="maps">
+      <table class="table table-condensed table-striped">
         <tr>
           <th></th>
           <th>Name</th>
           <th>Created On</th>
         </tr>
         <tr data-mm-role="template">
-          <td ><a data-mm-role="download" target="_blank" class="btn"><i class="icon-download"></i>&nbsp;Download</a></td>
+          <td ><a target="_blank" data-mm-role="download" class="btn"><i class="icon-download"></i>&nbsp;Download</a></td>
           <td data-mm-role="name"></td>
           <td data-mm-role="time"></td>
         </tr>
       <table>
+        <div class="alert alert-warning" id="deletealert">
+          <p>
+        Once you have downloaded all the maps, you can delete them from your profile by clicking on the button below. Please note that there
+        is <strong>no undo</strong> for deletion, so do this only after you have exported all the maps you would like to keep:</p>
+        <button class="btn btn-danger" id="delete">Delete All Maps From The Browser Profile</button>
+      </div>
+        <div class="alert alert-info hide" id="deletedalert">
+          <p>All the maps have been cleared from your browser profile</p>
+      </div>
     </div>
   </div>
   <script>
     if (document.location.protocol === 'http:') {
       $('#httpstab').removeClass('active');
       $('#httptab').addClass('active');
-    }
+    } 
+    $('#httpstab a').attr('href', document.location.href.replace(document.location.protocol, 'https:'));
+    $('#httptab a').attr('href', document.location.href.replace(document.location.protocol, 'http:'));
     var mapsString = localStorage['offline-maps'],
         downloadMap = function (key) {
           console.log('downloading ' + key); 
@@ -75,11 +119,29 @@
       template.detach();
       _.each(mapsList.maps, function (map, key) {
           var clone = template.clone().appendTo(templateParent),
-              blob = new Blob([localStorage[key]], {type : 'application/octet-stream'}),
+              contents = JSON.parse(localStorage[key]).map,
+              blob = new Blob([contents], {type : 'application/octet-stream'}),
               url = URL.createObjectURL(blob);
+
+
           clone.find('[data-mm-role=name]').text(map.d);
           clone.find('[data-mm-role=time]').text(new Date(parseInt(map.t)));
-          clone.find('[data-mm-role=download]').attr({'href': url, 'download': map.d + '.mup'});
+          <% if browser.safari? || browser.ios? %> 
+            clone.find('[data-mm-role=download]').attr('href', 'data:text/plain,' + encodeURIComponent(contents));
+          <% else %>
+            clone.find('[data-mm-role=download]').attr({'href': url, 'download': map.d + '.mup'});
+          <% end %>
+      });
+
+      $('#delete').click(function () {
+          _.each(mapsList.maps, function (map, key) {
+            localStorage.removeItem(key);
+          });
+          localStorage.removeItem('offline-maps');
+
+          $('#deletealert').hide();
+          $('#maps table').hide();
+          $('#deletedalert').show();
       });
     }
   </script>
