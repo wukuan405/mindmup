@@ -134,6 +134,9 @@ end
 get '/trouble' do
   erb :trouble
 end
+get '/export_browser_maps' do
+  erb :export_browser_maps
+end
 
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
