@@ -73,6 +73,10 @@ $.fn.importWidget = function (activityLog, mapController) {
 	element.on('shown', function () {
 		fileInput.css('opacity', 0).css('position', 'absolute').offset(selectButton.offset()).width(selectButton.outerWidth())
 			.height(selectButton.outerHeight());
+        selectButton.focus();
 	});
+    selectButton.keydown('space return', function () {
+        fileInput.click();
+    });
 	return element;
 };
