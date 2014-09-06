@@ -1,5 +1,6 @@
 if ENV["FORCE_SSL"] === "YES" then
-  use Rack::SslEnforcer
+ require 'rack/ssl-enforcer'
+ use Rack::SslEnforcer
 end
 require File.dirname(__FILE__)+'/web.rb'
 $stdout.sync = true
