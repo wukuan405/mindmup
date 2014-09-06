@@ -1,0 +1,86 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>MindMup Map Exporter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="mind mapping, mind map, mindmap, mindmapping, free online mindmapping, free online mind mapping, mindmup" />
+    <meta name="description" content="MindMup privacy policy" />
+    <link rel="shortcut icon" href="<%=settings.static_image_host%>/favicon.ico" >
+    <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
+    <link rel="apple-touch-icon" href="<%=settings.static_image_host%>/apple-touch-icon.png" />
+    <link href="https://plus.google.com/u/0/communities/112831595986131146219" rel="publisher" />
+    <link href="http://blog.mindmup.com/feeds/posts/default" rel="alternate" type="application/rss+xml" title="RSS" />
+    <script src="<%=settings.static_host%>/embedded_external.js"></script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', '<%= settings.google_analytics_account %>']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+       })();
+     </script>
+   </head>
+   <body>
+  <div class="container">
+    <div class="row">
+      <h1>Export Browser Maps</h1>
+      <p>This page allows you to export maps stored in your local browser profile. Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
+      button next to the map name to save the file to your local disk.</p>
+
+      <p>Browsers keep separate profiles for HTTP and HTTPS access. If you cannot find your map in the list, select a different tab from the list below. </p>
+    </div>
+    <div class="row">
+      <ul class="nav nav-tabs">
+      <li id="httptab">
+        <a href="#">HTTP</a>
+      </li>
+      <li id="httpstab" class="active"><a href="#">HTTPS</a></li>
+      </ul>
+    </div>
+    <div class="row" id="no-maps">
+      <p>There are no browser storage maps in this profile. If you can't find the map you are looking for, please contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
+    </div>
+    <div class="row">
+      <table class="table table-condensed table-striped hide" id="maps">
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Created On</th>
+        </tr>
+        <tr data-mm-role="template">
+          <td ><a data-mm-role="download" target="_blank" class="btn"><i class="icon-download"></i>&nbsp;Download</a></td>
+          <td data-mm-role="name"></td>
+          <td data-mm-role="time"></td>
+        </tr>
+      <table>
+    </div>
+  </div>
+  <script>
+    if (document.location.protocol === 'http:') {
+      $('#httpstab').removeClass('active');
+      $('#httptab').addClass('active');
+    }
+    var mapsString = localStorage['offline-maps'],
+        downloadMap = function (key) {
+          console.log('downloading ' + key); 
+        };
+    if (mapsString) {
+      var mapsList = JSON.parse(mapsString);
+      $('#no-maps').hide();
+      $('#maps').show();
+      var template = $('#maps [data-mm-role=template]'),
+          templateParent = template.parent();
+      template.detach();
+      _.each(mapsList.maps, function (map, key) {
+          var clone = template.clone().appendTo(templateParent),
+              blob = new Blob([localStorage[key]], {type : 'application/octet-stream'}),
+              url = URL.createObjectURL(blob);
+          clone.find('[data-mm-role=name]').text(map.d);
+          clone.find('[data-mm-role=time]').text(new Date(parseInt(map.t)));
+          clone.find('[data-mm-role=download]').attr({'href': url, 'download': map.d + '.mup'});
+      });
+    }
+  </script>
+</body>
