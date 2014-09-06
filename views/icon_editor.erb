@@ -22,7 +22,7 @@
           Position:
         </label>
         <div class="controls">
-          <select name="position">
+          <select name="position" tabindex="100">
             <option value="top">Above text</option>
             <option value="center">Behind text (centered)</option>
             <option value="bottom">Below text</option>
@@ -36,15 +36,16 @@
           Size:
         </label>
         <div class="controls">
-			<input type="text" style="width:50px" name="width" placeholder="width"/>&nbsp;x&nbsp;<input type="text" style="width:50px" name="height" placeholder="height"/>
-			<input type="checkbox" name="keepratio" checked="true" /> Keep proportions
+			<input tabindex="101" type="text" style="width:50px" name="width" placeholder="width"/>&nbsp;x&nbsp;<input tabindex="102" type="text" style="width:50px" name="height" placeholder="height"/>
+			<input tabindex="103" type="checkbox" name="keepratio" checked="true" /> Keep proportions
         </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
-    <a tabstop="1" href="#" class="btn btn-primary" data-mm-role="confirm" data-dismiss="modal">Save</a>
-    <a tabstop="2" href="#" class="btn btn-danger" data-mm-role="clear" data-dismiss="modal">Remove</a>
-    <a tabstop="3" href="#" class="btn" data-dismiss="modal">Cancel</a>
+    <a tabindex="104" href="#" class="btn" data-mm-role="select-file">Select File</a>
+    <a tabindex="105" href="#" class="btn btn-primary" data-mm-role="confirm" data-dismiss="modal">Save</a>
+    <a tabindex="106" href="#" class="btn btn-danger" data-mm-role="clear" data-dismiss="modal">Remove</a>
+    <a tabindex="107" href="#" class="btn" data-dismiss="modal">Cancel</a>
   </div>
 </div>

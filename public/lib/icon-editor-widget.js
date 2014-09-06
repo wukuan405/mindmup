@@ -46,6 +46,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		ratioBox = self.find('input[name=keepratio]'),
 		fileUpload = self.find('input[name=selectfile]'),
 		dropZone = self.find('[data-mm-role=drop-zone]'),
+		selectFile = self.find('[data-mm-role=select-file]'),
 		doConfirm = function () {
 			iconEditor.save({
 				url: imgPreview.attr('src'),
@@ -75,7 +76,11 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 				confirmElement.show();
 			}
 		},
+        openFile = function () {
+            fileUpload.click();
+        },
 		insertController = new MAPJS.ImageInsertController(corsProxyUrl);
+    selectFile.click(openFile).keydown('space enter', openFile);
 	insertController.addEventListener('imageInserted',
 		function (dataUrl, imgWidth, imgHeight) {
 			imgPreview.attr('src', dataUrl);
@@ -84,6 +89,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 			self.find('[data-mm-role=attribs]').show();
 			imgPreview.show();
 			confirmElement.show();
+            confirmElement.focus();
 		}
 	);
 	dropZone.imageDropWidget(insertController);
@@ -124,9 +130,9 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		fileUpload.css('opacity', 0).val('');
 	});
 	this.on('shown', function () {
-		confirmElement.focus();
 		fileUpload.css('opacity', 0).css('position', 'absolute')
 			.offset(dropZone.offset()).width(dropZone.outerWidth()).height(dropZone.outerHeight());
+        selectFile.focus();
 	});
 	iconEditor.addEventListener('iconEditRequested', function (icon) {
 		loadForm(icon);
