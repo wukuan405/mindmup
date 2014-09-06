@@ -8,6 +8,7 @@ require File.dirname(__FILE__)+'/lib/s3_policy_signer.rb'
 require File.dirname(__FILE__)+'/lib/browser_detection.rb'
 require File.dirname(__FILE__)+'/lib/github_routes.rb'
 require File.dirname(__FILE__)+'/lib/dropbox_routes.rb'
+require File.dirname(__FILE__)+'/lib/google_hangout_routes.rb'
 require 'net/http'
 
 
@@ -140,6 +141,7 @@ end
 
 include MindMup::GithubRoutes
 include MindMup::DropboxRoutes
+include MindMup::GoogleHangoutRoutes
 include Sinatra::UserAgentHelpers
 helpers do
   def cors_headers
