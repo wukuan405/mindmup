@@ -41,7 +41,6 @@ describe('storyboardMenuWidget', function () {
 		storyboardController,
 		storyboardModel,
 		mapModel,
-
 		underTest;
 	beforeEach(function () {
 		storyboardModel = observable(jasmine.createSpyObj('storyboardModel', ['getScenes', 'setInputEnabled', 'getInputEnabled']));
@@ -165,7 +164,7 @@ describe('Storyboard widget', function () {
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
-		mapModel = jasmine.createSpyObj('mapModel', ['focusAndSelect']);
+		mapModel = jasmine.createSpyObj('mapModel', ['focusAndSelect', 'editNode']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
 			text: {toCss: function () { return {width: '20px'}; }},
 			image: {toCss: function () { return {width: '30px'}; }}
@@ -415,7 +414,7 @@ describe('Storyboard widget', function () {
 			expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(dummyElement);
 		});
 	});
-    describe('tapping on a scene', function () {
+    describe('mapModel sync', function () {
 		var selectedScene;
 		beforeEach(function () {
 			storyboardModel.getScenes.and.returnValue([
@@ -425,9 +424,15 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 		});
-        it('triggers focusAndSelect on mapModel when double-tapped', function () {
+        it('triggers focusAndSelect when scene focused', function () {
+            selectedScene.trigger('focus');
+            expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
+            expect(mapModel.editNode).not.toHaveBeenCalled();
+        });
+        it('triggers focusAndSelect + edit on mapModel when double-tapped', function () {
             selectedScene.trigger('doubletap');
             expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
+            expect(mapModel.editNode).toHaveBeenCalled();
         });
     });
 	describe('editing a storyboard', function () {

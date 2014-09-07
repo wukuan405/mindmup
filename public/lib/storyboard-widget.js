@@ -121,6 +121,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.on('focus', function () {
 						templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
 						newScene.addClass('activated-scene');
+                        mapModel.focusAndSelect(scene.ideaId);
 					}).keydown('del backspace', function (event) {
 						storyboardController.removeScene(scene);
 						event.preventDefault();
@@ -143,6 +144,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					})
                     .on('doubletap', function () {
                         mapModel.focusAndSelect(scene.ideaId);
+                        mapModel.editNode(scene.ideaId);
                     })
 					.keydown('down', function () {
 						jQuery(this).gridDown().focus();
