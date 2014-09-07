@@ -149,6 +149,7 @@ describe('Storyboard widget', function () {
 		storyboardModel,
 		dimensionProvider,
 		noScenes,
+        mapModel,
 		template = '<div><div>' +
 					'<a data-mm-role="storyboard-remove-scene"></a>' +
 					'<a data-mm-role="storyboard-move-scene-left"></a>' +
@@ -164,13 +165,14 @@ describe('Storyboard widget', function () {
 			{ideaId: 13, title: 'in two storyboards', index: 2}
 		]);
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
+		mapModel = jasmine.createSpyObj('mapModel', ['focusAndSelect']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
 			text: {toCss: function () { return {width: '20px'}; }},
 			image: {toCss: function () { return {width: '30px'}; }}
 		});
 		underTest = jQuery(template).appendTo('body');
 		noScenes = underTest.find('[data-mm-role=no-scenes]');
-		underTest.storyboardWidget(storyboardController, storyboardModel, dimensionProvider);
+		underTest.storyboardWidget(storyboardController, storyboardModel, dimensionProvider, mapModel);
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -390,12 +392,11 @@ describe('Storyboard widget', function () {
 	describe('navigating a stroyboard', function () {
 		var dummyElement, selectedScene;
 		beforeEach(function () {
-			underTest.trigger('show');
-
 			storyboardModel.getScenes.and.returnValue([
 				{ideaId: 12, title: 'already in ted storyboard', index: 1},
 				{ideaId: 14, title: 'inside', index: 5}
 			]);
+			underTest.trigger('show');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 			selectedScene.focus();
 			dummyElement = underTest.find('[data-mm-role=scene]').first();
@@ -414,6 +415,21 @@ describe('Storyboard widget', function () {
 			expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(dummyElement);
 		});
 	});
+    describe('tapping on a scene', function () {
+		var selectedScene;
+		beforeEach(function () {
+			storyboardModel.getScenes.and.returnValue([
+				{ideaId: 12, title: 'already in ted storyboard', index: 1},
+				{ideaId: 14, title: 'inside', index: 5}
+			]);
+			underTest.trigger('show');
+			selectedScene = underTest.find('[data-mm-role=scene]').last();
+		});
+        it('triggers focusAndSelect on mapModel when double-tapped', function () {
+            selectedScene.trigger('doubletap');
+            expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
+        });
+    });
 	describe('editing a storyboard', function () {
 		beforeEach(function () {
 			storyboardModel.getScenes.and.returnValue([
