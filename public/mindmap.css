@@ -205,23 +205,11 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 .repo-g {
 	background-image: url('//static.mindmup.com/img/google_drive.png');
 }
-.repo-o {
-	background-image: url('//static.mindmup.com/img/offline.png');
-}
-.chrome .repo-o {
-	background-image: url('//static.mindmup.com/img/offline-chrome.png');
-}
-.safari .repo-o {
-	background-image: url('//static.mindmup.com/img/offline-safari.png');
-}
-.gecko .repo-o {
-	background-image: url('//static.mindmup.com/img/offline-firefox.png');
-}
 
 a.repo, a.repo, a.repo {
 	margin-left: 5px;
 }
-span.repo-g, span.repo-a, span.repo-o, span.repo-b, span.repo-p {
+span.repo-g, span.repo-a, span.repo-b, span.repo-p {
 	padding-left:16px;
 }
 .dropdown-menu li a {
@@ -420,7 +408,7 @@ input.noglow {
 }
 
 
-.visible-map-source-a, .visible-map-source-o, .visible-map-source-g, .visible-map-source-n, .visible-map-source-b, .visible-map-source-p  {
+.visible-map-source-a, .visible-map-source-g, .visible-map-source-n, .visible-map-source-b, .visible-map-source-p  {
 	display: none;
 }
 
@@ -434,9 +422,6 @@ input.noglow {
 	display: inherit;
 }
 .map-source-g .visible-map-source-g {
-	display: inherit;
-}
-.map-source-o .visible-map-source-o {
 	display: inherit;
 }
 .map-source-n .visible-map-source-n {

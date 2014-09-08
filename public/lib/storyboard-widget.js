@@ -13,7 +13,7 @@ jQuery.fn.scrollSceneIntoFocus = function () {
 	this.addClass('activated-scene');
 	return this;
 };
-jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, dimensionProvider) {
+jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, dimensionProvider, mapModel) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
@@ -121,6 +121,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.on('focus', function () {
 						templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
 						newScene.addClass('activated-scene');
+                        mapModel.focusAndSelect(scene.ideaId);
 					}).keydown('del backspace', function (event) {
 						storyboardController.removeScene(scene);
 						event.preventDefault();
@@ -141,6 +142,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.keydown('up', function () {
 						jQuery(this).gridUp().focus();
 					})
+                    .on('doubletap', function () {
+                        mapModel.focusAndSelect(scene.ideaId);
+                        mapModel.editNode(scene.ideaId);
+                    })
 					.keydown('down', function () {
 						jQuery(this).gridDown().focus();
 					}).shadowDraggable().on('mm:cancel-dragging', function () {

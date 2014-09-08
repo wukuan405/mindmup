@@ -54,16 +54,13 @@ MM.main = function (config) {
 			goldStorage = new MM.GoldStorage(goldApi, s3Api, modalConfirm),
 			s3FileSystem = new MM.S3FileSystem(ajaxPublishingConfigGenerator, 'a', 'S3_CORS'),
 			googleDriveAdapter = new MM.GoogleDriveAdapter(config.googleAppId, config.googleClientId, config.googleApiKey, config.networkTimeoutMillis, 'application/json'),
-			offlineMapStorage = new MM.OfflineMapStorage(objectStorage, 'offline'),
-			offlineAdapter = new MM.OfflineAdapter(offlineMapStorage),
-      resourcePrefix = 'internal',
-      resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
+            resourcePrefix = 'internal',
+            resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
 			mapController = new MM.MapController([
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(s3FileSystem, resourceCompressor.compress)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(goldStorage.fileSystemFor('b'), resourceCompressor.compress)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(goldStorage.fileSystemFor('p'), resourceCompressor.compress)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter, resourceCompressor.compress)),
-				new MM.FileSystemMapSource(offlineAdapter),
 				new MM.EmbeddedMapSource()
 			]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
@@ -141,7 +138,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
-				jQuery('#modalLocalStorageOpen').localStorageOpenWidget(offlineMapStorage, mapController);
+                jQuery('#modalOfflineMap').offlineMapWidget(mapController);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
@@ -171,7 +168,7 @@ MM.main = function (config) {
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, storyboardDimensionProvider);
+				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, storyboardDimensionProvider, mapModel);
 				jQuery('[data-mm-role=storyboard-menu]').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 
 				/* needs to come after all optional content widgets to fire show events */
@@ -191,7 +188,6 @@ MM.main = function (config) {
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		];
 		jQuery.fn.colorPicker.defaults.pickerDefault = 'transparent';
-		MM.OfflineMapStorageBookmarks(offlineMapStorage, mapBookmarks);
 		jQuery.support.cors = true;
 		setupTracking(activityLog, jotForm, mapModel);
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);

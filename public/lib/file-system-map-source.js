@@ -3,21 +3,21 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem, postProcessCal
 	'use strict';
 	var self = this,
 		jsonMimeType = 'application/json',
-		stringToContent = function (fileContent, mimeType) {
-			var json, result;
-			if (mimeType === jsonMimeType) {
-				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
-			} else if (mimeType === 'application/octet-stream') {
-				json = JSON.parse(fileContent);
-			} else if (mimeType === 'application/x-freemind' || mimeType === 'application/vnd-freemind') {
-				json = MM.freemindImport(fileContent);
-			}
-			result = MAPJS.content(json);
-      if (postProcessCallback) {
-        postProcessCallback(result);
-      }
-      return result;
-		},
+        stringToContent = function (fileContent, mimeType) {
+            var json, result;
+            if (mimeType === jsonMimeType) {
+                json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
+            } else if (mimeType === 'application/octet-stream') {
+                json = JSON.parse(fileContent);
+            } else if (mimeType === 'application/x-freemind' || mimeType === 'application/vnd-freemind') {
+                json = MM.freemindImport(fileContent);
+            }
+            result = MAPJS.content(json);
+            if (postProcessCallback) {
+                postProcessCallback(result);
+            }
+            return result;
+        },
 		guessMimeType = function (fileName) {
 			if (/\.mm$/.test(fileName)) {
 				return 'application/x-freemind';
@@ -43,7 +43,6 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem, postProcessCal
 					deferred.reject('format-error', 'Unsupported format ' + mimeType);
 				} else {
 					try {
-            deferred.notify('Processing file');
 						deferred.resolve(stringToContent(stringContent, mimeType), fileId, properties);
 					} catch (e) {
 						deferred.reject('format-error', 'File content not in correct format for this file type');
