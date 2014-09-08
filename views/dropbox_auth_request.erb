@@ -4,11 +4,7 @@
   </head>
   <body>
     <script>
-    <% if @actual_proto == 'https' %>
       var baseurl = window.location.origin,
-    <% else %>
-      var baseurl = window.location.origin.replace(/^https:/,'http:'),
-    <% end %>
 			authCallback = function (dropboxError, client) {
 			if (dropboxError) {
 				window.location.replace(baseurl+"/dropbox-error#"+escape(JSON.stringify(dropboxError)));
