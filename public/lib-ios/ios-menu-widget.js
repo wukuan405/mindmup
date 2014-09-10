@@ -1,4 +1,5 @@
 /*global jQuery*/
+
 jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 	'use strict';
 	return jQuery(this).each(function () {
