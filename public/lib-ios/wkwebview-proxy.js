@@ -1,29 +1,17 @@
 /*global window, console, MM*/
 MM.IOS = MM.IOS || {};
 MM.IOS.defaultMap = function () {
-    'use strict';
-    return {
-        'title': 'double-tap this node to edit',
-        'id': 1,
-        'formatVersion': 2,
-    };
+  'use strict';
+  return {
+    'title': 'double-tap this node to edit',
+    'id': 1,
+    'formatVersion': 2,
+  };
 };
 
 MM.IOS.Proxy = function (listenerName) {
 	'use strict';
 	var self = this,
-			listener,
-			onHashChange = function () {
-				var windowHash = window && window.location && window.location.hash,
-						decodedHash = decodeURIComponent(windowHash) || windowHash;
-				if (listener && decodedHash.length > 1) {
-					try {
-						listener(JSON.parse(decodedHash.slice(1)));
-					} catch (err) {
-						listener(decodedHash.slice(1));
-					}
-				}
-			},
 			wkMessageHandler = (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers[listenerName]);
 	if (wkMessageHandler) {
 		self.sendMessage = function () {
@@ -47,9 +35,6 @@ MM.IOS.Proxy = function (listenerName) {
 			console.log.apply(console, arguments);
 		};
 	}
-	self.onCommand = function (newListener) {
-		listener = newListener;
-	};
 	if (wkMessageHandler) {
 		window.console.log = function () {
 			var args = Array.prototype.slice.call(arguments, 0);
@@ -65,7 +50,6 @@ MM.IOS.Proxy = function (listenerName) {
 			return false;
 		};
 	}
-	window.addEventListener('hashchange', onHashChange);
 };
 
 

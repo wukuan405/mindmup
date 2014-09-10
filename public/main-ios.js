@@ -56,7 +56,7 @@ MM.main = function (config) {
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
 	window.setTimeout(showMap, 350);
-	mmProxy.onCommand(function (command) {
+	MM.command = MM.command || function (command) {
 		// var commandText = JSON.stringify(command) || command;
 		if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
@@ -88,7 +88,7 @@ MM.main = function (config) {
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}
-	});
+	};
 	mapModel.addEventListener('analytic', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
 		mmProxy.sendMessage({type: 'analytic', args: args});
