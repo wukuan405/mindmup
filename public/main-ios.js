@@ -23,9 +23,8 @@ MM.main = function (config) {
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
 			container = jQuery('#container'),
-			mapjson = (MM.IOS.mapToLoad && MM.IOS.mapToLoad()) || MM.IOS.defaultMap(),
-			idea = MAPJS.content(mapjson),
-			mapController = new MM.MapController([new MM.IOSMapSource(idea)]),
+			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
+			mapController = new MM.MapController([iosMapSource]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
@@ -34,11 +33,11 @@ MM.main = function (config) {
 			showMap = function () {
 				container.domMapWidget(console, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
 				mapController.loadMap('ios');
-			};
+			},
+			autoLoadTimeout = window.setTimeout(showMap, 1000);
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
-
 	});
 
 
@@ -55,9 +54,7 @@ MM.main = function (config) {
 			'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
-	window.setTimeout(showMap, 350);
 	MM.command = MM.command || function (command) {
-		// var commandText = JSON.stringify(command) || command;
 		if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
 		}
@@ -70,6 +67,12 @@ MM.main = function (config) {
 
 			}, 100);
 		}
+		else if (command.type === 'loadMap') {
+			window.clearTimeout(autoLoadTimeout);
+			var newIdea = JSON.parse(command.args[0]);
+			iosMapSource.setIdea(MAPJS.content(newIdea));
+			showMap();
+		}
 		else if (command.type === 'keyboardShown') {
 			jQuery('[data-mm-role="ios-menu"]').hide();
 		}
@@ -81,13 +84,14 @@ MM.main = function (config) {
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
 			window.setTimeout(function () {
-				mmProxy.sendMessage({type: 'save-content', args: {'idea': JSON.stringify(idea)}});
+				mmProxy.sendMessage({type: 'save-content', args: {'idea': JSON.stringify(mapModel.getIdea())}});
 			}, 200);
 
 		}
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}
+		return {'completed': true, 'command': command};
 	};
 	mapModel.addEventListener('analytic', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
