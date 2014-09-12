@@ -143,7 +143,8 @@ get '/ios/config' do
     anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
     publishingConfigUrl: "#{settings.base_url}publishingConfig",
     sharingUrl: "#{settings.base_url}#m:",
-    goldApiUrl: "#{ENV['GOLD_API_URL']}/"
+    goldApiUrl: "#{ENV['GOLD_API_URL']}/",
+    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/"
   }
   halt 200, config.to_json
 end
