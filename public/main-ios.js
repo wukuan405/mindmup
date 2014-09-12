@@ -84,10 +84,13 @@ MM.main = function (config) {
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
 			window.setTimeout(function () {
-				var idea = mapModel.getIdea(),
-						title = idea.title || 'Mindmup map';
-				mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
-			}, 200);
+				mapModel.scaleDown();
+				window.setTimeout(function () {
+					var idea = mapModel.getIdea(),
+							title = idea.title || 'Mindmup map';
+					mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
+				}, 100);
+			}, 100);
 
 		}
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
