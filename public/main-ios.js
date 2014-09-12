@@ -84,7 +84,9 @@ MM.main = function (config) {
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
 			window.setTimeout(function () {
-				mmProxy.sendMessage({type: 'save-content', args: {'idea': JSON.stringify(mapModel.getIdea())}});
+				var idea = mapModel.getIdea(),
+						title = idea.title || 'Mindmup map';
+				mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
 			}, 200);
 
 		}
