@@ -38,6 +38,7 @@ MM.main = function (config) {
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
+		mmProxy.sendMessage({type: 'mapLoaded'});
 	});
 
 
@@ -64,7 +65,6 @@ MM.main = function (config) {
 				if (mapModel && mapModel.resetView && mapModel.getIdea()) {
 					mapModel.resetView('ios');
 				}
-
 			}, 100);
 		}
 		else if (command.type === 'loadMap') {
