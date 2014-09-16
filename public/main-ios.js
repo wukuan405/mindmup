@@ -22,6 +22,24 @@ MM.main = function (config) {
 	'use strict';
 	console.log('MM.main');
 	var mmProxy = new MM.IOS.Proxy('mmproxy'),
+			activityLog = new MM.ActivityLog(10000),
+			setupTracking = function (activityLog, mapModel, mapModelAnalytics) {
+				activityLog.addEventListener('log', function () {
+					var args = ['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3));
+					mmProxy.sendMessage({type: 'log', args: args});
+				});
+				activityLog.addEventListener('error', function (message) {
+					var args = [message, activityLog.getLog()];
+					mmProxy.sendMessage({type: 'error', args: args});
+				});
+				activityLog.addEventListener('timer', function (category, action, time) {
+					var args = ['_trackEvent', category,  action, '', time];
+					mmProxy.sendMessage({type: 'error', args: args});
+				});
+				if (mapModelAnalytics) {
+					mapModel.addEventListener('analytic', activityLog.log);
+				}
+			},
 			container = jQuery('#container'),
 			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
 			mapController = new MM.MapController([iosMapSource]),
@@ -30,18 +48,21 @@ MM.main = function (config) {
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
+
 			showMap = function () {
-				container.domMapWidget(console, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
+				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
 				mapController.loadMap('ios');
 			},
-			autoLoadTimeout = window.setTimeout(showMap, 1000);
+			autoLoadTimeout = window.setTimeout(showMap, 1000),
+			mapModelAnalytics = false;
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
 		mmProxy.sendMessage({type: 'mapLoaded'});
 	});
 
-
+	setupTracking(activityLog, mapModel, mapModelAnalytics);
+	MM.MapController.activityTracking(mapController, activityLog);
 	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
@@ -98,10 +119,6 @@ MM.main = function (config) {
 		}
 		return {'completed': true, 'command': command};
 	};
-	mapModel.addEventListener('analytic', function () {
-		var args = Array.prototype.slice.call(arguments, 0);
-		mmProxy.sendMessage({type: 'analytic', args: args});
-	});
 	mapModel.addEventListener('changed', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
 		mmProxy.sendMessage({type: 'changed', args: args});
