@@ -696,9 +696,15 @@ body .modal.huge {
 
 
 #splittable {
-  width:100%; height: calc(100% - 41px);
+  width:100%;
+  height: calc(100% - 41px);
   margin-top: 41px;
   -webkit-tap-highlight-color: transparent;
+}
+
+.hidden-topbar > #splittable  {
+  height: calc(100%);
+  margin-top: 0px;
 }
 .ios-wkwebview > #splittable {
   width:100%; height: calc(100%);
