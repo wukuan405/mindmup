@@ -144,7 +144,9 @@ get '/ios/config' do
     publishingConfigUrl: "#{settings.base_url}publishingConfig",
     sharingUrl: "#{settings.base_url}#m:",
     goldApiUrl: "#{ENV['GOLD_API_URL']}/",
-    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/"
+    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/",
+    static_host: settings.static_host,
+    public_url: settings.public_url
   }
   halt 200, config.to_json
 end
