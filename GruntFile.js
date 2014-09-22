@@ -61,6 +61,9 @@ module.exports = function (grunt) {
 		},
 		uglify: {
 			compiled: {
+				options: {
+					sourceMap: true
+				},
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
