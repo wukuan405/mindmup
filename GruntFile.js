@@ -51,6 +51,7 @@ module.exports = function (grunt) {
 					'public/lib-ios/*.js',
 					'public/main-ios.js',
 					'public/lib/activity-log.js',
+					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
 					'public/lib/active-content-listener.js',
 					'public/lib/map-controller.js'
