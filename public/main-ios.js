@@ -60,10 +60,13 @@ MM.main = function (config) {
 		mapModel.setIdea(idea);
 		mmProxy.sendMessage({type: 'mapLoaded'});
 	});
-
+	iconEditor.addEventListener('iconEditRequested', function (icon) {
+		//{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvcAAAU2CAYAAAARbJkkAAAKQWlDQ…OiDfxZekGnSRFYbAiMjCD8m/+IPQqusIWTF5t/S92f/w+TMMOwHIKx1wAAAABJRU5ErkJggg==","width":200,"height":351,"position":"top"}
+		icon = icon || {};
+		mmProxy.sendMessage({type: 'iconEditRequested', args: icon});
+	});
 	setupTracking(activityLog, mapModel, mapModelAnalytics);
 	MM.MapController.activityTracking(mapController, activityLog);
-	jQuery('[data-mm-role~="ios-node-picture-config"]').iconEditorWidget(iconEditor, config.corsProxyUrl);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget().iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
