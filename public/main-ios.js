@@ -53,7 +53,7 @@ MM.main = function (config) {
 				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
 				mapController.loadMap('ios');
 			},
-			autoLoadTimeout = window.setTimeout(showMap, 1000),
+			// autoLoadTimeout = window.setTimeout(showMap, 10000),
 			mapModelAnalytics = false;
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
@@ -61,6 +61,7 @@ MM.main = function (config) {
 		mmProxy.sendMessage({type: 'mapLoaded'});
 	});
 	iconEditor.addEventListener('iconEditRequested', function (icon) {
+		mmProxy.sendMessage({type: 'showMessage', args: {'type': 'info', 'message': 'Loading icon editor, please wait...'}});
 		//{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvcAAAU2CAYAAAARbJkkAAAKQWlDQ…OiDfxZekGnSRFYbAiMjCD8m/+IPQqusIWTF5t/S92f/w+TMMOwHIKx1wAAAABJRU5ErkJggg==","width":200,"height":351,"position":"top"}
 		icon = icon || {};
 		mmProxy.sendMessage({type: 'iconEditRequested', args: icon});
@@ -91,8 +92,17 @@ MM.main = function (config) {
 				}
 			}, 100);
 		}
+		else if (command.type === 'mapModel:setIcon') {
+			var resultJson = command.args && command.args[0],
+					result = resultJson && resultJson !== '' && resultJson !== 'false' && JSON.parse(resultJson);
+			if (result) {
+				mapModel.setIcon('icon-editor', activeContentResourceManager.storeResource(result.url), result.width, result.height, result.position);
+			} else {
+				mapModel.setIcon(false);
+			}
+		}
 		else if (command.type === 'loadMap') {
-			window.clearTimeout(autoLoadTimeout);
+			// window.clearTimeout(autoLoadTimeout);
 			var newIdea = JSON.parse(command.args[0]);
 			iosMapSource.setIdea(MAPJS.content(newIdea));
 			showMap();
@@ -125,10 +135,6 @@ MM.main = function (config) {
 	mapModel.addEventListener('changed', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
 		mmProxy.sendMessage({type: 'changed', args: args});
-	});
-	mapModel.addEventListener('nodeEditRequested', function () {
-		var args = Array.prototype.slice.call(arguments, 0);
-		mmProxy.sendMessage({type: 'mapModel.nodeEditRequested', args: args});
 	});
 	mmProxy.sendMessage({type: 'loadComplete'});
 };
