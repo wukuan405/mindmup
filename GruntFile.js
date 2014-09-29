@@ -54,6 +54,7 @@ module.exports = function (grunt) {
 					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
 					'public/lib/active-content-listener.js',
+					'public/lib/resource-compressor.js',
 					'public/lib/map-controller.js'
 				],
 				dest: 'compiled/mm-ios-compiled.js',

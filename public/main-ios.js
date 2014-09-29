@@ -44,7 +44,9 @@ MM.main = function (config) {
 			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
 			mapController = new MM.MapController([iosMapSource]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
-			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),
+			resourcePrefix = 'internal',
+			resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
+			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
@@ -103,8 +105,10 @@ MM.main = function (config) {
 		}
 		else if (command.type === 'loadMap') {
 			// window.clearTimeout(autoLoadTimeout);
-			var newIdea = JSON.parse(command.args[0]);
-			iosMapSource.setIdea(MAPJS.content(newIdea));
+			var newIdea = JSON.parse(command.args[0]),
+					content = MAPJS.content(newIdea);
+			resourceCompressor.compress(content);
+			iosMapSource.setIdea(content);
 			showMap();
 		}
 		else if (command.type === 'keyboardShown') {
@@ -122,6 +126,7 @@ MM.main = function (config) {
 				window.setTimeout(function () {
 					var idea = mapModel.getIdea(),
 							title = idea.title || 'Mindmup map';
+					resourceCompressor.compress(idea);
 					mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
 				}, 100);
 			}, 100);
