@@ -77,9 +77,7 @@ MM.Extensions.Dropbox = {
 	popupLogin: function () {
 		'use strict';
 		var deferred = jQuery.Deferred(),
-			actualProtocol = window.location.protocol.replace(/:/,''),
-            https = window.location.origin.replace(/^http:/, 'https:'),
-			popupFrame = window.open(https + '/dropbox-via-' + actualProtocol, '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
+			popupFrame = window.open('/dropbox', '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 			onMessage = function (message) {
 				if (message && message.dropbox_credentials) {
 					deferred.resolve(message.dropbox_credentials);
@@ -151,7 +149,7 @@ MM.Extensions.Dropbox = {
 				return false;
 			},
 			toMapId = function (dropboxFileStat) {
-				if (dropboxFileStat.isFile && dropboxFileStat.path) {
+				if ((dropboxFileStat.isFile || !dropboxFileStat.is_dir) && dropboxFileStat.path) {
 					return 'd1' + encodeURIComponent(dropboxFileStat.path);
 				}
 				return false;
@@ -194,6 +192,9 @@ MM.Extensions.Dropbox = {
 		self.loadMap = function (mapId, interactive) {
 			var result = jQuery.Deferred(),
 				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
+                    if (typeof(dropboxFileStat) === 'string') {
+                        dropboxFileStat = JSON.parse(dropboxFileStat);
+                    }
 					if (dropboxApiError) {
 						var mmError = toMindMupError(dropboxApiError);
 						if (dropboxApiError.response && dropboxApiError.response.error) {
@@ -216,6 +217,9 @@ MM.Extensions.Dropbox = {
 		self.saveMap = function (contentToSave, mapId, fileName, interactive) {
 			var result = jQuery.Deferred(),
 				sendCallback = function (dropboxApiError, dropboxFileStat) {
+                    if (typeof(dropboxFileStat) === 'string') {
+                        dropboxFileStat = JSON.parse(dropboxFileStat);
+                    }
 					if (dropboxApiError) {
 						result.reject(toMindMupError(dropboxApiError));
 					} else if (dropboxFileStat && toMapId(dropboxFileStat)) {

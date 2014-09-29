@@ -168,7 +168,7 @@ MM.main = function (config) {
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
-				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, storyboardDimensionProvider);
+				jQuery('#storyboard').storyboardWidget(storyboardController, storyboardModel, storyboardDimensionProvider, mapModel);
 				jQuery('[data-mm-role=storyboard-menu]').storyboardMenuWidget(storyboardController, storyboardModel, mapModel);
 
 				/* needs to come after all optional content widgets to fire show events */

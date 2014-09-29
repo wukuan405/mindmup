@@ -195,14 +195,21 @@ describe('Dropbox integration', function () {
 				});
 				it('resolves using the generated file path, regardless of the original map id', function () {
 					fakeDropboxApi.writeFile.and.callFake(function (path, content, options, callback) {
-						callback(undefined, {path: '/abc/def ghi.jkl', isFile: true});
+						callback(undefined, {path: '/abc/def ghi.jkl', 'is_dir': false});
+					});
+					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
+					expect(success).toHaveBeenCalledWith('d1%2Fabc%2Fdef%20ghi.jkl', {});
+				});
+				it('resolves even if the response comes as a string', function () {
+					fakeDropboxApi.writeFile.and.callFake(function (path, content, options, callback) {
+						callback(undefined, '{"path": "/abc/def ghi.jkl", "is_dir": false}');
 					});
 					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
 					expect(success).toHaveBeenCalledWith('d1%2Fabc%2Fdef%20ghi.jkl', {});
 				});
 				it('rejects with a network error when response is invalid', function () {
 					fakeDropboxApi.writeFile.and.callFake(function (path, content, options, callback) {
-						callback(undefined, {path: '', isFile: true});
+						callback(undefined, {path: '', 'is_dir': false});
 					});
 					underTest.saveMap(contents, 'd1folder%2Fnewfile.mup', fileName, false).then(success, fail);
 					expect(fail).toHaveBeenCalledWith('network-error');
@@ -231,7 +238,8 @@ describe('Dropbox integration', function () {
 				});
 				it('resolves with folder contents, adding mapId for files (not for dirs) and keeping modifiedAt, name and path', function () {
 					fakeDropboxApi.readdir.and.callFake(function (path, options, callback) {
-						callback(undefined, '', '', [{modifiedAt: 1, name: '2', path: '3', isFile: false}, {modifiedAt: 2, name: '4', path: '/5/6', isFile: true}]);
+						callback(undefined, '', '', [{modifiedAt: 1, name: '2', path: '3', 'is_dir': true},
+                            {modifiedAt: 2, name: '4', path: '/5/6', 'is_dir': false}]);
 					});
 					underTest.listFiles(false, '/some/path').then(success, fail, notify);
 					expect(success).toHaveBeenCalledWith([{modifiedAt: 1, name: '2', path: '3', mapId: false}, {modifiedAt: 2, name: '4', path: '/5/6', mapId: 'd1%2F5%2F6'}]);

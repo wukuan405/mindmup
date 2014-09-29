@@ -21,7 +21,7 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20140610131027'
+  static_ts = '20140912202404'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
   set :static_host, "#{public_host}/#{static_ts}"
   set :static_image_host, "#{public_host}/img"
@@ -132,6 +132,24 @@ get '/cache_news' do
   cache_last_news
   "OK "+settings.last_news_id
 end
+
+get '/ios/map' do
+  erb :ios
+end
+
+get '/ios/config' do
+  content_type 'text/json'
+  config = {
+    anonymousPostUrl: "http://#{settings.s3_website}/",
+    anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
+    publishingConfigUrl: "#{settings.base_url}publishingConfig",
+    sharingUrl: "#{settings.base_url}#m:",
+    goldApiUrl: "#{ENV['GOLD_API_URL']}/",
+    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/"
+  }
+  halt 200, config.to_json
+end
+
 get '/trouble' do
   erb :trouble
 end
@@ -175,9 +193,9 @@ helpers do
      session["cohort"]= Time.now.strftime("%Y%m%d") if session["cohort"].nil?
      session["cohort"]
   end
-  def development_lib
-      files = Dir.entries("#{settings.public_folder}/lib").reject{|d| File.extname(d) != '.js' }
-      return files.map {|f| "/lib/#{f}"}
+  def development_lib optional=''
+      files = Dir.entries("#{settings.public_folder}/lib#{optional}").reject{|d| File.extname(d) != '.js' }
+      return files.map {|f| "/lib#{optional}/#{f}"}
   end
   def load_prefix
     if (!settings.online) then

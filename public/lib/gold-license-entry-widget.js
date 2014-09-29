@@ -54,6 +54,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				}
 			} else {
 				self.find('[data-mm-role~=payment-type-block]').hide();
+                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
+                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
+                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
 			}
 		},
 		fillInFields = function () {
