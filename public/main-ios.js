@@ -95,8 +95,7 @@ MM.main = function (config) {
 			}, 100);
 		}
 		else if (command.type === 'mapModel:setIcon') {
-			var resultJson = command.args && command.args[0],
-					result = resultJson && resultJson !== '' && resultJson !== 'false' && JSON.parse(resultJson);
+			var result = command.args && command.args[0];
 			if (result) {
 				mapModel.setIcon('icon-editor', activeContentResourceManager.storeResource(result.url), result.width, result.height, result.position);
 			} else {
