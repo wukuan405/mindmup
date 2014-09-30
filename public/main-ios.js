@@ -105,9 +105,9 @@ MM.main = function (config) {
 		}
 		else if (command.type === 'loadMap') {
 			// window.clearTimeout(autoLoadTimeout);
-			var newIdea = JSON.parse(command.args[0]),
+			var newIdea = command.args[0],
 					content = MAPJS.content(newIdea);
-			resourceCompressor.compress(content);
+			// resourceCompressor.compress(content);
 			iosMapSource.setIdea(content);
 			showMap();
 		}
@@ -135,7 +135,7 @@ MM.main = function (config) {
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}
-		return {'completed': true, 'command': command};
+		return {'completed': true, 'command': command.type};
 	};
 	mapModel.addEventListener('changed', function () {
 		var args = Array.prototype.slice.call(arguments, 0);
