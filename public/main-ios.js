@@ -52,7 +52,7 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 
 			showMap = function () {
-				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource);
+				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource, true);
 				mapController.loadMap('ios');
 			},
 			// autoLoadTimeout = window.setTimeout(showMap, 10000),
@@ -90,7 +90,7 @@ MM.main = function (config) {
 			jQuery('meta[name=viewport]').attr('content', command.args);
 			window.setTimeout(function	() {
 				if (mapModel && mapModel.resetView && mapModel.getIdea()) {
-					mapModel.resetView('ios');
+					mapModel.centerOnNode(mapModel.getSelectedNodeId());
 				}
 			}, 100);
 		}

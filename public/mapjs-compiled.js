@@ -4083,7 +4083,7 @@ jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator, centerSelectedNodeOnOrientationChange) {
 	'use strict';
 	var hotkeyEventHandlers = {
 			'return': 'addSiblingIdea',
@@ -4210,7 +4210,12 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 		}
 
 		jQuery(window).on('orientationchange', function () {
-			mapModel.resetView();
+			if (centerSelectedNodeOnOrientationChange) {
+				mapModel.centerOnNode(mapModel.getSelectedNodeId());
+			} else {
+				mapModel.resetView();
+			}
+
 		});
 		jQuery(document).on('keydown', function (e) {
 			var functions = {
