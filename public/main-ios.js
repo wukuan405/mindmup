@@ -105,6 +105,10 @@ MM.main = function (config) {
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					content = MAPJS.content(newIdea);
+			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
+			content.addEventListener('changed', function () {
+				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
+			});
 			iosMapSource.setIdea(content);
 			showMap();
 		}
@@ -115,6 +119,7 @@ MM.main = function (config) {
 			jQuery('[data-mm-role="ios-menu"]').show();
 		}
 		else if (command.type === 'prepareForSave') {
+			var saveScreenOnly = command.args && command.args[0] && command.args[0] === 'save-screen-only';
 			mapModel.resetView();
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
@@ -123,8 +128,12 @@ MM.main = function (config) {
 				window.setTimeout(function () {
 					var idea = mapModel.getIdea(),
 							title = idea.title || 'Mindmup map';
-					resourceCompressor.compress(idea);
-					mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
+					if (saveScreenOnly) {
+						mmProxy.sendMessage({type: 'save-screen'});
+					} else {
+						resourceCompressor.compress(idea);
+						mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
+					}
 				}, 100);
 			}, 100);
 
@@ -134,9 +143,5 @@ MM.main = function (config) {
 		}
 		return {'completed': true, 'command': command.type};
 	};
-	mapModel.addEventListener('changed', function () {
-		var args = Array.prototype.slice.call(arguments, 0);
-		mmProxy.sendMessage({type: 'changed', args: args});
-	});
 	mmProxy.sendMessage({type: 'loadComplete'});
 };
