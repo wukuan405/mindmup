@@ -25,16 +25,16 @@ MM.main = function (config) {
 			activityLog = new MM.ActivityLog(10000),
 			setupTracking = function (activityLog, mapModel, mapModelAnalytics) {
 				activityLog.addEventListener('log', function () {
-					var args = ['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3));
-					mmProxy.sendMessage({type: 'log', args: args});
+					var args = Array.prototype.slice.call(arguments, 0, 3);
+					mmProxy.sendMessage({type: 'analytic', args: args});
 				});
 				activityLog.addEventListener('error', function (message) {
-					var args = [message, activityLog.getLog()];
-					mmProxy.sendMessage({type: 'error', args: args});
+					var args = ['error', message, activityLog.getLog()];
+					mmProxy.sendMessage({type: 'analytic', args: args});
 				});
 				activityLog.addEventListener('timer', function (category, action, time) {
-					var args = ['_trackEvent', category,  action, '', time];
-					mmProxy.sendMessage({type: 'error', args: args});
+					var args = [category,  action, '', time];
+					mmProxy.sendMessage({type: 'analytic', args: args});
 				});
 				if (mapModelAnalytics) {
 					mapModel.addEventListener('analytic', activityLog.log);
@@ -103,10 +103,8 @@ MM.main = function (config) {
 			}
 		}
 		else if (command.type === 'loadMap') {
-			// window.clearTimeout(autoLoadTimeout);
 			var newIdea = command.args[0],
 					content = MAPJS.content(newIdea);
-			// resourceCompressor.compress(content);
 			iosMapSource.setIdea(content);
 			showMap();
 		}
