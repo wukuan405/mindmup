@@ -121,8 +121,12 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.on('focus', function () {
 						templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
 						newScene.addClass('activated-scene');
+
+					})
+                    .on('tap', function () {
                         mapModel.focusAndSelect(scene.ideaId);
-					}).keydown('del backspace', function (event) {
+                    })
+                    .keydown('del backspace', function (event) {
 						storyboardController.removeScene(scene);
 						event.preventDefault();
 						event.stopPropagation();
