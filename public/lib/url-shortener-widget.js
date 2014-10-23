@@ -4,7 +4,7 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 	var list = this,
 		shortenerRetriesLeft = 5,
 		fireShortener = function (navUrl) {
-			if (document.location.protocol === 'file:') {
+			if (document.location.protocol === 'file:' || document.location.protocol === 'chrome-extension:') {
 				return;
 			}
 			jQuery.ajax({
