@@ -424,8 +424,13 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 		});
-        it('triggers focusAndSelect when scene focused', function () {
+        it('does not trigger focusAndSelect when scene focused', function () {
             selectedScene.trigger('focus');
+            expect(mapModel.focusAndSelect).not.toHaveBeenCalledWith(14);
+            expect(mapModel.editNode).not.toHaveBeenCalled();
+        });
+        it('does not trigger focusAndSelect when scene tapped', function () {
+            selectedScene.trigger('tap');
             expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
             expect(mapModel.editNode).not.toHaveBeenCalled();
         });
