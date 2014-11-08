@@ -17,7 +17,9 @@ jQuery.fn.iosContextMenuWidget = function (mapModel, tools) {
 			});
 		}
 		mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
-			element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
+			if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
+				element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
+			}
 		});
 	});
 };

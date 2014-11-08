@@ -102,6 +102,18 @@ MM.main = function (config) {
 				mapModel.setIcon(false);
 			}
 		}
+		else if (command.type === 'setReadonly') {
+			var readonly = command.args[0];
+			if (readonly) {
+				mapModel.setEditingEnabled(false);
+				jQuery('[data-mm-role="ios-menu"]').hide();
+			} else {
+				mapModel.setEditingEnabled(true);
+				jQuery('[data-mm-role="ios-menu"]').show();
+
+			}
+
+		}
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					content = MAPJS.content(newIdea);
