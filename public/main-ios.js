@@ -102,8 +102,16 @@ MM.main = function (config) {
 				mapModel.setIcon(false);
 			}
 		}
-		else if (command.type === 'setReadonly') {
-			var readonly = command.args[0];
+		else if (command.type === 'loadMap') {
+			var newIdea = command.args[0],
+					readonly = command.args[1],
+					content = MAPJS.content(newIdea);
+			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
+			content.addEventListener('changed', function () {
+				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
+			});
+			iosMapSource.setIdea(content);
+			showMap();
 			if (readonly) {
 				mapModel.setEditingEnabled(false);
 				jQuery('[data-mm-role="ios-menu"]').hide();
@@ -113,16 +121,6 @@ MM.main = function (config) {
 
 			}
 
-		}
-		else if (command.type === 'loadMap') {
-			var newIdea = command.args[0],
-					content = MAPJS.content(newIdea);
-			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
-			content.addEventListener('changed', function () {
-				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
-			});
-			iosMapSource.setIdea(content);
-			showMap();
 		}
 		else if (command.type === 'keyboardShown') {
 			jQuery('[data-mm-role="ios-menu"]').hide();
