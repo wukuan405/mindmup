@@ -83,6 +83,7 @@ MM.main = function (config) {
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
 			storyboardController = new MM.StoryboardController(storyboardModel),
+            urlShortenerController =  config.urlShortener || new MM.GoogleUrlShortenerController(config.googleApiKey, activityLog, mapController, config.baseUrl + 'map/'),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -131,7 +132,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=share]').shareWidget();
 				jQuery('#modalShareEmail').shareEmailWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
-				jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(config.googleApiKey, activityLog, mapController, config.baseUrl);
+				jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(urlShortenerController);
 				jQuery('#modalImport').importWidget(activityLog, mapController);
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();

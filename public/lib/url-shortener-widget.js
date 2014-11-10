@@ -1,10 +1,10 @@
-/*global jQuery,document, setTimeout*/
-jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, mapController, baseUrl) {
-	'use strict';
-	var list = this,
-		shortenerRetriesLeft = 5,
+/*global MM, jQuery, setTimeout, observable */
+MM.GoogleUrlShortenerController = function (googleShortenerApiKey, activityLog, mapController, baseUrl) {
+    'use strict';
+	var	shortenerRetriesLeft,
+        self = observable(this),
 		fireShortener = function (navUrl) {
-			if (document.location.protocol === 'file:' || document.location.protocol === 'chrome-extension:') {
+			if (!navUrl) {
 				return;
 			}
 			jQuery.ajax({
@@ -12,44 +12,49 @@ jQuery.fn.urlShortenerWidget = function (googleShortenerApiKey, activityLog, map
 				url: 'https://www.googleapis.com/urlshortener/v1/url?key=' + googleShortenerApiKey,
 				dataType: 'json',
 				contentType: 'application/json',
-				data: '{"longUrl": "' + navUrl + '"}',
-				success: function (result) {
-					list.data('mm-url', result.id)
-						.filter('[data-mm-role=short-url]').show().val(result.id)
-						.on('input', function () {
-							jQuery(this).val(result.id);
-						}).click(function () {
-							if (this.setSelectionRange) {
-								this.setSelectionRange(0, result.id.length);
-							} else {
-								this.select();
-							}
-							return false;
-						});
-				},
-				error: function (xhr, err, msg) {
-					if (shortenerRetriesLeft > 0) {
-						shortenerRetriesLeft--;
-						setTimeout(fireShortener, 1000);
-					} else {
-						activityLog.log('Map', 'URL shortener failed', err + ' ' + msg);
-					}
-				}
-			});
+				data: '{"longUrl": "' + navUrl + '"}'
+			}).done(function (result) {
+                self.dispatchEvent('urlChanged', result.id);
+            }).fail(function (xhr, err, msg) {
+                if (shortenerRetriesLeft > 0) {
+                    shortenerRetriesLeft--;
+                    setTimeout(function() { fireShortener(navUrl); }, 1000);
+                } else {
+                    activityLog.log('Warning', 'URL shortener failed', err + ' ' + msg);
+                }
+            });
 		},
-		previousUrl,
-		sharingUrl = function (mapId) {
-			return baseUrl + 'map/' + mapId;
-		};
-
+		previousUrl;
 	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
-		var navUrl = sharingUrl(mapId);
+		var navUrl = baseUrl + mapId;
 		if (previousUrl === navUrl) {
 			return;
 		}
+        self.dispatchEvent('urlChanged', navUrl);
 		previousUrl = navUrl;
-		list.data('mm-url', navUrl);
+        shortenerRetriesLeft = 5;
 		fireShortener(navUrl);
 	});
-	return list;
+};
+jQuery.fn.urlShortenerWidget = function (urlShortenerController) {
+	'use strict';
+	var element = this;
+    element.on('input', function () {
+            var element = jQuery(this);
+            element.val(element.data('mm-url'));
+        }).click(function () {
+            if (this.setSelectionRange) {
+                this.setSelectionRange(0, this.value.length);
+            } else if (this.select) {
+                this.select();
+            }
+            return false;
+        }).hide();
+    urlShortenerController.addEventListener('urlChanged', function (newUrl) {
+        element.val(newUrl).data('mm-url', newUrl);
+        if (newUrl) {
+            element.show();
+        }
+    });
+	return element;
 };
