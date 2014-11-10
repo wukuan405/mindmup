@@ -126,8 +126,9 @@ describe('Url Shortener Widget', function () {
         shortenerController = observable({});
         underTest = jQuery(template).appendTo('body').urlShortenerWidget(shortenerController);
     });
-    it('hides element by default', function () {
-        expect(underTest.css('display')).toBe('none');
+    it('hides inputs by default, does not touch divs', function () {
+        expect(underTest.filter('input').css('display')).toBe('none');
+        expect(underTest.filter('div').css('display')).not.toBe('none');
     });
     describe('input handler', function () {
         var input, dom;
@@ -160,15 +161,17 @@ describe('Url Shortener Widget', function () {
             expect(underTest.filter('div').data('mm-url')).toBe('http://xyz');
             expect(underTest.filter('input').val()).toBe('http://xyz');
         });
-        it('shows the element when the URL changed is not blank', function () {
+        it('shows the inputs (but does not change visibility of divs) when the URL changed is not blank', function () {
+            underTest.hide();
             shortenerController.dispatchEvent('urlChanged', 'non blank');
             expect(underTest.filter('input').css('display')).not.toBe('none');
-            expect(underTest.filter('div').css('display')).not.toBe('none');
+            expect(underTest.filter('div').css('display')).toBe('none');
         });
         it('hides the element when the URL changed is blank', function () {
+            underTest.show();
             shortenerController.dispatchEvent('urlChanged', '');
             expect(underTest.filter('input').css('display')).toBe('none');
-            expect(underTest.filter('div').css('display')).toBe('none');
+            expect(underTest.filter('div').css('display')).not.toBe('none');
         });
     });
     afterEach(function () {

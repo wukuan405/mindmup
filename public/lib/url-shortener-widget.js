@@ -39,7 +39,8 @@ MM.GoogleUrlShortenerController = function (googleShortenerApiKey, activityLog, 
 jQuery.fn.urlShortenerWidget = function (urlShortenerController) {
 	'use strict';
 	var element = this;
-    element.on('input', function () {
+
+    element.filter('input').on('input', function () {
             var element = jQuery(this);
             element.val(element.data('mm-url'));
         }).click(function () {
@@ -53,7 +54,9 @@ jQuery.fn.urlShortenerWidget = function (urlShortenerController) {
     urlShortenerController.addEventListener('urlChanged', function (newUrl) {
         element.val(newUrl).data('mm-url', newUrl);
         if (newUrl) {
-            element.show();
+            element.filter('input').show();
+        } else {
+            element.filter('input').hide();
         }
     });
 	return element;
