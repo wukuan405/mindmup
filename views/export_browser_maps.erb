@@ -34,7 +34,7 @@
         <ol>
           <li>
             Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
-            button next to the map name to save the file to your local disk.
+            button next to the map name to save the file to your local disk. 
           </li>
           <li>
             Safari will open a new window with the map file. Click on <strong>File-&gt;Save As</strong> to save the file to disk.
@@ -53,6 +53,10 @@
       
         Click on the <strong><i class="icon-download"></i>&nbsp;Download</strong>
         button next to the map name to save the file to your local disk.
+            If the download does not work in your browser, 
+            click on <strong>Copy Text</strong> to open the map file in a text area, where you can copy it
+            from and paste to a file manually.
+        
       
     <% end %>
     </p>
@@ -75,7 +79,11 @@
     <div class="row" id="no-maps">
       <p>There are no browser storage maps in this profile. Try a different tab. 
     </div>
-    
+    <div class="row hide" id="copy-area">
+      <textarea style="width: 90%; height: 30%"></textarea>
+    </div>
+
+
     <div class="row hide" id="maps">
       <table class="table table-condensed table-striped">
         <tr>
@@ -84,7 +92,9 @@
           <th>Created On</th>
         </tr>
         <tr data-mm-role="template">
-          <td ><a target="_blank" data-mm-role="download" class="btn"><i class="icon-download"></i>&nbsp;Download</a></td>
+          <td ><a target="_blank" data-mm-role="download" class="btn hide"><i class="icon-download"></i>&nbsp;Download</a>
+            <a href="#" data-mm-role="copy" class="btn">Copy text</a>
+          </td>
           <td data-mm-role="name"></td>
           <td data-mm-role="time"></td>
         </tr>
@@ -99,6 +109,7 @@
           <p>All the maps have been cleared from your browser profile</p>
       </div>
     </div>
+
   </div>
   <script>
     if (document.location.protocol === 'http:') {
@@ -119,19 +130,27 @@
           templateParent = template.parent();
       template.detach();
       _.each(mapsList.maps, function (map, key) {
-          var clone = template.clone().appendTo(templateParent),
-              contents = JSON.parse(localStorage[key]).map,
-              blob = new Blob([contents], {type : 'application/octet-stream'}),
-              url = URL.createObjectURL(blob);
-
+            var clone = template.clone().appendTo(templateParent),
+            contents = JSON.parse(localStorage[key]).map,
+            blob, url;
 
           clone.find('[data-mm-role=name]').text(map.d);
           clone.find('[data-mm-role=time]').text(new Date(1000 * parseInt(map.t)));
-          <% if browser.safari? || browser.ios? %> 
-            clone.find('[data-mm-role=download]').attr('href', 'data:text/plain,' + encodeURIComponent(contents));
-          <% else %>
-            clone.find('[data-mm-role=download]').attr({'href': url, 'download': map.d + '.mup'});
-          <% end %>
+          clone.find('[data-mm-role=copy]').click(function () {
+            $('#copy-area').show().children('textarea').val(contents).focus();
+          });
+          try {
+              blob = new Blob([contents], {type : 'application/octet-stream'});
+              url = URL.createObjectURL(blob);
+              <% if browser.safari? || browser.ios? %> 
+                clone.find('[data-mm-role=download]').show().attr('href', 'data:text/plain,' + encodeURIComponent(contents));
+                clone.find('[data-mm-role=copy]').hide();
+              <% else %>
+                clone.find('[data-mm-role=download]').show().attr({'href': url, 'download': map.d + '.mup'});
+              <% end %>
+          } catch (e) {
+
+          }
       });
 
       $('#delete').click(function () {
@@ -144,6 +163,7 @@
           $('#maps table').hide();
           $('#deletedalert').show();
       });
+
     }
   </script>
 </body>
