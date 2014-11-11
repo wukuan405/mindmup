@@ -216,7 +216,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				subscriptionInfo = subscriptionCode && form.find('[data-mm-subscription-code="' + subscriptionCode + '"]');
 
 		if (subscriptionInfo) {
-			form.find('[data-mm-role="subscription-description"]').val(subscriptionInfo.text());
+			form.find('[data-mm-role="subscription-description"]').val('Mindmup Gold ' + subscriptionInfo.text());
 			form.find('[data-mm-role="subscription-amount-dollars"]').val(subscriptionInfo.data('mm-subscription-amount-dollars'));
 			form.find('[data-mm-role="subscription-period"]').val(subscriptionInfo.data('mm-subscription-period'));
 		}
