@@ -15,7 +15,7 @@ MM.ActiveContentListener = function (mapController)  {
 			self.dispatchEvent('mm-active-content-changed', activeContent, true);
 			activeContent.addEventListener('changed', onChanged);
 		};
-	mapController.addEventListener('mapLoaded', onMapLoaded);
+	mapController.addEventListener('mapLoaded', onMapLoaded, 999);
 	self.getActiveContent = function () {
 		return activeContent;
 	};
