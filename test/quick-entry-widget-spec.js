@@ -16,7 +16,7 @@ describe('Quick Entry Widget', function () {
         contentsField.focus();
     });
     it('creates a new sibling with the text from the content box on enter', function () {
-        contentsField.trigger(jQuery.Event('keypress', {which: 13}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 13}));
         expect(mapModel.addSiblingIdea).toHaveBeenCalledWith('quick-entry', undefined, 'initial text');
         expect(contentsField.val()).toEqual('');
         expect(contentsField.is(':focus'));
@@ -34,15 +34,15 @@ describe('Quick Entry Widget', function () {
         expect(contentsField.is(':focus'));
     });
     it('creates a new sub-idea with the text from the content box on tab', function () {
-        contentsField.trigger(jQuery.Event('keypress', {which: 9}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 9}));
         expect(mapModel.addSubIdea).toHaveBeenCalledWith('quick-entry', undefined, 'initial text');
         expect(contentsField.val()).toEqual('');
         expect(contentsField.is(':focus'));
     });
     it('does not create siblings or children until there is text in the box', function () {
         contentsField.val('');
-        contentsField.trigger(jQuery.Event('keypress', {which: 9}));
-        contentsField.trigger(jQuery.Event('keypress', {which: 13}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 9}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 13}));
         addChildButton.trigger('click');
         addSiblingButton.trigger('click');
         expect(mapModel.addSubIdea).not.toHaveBeenCalled();
@@ -51,8 +51,8 @@ describe('Quick Entry Widget', function () {
     });
     it('does not create siblings or children on empty text', function () {
         contentsField.val('   ');
-        contentsField.trigger(jQuery.Event('keypress', {which: 9}));
-        contentsField.trigger(jQuery.Event('keypress', {which: 13}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 9}));
+        contentsField.trigger(jQuery.Event('keydown', {which: 13}));
         addChildButton.trigger('click');
         addSiblingButton.trigger('click');
         expect(mapModel.addSubIdea).not.toHaveBeenCalled();

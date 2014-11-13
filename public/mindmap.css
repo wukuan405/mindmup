@@ -927,15 +927,19 @@ body .modal.huge {
 }
 
 #quickEntryWidget {
-  width: 50%;
   display: block;
   position: absolute;
   top: 100px;
   border: 1px solid black;
-  background-color: grey;
+   -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  z-index:999;
+  border:1px solid #0088cc; border-radius:9px; 
 }
 #quickEntryWidget input {
   display: inline-block;
+  width: 90%;
 }
 #quickEntryWidget button {
   display: inline-block;
