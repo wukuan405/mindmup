@@ -927,7 +927,6 @@ body .modal.huge {
 }
 
 #quickEntryWidget {
-  display: block;
   position: absolute;
   top: 100px;
   border: 1px solid black;
@@ -943,4 +942,16 @@ body .modal.huge {
 }
 #quickEntryWidget button {
   display: inline-block;
+}
+.visible-quickentry {
+  display: none;
+}
+body.show-quickentry .visible-quickentry {
+  display: inherit;
+}
+body.show-quickentry span.visible-quickentry {
+	display: inline !important;
+}
+body.show-quickentry .hidden-quickentry {
+  display: none;
 }

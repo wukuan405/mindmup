@@ -38,8 +38,8 @@ jQuery.fn.quickEntryWidget = function (mapModel, imageInsertController) {
         fileSelector.click();
     });
     fileSelector.on('change', function (e) {
-        if (this.files && this.files.length > 0) {
-            imageInsertController.insertFiles(this.files, e.originalEvent);
+        if (e.target.files && e.target.files.length > 0) {
+            imageInsertController.insertFiles(e.target.files, e.originalEvent);
             fileSelector.val('');
         }
         contentsField.focus();
