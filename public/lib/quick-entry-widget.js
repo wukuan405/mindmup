@@ -19,7 +19,7 @@ jQuery.fn.quickEntryWidget = function (mapModel) {
             }
            contentsField.focus();
         };
-    contentsField.on('keypress', function (e) {
+    contentsField.on('keydown', function (e) {
         if (e.which === ENTER) {
             exec('addSiblingIdea');
             e.stopPropagation();
