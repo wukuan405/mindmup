@@ -1,11 +1,12 @@
 /*global jQuery */
-jQuery.fn.quickEntryWidget = function (mapModel) {
+jQuery.fn.quickEntryWidget = function (mapModel, imageInsertController) {
     'use strict';
     var self = this,
         contentsField = self.find('[data-mm-role=content]'),
         addChildButton = self.find('[data-mm-role=add-child]'),
         addSiblingButton = self.find('[data-mm-role=add-sibling]'),
         addPhotoButton = self.find('[data-mm-role=add-photo]'),
+        fileSelector = self.find('[data-mm-role=file]'),
         ENTER = 13,
         TAB = 9,
         exec = function (method) {
@@ -32,6 +33,16 @@ jQuery.fn.quickEntryWidget = function (mapModel) {
             e.preventDefault();
             return false;
         }
+    });
+    addPhotoButton.click(function () {
+        fileSelector.click();
+    });
+    fileSelector.on('change', function (e) {
+        if (this.files && this.files.length > 0) {
+            imageInsertController.insertFiles(this.files, e.originalEvent);
+            fileSelector.val('');
+        }
+        contentsField.focus();
     });
     addChildButton.click(function () { exec('addSubIdea'); });
     addSiblingButton.click(function () { exec('addSiblingIdea'); });

@@ -177,7 +177,7 @@ MM.main = function (config) {
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
                 jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
-                jQuery('#quickEntryWidget').quickEntryWidget(mapModel).floatingToolbarWidget();
+                jQuery('#quickEntryWidget').quickEntryWidget(mapModel, stageImageInsertController).floatingToolbarWidget();
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

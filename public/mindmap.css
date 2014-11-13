@@ -937,7 +937,7 @@ body .modal.huge {
   z-index:999;
   border:1px solid #0088cc; border-radius:9px; 
 }
-#quickEntryWidget input {
+#quickEntryWidget input[type=text] {
   display: inline-block;
   width: 90%;
 }
