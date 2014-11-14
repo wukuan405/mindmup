@@ -39,6 +39,12 @@ MM.main = function (config) {
 				if (mapModelAnalytics) {
 					mapModel.addEventListener('analytic', activityLog.log);
 				}
+				mapModel.addEventListener('layoutChangeStarting', function () {
+					mmProxy.sendMessage({type: 'layoutChangeStarting'});
+				});
+				mapModel.addEventListener('layoutChangeComplete', function () {
+					mmProxy.sendMessage({type: 'layoutChangeComplete'});
+				});
 			},
 			container = jQuery('#container'),
 			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
