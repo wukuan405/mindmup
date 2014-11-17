@@ -35,10 +35,10 @@ jQuery.fn.numericTotaliser = function () {
 				recalculateColumn(column);
 			}
 		};
-	element.on('change', function (evt, column) {
+	element.on('change', function (evt /*, newValue*/) {
 		var target = jQuery(evt.target);
-		if (column !== undefined) {
-			recalculateColumn(column);
+		if (evt.column !== undefined) {
+			recalculateColumn(evt.column);
 		} else if (target.is('td')) {
 			recalculateColumn(target.index());
 		} else {
@@ -166,7 +166,7 @@ jQuery.fn.measuresSheetWidget = function (measuresModel) {
 					col = getColumnIndexForMeasure(measureChanged);
 				if (col >= 0) {
 					row.children().eq(col).text(newValue);
-					measurementsTable.trigger('change', col);
+					measurementsTable.trigger(jQuery.Event('change', {'column': col}));
 				}
 			},
 			onMeasureAdded = function (measureName, index) {
