@@ -66,7 +66,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 				element.show();
 			},
 			onMeasureRemoved = function (measureName) {
-				measurementActivationContainer.children('[data-mm-measure=' + measureName + ']').remove();
+				measurementActivationContainer.children('[data-mm-measure="' + measureName.replace('"','\\"') + '"]').remove();
 				if (_.isEmpty(measuresModel.getMeasures())) {
 					element.hide();
 				}
@@ -81,7 +81,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 				}
 			},
 			onMeasureLabelShown = function (measureName) {
-				measurementActivationContainer.children().removeClass('mm-active').filter('[data-mm-measure=' + measureName + ']').addClass('mm-active');
+				measurementActivationContainer.children().removeClass('mm-active').filter('[data-mm-measure="' + measureName.replace('"','\\"') + '"]').addClass('mm-active');
 				if (measureName) {
 					hideLabels.show();
 				} else {
