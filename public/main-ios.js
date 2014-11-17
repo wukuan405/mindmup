@@ -40,10 +40,12 @@ MM.main = function (config) {
 					mapModel.addEventListener('analytic', activityLog.log);
 				}
 				mapModel.addEventListener('layoutChangeStarting', function () {
-					mmProxy.sendMessage({type: 'layoutChangeStarting'});
+					var args = Array.prototype.slice.call(arguments, 0);
+					mmProxy.sendMessage({'type': 'layoutChangeStarting', 'args': args});
 				});
 				mapModel.addEventListener('layoutChangeComplete', function () {
-					mmProxy.sendMessage({type: 'layoutChangeComplete'});
+					var args = Array.prototype.slice.call(arguments, 0);
+					mmProxy.sendMessage({'type': 'layoutChangeComplete', 'args': args});
 				});
 			},
 			container = jQuery('#container'),
