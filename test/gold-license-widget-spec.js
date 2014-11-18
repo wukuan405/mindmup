@@ -507,7 +507,7 @@ describe('Gold License Widget', function () {
                     expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
                 });
             });
-            _.each(['.test@test.com', 'test.test@test.test','test@test.com', '123@123.123', 'ABDC@ABDC.COM'], function (email) {
+            _.each(['test..test@test.com', 'test@test.me.uk', 'test.@test.com', '.test@test.com', 'test.test@test.test','test@test.com', '123@123.123', 'ABDC@ABDC.COM'], function (email) {
                 it ('accepts ' + email, function () {
                     underTest.find('[data-mm-section=register] input[name=email]').val(email);
                     underTest.find('[data-mm-role=register]').click();
