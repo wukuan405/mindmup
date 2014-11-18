@@ -168,7 +168,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				emailField = registrationForm.find('input[name=email]'),
 				accountNameField = registrationForm.find('input[name=account-name]'),
 				termsField = registrationForm.find('input[name=terms]');
-			if (!/@/.test(emailField.val())) {
+			if (!/^[^@]+@[^@.]+\.[^@]+[^@.]$/.test(emailField.val())) {
 				emailField.parents('div.control-group').addClass('error');
 			} else {
 				emailField.parents('div.control-group').removeClass('error');

@@ -498,11 +498,24 @@ describe('Gold License Widget', function () {
 			underTest.find('[data-mm-role=register]').click();
 			checkSectionShown('registration-progress');
 		});
-		it('marks email as invalid if it does not contain @ and does not try to register', function () {
-			underTest.find('[data-mm-section=register] input[name=email]').val('greg');
-			underTest.find('[data-mm-role=register]').click();
-			expect(goldApi.register).not.toHaveBeenCalled();
-			expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
+		describe('marks email as invalid if it does not contain @ and is followed by a .: ', function () {
+            _.each(['@test@test.com', 'test@.test.com', 'test.test.com', 'test', 'test@test', 'test@test.com.', 'test@test.com@', 'test.test.com@'], function (email) {
+                it ('rejects ' + email, function () {
+                    underTest.find('[data-mm-section=register] input[name=email]').val(email);
+                    underTest.find('[data-mm-role=register]').click();
+                    expect(goldApi.register).not.toHaveBeenCalled();
+                    expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
+                });
+            });
+            _.each(['test..test@test.com', 'test@test.me.uk', 'test.@test.com', '.test@test.com', 'test.test@test.test','test@test.com', '123@123.123', 'ABDC@ABDC.COM'], function (email) {
+                it ('accepts ' + email, function () {
+                    underTest.find('[data-mm-section=register] input[name=email]').val(email);
+                    underTest.find('[data-mm-role=register]').click();
+                    expect(goldApi.register).toHaveBeenCalled();
+                    expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeFalsy();
+                });
+
+            });
 		});
 		describe('marks account name as invalid if it is not 4-20 chars and only alphanumeric lowercase', function () {
 			_.each(['abc', '123456789012345678901', 'ab_cd', 'abc@d', 'abcD', 'abcd efgh', 'abcd-efgh'], function (name) {

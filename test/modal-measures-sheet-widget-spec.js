@@ -10,7 +10,7 @@ describe('measuresDisplayControlWidget', function () {
                 '</div>',
 		checkMeasureNames = function (measureNames) {
 			_.each(measureNames, function (measureName) {
-				expect(underTest.find('[data-mm-measure=' + measureName + ']  [data-mm-role=measure-name]').text()).toBe(measureName);
+				expect(underTest.find('[data-mm-measure="' + measureName.replace('"', '\\"') + '"]  [data-mm-role=measure-name]').text()).toBe(measureName);
 			});
 			expect(underTest.find('[data-mm-measure]').length).toBe(measureNames.length);
 		};
@@ -35,6 +35,26 @@ describe('measuresDisplayControlWidget', function () {
 		measuresModel.dispatchEvent('measureRemoved', 'Cost');
 		checkMeasureNames(['Expenses']);
 	});
+    describe('special chars in measure names', function () {
+        it('can add a measure with a space in the name', function () {
+            measuresModel.dispatchEvent('measureAdded', 'Fun Run');
+            checkMeasureNames(['Cost', 'Expenses', 'Fun Run']);
+        });
+        it('can add a measure with a quote in the name', function () {
+            measuresModel.dispatchEvent('measureAdded', 'Fun"Run');
+            checkMeasureNames(['Cost', 'Expenses', 'Fun"Run']);
+        });
+        it('can remove a measure with a space in the name', function () {
+            measuresModel.dispatchEvent('measureAdded', 'Fun Run');
+            measuresModel.dispatchEvent('measureRemoved', 'Fun Run');
+            checkMeasureNames(['Cost', 'Expenses']);
+        });
+        it('can remove a measure with a quote in the name', function () {
+            measuresModel.dispatchEvent('measureAdded', 'Fun"Run');
+            measuresModel.dispatchEvent('measureRemoved', 'Fun"Run');
+            checkMeasureNames(['Cost', 'Expenses']);
+        });
+    });
 
 	it('shows a hide all option when a measure is being shown', function () {
 		measuresModel.dispatchEvent('measureLabelShown', 'Cost');
