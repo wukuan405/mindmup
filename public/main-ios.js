@@ -63,7 +63,6 @@ MM.main = function (config) {
 				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource, true);
 				mapController.loadMap('ios');
 			},
-			// autoLoadTimeout = window.setTimeout(showMap, 10000),
 			mapModelAnalytics = false;
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
@@ -72,7 +71,6 @@ MM.main = function (config) {
 	});
 	iconEditor.addEventListener('iconEditRequested', function (icon) {
 		mmProxy.sendMessage({type: 'showMessage', args: {'type': 'info', 'message': 'Loading icon editor, please wait...'}});
-		//{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvcAAAU2CAYAAAARbJkkAAAKQWlDQ…OiDfxZekGnSRFYbAiMjCD8m/+IPQqusIWTF5t/S92f/w+TMMOwHIKx1wAAAABJRU5ErkJggg==","width":200,"height":351,"position":"top"}
 		icon = icon || {};
 		mmProxy.sendMessage({type: 'iconEditRequested', args: icon});
 	});
@@ -110,9 +108,16 @@ MM.main = function (config) {
 				mapModel.setIcon(false);
 			}
 		}
+		else if (command.type && command.type.substr && command.type.substr(0, 9) === 'mapModel:') {
+			var modelCommand = command.type.split(':')[1];
+			if (mapModel[modelCommand]) {
+				mapModel[modelCommand].apply(mapModel, command.args);
+			}
+		}
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					readonly = command.args[1],
+					quickEdit = command.args[2],
 					content = MAPJS.content(newIdea);
 			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
 			content.addEventListener('changed', function () {
@@ -121,20 +126,24 @@ MM.main = function (config) {
 			iosMapSource.setIdea(content);
 			showMap();
 			if (readonly) {
+				jQuery('[data-mm-role="ios-menu"]').remove();
 				mapModel.setEditingEnabled(false);
-				jQuery('[data-mm-role="ios-menu"]').hide();
 			} else {
 				mapModel.setEditingEnabled(true);
-				jQuery('[data-mm-role="ios-menu"]').show();
-
 			}
-
+			if (quickEdit) {
+				jQuery('body').addClass('ios-quick-edit-on');
+				jQuery('body').removeClass('ios-quick-edit-off');
+			} else {
+				jQuery('body').removeClass('ios-quick-edit-on');
+				jQuery('body').addClass('ios-quick-edit-off');
+			}
 		}
 		else if (command.type === 'keyboardShown') {
-			jQuery('[data-mm-role="ios-menu"]').hide();
+			jQuery('body').addClass('ios-keyboardShown');
 		}
 		else if (command.type === 'keyboardHidden') {
-			jQuery('[data-mm-role="ios-menu"]').show();
+			jQuery('body').removeClass('ios-keyboardShown');
 		}
 		else if (command.type === 'prepareForSave') {
 			var saveScreenOnly = command.args && command.args[0] && command.args[0] === 'save-screen-only';
