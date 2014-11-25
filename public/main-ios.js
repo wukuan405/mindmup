@@ -94,6 +94,8 @@ MM.main = function (config) {
 		}
 		else if (command.type === 'setViewport') {
 			jQuery('meta[name=viewport]').attr('content', command.args);
+			jQuery('[data-mm-role="ios-context-menu"]').trigger(jQuery.Event('hidePopover'));
+			jQuery('[data-mm-role="ios-link-editor"]').trigger(jQuery.Event('hidePopover'));
 			window.setTimeout(function	() {
 				if (mapModel && mapModel.resetView && mapModel.getIdea()) {
 					mapModel.centerOnNode(mapModel.getSelectedNodeId());
