@@ -93,6 +93,10 @@ MM.main = function (config) {
 			mmProxy.sendMessage(command);
 		}
 		else if (command.type === 'setViewport') {
+			var currentViewPort = jQuery('meta[name=viewport]').attr('content');
+			if (currentViewPort === command.args) {
+				return;
+			}
 			jQuery('meta[name=viewport]').attr('content', command.args);
 			jQuery('[data-mm-role="ios-context-menu"]').trigger(jQuery.Event('hidePopover'));
 			jQuery('[data-mm-role="ios-link-editor"]').trigger(jQuery.Event('hidePopover'));
@@ -152,6 +156,9 @@ MM.main = function (config) {
 			mapModel.resetView();
 			jQuery('[data-mm-role="ios-menu"]').hide();
 			jQuery('[data-mm-role="ios-toolbar"]').hide();
+			jQuery('[data-mm-role="ios-context-menu"]').trigger(jQuery.Event('hidePopover'));
+			jQuery('[data-mm-role="ios-link-editor"]').trigger(jQuery.Event('hidePopover'));
+
 			window.setTimeout(function () {
 				mapModel.scaleDown();
 				window.setTimeout(function () {
