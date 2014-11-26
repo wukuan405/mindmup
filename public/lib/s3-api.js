@@ -1,8 +1,25 @@
 /*global jQuery, MM, FormData, window, _*/
-
+/**
+ *
+ * Utility class that implements AWS S3 POST upload interface and
+ * understands AWS S3 listing responses
+ *
+ * @class S3Api
+ * @constructor
+ */
 MM.S3Api = function () {
 	'use strict';
 	var self = this;
+    /**
+     * Upload a file to S3 using the AWS S3 Post mechanism
+     * @method save
+     * @param {String} contentToSave file content to upload
+     * @param {Object} saveConfiguration a hash containing
+     * @param {String} saveConfiguration.key AWS S3 bucket key to upload
+     * @param {String} saveConfiguration.AWSAccessKeyId AWS S3 access key ID of the requesting user
+     * @param {String} saveConfiguration.policy AWS S3 POST upload policy, base64 encoded
+     * @param {String} saveConfiguration.signature AWS S3 POST signed policy
+     */
 	this.save = function (contentToSave, saveConfiguration, options) {
 		var formData = new FormData(),
 			savePolicy = options && options.isPrivate ? 'bucket-owner-read' : 'public-read',
@@ -47,6 +64,15 @@ MM.S3Api = function () {
 		return deferred.promise();
 	};
 	self.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 120000};
+    /**
+     * Poll until a file becomes available on AWS S3
+     * @method poll
+     * @param {String} signedListUrl a signed AWS S3 URL for listing on a key prefix
+     * @param {Object} [opts] additional options
+     * @param {int} [opts.sleepPeriod] sleep period in milliseconds between each poll (default=1 sec)
+     * @param {int} [opts.timeoutPeriod] maximum total time before polling operation fails (default = 12 secs)
+     * @param {function} [opts.stoppedSemaphore] a predicate function that is checked to see if polling should be aborted
+     */
 	self.poll = function (signedListUrl, options) {
 		var sleepTimeoutId,
 			timeoutId,

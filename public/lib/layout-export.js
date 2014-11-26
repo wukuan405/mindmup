@@ -1,4 +1,37 @@
 /*global jQuery, MM, _ */
+/**
+ * Utility class that implements the workflow for requesting an export and polling for results.
+ *
+ * ## Export workflow
+ *
+ * MindMup.com supports several server processes that convert map (or layout) files into other formats (images, slides etc).
+ * These server side resources require a valid Gold license for storage and billing, so the access is controlled
+ * using the {{#crossLink "GoldApi"}}{{/crossLink}}. The general workflow to order an export is:
+ *
+ * 1. Ask the Gold API for an upload token for a particular upload format. Currently supported formats are:
+ *    * pdf - the map file as a scalable vector PDF
+ *    * png - the map as a bitmap image (PNG)
+ *    * presentation.pdf - the slideshow as a scalable vector PDF
+ *    * presentation.pptx - the slideshow as a PowerPoint file
+ *    The Gold API will provide all information required to upload a
+ *    file to Amazon S3, as well as signed URLs to check for the conversion result or error
+ * 2. Upload the source content to Amazon S3. Note that some formats require a layout, some require an entire map.
+ * 3. Poll the result and error URLs periodically. If the file appears on the result URL, download it and send to users. If
+ *    a file appears on the error URL or nothing appears until the polling timeout, fail and stop polling
+ *
+ * This class coordinates all the complexity of the workflow and conversions in a simple convenience method.
+ * For an example of how to wire it up, see https://github.com/mindmup/mindmup/blob/master/public/main.js
+ *
+ * @class LayoutExportController
+ * @constructor
+ * @param {Object} exportFunctions a hash-map _format -> function_ that coverts the active map to the content actually uploaded to the server
+ * @param {Object} configurationGenerator object implementing the following API (for example a {{#crossLink "GoldApi"}}{{/crossLink}} instance)
+ * @param {function} configurationGenerator.generateExportConfiguration (String format)
+ * @param {Object} storageApi object implementing the following API (for example a {{#crossLink "S3Api"}}{{/crossLink}} instance):
+ * @param {function} storageApi.save (String content, Object configuration, Object properties)
+ * @param {function} storageApi.poll (URL urlToPoll, Object options)
+ * @param {ActivityLog} activityLog logging interface
+ */
 MM.LayoutExportController = function (exportFunctions, configurationGenerator, storageApi, activityLog) {
 	'use strict';
 	var self = this,
@@ -9,7 +42,12 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 			}
 			return format.toUpperCase() + ' Export';
 		};
-
+    /**
+     * @method startExport
+     * @param {String} format one of the supported formats, provided in the constructor
+     * @param [exportProperties] any additional properties that will be merged into the exported data
+     * @return {jQuery.Deferred} a jQuery promise that will be resolved with the URL of the exported document if successful
+     */
 	self.startExport = function (format, exportProperties) {
 		var deferred = jQuery.Deferred(),
 			eventType = getEventType(format),

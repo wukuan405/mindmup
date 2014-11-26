@@ -1,0 +1,11 @@
+{
+  "name": "MindMup",
+  "displayName": "MindMup API",
+  "description": "Zero-friction mind mapping online",
+  "version":"20141124",
+  "url": "https://www.mindmup.com",
+  "logo": "https://mindmup.github.com/logo_64.png",
+  "options": {
+    "paths": "public"
+  }
+}
