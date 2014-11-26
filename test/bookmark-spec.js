@@ -1,4 +1,4 @@
-/*global jasmine, _, observable, beforeEach, describe, expect, it, jasmine, jQuery, spyOn, MM*/
+/*global jasmine, _, observable, beforeEach, describe, expect, it, jasmine, jQuery, spyOn, MM, window*/
 describe('Bookmarks', function () {
 	'use strict';
 	beforeEach(function () {
@@ -198,38 +198,6 @@ describe('Bookmarks', function () {
 		});
 	});
 
-	describe('JSONStorage', function () {
-		var json, storage;
-		beforeEach(function () {
-			storage = {getItem: function () {}, setItem:  function () {}, removeItem: function () {}};
-			json = MM.jsonStorage(storage);
-		});
-		it('stringifies items past into setItem before passing on', function () {
-			spyOn(storage, 'setItem');
-			json.setItem('bla', {a: 'b'});
-			expect(storage.setItem).toHaveBeenCalledWith('bla', '{"a":"b"}');
-		});
-		it('destringifies items from getItem after delegation', function () {
-			storage.getItem = function () {
-				return '{"a": "b"}';
-			};
-			//spyOn(storage, 'getItem').and.callThrough();
-			var result = json.getItem('bla');
-			expect(result).toEqual({a: 'b'});
-		});
-		it('returns undefined if the item is not JSON', function () {
-			storage.getItem = function () {
-				return '{xxxxxx}';
-			};
-			var item = json.getItem('bla');
-			expect(item).toBeUndefined();
-		});
-		it('removes item when remove method is invoked', function () {
-			spyOn(storage, 'removeItem');
-			json.remove('key');
-			expect(storage.removeItem).toHaveBeenCalledWith('key');
-		});
-	});
 
 	describe('Bookmark widget', function () {
 		var ulTemplate = '<ul><li data-mm-role="bookmark">Old</li><li class="template" style="display: none"><a data-category="Top Bar" data-event-type="Bookmark click"><span data-mm-role="x"></span></a></li></ul>',
@@ -309,7 +277,7 @@ describe('Bookmarks', function () {
 				bookmark = wrap([{mapId: 'x', title: 'y'}]);
 			spyOn(bookmark, 'canPin').and.returnValue(false);
 			list.bookmarkWidget(bookmark);
-			expect(list.children("li[id=bkm]").css('display')).toBe('none');
+			expect(list.children('li[id=bkm]').css('display')).toBe('none');
 		});
 		it('self-updates when the pinnable status changes', function () {
 			var list = jQuery(ulTemplate).prepend('<li>Keep me</li><li id="bkm"><a data-mm-role="bookmark-pin">Pin me</a></li>'),
@@ -318,7 +286,7 @@ describe('Bookmarks', function () {
 			spyOn(bookmark, 'canPin').and.returnValue(false);
 			list.bookmarkWidget(bookmark);
 			repo.dispatchEvent('mapLoaded', 'another', {title: 'z'});
-			expect(list.children("li[id=bkm]").css('display')).toBe('none');
+			expect(list.children('li[id=bkm]').css('display')).toBe('none');
 
 		});
 		it('attaches a click event on any links inside data-mm-role=bookmark-pin that call bookmark.pin', function () {

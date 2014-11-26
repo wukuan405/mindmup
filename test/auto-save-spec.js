@@ -3,7 +3,7 @@ describe('Auto save', function () {
 	'use strict';
 	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert, mapModel;
 	beforeEach(function () {
-		storage = MM.jsonStorage(localStorage);
+		storage = new MM.JsonStorage(localStorage);
 		mapModel = jasmine.createSpyObj('mapModel', ['pause', 'resume']);
 		mapController = observable({});
 		alert = {show: function () {} };
