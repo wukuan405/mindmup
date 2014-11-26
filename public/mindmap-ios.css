@@ -475,3 +475,22 @@ a:focus {
 	}
 
 }
+.ios-quick-edit-hidden {
+	display: none;
+}
+.ios-quick-edit-on .ios-quick-edit-hidden {
+	display: none;
+}
+.ios-quick-edit-on .ios-quick-edit-shown {
+	display: inline-block;
+}
+.ios-quick-edit-off .ios-quick-edit-shown {
+	display: none;
+}
+.ios-quick-edit-off .ios-quick-edit-hidden {
+	display: inline-block;
+}
+
+.ios-keyboardShown .ios-quick-edit-hidden {
+	display: none;
+}
