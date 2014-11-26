@@ -1,0 +1,89 @@
+<html>
+<script src="http://static.mindmup.com/20140912202404/external.js"></script>
+<link rel="stylesheet" href="http://static.mindmup.com/20140912202404/external.css"/>
+<script src="../../public/mapjs-compiled.js" ></script>
+<script src="../../public/mm.js" ></script>
+<script src="../../public/lib/s3-api.js" ></script>
+<script src="../../public/lib/json-storage.js"></script>
+<script src="../../public/lib/activity-log.js"></script>
+<script src="../../public/lib/gold-license-manager.js"></script>
+<script src="../../public/lib/gold-api.js"></script>
+<script src="../../public/lib/layout-export.js" ></script>
+<script>
+ 
+var goldApi,
+    goldLicenseManager,
+    activityLog = new MM.ActivityLog(200),
+    objectStorage = new MM.JsonStorage(window.localStorage),
+    s3Api = new MM.S3Api(),
+    layoutExportController,
+    exportFunctions  = {
+      pdf: function () {
+             return JSON.parse($('#layout').val())
+       }
+    },
+    init = function (apiUrl, licenseString) {
+        goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'gold-license');
+        goldApi = new MM.GoldApi(goldLicenseManager, apiUrl, activityLog, '' /*goldBucketName is irrelevant for this example */);
+        layoutExportController = new MM.LayoutExportController (exportFunctions, goldApi, s3Api, activityLog);
+        goldLicenseManager.storeLicense(JSON.parse(licenseString));
+    },
+    doInit = function () {
+       init($('#api_url').val(), $('#license').val());
+       $('#init_section').hide();
+       $('#step_1').show();
+    },
+    doStartExport = function () {
+      var logListener = function (category, action, detail) {
+          $('#status-text').text('... ' + category + ' ' + (action || '') + ' ' + (detail || ''));
+      }; 
+      $('#step_1').hide();
+      $('#step_2').show();
+      activityLog.addEventListener('log', logListener);
+      layoutExportController.startExport('pdf', {export: {'orientation': 'portrait', 'page-size': 'A4', 'margin': 0}}).then(
+          function(url) { 
+            activityLog.removeEventListener('log', logListener);
+            $('#status-text').html('<a href="' + url + '">File Exported Successfully. Click To Download</a>');
+          }, 
+          function (error) {
+            activityLog.removeEventListener('log', logListener);
+            console.log('Error:', arguments);
+            $('#status-text').text('Error: ' + error);
+          }
+       );
+    };
+</script>
+<body>
+<div class="container">
+  <h1>MM Gold Authentication Workflow</h1>
+  <div id="init_section">
+    <h2>Step 1: Initialization</h2>
+    <form class="form-horizontal" onsubmit="return false;">
+      <input type="text" placeholder="Gold Api URL" id="api_url"/>
+      <input type="text" placeholder="license string" id="license"/>
+      <button class="btn" onclick="doInit()">Set</button>
+    </form>
+  </div>
+  <div id="step_1" class="hide">
+    <h2>Step 2: Start Export</h2>
+    <form class="form-vertical" onsubmit="return false;">
+      <button class="btn" onclick="$('#step_1').hide();$('#init_section').show();">&lt;</button>
+      Layout:
+      <textarea id="layout">
+        {"nodes":{"1":{"id":1,"title":"root node","attr":{"style":{}},"width":71,"height":34,"level":1,"x":-35.5,"y":-17},"2":{"id":2,"title":"first child","attr":{"style":{}},"width":70,"height":34,"level":2,"x":55.5,"y":-17},"3":{"id":3,"title":"second child","attr":{"style":{}},"width":89,"height":34,"level":2,"x":-144.5,"y":-17},"4":{"id":4,"title":"sub sub","attr":{"style":{}},"width":62,"height":34,"level":3,"x":-226.5,"y":-44},"5":{"id":5,"title":"sub","attr":{"style":{}},"width":37,"height":34,"level":3,"x":-201.5,"y":10,"activated":true}},"connectors":{"2":{"from":1,"to":2},"3":{"from":1,"to":3},"4":{"from":3,"to":4},"5":{"from":3,"to":5}},"links":{},"rootNodeId":1}
+      </textarea>
+      <button class="btn" onclick="doStartExport()">Start</button>
+    </form>
+  </div>
+  <div id="step_2" class="hide">
+    <h2>Step 3: Polling for result...</h2>
+    <form class="form-vertical" onsubmit="return false;">
+      <button class="btn" onclick="$('#step_2').hide();$('#step_1').show();">&lt;</button>
+    </form>
+    <h3>Status</h3>
+    <div id="status-text">
+    </div>
+  </div>
+</div>
+</body>
+</html>

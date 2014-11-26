@@ -13,7 +13,7 @@ MM.ActivityLog = function (maxNumberOfElements) {
 	var activityLog = [], nextId = 1, self = this;
 	observable(this);
     /**
-     * Tracks an event and dispatches the event to all observers.
+     * Tracks an event and dispatches a **log** event to all observers.
      *
      * @method log
      * @param {String} ...args a list of arguments to log. By convention, the first argument is a category, the second is an action, the others are arbitrary strings
@@ -39,7 +39,7 @@ MM.ActivityLog = function (maxNumberOfElements) {
 		self.dispatchEvent.apply(self, analyticArgs);
 	};
     /**
-     * Shorthand error logging method, it will call log with an Error category and dispatch a separate error event
+     * Shorthand error logging method, it will call log with an Error category and dispatch a separate **error** event
      * @method error
      */
 	this.error = function (message) {
