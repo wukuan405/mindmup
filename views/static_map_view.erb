@@ -10,6 +10,7 @@
 		<div id="container"></div>
 
     <script>
+  window.onload = function () {
       MM.layoutStaticCustomStyle = function (layout) {
         'use strict';
         var rootNodeId = layout && layout.rootNodeId,
@@ -50,7 +51,8 @@
         stage.detach();
         container.remove();
         stage.appendTo('body');
-    });
+        });
+  }
 		</script>
 
 
