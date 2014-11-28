@@ -104,7 +104,7 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 								pollErrorTimer.end();
 								reject('generation-error', fileId);
 							});
-						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 5000}).then(
+						storageApi.poll(exportConfig.signedOutputListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 2500}).then(
 							resolve,
 							function (reason) {
 								pollTimeoutTimer.end();

@@ -66,7 +66,7 @@ describe('LayoutExport', function () {
 			underTest.startExport('pdf');
 			var outputOptions = storageApi.poll.calls.mostRecent().args[1],
 				errorOptions = storageApi.poll.calls.first().args[1];
-			expect(outputOptions.sleepPeriod).toEqual(5000);
+			expect(outputOptions.sleepPeriod).toEqual(2500);
 			expect(errorOptions.sleepPeriod).toEqual(15000);
 			expect(storageApi.poll).toHaveBeenCalledWith('outputlisturl', jasmine.any(Object));
 			expect(storageApi.poll).toHaveBeenCalledWith('errorlisturl', jasmine.any(Object));
