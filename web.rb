@@ -45,6 +45,9 @@ configure do
   set :paypal_recipient, ENV['PAYPAL_ID']
   set :paypal_url, ENV['PAYPAL_URL']
   set :paypal_return_url, ENV['PAYPAL_RETURN_URL']
+  set :gold_api_url, ENV['GOLD_API_URL']
+  set :gold_bucket_name, ENV['GOLD_BUCKET_NAME']
+  set :discover_mindmup_host, ENV['DISCOVER_MINDMUP_HOST'] || 'http://discover.mindmup.com'
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
@@ -143,10 +146,11 @@ get '/ios/config' do
     anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
     publishingConfigUrl: "#{settings.base_url}publishingConfig",
     sharingUrl: "#{settings.base_url}#m:",
-    goldApiUrl: "#{ENV['GOLD_API_URL']}/",
-    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/",
+    goldApiUrl: "#{settings.gold_api_url}/",
+    goldFileUrl: "https://#{settings.gold_bucket_name}.s3.amazonaws.com/",
     static_host: settings.static_host,
-    public_url: settings.public_url
+    public_url: settings.public_url,
+    help_url: "#{settings.discover_mindmup_host}/guide_mobile/APP_VERSION/CURRENT_HELP_VERSION"
   }
   halt 200, config.to_json
 end
