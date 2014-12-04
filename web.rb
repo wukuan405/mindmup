@@ -150,7 +150,7 @@ get '/ios/config' do
     goldFileUrl: "https://#{settings.gold_bucket_name}.s3.amazonaws.com/",
     static_host: settings.static_host,
     public_url: settings.public_url,
-    help_url: "#{settings.discover_mindmup_host}/guide_mobile/APP_VERSION/CURRENT_HELP_VERSION"
+    help_url: "#{settings.discover_mindmup_host}/guide_ios/APP_VERSION/CURRENT_HELP_VERSION"
   }
   halt 200, config.to_json
 end

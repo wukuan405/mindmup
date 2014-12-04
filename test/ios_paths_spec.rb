@@ -53,7 +53,7 @@ describe 'ios paths' do
       @json["public_url"].should == "https://public-url"
     end
     it "returns the url to the help page" do
-      @json["help_url"].should == "http://discover.mindmup.com/guide_mobile/APP_VERSION/CURRENT_HELP_VERSION"
+      @json["help_url"].should == "http://discover.mindmup.com/guide_ios/APP_VERSION/CURRENT_HELP_VERSION"
     end
   end
 end
