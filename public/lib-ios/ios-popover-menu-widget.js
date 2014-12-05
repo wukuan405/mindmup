@@ -37,7 +37,7 @@ MM.IOSStageAPI = function () {
 	};
 };
 
-jQuery.fn.iosPopoverMenuWidget = function (stageApi) {
+jQuery.fn.iosPopoverMenuWidget = function (mapModel, stageApi) {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this),
@@ -72,7 +72,11 @@ jQuery.fn.iosPopoverMenuWidget = function (stageApi) {
 							top = showAbove ? (y - toolbar.outerHeight() - 10) : y + 10,
 							pointerMinLeft = 20,
 							pointerMaxLeft = toolbar.outerWidth() - 20,
-							pointerLeft = Math.max(pointerMinLeft, Math.min(pointerMaxLeft, (x - left - 10)));
+							pointerLeft = Math.max(pointerMinLeft, Math.min(pointerMaxLeft, (x - left - 10))),
+							selectedNodeId = mapModel && mapModel.getCurrentlySelectedIdeaId();
+					if (selectedNodeId) {
+						setMenuItemsForNodeId(selectedNodeId);
+					}
 					if (showAbove) {
 						bottomPointer.css('left', pointerLeft + 'px');
 						topPointer.hide();
@@ -90,7 +94,19 @@ jQuery.fn.iosPopoverMenuWidget = function (stageApi) {
 					} else {
 						window.setTimeout(setupBackgroundClick, 1000);
 					}
+
 					element.show();
+				},
+				setMenuItemsForNodeId = function (nodeId) {
+					var context = mapModel.contextForNode(nodeId);
+					_.each(context, function (val, key) {
+						var selection = element.find('[data-mm-menu-role~=ios-node-context-' + key + ']');
+						if (val) {
+							selection.show();
+						} else {
+							selection.hide();
+						}
+					});
 				};
 		toolbar.click(function (e) {
 			e.preventDefault();
@@ -101,6 +117,14 @@ jQuery.fn.iosPopoverMenuWidget = function (stageApi) {
 			hidePopover();
 		});
 		element.on('showPopover', showPopover);
+		// if (mapModel) {
+		// 	mapModel.addEventListener('nodeSelectionChanged', function (nodeId, isSelected) {
+		// 		if (!isSelected) {
+		// 			return;
+		// 		}
+		// 		setMenuItemsForNodeId(nodeId);
+		// 	});
+		// }
 		if (stageApi) {
 			stageApi.topBottomHeight = calcTopBottomHeight();
 			stageApi.addEventListener('togglePopover', function (evt) {

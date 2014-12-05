@@ -79,7 +79,7 @@ MM.main = function (config) {
 	MM.MapController.activityTracking(mapController, activityLog);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
-	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(iosStage).iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
+	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel, iosStage).iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
 	jQuery('[data-mm-role="ios-link-editor"]').iosPopoverMenuWidget().iosMenuWidget(mapModel, mmProxy).iosLinkEditWidget(mapModel);
 	jQuery('[data-mm-role="mode-indicator"]').iosModeIndicatorWidget(mapModel);
 	jQuery('[data-mm-role~="ios-color-picker"]').iosBackgroundColorWidget(mapModel, [

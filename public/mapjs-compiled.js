@@ -1602,7 +1602,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			self.selectNode(newIdeaId);
 		},
 		editNewIdea = function (newIdeaId) {
-            selectNewIdea(newIdeaId);
+			selectNewIdea(newIdeaId);
 			self.editNode(false, true, true);
 		},
 		getCurrentlySelectedIdeaId = function () {
@@ -1815,19 +1815,19 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		if (isInputEnabled) {
 			idea.batch(function () {
 				ensureNodeIsExpanded(source, target);
-                if (initialTitle) {
-                    newId = idea.addSubIdea(target, initialTitle);
-                }
-                else {
-                    newId = idea.addSubIdea(target);
-                }
+				if (initialTitle) {
+					newId = idea.addSubIdea(target, initialTitle);
+				}
+				else {
+					newId = idea.addSubIdea(target);
+				}
 			});
 			if (newId) {
-                if (initialTitle) {
-                    selectNewIdea(newId);
-                } else {
-                    editNewIdea(newId);
-                }
+				if (initialTitle) {
+					selectNewIdea(newId);
+				} else {
+					editNewIdea(newId);
+				}
 			}
 		}
 
@@ -1891,7 +1891,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	};
 	this.addSiblingIdea = function (source, optionalNodeId, optionalInitialText) {
 		var newId, nextId, parent, contextRank, newRank, currentId;
-        currentId = optionalNodeId || currentlySelectedIdeaId;
+		currentId = optionalNodeId || currentlySelectedIdeaId;
 		if (!isEditingEnabled) {
 			return false;
 		}
@@ -1900,11 +1900,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			parent = idea.findParent(currentId) || idea;
 			idea.batch(function () {
 				ensureNodeIsExpanded(source, parent.id);
-                if (optionalInitialText) {
-                    newId = idea.addSubIdea(parent.id, optionalInitialText);
-                } else {
-                    newId = idea.addSubIdea(parent.id);
-                }
+				if (optionalInitialText) {
+					newId = idea.addSubIdea(parent.id, optionalInitialText);
+				} else {
+					newId = idea.addSubIdea(parent.id);
+				}
 				if (newId && currentId !== idea.id) {
 					nextId = idea.nextSiblingId(currentId);
 					contextRank = parent.findChildRankById(currentId);
@@ -1918,11 +1918,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				}
 			});
 			if (newId) {
-                if (optionalInitialText) {
-                    selectNewIdea(newId);
-                } else {
-                    editNewIdea(newId);
-                }
+				if (optionalInitialText) {
+					selectNewIdea(newId);
+				} else {
+					editNewIdea(newId);
+				}
 			}
 		}
 	};
@@ -2126,6 +2126,16 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			firstLiveParent = _.find(parents, idea.findSubIdeaById);
 			self.selectNode(firstLiveParent || idea.id);
 		}
+	};
+	self.contextForNode = function (nodeId) {
+		var node = self.findIdeaById(nodeId),
+				hasChildren = node && node.ideas && _.size(node.ideas) > 0,
+				hasSiblings = node && idea && ((idea.previousSiblingId && idea.previousSiblingId(nodeId)) || (idea.nextSiblingId && idea.nextSiblingId(nodeId))),
+				canPaste = node && isEditingEnabled && clipboard && clipboard.get();
+		if (node) {
+			return {'hasChildren': !!hasChildren, 'hasSiblings': !!hasSiblings, 'canPaste': !!canPaste};
+		}
+
 	};
 	self.copy = function (source) {
 		var activeNodeIds = [];
@@ -2630,10 +2640,10 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 		return boundaries;
 	};
-    self.focusAndSelect = function (nodeId) {
-       self.selectNode(nodeId);
-       self.dispatchEvent('nodeFocusRequested', nodeId);
-    };
+	self.focusAndSelect = function (nodeId) {
+		self.selectNode(nodeId);
+		self.dispatchEvent('nodeFocusRequested', nodeId);
+	};
 };
 /*global jQuery*/
 jQuery.fn.mapToolbarWidget = function (mapModel) {

@@ -43,16 +43,16 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
             <div class="ios-icon-label">Redo</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="copy" >
+        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="copy" >
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
             <div class="ios-icon-label">Copy</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="cut" >
+        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="cut" >
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_cut.svg">
             <div class="ios-icon-label">Cut</div>
         </a>
 
-        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="paste" >
+        <a href="#" class="ios-toolbar-item" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu ios-node-context-canPaste" data-mm-action="paste" >
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_paste.svg">
             <div class="ios-icon-label">Paste</div>
         </a>
@@ -81,7 +81,7 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_connect.svg">
             <div class="ios-icon-label">Add Link</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu" data-mm-action="toggleCollapse">
+        <a href="#" class="ios-toolbar-item" data-mm-menu="editSelected" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="toggleCollapse">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_collapse.svg">
             <div class="ios-icon-label">Toggle Collapse</div>
         </a>
@@ -90,15 +90,15 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
             <div class="ios-icon-label">Remove</div>
         </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="activateNodeAndChildren">
+        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="activateNodeAndChildren">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_branch.svg">
             <div class="ios-icon-label">Select Subtree</div>
         </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="activateChildren">
+        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="activateChildren">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_children.svg">
             <div class="ios-icon-label">Select Children</div>
         </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="activateSiblingNodes">
+        <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasSiblings" data-mm-action="activateSiblingNodes">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_siblings.svg">
             <div class="ios-icon-label">Select Siblings</div>
         </a>
