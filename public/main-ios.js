@@ -57,6 +57,7 @@ MM.main = function (config) {
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
+			iosStage = new MM.IOSStageAPI(mapModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 
 			showMap = function () {
@@ -78,7 +79,7 @@ MM.main = function (config) {
 	MM.MapController.activityTracking(mapController, activityLog);
 	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
 	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
-	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget().iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
+	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(iosStage).iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
 	jQuery('[data-mm-role="ios-link-editor"]').iosPopoverMenuWidget().iosMenuWidget(mapModel, mmProxy).iosLinkEditWidget(mapModel);
 	jQuery('[data-mm-role="mode-indicator"]').iosModeIndicatorWidget(mapModel);
 	jQuery('[data-mm-role~="ios-color-picker"]').iosBackgroundColorWidget(mapModel, [
@@ -105,6 +106,12 @@ MM.main = function (config) {
 					mapModel.centerOnNode(mapModel.getSelectedNodeId());
 				}
 			}, 100);
+		}
+		else if (command.type && command.type.substr && command.type.substr(0, 9) === 'iosStage:') {
+			var stageCommand = command.type.split(':')[1];
+			if (iosStage[stageCommand]) {
+				iosStage[stageCommand].apply(iosStage, command.args);
+			}
 		}
 		else if (command.type === 'mapModel:setIcon') {
 			var result = command.args && command.args[0];
