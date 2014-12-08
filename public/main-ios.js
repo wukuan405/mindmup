@@ -56,7 +56,7 @@ MM.main = function (config) {
 			resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
-			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
+			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['double-tap this node to edit']),
 			iosStage = new MM.IOSStageAPI(mapModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 
