@@ -95,7 +95,7 @@ MM.MapController = function (initialMapSources) {
 			progressEvent
 		);
 	};
-	this.publishMap = function (mapSourceType) {
+	this.publishMap = function (mapSourceType, forceNew) {
 		var mapSaved = function (savedMapId, properties) {
 				var previousWasReloadOnSave = lastProperties && lastProperties.reloadOnSave;
 				properties = properties || {};
@@ -135,10 +135,11 @@ MM.MapController = function (initialMapSources) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			};
+			},
+            saveAsId = forceNew ? '' : mapInfo.mapId;
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
 		dispatchEvent('mapSaving', activeMapSource.description);
-		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
+		activeMapSource.saveMap(mapInfo.idea, saveAsId).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent

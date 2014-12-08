@@ -219,7 +219,7 @@ describe('Map Controller', function () {
 			});
 		});
 	});
-	describe('saveMap', function () {
+	describe('publishMap', function () {
 		var map;
 		beforeEach(function () {
 			map = MAPJS.content({});
@@ -263,6 +263,18 @@ describe('Map Controller', function () {
 			expect(adapter1.saveMap).not.toHaveBeenCalled();
 			expect(adapter2.saveMap).toHaveBeenCalled();
 		});
+        it('should pass the map content and current map id to the adapter', function () {
+			spyOn(adapter1, 'recognises').and.returnValue(true);
+            spyOn(adapter1, 'saveMap').and.callThrough();
+			underTest.publishMap('foo');
+			expect(adapter1.saveMap).toHaveBeenCalledWith(map, 'loadedMapId');
+        });
+        it('should not pass the current map id if forced as new', function () {
+			spyOn(adapter1, 'recognises').and.returnValue(true);
+            spyOn(adapter1, 'saveMap').and.callThrough();
+			underTest.publishMap('foo', true);
+			expect(adapter1.saveMap).toHaveBeenCalledWith(map, '');
+        });
 		it('should dispatch mapSaving Event before Saving starts', function () {
 			var listener = jasmine.createSpy();
 			underTest.addEventListener('mapSaving', listener);
