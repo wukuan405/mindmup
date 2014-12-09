@@ -1,5 +1,5 @@
 /*jslint nomen: true*/
-/*global MM, jQuery, MAPJS, console, window*/
+/*global MM, jQuery, MAPJS, console, window, _*/
 jQuery.fn.modal = function (options) {
 	'use strict';
 	return jQuery(this).each(function () {
@@ -59,9 +59,12 @@ MM.main = function (config) {
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['double-tap this node to edit']),
 			iosStage = new MM.IOSStageAPI(mapModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
-
+			mapOptions = _.extend({}, config),
+			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
 			showMap = function () {
-				container.domMapWidget(activityLog, mapModel, true,  imageInsertController, jQuery('#splittable'), activeContentResourceManager.getResource, true);
+				var touchEnabled = true,
+						dragContainer = jQuery('#splittable');
+				container.domMapWidget(activityLog, mapModel, touchEnabled,  imageInsertController, dragContainer, activeContentResourceManager.getResource, true, mapOptions);
 				mapController.loadMap('ios');
 			},
 			mapModelAnalytics = false;
@@ -121,17 +124,15 @@ MM.main = function (config) {
 				mapModel.setIcon(false);
 			}
 		}
-		else if (command.type && command.type.substr && command.type.substr(0, 9) === 'mapModel:') {
-			var modelCommand = command.type.split(':')[1];
-			if (mapModel[modelCommand]) {
-				mapModel[modelCommand].apply(mapModel, command.args);
-			}
+		else if (mapModelProxy.canHandleCommand(command)) {
+			mapModelProxy.sendCommandToMapModel(command);
 		}
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					readonly = command.args[1],
 					quickEdit = command.args[2],
 					content = MAPJS.content(newIdea);
+			mapOptions.inlineEditingDisabled = quickEdit;
 			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
 			content.addEventListener('changed', function () {
 				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
@@ -145,6 +146,7 @@ MM.main = function (config) {
 				mapModel.setEditingEnabled(true);
 			}
 			if (quickEdit) {
+
 				jQuery('body').addClass('ios-quick-edit-on');
 				jQuery('body').removeClass('ios-quick-edit-off');
 			} else {
