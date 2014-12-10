@@ -64,7 +64,9 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapOptions = _.extend({}, config),
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
-			// autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
+			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
+			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
+			commandHandlers = [mapModelProxy, confimationProxy],
 			showMap = function (mapId) {
 				var touchEnabled = true,
 						dragContainer = jQuery('#splittable');
@@ -72,6 +74,19 @@ MM.main = function (config) {
 				mapController.loadMap(mapId);
 			},
 			mapModelAnalytics = false;
+
+
+	autoSave.addEventListener('unsavedChangesAvailable', function () {
+		confimationProxy.requestConfirmation('Load unsaved changes?', {'default': 'Yes', 'cancel': 'No'}).then(function (choice) {
+			if (choice === 'default') {
+				autoSave.applyUnsavedChanges();
+			} else {
+				autoSave.discardUnsavedChanges();
+			}
+		});
+	});
+
+
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
@@ -97,7 +112,15 @@ MM.main = function (config) {
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
 	MM.command = MM.command || function (command) {
-		if (command.type === 'ping') {
+		var completed = {'completed': true, 'command': command.type};
+		var commandHandler = _.find(commandHandlers, function (handler) {
+			return handler.handlesCommand(command);
+		});
+		if (commandHandler) {
+			commandHandler.handleCommand(command);
+			return completed;
+		}
+		else if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
 		}
 		else if (command.type === 'setViewport') {
@@ -128,8 +151,11 @@ MM.main = function (config) {
 				mapModel.setIcon(false);
 			}
 		}
-		else if (mapModelProxy.canHandleCommand(command)) {
-			mapModelProxy.sendCommandToMapModel(command);
+		else if (mapModelProxy.handlesCommand(command)) {
+			mapModelProxy.handleCommand(command);
+		}
+		else if (confimationProxy.handlesCommand(command)) {
+			confimationProxy.handleCommand(command);
 		}
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
@@ -191,7 +217,7 @@ MM.main = function (config) {
 		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}
-		return {'completed': true, 'command': command.type};
+		return completed;
 	};
 	mmProxy.sendMessage({type: 'loadComplete'});
 };

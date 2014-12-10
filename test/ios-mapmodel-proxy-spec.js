@@ -32,27 +32,27 @@ describe('MM.IOS.MapModelProxy', function () {
 			expect(underTest.mapModelCommandName({type: 'foo:bar'})).toBe('bar');
 		});
 	});
-	describe('canHandleCommand', function () {
+	describe('handlesCommand', function () {
 		it('returns true if command.type starts mapModel: and is a valid mapModel function', function () {
-			expect(underTest.canHandleCommand({type: 'mapModel:someMethod'})).toBeTruthy();
+			expect(underTest.handlesCommand({type: 'mapModel:someMethod'})).toBeTruthy();
 		});
 		it('returns false if command is undefined', function () {
-			expect(underTest.canHandleCommand()).toBeFalsy();
+			expect(underTest.handlesCommand()).toBeFalsy();
 		});
 		it('returns false if command.type does not start with mapModel:', function () {
-			expect(underTest.canHandleCommand({type: 'foo:bar'})).toBeFalsy();
+			expect(underTest.handlesCommand({type: 'foo:bar'})).toBeFalsy();
 		});
 		it('returns false if command.type does dfine a valid function of mapModel', function () {
-			expect(underTest.canHandleCommand({type: 'mapModel:notSomeMethod'})).toBeFalsy();
+			expect(underTest.handlesCommand({type: 'mapModel:notSomeMethod'})).toBeFalsy();
 		});
 	});
-	describe('sendCommandToMapModel', function () {
+	describe('handleCommand', function () {
 		it('calls the defined function on map model', function () {
-			underTest.sendCommandToMapModel({type: 'mapModel:someMethod', args: ['testing', 1, '2', true]});
+			underTest.handleCommand({type: 'mapModel:someMethod', args: ['testing', 1, '2', true]});
 			expect(mapModel.someMethod).toHaveBeenCalledWith('testing', 1, '2', true);
 		});
 		it('returns the result of the mapModel function', function () {
-			expect(underTest.sendCommandToMapModel({type: 'mapModel:findIdeaById', args: []})).toEqual({'title': 'some text'});
+			expect(underTest.handleCommand({type: 'mapModel:findIdeaById', args: []})).toEqual({'title': 'some text'});
 		});
 	});
 	describe('should listen to nodeEditRequested event from mapModel', function () {

@@ -5,7 +5,7 @@ MM.IOS.MapModelProxy = function (mapModel, mmProxy, mapOptions) {
 	'use strict';
 	var self = this;
 
-	self.canHandleCommand = function (command) {
+	self.handlesCommand = function (command) {
 		if (command && command.type && command.type.substr && command.type.substr(0, 9) === 'mapModel:') {
 			var modelCommand = self.mapModelCommandName(command);
 			if (mapModel[modelCommand]) {
@@ -21,8 +21,8 @@ MM.IOS.MapModelProxy = function (mapModel, mmProxy, mapOptions) {
 		}
 		return false;
 	};
-	self.sendCommandToMapModel = function (command) {
-		var modelCommand = self.canHandleCommand(command);
+	self.handleCommand = function (command) {
+		var modelCommand = self.handlesCommand(command);
 		if (modelCommand) {
 			return mapModel[modelCommand].apply(mapModel, command.args);
 		}
