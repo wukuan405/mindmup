@@ -496,7 +496,7 @@ a:focus {
 	display: none;
 }
 
-.ios-quick-edit-context-menu-shown {
+.ios-quick-edit-off .iosPopupToolContainer .ios-quick-edit-context-menu-shown {
 	display: none;
 }
 
