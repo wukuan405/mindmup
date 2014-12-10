@@ -122,7 +122,7 @@ describe('MM.IOS.ConfirmationProxy', function () {
 			underTest.requestConfirmation('What next?', {'default': 'ok'}, 'Well?');
 			command = {type: 'confirmation:choice', args: [1, 'default']};
 		});
-		it('returns true if command type is confirmation:result and confirmation id matches', function () {
+		it('returns true if command type is confirmation:choice and confirmation id matches', function () {
 			expect(underTest.handlesCommand(command)).toBeTruthy();
 		});
 		it('returns false if command is undefined', function () {
