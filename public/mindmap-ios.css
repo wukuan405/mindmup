@@ -475,6 +475,7 @@ a:focus {
 	}
 
 }
+
 .ios-quick-edit-hidden {
 	display: none;
 }
@@ -493,4 +494,12 @@ a:focus {
 
 .ios-keyboardShown .ios-quick-edit-hidden {
 	display: none;
+}
+
+.ios-quick-edit-context-menu-shown {
+	display: none;
+}
+
+.ios-quick-edit-on .iosPopupToolContainer .ios-quick-edit-context-menu-shown {
+	display: inline-block;
 }
