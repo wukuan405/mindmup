@@ -120,7 +120,7 @@ describe('MM.IOS.ConfirmationProxy', function () {
 		var command;
 		beforeEach(function () {
 			underTest.requestConfirmation('What next?', {'default': 'ok'}, 'Well?');
-			command = {type: 'confirmation:result', args: [1, 'default']};
+			command = {type: 'confirmation:choice', args: [1, 'default']};
 		});
 		it('returns true if command type is confirmation:result and confirmation id matches', function () {
 			expect(underTest.handlesCommand(command)).toBeTruthy();
@@ -128,8 +128,8 @@ describe('MM.IOS.ConfirmationProxy', function () {
 		it('returns false if command is undefined', function () {
 			expect(underTest.handlesCommand()).toBeFalsy();
 		});
-		it('returns false if command type is not confirmation:result', function () {
-			command.type = 'onfirmation:result';
+		it('returns false if command type is not confirmation:choice', function () {
+			command.type = 'onfirmation:choice';
 			expect(underTest.handlesCommand(command)).toBeFalsy();
 		});
 		it('returns false if confirmationId does not match', function () {
@@ -150,7 +150,7 @@ describe('MM.IOS.ConfirmationProxy', function () {
 		beforeEach(function () {
 			resolveListener = jasmine.createSpy();
 			underTest.requestConfirmation('What next?', {'default': 'ok'}, 'Well?').then(resolveListener);
-			command = {type: 'confirmation:result', args: [1, 'default']};
+			command = {type: 'confirmation:choice', args: [1, 'default']};
 		});
 		it('calls resolve on deferred with button type', function () {
 			underTest.handleCommand(command);

@@ -64,6 +64,7 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapOptions = _.extend({}, config),
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
+			// autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			showMap = function (mapId) {
 				var touchEnabled = true,
 						dragContainer = jQuery('#splittable');

@@ -38,7 +38,7 @@ MM.IOS.ConfirmationProxy = function (mmProxy) {
 	};
 
 	self.handlesCommand = function (command) {
-		if (!command || command.type !== 'confirmation:result' || confirmationId !== command.args[0] || !_.contains(validButtons, command.args[1])) {
+		if (!command || command.type !== 'confirmation:choice' || confirmationId !== command.args[0] || !_.contains(validButtons, command.args[1])) {
 			return false;
 		}
 		return true;

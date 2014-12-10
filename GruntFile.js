@@ -56,6 +56,7 @@ module.exports = function (grunt) {
 					'public/lib/active-content-listener.js',
 					'public/lib/resource-compressor.js',
 					'public/lib/map-controller.js',
+					'public/lib/auto-save.js',
 					'public/lib/json-storage',
 					'public/lib/local-storage-clipboard.js'
 				],
