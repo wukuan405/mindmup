@@ -56,16 +56,19 @@ MM.main = function (config) {
 			resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
 			imageInsertController = new MAPJS.ImageInsertController(config.corsProxyUrl, activeContentResourceManager.storeResource),
-			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['double-tap this node to edit']),
+			alert = MM.IOS.Alert(mmProxy),
+			objectStorage = new MM.JsonStorage(window.localStorage),
+			objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert),
+			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['double-tap this node to edit'], objectClipboard),
 			iosStage = new MM.IOSStageAPI(mapModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapOptions = _.extend({}, config),
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
-			showMap = function () {
+			showMap = function (mapId) {
 				var touchEnabled = true,
 						dragContainer = jQuery('#splittable');
 				container.domMapWidget(activityLog, mapModel, touchEnabled,  imageInsertController, dragContainer, activeContentResourceManager.getResource, true, mapOptions);
-				mapController.loadMap('ios');
+				mapController.loadMap(mapId);
 			},
 			mapModelAnalytics = false;
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
@@ -131,14 +134,15 @@ MM.main = function (config) {
 			var newIdea = command.args[0],
 					readonly = command.args[1],
 					quickEdit = command.args[2],
-					content = MAPJS.content(newIdea);
+					content = MAPJS.content(newIdea),
+					mapId = command.args[3] || 'ios';
 			mapOptions.inlineEditingDisabled = quickEdit;
 			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
 			content.addEventListener('changed', function () {
 				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
 			});
 			iosMapSource.setIdea(content);
-			showMap();
+			showMap(mapId);
 			if (readonly) {
 				jQuery('[data-mm-role="ios-menu"]').remove();
 				mapModel.setEditingEnabled(false);

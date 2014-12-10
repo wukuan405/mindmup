@@ -55,7 +55,9 @@ module.exports = function (grunt) {
 					'public/lib/active-content-resource-manager.js',
 					'public/lib/active-content-listener.js',
 					'public/lib/resource-compressor.js',
-					'public/lib/map-controller.js'
+					'public/lib/map-controller.js',
+					'public/lib/json-storage',
+					'public/lib/local-storage-clipboard.js'
 				],
 				dest: 'compiled/mm-ios-compiled.js',
 			}
