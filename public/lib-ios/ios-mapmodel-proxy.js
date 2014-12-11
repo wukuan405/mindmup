@@ -1,7 +1,7 @@
 /*global MM*/
 
 MM.IOS = MM.IOS || {};
-MM.IOS.MapModelProxy = function (mapModel, mmProxy, mapOptions) {
+MM.IOS.MapModelProxy = function (mapModel, mmProxy, activeContentResourceManager, mapOptions) {
 	'use strict';
 	var self = this;
 
@@ -22,6 +22,14 @@ MM.IOS.MapModelProxy = function (mapModel, mmProxy, mapOptions) {
 		return false;
 	};
 	self.handleCommand = function (command) {
+		if (command.type === 'mapModel:setIcon') {
+			var result = command.args && command.args[0];
+			if (result) {
+				return mapModel.setIcon('icon-editor', activeContentResourceManager.storeResource(result.url), result.width, result.height, result.position);
+			} else {
+				return mapModel.setIcon(false);
+			}
+		}
 		var modelCommand = self.handlesCommand(command);
 		if (modelCommand) {
 			return mapModel[modelCommand].apply(mapModel, command.args);

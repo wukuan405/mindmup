@@ -63,7 +63,7 @@ MM.main = function (config) {
 			iosStage = new MM.IOSStageAPI(mapModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapOptions = _.extend({}, config),
-			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
+			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, activeContentResourceManager, mapOptions),
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
@@ -126,20 +126,6 @@ MM.main = function (config) {
 			if (iosStage[stageCommand]) {
 				iosStage[stageCommand].apply(iosStage, command.args);
 			}
-		}
-		else if (command.type === 'mapModel:setIcon') {
-			var result = command.args && command.args[0];
-			if (result) {
-				mapModel.setIcon('icon-editor', activeContentResourceManager.storeResource(result.url), result.width, result.height, result.position);
-			} else {
-				mapModel.setIcon(false);
-			}
-		}
-		else if (mapModelProxy.handlesCommand(command)) {
-			mapModelProxy.handleCommand(command);
-		}
-		else if (confimationProxy.handlesCommand(command)) {
-			confimationProxy.handleCommand(command);
 		}
 		else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],

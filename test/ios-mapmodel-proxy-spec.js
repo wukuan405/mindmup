@@ -1,15 +1,18 @@
 /* global MM, describe, it, beforeEach, expect, jasmine, observable, spyOn*/
 describe('MM.IOS.MapModelProxy', function () {
 	'use strict';
-	var underTest, mapModel, mmProxy, options;
+	var underTest, mapModel, mmProxy, activeContentResourceManager, options;
 	beforeEach(function () {
 		mmProxy = jasmine.createSpyObj('mmProxy', ['sendMessage']);
-		mapModel = observable(jasmine.createSpyObj('mapModel', ['someMethod', 'findIdeaById']));
+		activeContentResourceManager = jasmine.createSpyObj('activeContentResourceManager', ['storeResource']);
+		activeContentResourceManager.storeResource.and.returnValue('stored-resource-url');
+		mapModel = observable(jasmine.createSpyObj('mapModel', ['someMethod', 'findIdeaById', 'setIcon']));
 		spyOn(mapModel, 'addEventListener').and.callThrough();
 		mapModel.findIdeaById.and.returnValue({'title': 'some text'});
 		mapModel.someMethod.and.returnValue(true);
+		mapModel.setIcon.and.returnValue(true);
 		options = {};
-		underTest = new MM.IOS.MapModelProxy(mapModel, mmProxy, options);
+		underTest = new MM.IOS.MapModelProxy(mapModel, mmProxy, activeContentResourceManager, options);
 	});
 	describe('mapModelCommandName', function () {
 		it('returns false if command is undefined', function () {
@@ -54,6 +57,37 @@ describe('MM.IOS.MapModelProxy', function () {
 		it('returns the result of the mapModel function', function () {
 			expect(underTest.handleCommand({type: 'mapModel:findIdeaById', args: []})).toEqual({'title': 'some text'});
 		});
+		describe('handles setIcon command', function () {
+			it('sets the icon if it is supplied', function () {
+				underTest.handleCommand({
+					type: 'mapModel:setIcon',
+					args: [
+						{
+							url: 'imageurl',
+							height: 20,
+							width: 30,
+							position: 'above'
+						}
+					]
+				});
+				expect(mapModel.setIcon).toHaveBeenCalledWith('icon-editor', 'stored-resource-url', 30, 20, 'above');
+			});
+			it('unsets the icon if no arguments supplied', function () {
+				underTest.handleCommand({
+					type: 'mapModel:setIcon',
+					args: []
+				});
+				expect(mapModel.setIcon).toHaveBeenCalledWith(false);
+			});
+			it('unsets the icon if first argument is false', function () {
+				underTest.handleCommand({
+					type: 'mapModel:setIcon',
+					args: [false]
+				});
+				expect(mapModel.setIcon).toHaveBeenCalledWith(false);
+			});
+		});
+
 	});
 	describe('should listen to nodeEditRequested event from mapModel', function () {
 		it('should subscribe to event', function () {
