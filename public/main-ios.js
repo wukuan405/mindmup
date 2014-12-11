@@ -66,25 +66,9 @@ MM.main = function (config) {
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, mapOptions),
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
+			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
 			commandHandlers = [mapModelProxy, confimationProxy],
-			showMap = function (mapId) {
-				var touchEnabled = true,
-						dragContainer = jQuery('#splittable');
-				container.domMapWidget(activityLog, mapModel, touchEnabled,  imageInsertController, dragContainer, activeContentResourceManager.getResource, true, mapOptions);
-				mapController.loadMap(mapId);
-			},
 			mapModelAnalytics = false;
-
-
-	autoSave.addEventListener('unsavedChangesAvailable', function () {
-		confimationProxy.requestConfirmation('Load unsaved changes?', {'default': 'Yes', 'cancel': 'No'}).then(function (choice) {
-			if (choice === 'default') {
-				autoSave.applyUnsavedChanges();
-			} else {
-				autoSave.discardUnsavedChanges();
-			}
-		});
-	});
 
 
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
@@ -162,14 +146,24 @@ MM.main = function (config) {
 					readonly = command.args[1],
 					quickEdit = command.args[2],
 					content = MAPJS.content(newIdea),
-					mapId = command.args[3] || 'ios';
+					mapId = command.args[3] || 'ios-no-autosave',
+					touchEnabled = true,
+					dragContainer = jQuery('#splittable');
+
+			if (mapId === 'ios-no-autosave') {
+				iosAutoSave.off();
+			} else {
+				iosAutoSave.on();
+			}
 			mapOptions.inlineEditingDisabled = quickEdit;
 			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
 			content.addEventListener('changed', function () {
 				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
 			});
 			iosMapSource.setIdea(content);
-			showMap(mapId);
+			container.domMapWidget(activityLog, mapModel, touchEnabled,  imageInsertController, dragContainer, activeContentResourceManager.getResource, true, mapOptions);
+			mapController.loadMap(mapId);
+
 			if (readonly) {
 				jQuery('[data-mm-role="ios-menu"]').remove();
 				mapModel.setEditingEnabled(false);
