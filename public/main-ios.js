@@ -165,6 +165,9 @@ MM.main = function (config) {
 				jQuery('body').addClass('ios-quick-edit-off');
 			}
 		}
+		else if (command.type === 'contentSaved') {
+			autoSave.discardUnsavedChanges();
+		}
 		else if (command.type === 'keyboardShown') {
 			jQuery('body').addClass('ios-keyboardShown');
 		}
