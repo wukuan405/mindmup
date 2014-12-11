@@ -10,11 +10,27 @@ describe 'ios paths' do
   end
   before(:each) do
     header "User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.152 Safari/537.22"
+    set :earliest_supported_ios_version, 3.0
   end
   describe '/ios/map' do
     it "returns document for ios where body contains the expected class" do
       get 'ios/map'
       last_response_body_xml.xpath('//body')[0]['class'].should == 'ios-wkwebview'
+    end
+  end
+  describe '/ios/editor/APP_VERSION' do
+    it "returns document for ios where body contains the expected class if the app version is the earliest supported version" do
+      get 'ios/editor/3.0'
+      last_response_body_xml.xpath('//body')[0]['class'].should == 'ios-wkwebview'
+    end
+    it "returns document for ios where body contains the expected class if the app version is later then the earliest supported version" do
+      get 'ios/editor/3.1'
+      last_response_body_xml.xpath('//body')[0]['class'].should == 'ios-wkwebview'
+    end
+    it "halts as a 404 if the app version is before the the earliest supported version" do
+      get 'ios/editor/2.9'
+      last_response.status.should  == 404
+      last_response.body.should == ''
     end
   end
   describe "/ios/config" do

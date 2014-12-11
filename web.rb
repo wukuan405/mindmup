@@ -22,6 +22,7 @@ end
 configure do
   static_ts = '20140912202404'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
+  set :earliest_supported_ios_version, (ENV["EARLIEST_IOS_VERSION"] && ENV["EARLIEST_IOS_VERSION"].to_f) || 1
   set :static_host, "#{public_host}/#{static_ts}"
   set :static_image_host, "#{public_host}/img"
   set :google_analytics_account, ENV["GOOGLE_ANALYTICS_ACCOUNT"]
@@ -135,7 +136,16 @@ get '/cache_news' do
   "OK "+settings.last_news_id
 end
 
+
 get '/ios/map' do
+  # used for ios version < 3.0
+  erb :ios_legacy
+end
+
+get '/ios/editor/:my_app_version' do
+  version = 1
+  version = params[:my_app_version].to_f if params[:my_app_version]
+  halt 404 if version < settings.earliest_supported_ios_version
   erb :ios
 end
 
@@ -154,6 +164,7 @@ get '/ios/config' do
   }
   halt 200, config.to_json
 end
+
 
 get '/trouble' do
   erb :trouble
