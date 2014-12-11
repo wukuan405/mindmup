@@ -102,9 +102,9 @@ jQuery.fn.iosPopoverMenuWidget = function (mapModel, stageApi) {
 					_.each(context, function (val, key) {
 						var selection = element.find('[data-mm-menu-role~=ios-node-context-' + key + ']');
 						if (val) {
-							selection.show();
+							selection.css('display', '');
 						} else {
-							selection.hide();
+							selection.css('display', 'none');
 						}
 					});
 				};
