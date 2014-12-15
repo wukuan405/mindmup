@@ -41,19 +41,6 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
             <div class="ios-icon-label">Redo</div>
         </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="copy" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
-            <div class="ios-icon-label">Copy</div>
-        </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="cut" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_cut.svg">
-            <div class="ios-icon-label">Cut</div>
-        </a>
-
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu ios-node-context-canPaste" data-mm-action="paste" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_paste.svg">
-            <div class="ios-icon-label">Paste</div>
-        </a>
 
         <a href="#"  class="ios-toolbar-item ios-quick-edit-hidden" data-mm-menu="addNodes" data-mm-menu-role="modelAction context-menu" data-mm-action="addSubIdea">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
@@ -88,6 +75,21 @@
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
             <div class="ios-icon-label">Remove</div>
         </a>
+
+        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="copy" >
+            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
+            <div class="ios-icon-label">Copy Subtree</div>
+        </a>
+        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu" data-mm-action="cut" >
+            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_cut.svg">
+            <div class="ios-icon-label">Cut Subtree</div>
+        </a>
+
+        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu ios-node-context-canPaste" data-mm-action="paste" >
+            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_paste.svg">
+            <div class="ios-icon-label">Paste</div>
+        </a>
+
         <a href="#" class="ios-toolbar-item ios-quick-edit-shown" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="activateNodeAndChildren">
             <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_branch.svg">
             <div class="ios-icon-label">Select Subtree</div>

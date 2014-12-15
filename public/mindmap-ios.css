@@ -436,6 +436,15 @@ a:focus {
 	width: 300px;
 	height: 120px;
 }
+a.iosDisabled {
+	color: silver;
+	opacity: 0.5;
+}
+.iosDisabled img {
+	filter: grayscale(100%);
+	-webkit-filter: grayscale(100%);
+	opacity: 0.5;
+}
 .iosPopupToolContainer {
 	position: absolute;
 	z-index: 3020;
@@ -443,7 +452,7 @@ a:focus {
 	border: 1px solid #22AAE0;
 	background-color: #FFFFFF;
 	border-radius: 5px;
-	overflow:scroll;
+	overflow:hidden;
 	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
 	width: 300px;
 	height: 80px;
@@ -453,25 +462,58 @@ a:focus {
 	top: 101px;
 }
 
-@media (min-width: 501px) {
+@media (min-width: 480px) {
 	.iosPopupToolbarLarge {
-		width: 500px;
+		width: 450px;
 	}
 	.iosPopupToolContainerLarge {
-		width: 500px;
+		width: 450px;
+	}
+}
+
+@media (min-width: 568px) {
+	.iosPopupToolbarLarge {
+		width: 550px;
+	}
+	.iosPopupToolContainerLarge {
+		width: 550px;
+	}
+}
+
+@media (min-width: 667px) {
+	.iosPopupToolbarLarge {
+		width: 650px;
+	}
+	.iosPopupToolContainerLarge {
+		width: 650px;
+	}
+}
+
+
+@media (min-width: 690px) {
+	.iosPopupToolbarLarge {
+		width: 670px;
+	}
+	.iosPopupToolContainerLarge {
+		width: 670px;
+	}
+}
+@media (max-height: 320px) {
+	a.iosDisabled {
+		display: none;
 	}
 }
 
 @media (max-width: 500px) {
 	.iosPopupToolbarLarge {
-		height: 210px;
+		height: 195px;
 	}
 	.iosPopupToolContainerLarge {
-		height: 170px;
+		height: 155px;
 		text-align: left;
 	}
 	.iosPopupToolbarLarge .iosPopupToolbarPointerBottom {
-		top: 191px;
+		top: 176px;
 	}
 
 }

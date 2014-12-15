@@ -65,9 +65,9 @@ jQuery.fn.iosPopoverMenuWidget = function (mapModel, stageApi) {
 					_.each(context, function (val, key) {
 						var selection = element.find('[data-mm-menu-role~=ios-node-context-' + key + ']');
 						if (val) {
-							selection.css('display', '');
+							selection.removeClass('iosDisabled');
 						} else {
-							selection.css('display', 'none');
+							selection.addClass('iosDisabled');
 						}
 					});
 				};
@@ -80,14 +80,6 @@ jQuery.fn.iosPopoverMenuWidget = function (mapModel, stageApi) {
 			hidePopover();
 		});
 		element.on('showPopover', showPopover);
-		// if (mapModel) {
-		// 	mapModel.addEventListener('nodeSelectionChanged', function (nodeId, isSelected) {
-		// 		if (!isSelected) {
-		// 			return;
-		// 		}
-		// 		setMenuItemsForNodeId(nodeId);
-		// 	});
-		// }
 		if (stageApi) {
 			stageApi.topBottomHeight = calcTopBottomHeight();
 			stageApi.addEventListener('togglePopover', function (evt) {
