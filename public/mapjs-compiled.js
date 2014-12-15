@@ -981,6 +981,13 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	contentAggregate.getResource = function (id) {
 		return contentAggregate.resources && contentAggregate.resources[id];
 	};
+	contentAggregate.hasSiblings = function (id) {
+		if (id === contentAggregate.id) {
+			return false;
+		}
+		var parent = contentAggregate.findParent(id);
+		return parent && _.size(parent.ideas) > 1;
+	};
 	if (contentAggregate.formatVersion != 2) {
 		upgrade(contentAggregate);
 		contentAggregate.formatVersion = 2;
@@ -2130,7 +2137,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	self.contextForNode = function (nodeId) {
 		var node = self.findIdeaById(nodeId),
 				hasChildren = node && node.ideas && _.size(node.ideas) > 0,
-				hasSiblings = node && idea && ((idea.previousSiblingId && idea.previousSiblingId(nodeId)) || (idea.nextSiblingId && idea.nextSiblingId(nodeId))),
+				hasSiblings = idea.hasSiblings(nodeId),
 				canPaste = node && isEditingEnabled && clipboard && clipboard.get();
 		if (node) {
 			return {'hasChildren': !!hasChildren, 'hasSiblings': !!hasSiblings, 'canPaste': !!canPaste};
@@ -3996,6 +4003,15 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		}
 		stageElement.data('scale', targetScale).updateStage();
 		centerViewOn(currentCenter.x, currentCenter.y);
+	});
+	mapModel.addEventListener('nodeVisibilityRequested', function (ideaId) {
+		var id = ideaId || mapModel.getCurrentlySelectedIdeaId(),
+				node = stageElement.nodeWithId(id);
+		if (node) {
+			ensureNodeVisible(node);
+			viewPort.finish();
+		}
+
 	});
 	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
 		var node = stageElement.nodeWithId(ideaId).data(),
