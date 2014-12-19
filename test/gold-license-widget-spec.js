@@ -11,6 +11,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="no-license"></span>' +
 					'<span data-mm-section="view-license"></span>' +
 					'<span data-mm-section="loading-subscription"></span>' +
+					'<span data-mm-section="cancellation-failed"></span>' +
 					'<span data-mm-section="code-sent"></span>' +
 					'<span data-mm-section="sending-code"></span>' +
 					'<span data-mm-section="sending-code-failed"></span>' +
@@ -346,7 +347,7 @@ describe('Gold License Widget', function () {
 			});
 			it('shows the view-license section if cancelellation fails', function () {
 				cancelSubscriptionDeferred.reject('error');
-				checkSectionShown('view-license');
+				checkSectionShown('cancellation-failed');
 			});
 		});
 

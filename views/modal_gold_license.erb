@@ -50,7 +50,7 @@
 		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.</p>
 
-		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current subscription. </p>
+		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>View Subscription</strong> to see your subscription details and renew it. </p>
 		<form class="form-horizontal">
 		  <div class="control-group">
 			<label class="control-label" for="gold-view-account-name">Account name</label>
@@ -77,7 +77,7 @@
 
 
     <!------------ ----->
-		<div data-mm-section="license-purchase-required license-not-purchased" data-mm-poll-for-subscription="true">
+		<div data-mm-section="license-not-purchased" data-mm-poll-for-subscription="true">
 			<p class="alert alert-error alert-block">A subscription has not been purchased for this license. If you have paid using PayPal in the last 15 minutes, please wait for your payment to be processed.</p>
 			<form class="form-horizontal">
 			  <div class="control-group">
@@ -137,7 +137,8 @@
     </div>
 
     <div data-mm-section="license-expired">
-      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. Your
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>.<br/> 
+      Your
       license <span class="text-error">expired on <span data-mm-role="expiry-date"></span></span>.</p>
       <p>Click on <strong>Log Out</strong> to log on using a different account, or select a billing cycle and payment method to
       re-activate your account:</p>
@@ -161,6 +162,10 @@
 		<div data-mm-section="cancelled-subscription">
 			<p>You have cancelled automatic renewal for your subscription as <strong><span data-mm-role="account-name"></span></strong> </p>
 			<p>Your current subscription will expire on <strong><span data-mm-role="expiry-date"></span></strong><span data-mm-role="subscription-expiry"></span></p>
+		</div>
+		<div data-mm-section="cancellation-failed">
+			<p class="alert alert-block alert-error">Due to a network problem, it was not possible to cancel your subscription at this moment</p>
+      <p>Please try again later. If the problem persists, contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="payment-complete">
 			<p class="alert alert-block alert-success">Your Mindmup Gold subscription was successful</p>
@@ -264,6 +269,9 @@
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="waiting-for-payment" data-mm-role="go-back" class="btn pull-left" tabstop="6"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+	<button data-category="Gold Click" data-event-type="Register" data-mm-section="unauthorised-license" data-mm-role="view-subscription" tabstop="6" class="btn">View Subscription</button>
+
+
 
 	<form id="license-purchase-form" data-mm-role="license-purchase-form" data-mm-next-section="waiting-for-payment" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/buy_subscription">
 		<input type="hidden" data-mm-role="license-text" name="license">
@@ -299,7 +307,7 @@
 
 
 	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
-	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="license-active license-active-paypal license-active-stripe no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
     </div>
   </div>
 

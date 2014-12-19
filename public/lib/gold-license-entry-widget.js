@@ -243,6 +243,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		}
 	});
 
+  self.find('button[data-mm-role=view-subscription]').click(function () {
+    showSection('view-license');
+    fillInFields();
+  });
+
 	self.on('hidden', function () {
 		licenseManager.cancelLicenseEntry();
 		if (pollerIntervalId) {
@@ -259,6 +264,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	self.find('button[data-mm-role~=show-section]').click(function () {
 		showSection(jQuery(this).data('mm-target-section'));
 	});
+
 	self.find('button[data-mm-role~=register]').click(register);
 	self.find('button[data-mm-role~=action-CancelSubscription]').click(function () {
 		showSection('cancelling-subscription');
@@ -267,7 +273,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				showSection('cancelled-subscription');
 			},
 			function () {
-				showSection('view-license');
+				showSection('cancellation-failed');
 			}
 		);
 	});
