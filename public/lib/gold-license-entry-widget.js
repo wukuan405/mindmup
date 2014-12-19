@@ -26,17 +26,32 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				activityLog.log('Gold', action);
 			}
 		},
-		displaySubscription = function (subscription, sectionName) {
+    showPaymentConfirmation = function () {
+      var license = licenseManager.getLicense(),
+        accountName = (license && license.account) || '';
+			showSection('payment-complete');
+			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
+    },
+		displaySubscription = function (subscription) {
 			var expiryTs = subscription && subscription.expiry,
 				expiryDate = new Date(expiryTs * 1000),
 				renewalDescription = (expiryDate && expiryDate.toDateString()) || '',
 				license = licenseManager.getLicense(),
-				accountName = (license && license.account) || '';
-			showSection(sectionName);
+				accountName = (license && license.account) || '',
+        provider  = subscription.provider ? ('-' + subscription.provider) : '';
+      showSection('license-' + subscription.status + provider);
 			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
 			self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
-			self.find('[data-mm-role~=subscription-name]').val(subscription.subscription).text(subscription.subscription);
-			self.find('[data-mm-role~=renewal-price]').val(subscription.renewalPrice).text(subscription.renewalPrice);
+
+      _.each(subscription, function (val, key) {
+        self.find('[data-mm-role~=license-'+key+']').text(val);
+      });
+      if (subscription.actions) {
+        _.each(subscription.actions, function (key) {
+          self.find('[data-mm-role~=action-'+key+']').show();
+        });
+      }
+/*
 			if (subscription.paymentType) {
 				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-type-block]').show();
 				self.find('[data-mm-role~=payment-type]').text(subscription.paymentType);
@@ -58,6 +73,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
                 self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
                 self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
 			}
+*/
 		},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
@@ -73,21 +89,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					}
 				},
 				showSubscription = function (subscription) {
-					var expiryTs = subscription && subscription.expiry;
-					if (expiryTs === -1 || expiryTs === undefined)  {
-						failExpiry('license-purchase-required');
-					} else if (expiryTs === 0)  {
+					var licenseStatus = subscription && subscription.status;
+					if (!licenseStatus)  {
 						failExpiry('not-authenticated');
-					} else if (expiryTs < Date.now() / 1000) {
-						if (currentSection === 'view-license' || currentSection === 'loading-subscription') {
-							showSection('expired-license');
-						}
 					} else {
-						if (subscription.subscription === 'cancelled') {
-							displaySubscription(subscription, 'cancelled-subscription');
-						} else {
-							displaySubscription(subscription, 'view-license');
-						}
+            displaySubscription(subscription);
 					}
 				},
 				accountName = (license && license.account) || '';
@@ -190,16 +196,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			showSection('registration-progress');
 		},
 		checkForPurchasedSubscription = function (subscription) {
-			var expiryTs = subscription && subscription.expiry;
-			if (expiryTs > Date.now() / 1000) {
-				licenseManager.completeLicenseEntry();
-				if (currentSection === 'view-license') {
-					displaySubscription(subscription, 'view-license');
-				} else {
-					displaySubscription(subscription, 'payment-complete');
-				}
-
-			}
+			var licenseStatus = subscription && subscription.status;
+			if (licenseStatus === 'active') {
+          licenseManager.completeLicenseEntry();
+          showPaymentConfirmation();
+      }
 		},
 		onWindowMessage = function (windowMessageEvt) {
 			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
@@ -259,7 +260,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		showSection(jQuery(this).data('mm-target-section'));
 	});
 	self.find('button[data-mm-role~=register]').click(register);
-	self.find('button[data-mm-role~=cancel-subscription]').click(function () {
+	self.find('button[data-mm-role~=action-CancelSubscription]').click(function () {
 		showSection('cancelling-subscription');
 		goldApi.cancelSubscription().then(
 			function () {

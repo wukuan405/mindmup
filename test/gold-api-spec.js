@@ -5,7 +5,7 @@ describe('MM.GoldApi', function () {
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
-		commonPostArgs = {'api_version': '2'};
+		commonPostArgs = {'api_version': '3'};
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
 		goldLicenseManagerDeferred = jQuery.Deferred();
 		goldLicenseManager = {
