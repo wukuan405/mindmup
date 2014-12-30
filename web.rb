@@ -20,7 +20,7 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20140912202404'
+  static_ts = '20141230102849'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
   set :earliest_supported_ios_version, (ENV["EARLIEST_IOS_VERSION"] && ENV["EARLIEST_IOS_VERSION"].to_f) || 1
   set :static_host, "#{public_host}/#{static_ts}"
