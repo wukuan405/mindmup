@@ -75,6 +75,16 @@ describe('Collaborator Photo Widget', function () {
 				expect(jQueryImage.css('bottom')).toBe('-30px');
 				expect(jQueryImage.css('right')).toBe('-40px');
 			});
+			it('drops the image if the collaborator leaves', function () {
+				collaborationModel.dispatchEvent('collaboratorPresenceChanged', {sessionId: 123}, false);
+				expect(jQueryImage.parent().length).toBe(0);
+			});
+			it('shows the image again if the collaborator re-appears', function () {
+				collaborationModel.dispatchEvent('collaboratorPresenceChanged', {sessionId: 123}, false);
+				collaborationModel.dispatchEvent('collaboratorPresenceChanged', {sessionId: 123, focusNodeId:'124'}, true);
+				loaderDeferred.resolve(jQueryImage);
+				expect(jQueryImage.parent()[0]).toBe(underTest.find('#node_124')[0]);
+			});
 			describe('does not cache across different sessions', function () {
 				it('calls the image loader to load the second image', function () {
 					collaborationModel.dispatchEvent('collaboratorFocusChanged', {photoUrl: 'http://x.f', sessionId: 125, focusNodeId: '125'});
