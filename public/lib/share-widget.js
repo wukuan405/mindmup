@@ -17,7 +17,7 @@ $.fn.shareWidget = function () {
 					'&source=mindmup.com&related=mindmup&via=mindmup');
 				return true;
 			}
-			if (target === 'facebook') {
+			else if (target === 'facebook') {
 				self.attr('target', '_blank');
 				self.attr('href', 'https://www.facebook.com/dialog/feed?app_id=621299297886954&' +
 					'link=' + url + '&' +
@@ -26,6 +26,11 @@ $.fn.shareWidget = function () {
 					'picture=' + encodeURIComponent('http://static.mindmup.com/img/logo_256.png') + '&' +
 					'description=' + title + '&' +
 					'redirect_uri=' + encodeURIComponent('http://www.mindmup.com/fb'));
+				return true;
+			} else if (target === 'email') {
+				self.attr('href', 'mailto:?' +
+					'subject=' + title + '&' +
+					'body=' + encodeURIComponent('Hi,\n\nHere is your mind map:\n\n'+ window.location.href) );
 				return true;
 			}
 			return false;
