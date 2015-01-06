@@ -103,7 +103,7 @@ module.exports = function (grunt) {
 						'test/*.js',
 					],
 					vendor: [
-						grunt.option('external-scripts') || 'http://d1g6a398qq2djm.cloudfront.net/20141230102849/external.js'
+						grunt.option('external-scripts') || 'http://d1g6a398qq2djm.cloudfront.net/20150106142106/external.js'
 					],
 					helpers: [
 						'test-lib/sinon-1.5.2.js',
