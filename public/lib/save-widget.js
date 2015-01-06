@@ -29,7 +29,7 @@ jQuery.fn.saveWidget = function (mapController) {
 			element.find('[data-mm-role=currentrepo]').removeClass(repoClasses).addClass('repo repo-' + repository);
 		};
 	$(window).keydown(function (evt) {
-		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey && (!evt.altKey))) {
+		if (evt.which === 83 && (evt.metaKey || evt.ctrlKey) && !evt.altKey) {
 			if (!autoSave && mapChanged) {
 				mapController.publishMap(repository);
 			}

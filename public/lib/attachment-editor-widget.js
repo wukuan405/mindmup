@@ -97,6 +97,9 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 			close();
 		}
 	}).keydown('ctrl+s meta+s', function (e) {
+		if (e.altKey) {
+			return;
+		}
 		if (element.is(':visible')) {
 			e.preventDefault();
 			save();
