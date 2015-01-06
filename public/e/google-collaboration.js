@@ -1,4 +1,4 @@
-/*global $, MM, jQuery, JSON, _, gapi, MAPJS, window, Image, observable, document */
+/*global $, MM, jQuery, JSON, _, gapi, MAPJS, window, observable */
 MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 	'use strict';
 	var nextSessionName,
@@ -159,7 +159,7 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		return (/^cg/).test(mapId);
 	};
 };
-MM.Extensions.googleCollaboration = function () {
+MM.Extensions.googleCollaboration = function (collaborationModel) {
 	'use strict';
 	var googleDriveAdapter =  MM.Extensions.components.googleDriveAdapter,
 		mapModel = MM.Extensions.components.mapModel,
@@ -171,72 +171,110 @@ MM.Extensions.googleCollaboration = function () {
 			mapController.publishMap('cg');
 		},
 		SessionManager = function (doc, localSessionId) {
-			var sessionImages = {},
+			var // sessionImages = {},
 				focusNodes = doc.getModel().getRoot().get('focusNodes'),
 				followingSessionId,
 				self = this,
 				getCollaboratorBySession = function (sessionKey) {
 					return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
 				},
-				makeDOMImage = function (sessionKey) {
-					var deferred = jQuery.Deferred(), domImg, collaborator;
-					if (sessionImages[sessionKey]) {
-						return deferred.resolve(sessionImages[sessionKey]).promise();
-					}
-					domImg = new Image();
-					domImg.onload = function loadImage() {
-						sessionImages[sessionKey] = jQuery(domImg).addClass('mm-collaborator')
-							.on('tap', function (e) {
-								self.toggleFollow(sessionKey);
-								e.stopPropagation();
-								if (e.gesture) {
-									e.gesture.stopPropagation();
-								}
-							});
-						deferred.resolve(sessionImages[sessionKey]);
-					};
-					collaborator = getCollaboratorBySession(sessionKey);
-					if (collaborator.photoUrl) {
-						domImg.src = collaborator.photoUrl;
-					}
-					return deferred.promise();
-				},
-
-				onFocusChanged = function (event) {
-					if (!event.isLocal) {
-						self.showFocus(event.sessionId);
-					}
-				},
-				prevAlert,
-				showUpdate = function (caption, text) {
-					if (prevAlert) {
-						alert.hide(prevAlert);
-					}
-					prevAlert = alert.show(caption, text, 'flash');
-				},
-				onCollaboratorLeft = function (event) {
-					var profileImg = sessionImages[event.collaborator.sessionId];
-					showUpdate('Collaborator left!', event.collaborator.displayName + ' left this session');
-					if (profileImg) {
-						sessionImages[event.collaborator.sessionId] = undefined;
-						profileImg.remove();
-					}
-				},
-				onCollaboratorJoined = function (event) {
-					showUpdate('Collaborator joined!', event.collaborator.displayName + ' joined this session');
-				},
-				onSelectionChanged = function (id, isSelected) {
-					if (isSelected) {
-						focusNodes.set(localSessionId, id);
-					}
+				makeDOMImage = function (/*sessionKey*/) {},
+				mmCollaborationApi = {};
+//					var deferred = jQuery.Deferred(), domImg, collaborator;
+//					if (sessionImages[sessionKey]) {
+//						return deferred.resolve(sessionImages[sessionKey]).promise();
+//					}
+//					domImg = new Image();
+//					domImg.onload = function loadImage() {
+//						sessionImages[sessionKey] = jQuery(domImg).addClass('mm-collaborator')
+//							.on('tap', function (e) {
+//								self.toggleFollow(sessionKey);
+//								e.stopPropagation();
+//								if (e.gesture) {
+//									e.gesture.stopPropagation();
+//								}
+//							});
+//						deferred.resolve(sessionImages[sessionKey]);
+//					};
+//					collaborator = getCollaboratorBySession(sessionKey);
+//					if (collaborator.photoUrl) {
+//						domImg.src = collaborator.photoUrl;
+//					}
+//					return deferred.promise();
+//				}
+//				onFocusChanged = function (event) {
+//					if (!event.isLocal) {
+//						self.showFocus(event.sessionId);
+//					}
+//				},
+//				prevAlert,
+//				showUpdate = function (caption, text) {
+//					if (prevAlert) {
+//						alert.hide(prevAlert);
+//					}
+//					prevAlert = alert.show(caption, text, 'flash');
+//				},
+//				onCollaboratorLeft = function (event) {
+//					var profileImg = sessionImages[event.collaborator.sessionId];
+//					showUpdate('Collaborator left!', event.collaborator.displayName + ' left this session');
+//					if (profileImg) {
+//						sessionImages[event.collaborator.sessionId] = undefined;
+//						profileImg.remove();
+//					}
+//				},
+//				onCollaboratorJoined = function (event) {
+//					showUpdate('Collaborator joined!', event.collaborator.displayName + ' joined this session');
+//				},
+			/*** the new collaborator API implementation **/
+			collaborationModel.addEventListener('myFocusChanged', function (nodeId) {
+				focusNodes.set(localSessionId, nodeId);
+			});
+			mmCollaborationApi.mmCollaborator = function(googleCollaborator){
+				return {
+					photoUrl: googleCollaborator.photoUrl,
+					focusNodeId: focusNodes[googleCollaborator.sessionId],
+					sessionId: googleCollaborator.sessionId,
+					name: googleCollaborator.displayName
 				};
+			};
+			mmCollaborationApi.getCollaborators = function () {
+				var others = _.reject(doc.getCollaborators(), function(googleCollaborator) { return googleCollaborator.isMe; });
+				return _.map(others, mmCollaborationApi.mmCollaborator);
+			};
+			mmCollaborationApi.onRemoteFocusChanged = function (event) {
+				if (event.isLocal) {
+					return;
+				}
+				var googleCollaborator = getCollaboratorBySession(event.sessionId);
+				collaborationModel.collaboratorFocusChanged(mmCollaborationApi.mmCollaborator(googleCollaborator));
+			};
+			mmCollaborationApi.onCollaboratorJoined = function (event) {
+				if (!event.collaborator.isMe) {
+					collaborationModel.collaboratorPresenceChanged(mmCollaborationApi.mmCollaborator(event.collaborator), true);
+				}
+			};
+			mmCollaborationApi.onCollaboratorLeft = function (event) {
+				if (!event.collaborator.isMe) {
+					collaborationModel.collaboratorPresenceChanged(mmCollaborationApi.mmCollaborator(event.collaborator), false);
+				}
+			};
+			if (!focusNodes) {
+				focusNodes = doc.getModel().createMap();
+				doc.getModel().getRoot().set('focusNodes', focusNodes);
+			}
+			focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, mmCollaborationApi.onRemoteFocusChanged);
+			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, mmCollaborationApi.onCollaboratorLeft);
+			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, mmCollaborationApi.onCollaboratorJoined);
+
+			collaborationModel.start(mmCollaborationApi.getCollaborators());
+			/*** end collaborator api impl ***/
 			self.getCollaborators = function () {
 				return doc.getCollaborators();
 			};
 			self.getFollow = function () {
 				return followingSessionId;
 			};
-			self.toggleFollow = function (sessionId) {
+/*			self.toggleFollow = function (sessionId) {
 				var old = followingSessionId;
 				if (followingSessionId !== sessionId) {
 					followingSessionId = sessionId;
@@ -250,21 +288,22 @@ MM.Extensions.googleCollaboration = function () {
 				}
 				self.showFocus(sessionId);
 			};
+*/
 			self.showFocus = function (sessionId) {
 				var showFocusDOM = function () {
 						makeDOMImage(sessionId).done(function (jQueryImage) {
-							var node = $(document).nodeWithId(focusNodes.get(sessionId)),
+							var //node = $(document).nodeWithId(focusNodes.get(sessionId)),
 								xpos,
 								ypos,
 								opacity;
-							if (!node || node.length === 0) {
-								return;
-							}
-							if (jQueryImage.parent()[0] !== node[0]) {
-								jQueryImage.detach().appendTo(node);
-							}
-							xpos = Math.round(-1 * jQueryImage.width() / 2);
-							ypos = Math.round(-1 * jQueryImage.height() / 2);
+//							if (!node || node.length === 0) {
+//								return;
+//							}
+//							if (jQueryImage.parent()[0] !== node[0]) {
+//								jQueryImage.detach().appendTo(node);
+//							}
+//							xpos = Math.round(-1 * jQueryImage.width() / 2);
+//							ypos = Math.round(-1 * jQueryImage.height() / 2);
 							opacity = (followingSessionId === sessionId) ? 1 : 0.6;
 							jQueryImage.css({bottom: ypos, right: xpos, opacity: opacity});
 							if (sessionId === followingSessionId) {
@@ -279,28 +318,26 @@ MM.Extensions.googleCollaboration = function () {
 				showFocusDOM();
 			};
 			self.stop = function () {
-				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
-				_.each(sessionImages, function (img) {
-					if (img && img.remove) {
-						img.remove();
-					}
-
-				});
-				sessionImages = {};
-				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
-				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
-				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+				collaborationModel.stop();
+//				mapModel.removeEventListener('nodeSelectionChanged', onSelectionChanged);
+//				_.each(sessionImages, function (img) {
+//					if (img && img.remove) {
+//						img.remove();
+//					}
+//			});
+//			sessionImages = {};
+//				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
+				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, mmCollaborationApi.onRemoteFocusChanged);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, mmCollaborationApi.onCollaboratorLeft);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, mmCollaborationApi.onCollaboratorJoined);
 				doc.close();
 			};
-			if (!focusNodes) {
-				focusNodes = doc.getModel().createMap();
-				doc.getModel().getRoot().set('focusNodes', focusNodes);
-			}
-			mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
-			focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onFocusChanged);
-			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
-			doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
-			_.each(doc.getCollaborators(), function (c) { self.showFocus(c.sessionId); });
+
+//			mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
+
+
+
+		//	_.each(doc.getCollaborators(), function (c) { self.showFocus(c.sessionId); });
 		},
 		kineticSessions,
 		loadUI = function (html) {
@@ -365,7 +402,8 @@ MM.Extensions.googleCollaboration = function () {
 						}
 						item.find('[data-mm-role=collaborator-select]').attr('href', '#').click(function () {
 							collabModal.modal('hide');
-							kineticSessions.toggleFollow(c.sessionId);
+							collaborationModel.toggleFollow(c.sessionId);
+							//kineticSessions.toggleFollow(c.sessionId);
 							return false;
 						});
 					} else {

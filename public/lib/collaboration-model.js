@@ -2,7 +2,7 @@
 MM.CollaborationModel = function(mapModel) {
 	'use strict';
 	var self = observable(this),
-			followingSessionId,
+			followedSessionId,
 			running = false,
 			onSelectionChanged = function (id, isSelected) {
 				if (running && isSelected) {
@@ -12,7 +12,7 @@ MM.CollaborationModel = function(mapModel) {
 	self.collaboratorFocusChanged = function (collaborator) {
 		if (running) {
 			self.dispatchEvent('collaboratorFocusChanged', collaborator);
-			if (collaborator.sessionId === followingSessionId) {
+			if (collaborator.sessionId === followedSessionId) {
 				mapModel.selectNode(collaborator.focusNodeId);
 			}
 		}
@@ -25,7 +25,7 @@ MM.CollaborationModel = function(mapModel) {
 	};
 	self.start = function (collaborators) {
 		running = true;
-		followingSessionId = undefined;
+		followedSessionId = undefined;
 		if (_.size(collaborators)> 0) {
 			_.each(collaborators, self.collaboratorFocusChanged);
 		}
@@ -36,10 +36,12 @@ MM.CollaborationModel = function(mapModel) {
 		running = false;
 	};
 	self.toggleFollow = function(sessionId) {
-		if (followingSessionId === sessionId) {
-			followingSessionId = undefined;
+		if (followedSessionId === sessionId) {
+			followedSessionId = undefined;
+			self.dispatchEvent('followedCollaboratorChanged', undefined);
 		} else {
-			followingSessionId = sessionId;
+			followedSessionId = sessionId;
+			self.dispatchEvent('followedCollaboratorChanged', sessionId);
 		}
 	};
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);

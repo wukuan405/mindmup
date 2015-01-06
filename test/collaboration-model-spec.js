@@ -61,7 +61,7 @@ describe('Collaboration Model', function () {
 
 		});
 	});
-	describe('following a collaborator', function () {
+	describe('Following a collaborator', function () {
 		beforeEach(function () {
 			underTest.start();
 		});
@@ -113,6 +113,30 @@ describe('Collaboration Model', function () {
 			underTest.collaboratorFocusChanged({sessionId: 123, focusNodeId: '456'});
 
 			expect(mapModel.selectNode).not.toHaveBeenCalled();
+		});
+		describe('followedCollaboratorChanged event', function () {
+			var listener;
+
+			beforeEach(function () {
+				listener = jasmine.createSpy('followedCollaboratorChanged');
+				underTest.addEventListener('followedCollaboratorChanged', listener);
+			});
+			it('dispatches with collaborator session ID when a collaborator is followed changes', function (){
+				underTest.toggleFollow(123);
+				expect(listener).toHaveBeenCalledWith(123);
+			});
+			it('dispatches with collaborator session ID when the followed collaborator changes', function (){
+				underTest.toggleFollow(123);
+				listener.calls.reset();
+				underTest.toggleFollow(345);
+				expect(listener).toHaveBeenCalledWith(345);
+			});
+			it('dispatches with undefined when it is no longer following', function () {
+				underTest.toggleFollow(123);
+				listener.calls.reset();
+				underTest.toggleFollow(123);
+				expect(listener).toHaveBeenCalledWith(undefined);
+			});
 		});
 	});
 	describe('focus change notifications', function () {

@@ -42,7 +42,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 					});
 				}
 			};
-	collaborationModel.addEventListener('disconnected', function () {
+	collaborationModel.addEventListener('stopped', function () {
 		_.each(cachedImages, function(val) {val.remove();});
 		cachedImages={};
 	});
