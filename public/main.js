@@ -139,7 +139,6 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
-                jQuery('#modalOfflineMap').offlineMapWidget(mapController);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
