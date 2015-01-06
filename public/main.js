@@ -118,7 +118,6 @@ MM.main = function (config) {
 						palette.css('top', jQuery('#topbar').outerHeight());
 					}
 				};
-				jQuery('#modalVote').voteWidget(activityLog, alert);
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
