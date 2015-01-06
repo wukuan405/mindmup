@@ -1,5 +1,5 @@
 /*jslint nomen: true*/
-/*global _gaq, document, jQuery, MM, MAPJS, window*/
+/*global _gaq, document, jQuery, MM, MAPJS, window, _*/
 MM.main = function (config) {
 	'use strict';
 	var getStorage = function () {
@@ -199,6 +199,9 @@ MM.main = function (config) {
 		if (window.mmtimestamp) {
 			window.mmtimestamp.log('mm initialized');
 		}
+
+		_.each(jQuery('a'), function(l) { if(/^mailto:/.test(l.href)) { l.target ='mailtoIframe'; }});
+
 		extensions.load(navigation.initialMapId()).then(function () {
 			if (window.mmtimestamp) {
 				window.mmtimestamp.log('extensions loaded');
