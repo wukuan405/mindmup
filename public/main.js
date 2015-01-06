@@ -20,11 +20,8 @@ MM.main = function (config) {
 		},
 		browserStorage = config.storage || getStorage(),
 		mapModelAnalytics = false,
-		setupTracking = function (activityLog, jotForm, mapModel) {
+		setupTracking = function (activityLog, mapModel) {
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-			activityLog.addEventListener('error', function (message) {
-				jotForm.sendError(message, activityLog.getLog());
-			});
 			activityLog.addEventListener('timer', function (category, action, time) {
 				_gaq.push(['_trackEvent', category,  action, '', time]);
 			});
@@ -47,7 +44,6 @@ MM.main = function (config) {
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = new MM.JsonStorage(browserStorage),
 			objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert),
-			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.S3ConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
 			goldApi = new MM.GoldApi(goldLicenseManager, config.goldApiUrl, activityLog, config.goldBucketName),
@@ -122,7 +118,6 @@ MM.main = function (config) {
 						palette.css('top', jQuery('#topbar').outerHeight());
 					}
 				};
-				jQuery('#modalFeedback').feedbackWidget(jotForm, activityLog);
 				jQuery('#modalVote').voteWidget(activityLog, alert);
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
@@ -189,7 +184,7 @@ MM.main = function (config) {
 		];
 		jQuery.fn.colorPicker.defaults.pickerDefault = 'transparent';
 		jQuery.support.cors = true;
-		setupTracking(activityLog, jotForm, mapModel);
+		setupTracking(activityLog, mapModel);
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert, modalConfirm);
