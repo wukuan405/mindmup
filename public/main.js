@@ -172,7 +172,8 @@ MM.main = function (config) {
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
         jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
-				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed');
+				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'mm-has-collaborators');
+				MM.CollaboratorAlerts(alert, collaborationModel);
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

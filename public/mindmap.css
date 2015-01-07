@@ -949,3 +949,13 @@ img.collab-photo {
 	float:left;
 	padding-right:10px;
 }
+
+.visible-has-collaborators {
+	display: none;
+}
+.mm-has-collaborators .hidden-has-collaborators {
+	display: none;
+}
+.mm-has-collaborators .visible-has-collaborators {
+	display: block;
+}

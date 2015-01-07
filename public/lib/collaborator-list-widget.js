@@ -1,11 +1,10 @@
 /*global jQuery */
-jQuery.fn.collaboratorListWidget = function (collaborationModel, followedCollaboratorClass) {
+jQuery.fn.collaboratorListWidget = function (collaborationModel, followedCollaboratorClass, markerClass) {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this),
 				list = element.find('[data-mm-role=collab-list]'),
 				template = list.find('[data-mm-role=template]').detach(),
-				noCollaborators = element.find('[data-mm-role=no-collaborators]'),
 				itemForSession = function (sessionId) {
 					return list.find('[mm-session-id='+ sessionId + ']');
 				},
@@ -19,27 +18,24 @@ jQuery.fn.collaboratorListWidget = function (collaborationModel, followedCollabo
 					newItem.find('[data-mm-role=collaborator-follow]').click(function () {
 						collaborationModel.toggleFollow(collaborator.sessionId);
 					});
-					noCollaborators.hide();
-					list.show();
+					element.addClass(markerClass);
 				},
 				removeCollaborator = function (collaborator) {
 					itemForSession(collaborator.sessionId).remove();
 					if (list.children().size() === 0) {
-						noCollaborators.show();
-						list.hide();
+						element.removeClass(markerClass);
 					}
 				},
 				followedCollaboratorChanged = function (sessionId) {
 					list.children().removeClass(followedCollaboratorClass);
 					itemForSession(sessionId).addClass(followedCollaboratorClass);
 				};
-		noCollaborators.show();
-		list.hide();
+		element.removeClass(markerClass);
 		collaborationModel.addEventListener('collaboratorFocusChanged collaboratorJoined', addCollaborator);
 		collaborationModel.addEventListener('collaboratorLeft', removeCollaborator);
 		collaborationModel.addEventListener('stopped', function () {
-			list.empty().hide();
-			noCollaborators.show();
+			element.removeClass(markerClass);
+			list.empty();
 		});
 		collaborationModel.addEventListener('followedCollaboratorChanged', followedCollaboratorChanged);
 	});

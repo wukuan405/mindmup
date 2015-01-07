@@ -4,7 +4,6 @@ describe('Collaborator List Widget', function () {
 	var underTest, collaborationModel,
 			template =
 				'  <div>' +
-				'		<span data-mm-role="no-collaborators"></span>' +
 				'	  <ul data-mm-role="collab-list">' +
 				'		  <li data-mm-role="template">' +
 				'		  <a data-mm-role="collaborator-follow">' +
@@ -15,12 +14,12 @@ describe('Collaborator List Widget', function () {
 				'	  </ul>' +
 				'  </div>',
 			firstCollaborator, secondCollaborator, session1, session2,
-			list, noCollaborators, thirdCollaborator, session3;
+			list, thirdCollaborator, session3;
 
 	beforeEach(function () {
 		collaborationModel = new MM.CollaborationModel(observable({}));
 		collaborationModel.start();
-		underTest = jQuery(template).appendTo('body').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed');
+		underTest = jQuery(template).appendTo('body').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'has-collaborators');
 		session1 = 'sess123';
 		session2 = 'sess456';
 		session3 = 'sess777';
@@ -28,51 +27,45 @@ describe('Collaborator List Widget', function () {
 		secondCollaborator = { photoUrl: 'http://second-image', sessionId: session2, name:'Second name' };
 		thirdCollaborator = { photoUrl: 'http://second-image', sessionId: session3, name:'Second name' };
 		list = underTest.find('ul');
-		noCollaborators = underTest.find('span[data-mm-role=no-collaborators]');
 	});
 	afterEach(function () {
 		underTest.remove();
 	});
-	describe('no-collaborators message', function () {
-		it('shows the message when there are no collaborators initially', function () {
-			expect(noCollaborators.css('display')).not.toBe('none');
-			expect(list.css('display')).toBe('none');
+	describe('has-collaborators marker class', function () {
+		it('it does not add the class initially', function () {
+			expect(underTest.hasClass('has-collaborators')).toBeFalsy();
 		});
-		it('hides the message and shows the list once there is at least one collaborator', function () {
+		it('adds the class when there is at least one collaborator', function () {
 			collaborationModel.collaboratorFocusChanged(firstCollaborator);
-			expect(noCollaborators.css('display')).toBe('none');
-			expect(list.css('display')).not.toBe('none');
+			expect(underTest.hasClass('has-collaborators')).toBeTruthy();
 		});
-		it('shows the message and hides the list once there are no more collaborators', function () {
+		it('removes the class once there are no more collaborators', function () {
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, true);
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, false);
-			expect(noCollaborators.css('display')).not.toBe('none');
-			expect(list.css('display')).toBe('none');
+			expect(underTest.hasClass('has-collaborators')).toBeFalsy();
 		});
 	});
 	describe('when a map with existing collaborators is joined', function () {
 		beforeEach(function () {
 			collaborationModel.start([firstCollaborator]);
 		});
-		it('shows items for existing collaborators and hides the no-collab message', function () {
-			expect(noCollaborators.css('display')).toBe('none');
-			expect(list.css('display')).not.toBe('none');
+		it('adds the has-collaborators marker class and creates items for collaborators', function () {
+			expect(underTest.hasClass('has-collaborators')).toBeTruthy();
 			expect(list.children().size()).toBe(1);
 		});
 		it('keeps the list visible when there is at least one collaborator even when people go offline', function () {
 			collaborationModel.collaboratorPresenceChanged(secondCollaborator, true);
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, false);
 
-			expect(noCollaborators.css('display')).toBe('none');
-			expect(list.css('display')).not.toBe('none');
+			expect(underTest.hasClass('has-collaborators')).toBeTruthy();
 		});
-		it('hides the list and shows the message if all collaborators go offline', function () {
+		it('hides the list and removes the marker class if all collaborators go offline', function () {
 			collaborationModel.collaboratorPresenceChanged(secondCollaborator, true);
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, false);
 			collaborationModel.collaboratorPresenceChanged(secondCollaborator, false);
 
-			expect(noCollaborators.css('display')).not.toBe('none');
-			expect(list.css('display')).toBe('none');
+			expect(underTest.hasClass('has-collaborators')).toBeFalsy();
+
 		});
 	});
 	describe('stopped event handling', function () {
@@ -84,11 +77,11 @@ describe('Collaborator List Widget', function () {
 
 			expect(list.children().size()).toBe(0);
 		});
-		it('hides the list and shows the no-collab message', function () {
+		it('hides the list and removes the marker class', function () {
 			collaborationModel.stop();
 
-			expect(noCollaborators.css('display')).not.toBe('none');
-			expect(list.css('display')).toBe('none');
+			expect(underTest.hasClass('has-collaborators')).toBeFalsy();
+
 		});
 	});
 	describe('collaboratorFocusChanged event handling', function () {

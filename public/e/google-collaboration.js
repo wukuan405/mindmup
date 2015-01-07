@@ -20,12 +20,14 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 			var deferred = jQuery.Deferred(),
 				fileCreated = function (mindMupId) {
 					gapi.drive.realtime.load(googleDriveAdapter.toGoogleFileId(mindMupId),
-						function onFileLoaded() {
+						function onFileLoaded(doc) {
+							doc.close();
 							deferred.resolve('c' + mindMupId, properties);
 						},
 						function initializeModel(model) {
 							var list = model.createList();
 							model.getRoot().set('events', list);
+							model.getRoot().set('focusNodes', model.createMap());
 							model.getRoot().set('initialContent', JSON.stringify(initialContent));
 						}
 						);
@@ -75,7 +77,6 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								onEventAdded = function (event) {
 									if (!event.isLocal) {
 										applyEvents(event.values, 'gd' + event.sessionId);
-										self.dispatchEvent('realtimeDocumentUpdated', event.sessionId);
 									}
 								},
 								onMyJoining = function (collaboratorMe) {
@@ -159,18 +160,18 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		return (/^cg/).test(mapId);
 	};
 };
-MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel) {
+MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMapId, mapController) {
 	'use strict';
 	var focusNodes,
+			events,
 			localSessionId,
-			self = this,
 			getGoogleCollaboratorBySession = function (sessionKey) {
 				return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
 			},
 			mmCollaborator = function(googleCollaborator){
 				return {
 					photoUrl: googleCollaborator.photoUrl,
-					focusNodeId: focusNodes[googleCollaborator.sessionId],
+					focusNodeId: focusNodes.get(googleCollaborator.sessionId),
 					sessionId: googleCollaborator.sessionId,
 					name: googleCollaborator.displayName
 				};
@@ -182,7 +183,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel) {
 				if (event.isLocal) {
 					return;
 				}
-				self.triggerFocusEvent(event.sessionId);
+				triggerFocusForEvent(event);
 			},
 			onCollaboratorJoined = function (event) {
 				if (!event.collaborator.isMe) {
@@ -199,35 +200,49 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel) {
 			},
 			getCollaborators = function () {
 				var others = _.reject(doc.getCollaborators(), isMe);
-				return _.map(others, self.mmCollaborator);
-			};
-	self.triggerFocusEvent = function (sessionId) {
-		if (sessionId === localSessionId) {
-			return;
-		}
-		var googleCollaborator = getGoogleCollaboratorBySession(sessionId);
-		collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
-	};
-	self.stop = function () {
-		collaborationModel.stop();
-		focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
-		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
-		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
-		collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
-		doc.close();
-	};
+				return _.map(others, mmCollaborator);
+			},
+			triggerFocusForEvent = function (event) {
+				if (event.sessionId === localSessionId) {
+					return;
+				}
+				var googleCollaborator = getGoogleCollaboratorBySession(event.sessionId);
+				collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
+			},
+			closeDocOnUnload = function () {
+				doc.close();
+			},
+			stop = function () {
+				collaborationModel.stop();
+				events.removeEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, triggerFocusForEvent);
+				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
+				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+				collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
+				mapController.removeEventListener('mapLoaded mapSaved', trackMapId);
+				jQuery(window).unbind('beforeunload', closeDocOnUnload);
+				doc.close();
+			},
+			start = function () {
+				events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, triggerFocusForEvent);
+				focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
+				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
+				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+				collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
+				mapController.addEventListener('mapLoaded mapSaved', trackMapId);
 
+				jQuery(window).bind('beforeunload', closeDocOnUnload);
+				collaborationModel.start(getCollaborators());
+			},
+			trackMapId = function (mapId) {
+				if (mindmupMapId !== mapId) {
+					stop();
+				}
+			};
 	focusNodes = doc.getModel().getRoot().get('focusNodes');
-	if (!focusNodes) {
-		focusNodes = doc.getModel().createMap();
-		doc.getModel().getRoot().set('focusNodes', focusNodes);
-	}
+	events = doc.getModel().getRoot().get('events');
 	localSessionId = _.find(doc.getCollaborators(), isMe).sessionId;
-	focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
-	doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
-	doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
-	collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
-	collaborationModel.start(getCollaborators());
+	start();
 };
 
 MM.Extensions.googleCollaboration = function () {
@@ -302,20 +317,10 @@ MM.Extensions.googleCollaboration = function () {
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(realtimeMapSource));
 	realtimeMapSource.addEventListener('realtimeDocumentLoaded', function (doc, mindMupId) {
-		documentMediator = new MM.RealtimeGoogleDocumentMediator(doc, collaborationModel);
+		documentMediator = new MM.RealtimeGoogleDocumentMediator(doc, collaborationModel, mindMupId, mapController);
 		documentMediator.mapId = mindMupId;
 	});
-	mapController.addEventListener('mapLoaded mapSaved', function (mapId) {
-		if (documentMediator && documentMediator.mapId !== mapId) {
-			documentMediator.stop();
-			documentMediator = undefined;
-		}
-	});
-	realtimeMapSource.addEventListener('realtimeDocumentUpdated', function (googleSessionId) {
-		if (documentMediator) {
-			documentMediator.triggerFocusEvent(googleSessionId);
-		}
-	});
+
 	realtimeMapSource.addEventListener('realtimeError', function (errorMessage, isFatal) {
 		if (isFatal) {
 			alert.show('Network error: ' + errorMessage + '!', 'Please refresh the page before changing the map any further, your updates might not be saved', 'error');

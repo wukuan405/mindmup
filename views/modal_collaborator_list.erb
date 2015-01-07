@@ -3,16 +3,19 @@
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h3>Online collaborators</h3>
   </div>
-  <div class="modal-body" >
-    <p>Click on a collaborator to follow on the screen</p>
-    <ul class="nav nav-tabs nav-stacked" data-mm-role="collab-list">
-      <li data-mm-role="template">
-      <a data-mm-role="collaborator-follow">
-        <img data-mm-role="collaborator-photo" class="collab-photo" />
-        <span data-mm-role="collaborator-name" ></span>&nbsp;
-        <span class="visible-follow">Following</span></a>
-      </li>
-    </ul>
+	<div class="modal-body">
+		<p class="hidden-has-collaborators">There are no collaborators online at the moment.</p>
+		<div class="visible-has-collaborators">
+			<p>Click on a collaborator to follow on the screen</p>
+			<ul class="nav nav-tabs nav-stacked" data-mm-role="collab-list">
+				<li data-mm-role="template">
+				<a href="#" data-mm-role="collaborator-follow">
+					<img data-mm-role="collaborator-photo" class="collab-photo" />
+					<span data-mm-role="collaborator-name" ></span>&nbsp;
+					<span class="pull-right visible-following">Following</span></a>
+				</li>
+			</ul>
+		</div>
   </div>
   <div class="modal-footer">
     <a href="#" data-dismiss="modal" class="btn">Close</a>
