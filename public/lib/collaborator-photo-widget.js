@@ -18,8 +18,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 				if (node && node.length > 0) {
 					jQueryImg.appendTo(node).css({
 						bottom: -1 * Math.round(jQueryImg.height() / 2),
-						right: -1 * Math.round(jQueryImg.width() / 2),
-						position: 'relative'
+						right: -1 * Math.round(jQueryImg.width() / 2)
 					});
 				}
 			},
@@ -46,7 +45,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 				var cached = cachedImages[collaborator.sessionId];
 				if (cached && cached.length > 0) {
 					cached.remove();
-					cachedImages[collaborator.sessionId] = undefined;
+					delete cachedImages[collaborator.sessionId];
 				}
 			},
 			changeFollowedCollaborator = function (sessionId) {

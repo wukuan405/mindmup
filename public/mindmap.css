@@ -931,10 +931,12 @@ body .modal.huge {
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	opacity: 0.5;
+	opacity: 0.6;
+	border-radius: 15px;
 }
 .mm-collaborator.mm-collaborator-followed {
 	opacity: 1;
+	border: 1px solid #22AAE0;
 }
 
 .visible-following {

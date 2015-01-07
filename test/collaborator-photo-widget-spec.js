@@ -4,8 +4,8 @@ describe('Collaborator Photo Widget', function () {
 	var underTest, collaborationModel, template ='<div><div id="node_124"></div><div id="node_125"></div></div>',
 			imageLoader, loaderDeferred, firstImage, secondImage;
 	beforeEach(function () {
-			firstImage = jQuery('<div name="firstimage">').css({width: 80, height: 60});
-			secondImage = jQuery('<div name="secondimage">').css({width:50, height:20});
+			firstImage = jQuery('<div name="firstimage">').css({width: 80, height: 60, position: 'absolute'});
+			secondImage = jQuery('<div name="secondimage">').css({width:50, height:20, position: 'absolute'});
 		imageLoader = jasmine.createSpy('imageLoader').and.callFake(function () {
 			loaderDeferred = jQuery.Deferred();
 			return loaderDeferred.promise();
