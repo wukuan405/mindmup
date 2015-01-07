@@ -1,35 +1,41 @@
 /*global jasmine, describe, it, expect, beforeEach, MM, observable*/
 describe('Collaboration Model', function () {
 	'use strict';
-	var underTest,mapModel, collaboratorFocusChangedListener, collaboratorPresenceChangedListener, myFocusChangedListener;
+	var underTest,mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener;
 	beforeEach(function () {
 		collaboratorFocusChangedListener = jasmine.createSpy('collaboratorFocusChanged');
-		collaboratorPresenceChangedListener = jasmine.createSpy('collaboratorPresenceChanged');
+		collaboratorJoinedListener = jasmine.createSpy('collaboratorJoined');
+		collaboratorLeftListener = jasmine.createSpy('collaboratorLeft');
 		myFocusChangedListener = jasmine.createSpy('myFocusChanged');
 		mapModel = observable(jasmine.createSpyObj('mapModel', ['selectNode']));
     underTest = new MM.CollaborationModel(mapModel);
 		underTest.addEventListener('collaboratorFocusChanged', collaboratorFocusChangedListener);
-		underTest.addEventListener('collaboratorPresenceChanged', collaboratorPresenceChangedListener);
+		underTest.addEventListener('collaboratorJoined', collaboratorJoinedListener);
+		underTest.addEventListener('collaboratorLeft', collaboratorLeftListener);
 		underTest.addEventListener('myFocusChanged', myFocusChangedListener);
 	});
 	describe('collaboratorPresenceChanged', function () {
 		beforeEach(function () {
 			underTest.start();
-			collaboratorPresenceChangedListener.calls.reset();
+			collaboratorJoinedListener.calls.reset();
+			collaboratorLeftListener.calls.reset();
 		});
-		it('dispatches collaborator presence events when the API fires them', function () {
+		it('dispatches collaborator presence events', function () {
 			underTest.collaboratorPresenceChanged({sessionId: 123, name: 'Zeka'}, true);
 			underTest.collaboratorPresenceChanged({sessionId: 125, name: 'Toma'}, false);
 
-			expect(collaboratorPresenceChangedListener).toHaveBeenCalledWith({sessionId: 123, name: 'Zeka'}, true);
-			expect(collaboratorPresenceChangedListener).toHaveBeenCalledWith({sessionId: 125, name: 'Toma'}, false);
+			expect(collaboratorJoinedListener).toHaveBeenCalledWith({sessionId: 123, name: 'Zeka'}, true);
+			expect(collaboratorLeftListener).toHaveBeenCalledWith({sessionId: 125, name: 'Toma'}, false);
 		});
 		it('does not forward events when stopped', function () {
-			collaboratorPresenceChangedListener.calls.reset();
+			collaboratorJoinedListener.calls.reset();
+			collaboratorLeftListener.calls.reset();
 			underTest.stop();
 
 			underTest.collaboratorPresenceChanged({sessionId: 123, focusNodeId: '456'}, true);
-			expect(collaboratorPresenceChangedListener).not.toHaveBeenCalled();
+			underTest.collaboratorPresenceChanged({sessionId: 125, name: 'Toma'}, false);
+			expect(collaboratorJoinedListener).not.toHaveBeenCalled();
+			expect(collaboratorLeftListener).not.toHaveBeenCalled();
 		});
 	});
 	describe('collaboratorFocusChanged', function () {

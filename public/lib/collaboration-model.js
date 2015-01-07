@@ -19,9 +19,9 @@ MM.CollaborationModel = function(mapModel) {
 	};
 	self.collaboratorPresenceChanged = function (collaborator, isOnline) {
 		if (running) {
-			self.dispatchEvent('collaboratorPresenceChanged', collaborator, isOnline);
+			var eventName = isOnline? 'collaboratorJoined' : 'collaboratorLeft';
+			self.dispatchEvent(eventName, collaborator, isOnline);
 		}
-
 	};
 	self.start = function (collaborators) {
 		running = true;
@@ -46,4 +46,20 @@ MM.CollaborationModel = function(mapModel) {
 		}
 	};
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
+};
+MM.CollaboratorAlerts = function (alert, collaborationModel) {
+	'use strict';
+	var	prevAlert,
+			showUpdate = function (caption, text) {
+				if (prevAlert) {
+					alert.hide(prevAlert);
+				}
+				prevAlert = alert.show(caption, text, 'flash');
+			};
+	collaborationModel.addEventListener('collaboratorJoined', function (collaborator) {
+		showUpdate('Collaborator joined:', collaborator.name + ' joined this session');
+	});
+	collaborationModel.addEventListener('collaboratorLeft', function (collaborator) {
+		showUpdate('Collaborator left:', collaborator.name + ' left this session');
+	});
 };

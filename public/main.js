@@ -79,7 +79,8 @@ MM.main = function (config) {
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
 			storyboardController = new MM.StoryboardController(storyboardModel),
-            urlShortenerController =  config.urlShortener || new MM.GoogleUrlShortenerController(config.googleApiKey, activityLog, mapController, config.baseUrl + 'map/'),
+			urlShortenerController =  config.urlShortener || new MM.GoogleUrlShortenerController(config.googleApiKey, activityLog, mapController, config.baseUrl + 'map/'),
+			collaborationModel = new MM.CollaborationModel(mapModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
 				'alert': alert,
@@ -90,7 +91,8 @@ MM.main = function (config) {
 				'iconEditor': iconEditor,
 				'measuresModel' : measuresModel,
 				'activeContentListener': activeContentListener,
-				'navigation': navigation
+				'navigation': navigation,
+				'collaborationModel': collaborationModel
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
@@ -169,6 +171,8 @@ MM.main = function (config) {
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
         jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
+				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
+				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed');
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

@@ -42,16 +42,11 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 					});
 				}
 			},
-			changeCollaboratorPresence = function (collaborator, isOnline) {
-				if (isOnline) {
-					showPictureForCollaborator(collaborator);
-				}
-				else {
-					var cached = cachedImages[collaborator.sessionId];
-					if (cached && cached.length > 0) {
-						cached.remove();
-						cachedImages[collaborator.sessionId] = undefined;
-					}
+			removePictureForCollaborator = function (collaborator) {
+				var cached = cachedImages[collaborator.sessionId];
+				if (cached && cached.length > 0) {
+					cached.remove();
+					cachedImages[collaborator.sessionId] = undefined;
 				}
 			},
 			changeFollowedCollaborator = function (sessionId) {
@@ -66,26 +61,9 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 		_.each(cachedImages, function(val) {val.remove();});
 		cachedImages={};
 	});
-	collaborationModel.addEventListener('collaboratorFocusChanged', showPictureForCollaborator);
-	collaborationModel.addEventListener('collaboratorPresenceChanged', changeCollaboratorPresence);
+	collaborationModel.addEventListener('collaboratorFocusChanged collaboratorJoined', showPictureForCollaborator);
+	collaborationModel.addEventListener('collaboratorLeft', removePictureForCollaborator);
 	collaborationModel.addEventListener('followedCollaboratorChanged', changeFollowedCollaborator);
 
 	return self;
-};
-MM.CollaboratorAlerts = function (alert, collaborationModel) {
-	'use strict';
-	var	prevAlert,
-			showUpdate = function (caption, text) {
-				if (prevAlert) {
-					alert.hide(prevAlert);
-				}
-				prevAlert = alert.show(caption, text, 'flash');
-			};
-	collaborationModel.addEventListener('collaboratorPresenceChanged', function (collaborator, isOnline) {
-			if (isOnline) {
-				showUpdate('Collaborator joined:', collaborator.name + ' joined this session');
-			} else {
-				showUpdate('Collaborator left:', collaborator.name + ' left this session');
-			}
-	});
 };

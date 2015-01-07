@@ -926,3 +926,26 @@ body .modal.huge {
 
 }
 
+
+.mm-collaborator {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	opacity: 0.5;
+}
+.mm-collaborator.mm-collaborator-followed {
+	opacity: 1;
+}
+
+.visible-following {
+	display: none;
+}
+.mm-collaborator-followed .visible-following {
+	display: inline-block;
+}
+img.collab-photo {
+	width:20px;
+	height:20px;
+	float:left;
+	padding-right:10px;
+}

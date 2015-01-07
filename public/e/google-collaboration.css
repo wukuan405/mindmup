@@ -3,13 +3,6 @@
 	background-repeat: no-repeat;
 	background-position:left center;
 }
-img.collab-photo {
-	width:20px;
-	height:20px;
-	float:left;
-	padding-right:10px;
-}
-
 .visible-map-source-c {
 	display: none;
 }
@@ -18,8 +11,3 @@ img.collab-photo {
 	display: inherit;
 }
 
-.mm-collaborator {
-	position: absolute;
-	width: 32px;
-	height: 32px;
-}
