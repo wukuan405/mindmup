@@ -17,7 +17,6 @@ Dependencies
 single-file version of that project as /public/mapjs-compiled.js
 - It uses Google Drive and Amazon S3 AWS service to store maps
 - It uses Google analytics to track feature votes, usage patterns and report error rates
-- It uses JotForm to send e-mails and submit user feedback
 - It uses Google URL shortener to produce short links for sharing
 
 Configuration
@@ -33,8 +32,6 @@ The server depends on the following environment variables:
 - S3_UPLOAD_FOLDER _folder within the bucket where user maps are stored. (eg map). Avoid using the same folder for production and testing_
 - S3_WEBSITE _website domain name where user files are publicly accessible. Don't specify protocol or slashes (eg mindmup.s3.amazonaws.com)_
 - SITE_URL _public URL for the web site instance, used to get S3 to redirect back to us. Include protocol and slashes (eg http://localhost:5000/)_
-- JOTFORM_CONTACT _ID of the form that will receive feedback on JotForm_
-- JOTFORM_SHARE _ID of the form that will receive share by email requests on JotForm_
 - DEFAULT_MAP _name or key of the map to be shown on homepage (eg default)_
 - RACK_SESSION_SECRET _hashing key for rack sessions (should be relatively random, alphanumeric)_
 - MAX_UPLOAD_SIZE _in KB, maximum size allowed for the users to upload. If not defined, 100 is the default value_

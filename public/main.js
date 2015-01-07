@@ -1,5 +1,5 @@
 /*jslint nomen: true*/
-/*global _gaq, document, jQuery, MM, MAPJS, window*/
+/*global _gaq, document, jQuery, MM, MAPJS, window, _*/
 MM.main = function (config) {
 	'use strict';
 	var getStorage = function () {
@@ -20,11 +20,8 @@ MM.main = function (config) {
 		},
 		browserStorage = config.storage || getStorage(),
 		mapModelAnalytics = false,
-		setupTracking = function (activityLog, jotForm, mapModel) {
+		setupTracking = function (activityLog, mapModel) {
 			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
-			activityLog.addEventListener('error', function (message) {
-				jotForm.sendError(message, activityLog.getLog());
-			});
 			activityLog.addEventListener('timer', function (category, action, time) {
 				_gaq.push(['_trackEvent', category,  action, '', time]);
 			});
@@ -47,7 +44,6 @@ MM.main = function (config) {
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = new MM.JsonStorage(browserStorage),
 			objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert),
-			jotForm = new MM.JotForm(jQuery('#modalFeedback form'), alert),
 			ajaxPublishingConfigGenerator = new MM.S3ConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
 			goldApi = new MM.GoldApi(goldLicenseManager, config.goldApiUrl, activityLog, config.goldBucketName),
@@ -122,15 +118,12 @@ MM.main = function (config) {
 						palette.css('top', jQuery('#topbar').outerHeight());
 					}
 				};
-				jQuery('#modalFeedback').feedbackWidget(jotForm, activityLog);
-				jQuery('#modalVote').voteWidget(activityLog, alert);
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 				jQuery(document).titleUpdateWidget(mapController);
 
 				jQuery('[data-mm-role=share]').shareWidget();
-				jQuery('#modalShareEmail').shareEmailWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
 				jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(urlShortenerController);
 				jQuery('#modalImport').importWidget(activityLog, mapController);
@@ -139,7 +132,6 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
-                jQuery('#modalOfflineMap').offlineMapWidget(mapController);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
 					.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
@@ -190,7 +182,7 @@ MM.main = function (config) {
 		];
 		jQuery.fn.colorPicker.defaults.pickerDefault = 'transparent';
 		jQuery.support.cors = true;
-		setupTracking(activityLog, jotForm, mapModel);
+		setupTracking(activityLog, mapModel);
 		jQuery('body').classCachingWidget('cached-classes', browserStorage);
 		MM.MapController.activityTracking(mapController, activityLog);
 		MM.MapController.alerts(mapController, alert, modalConfirm);
@@ -207,6 +199,9 @@ MM.main = function (config) {
 		if (window.mmtimestamp) {
 			window.mmtimestamp.log('mm initialized');
 		}
+
+		_.each(jQuery('a'), function(l) { if(/^mailto:/.test(l.href)) { l.target ='mailtoIframe'; }});
+
 		extensions.load(navigation.initialMapId()).then(function () {
 			if (window.mmtimestamp) {
 				window.mmtimestamp.log('extensions loaded');

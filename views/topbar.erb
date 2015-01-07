@@ -20,12 +20,9 @@
 				<li>
 					<a data-event-type="Open from Google" data-category="Top Bar" data-mm-role="google-drive-open"><span class="repo repo-g"></span>&nbsp;From Google Drive</a>
 				</li>
-				<li>
-					<a data-event-type="Open from Browser Storage" data-category="Top Bar" data-target="#modalOfflineMap" data-toggle="modal"><span class="repo repo-o"></span>&nbsp;From Browser Storage</a>
-				</li>
-                          <li>
-                              <a data-event-type="Open from Mindmup Gold Storage" data-category="Top Bar" data-target="#modalGoldStorageOpen" data-toggle="modal"><span class="repo repo-b"></span>&nbsp;From Mindmup Gold Storage</a>
-                          </li>
+        <li>
+          <a data-event-type="Open from Mindmup Gold Storage" data-category="Top Bar" data-target="#modalGoldStorageOpen" data-toggle="modal"><span class="repo repo-b"></span>&nbsp;From Mindmup Gold Storage</a>
+        </li>
 			</ul>
 		  </li>
             <li class="divider hidden-touch visible-online"></li>
@@ -45,10 +42,10 @@
 			  </ul>
 			</li>
             <li class="hidden-touch dropdown-submenu">
-              <a href="#"><i class="icon-download-alt"></i>&nbsp;Export Map</a>
+              <a href="#"><i class="icon-download-alt"></i>&nbsp;Export To Local Disk</a>
               <ul class="dropdown-menu" role="menu">
-                <li><a data-mm-role="remote-export"  data-mm-format="mup"  data-category="Top Bar" data-event-type="Export MindMup">MindMup</a> </li>
-                <li><a data-mm-role="remote-export"  data-mm-format="mm"   data-category="Top Bar" data-event-type="Export FreeMind">FreeMind</a> </li>
+                <li><a data-mm-role="remote-export"  data-mm-format="mup"  data-category="Top Bar" data-event-type="Export MindMup">MindMup (.mup)</a> </li>
+                <li><a data-mm-role="remote-export"  data-mm-format="mm"   data-category="Top Bar" data-event-type="Export FreeMind">FreeMind (.mm)</a> </li>
                 <li><a href="#" data-target="#modalImageExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export Image">Image (PNG)</a> </li>
                 <li><a href="#" data-target="#modalPDFExport" data-toggle="modal" data-category="Top Bar" data-event-type="Export PDF">PDF</a> </li>
                 <li><a data-mm-role="remote-export"  data-mm-format="html" data-category="Top Bar" data-event-type="Export Html">HTML</a> </li>
@@ -61,14 +58,14 @@
               <a href="#"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
               <ul class="dropdown-menu" role="menu" id="sharelinks" data-mm-role="sharelinks">
                 <li class="visible-map-source-a hidden-map-changed"><a data-target="#modalEmbedMap" data-toggle="modal" data-category='Top Bar' data-event-type='Embed this map'><i class="icon-code"></i>&nbsp;Embed this map</a></li>
-                <li class="visible-map-source-a hidden-map-changed"><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
+                <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="email" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
                 <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
                 <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
                 <li class="visible-map-source-a hidden-map-changed" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
                 <li class="visible-map-source-a visible-map-changed disabled"><a>Save this map first to share it</a></li>
 
                 <li class="visible-map-source-b"><a data-target="#modalEmbedMap" data-toggle="modal" data-category='Top Bar' data-event-type='Embed this map'><i class="icon-code"></i>&nbsp;Embed this map</a></li>
-                <li class="visible-map-source-b"><a data-target="#modalShareEmail" data-toggle="modal" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
+                <li class="visible-map-source-b"><a data-mm-role="share" data-mm-target="email" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
                 <li class="visible-map-source-b"><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
                 <li class="visible-map-source-b"><a data-mm-role="share" data-mm-target="facebook" data-category='Top Bar' data-event-type='Share Facebook'><i class="icon-facebook"></i>&nbsp;on Facebook</a></li>
                 <li class="visible-map-source-b" rel='tooltip' data-title='Click to copy'><input type='text' style="margin-left:25px" class='hide span2 noglow pull-right' style="cursor:pointer" data-mm-role='short-url' ></input></li>
@@ -219,7 +216,7 @@
             <li class="visible-online"> <a href="/legal/privacy" class="menuterms" target="_blank" data-category="About" data-event-type="Privacy Policy"><i class="icon-lock"></i>&nbsp;Privacy Policy</a> </li>
             <li> <a href="http://blog.mindmup.com" target="_blank" data-category="About" data-event-type="News/Blog"><i class="icon-rss"></i>&nbsp;News/Blog</a> </li>
             <li> <a href="http://github.com/mindmup" target="_blank" data-category="About" data-event-type="Source Code"><i class="icon-github-sign"></i>&nbsp;Source Code</a> </li>
-            <li class="visible-online"> <a href="#" id="menuFeedback" data-target="#modalFeedback" data-toggle="modal" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-envelope"></i>&nbsp;Talk to Us</a> </li>
+            <li class="visible-online"> <a href="mailto:contact@mindmup.com" id="menuFeedback" data-category="Feedback" data-event-type="Open" data-label="topbar"><i class="icon-envelope"></i>&nbsp;Talk to Us</a> </li>
           </ul>
         </li>
         <li class="hidden-narrow-screen">

@@ -2651,6 +2651,13 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		self.selectNode(nodeId);
 		self.dispatchEvent('nodeFocusRequested', nodeId);
 	};
+	self.requestContextMenu = function (eventPointX, eventPointY) {
+		if (isInputEnabled && isEditingEnabled) {
+			self.dispatchEvent('contextMenuRequested', currentlySelectedIdeaId, eventPointX, eventPointY);
+			return true;
+		}
+		return false;
+	};
 };
 /*global jQuery*/
 jQuery.fn.mapToolbarWidget = function (mapModel) {
@@ -3501,10 +3508,10 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 			} else if (e.which === ESC_KEY_CODE) {
 				cancelEditing();
 				e.stopPropagation();
-			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey))) {
+			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey)) {
 				finishEditing();
 				e.preventDefault(); /* stop focus on another object */
-			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey)) { /* undo node edit on ctrl+z if text was not changed */
+			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey) { /* undo node edit on ctrl+z if text was not changed */
 				if (textBox.text() === unformattedText) {
 					cancelEditing();
 				}
@@ -3881,11 +3888,11 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				}
 			})
 			.on('contextmenu', function (event) {
-				// ugly ugly ugly!
 				mapModel.selectNode(node.id);
-				mapModel.dispatchEvent('contextMenuRequested', node.id, event.pageX, event.pageY);
-				event.preventDefault();
-				return false;
+				if (mapModel.requestContextMenu(event.pageX, event.pageY)) {
+					event.preventDefault();
+					return false;
+				}
 			})
 			.on('mm:stop-dragging', function (evt) {
 				element.removeClass('dragging');
@@ -3926,13 +3933,14 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			element.on('hold', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				mapModel.clickNode(node.id, realEvent);
-				mapModel.dispatchEvent('contextMenuRequested', node.id, evt.gesture.center.pageX, evt.gesture.center.pageY);
-				evt.preventDefault();
-				if (evt.gesture) {
-					evt.gesture.preventDefault();
-					evt.gesture.stopPropagation();
+				if (mapModel.requestContextMenu(evt.gesture.center.pageX, evt.gesture.center.pageY)){
+					evt.preventDefault();
+					if (evt.gesture) {
+						evt.gesture.preventDefault();
+						evt.gesture.stopPropagation();
+					}
+					return false;
 				}
-				return false;
 			});
 		}
 		element.css('min-width', element.css('width'));
@@ -4213,10 +4221,11 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
-				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
-				event.preventDefault();
-				event.gesture.preventDefault();
-				return false;
+				if (mapModel.requestContextMenu(event.gesture.center.pageX, event.gesture.center.pageY)) {
+					event.preventDefault();
+					event.gesture.preventDefault();
+					return false;
+				}
 			}).on('pinch', function (event) {
 				if (!event || !event.gesture || !event.gesture.scale) {
 					return;

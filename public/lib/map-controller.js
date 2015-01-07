@@ -252,7 +252,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		);
 	});
 	mapController.addEventListener('mapLoadingUnAuthorized', function () {
-		showErrorAlert('The map could not be loaded.', 'You do not have the right to view this map');
+		showErrorAlert('The map could not be loaded.', 'You do not have the right to view this map. <a target="_blank" href="http://blog.mindmup.com/p/how-to-resolve-common-networking.html">Click here for some common solutions</a>');
 	});
 	mapController.addEventListener('mapSavingUnAuthorized', function (callback) {
 		showAlertWithCallBack(
