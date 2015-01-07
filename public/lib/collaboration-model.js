@@ -36,7 +36,8 @@ MM.CollaborationModel = function(mapModel) {
 		running = false;
 	};
 	self.toggleFollow = function(sessionId) {
-		if (followedSessionId === sessionId) {
+		/*jshint eqeqeq:false*/
+		if (followedSessionId == sessionId) {
 			followedSessionId = undefined;
 			self.dispatchEvent('followedCollaboratorChanged', undefined);
 		} else {

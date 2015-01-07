@@ -9,7 +9,7 @@ MM.deferredImageLoader = function (url) {
 	domImg.src = url;
 	return result.promise();
 };
-jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, imgClass) {
+jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, imgClass, followedCollaboratorClass) {
 	'use strict';
 	var self = jQuery(this),
 			cachedImages = {},
@@ -41,25 +41,35 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 						showPictureInNode(collaborator.focusNodeId, jQueryImg);
 					});
 				}
+			},
+			changeCollaboratorPresence = function (collaborator, isOnline) {
+				if (isOnline) {
+					showPictureForCollaborator(collaborator);
+				}
+				else {
+					var cached = cachedImages[collaborator.sessionId];
+					if (cached && cached.length > 0) {
+						cached.remove();
+						cachedImages[collaborator.sessionId] = undefined;
+					}
+				}
+			},
+			changeFollowedCollaborator = function (sessionId) {
+				_.each(cachedImages, function (jQueryImg) {
+					jQueryImg.removeClass(followedCollaboratorClass);
+				});
+				if (sessionId && cachedImages[sessionId]) {
+					cachedImages[sessionId].addClass(followedCollaboratorClass);
+				}
 			};
 	collaborationModel.addEventListener('stopped', function () {
 		_.each(cachedImages, function(val) {val.remove();});
 		cachedImages={};
 	});
 	collaborationModel.addEventListener('collaboratorFocusChanged', showPictureForCollaborator);
+	collaborationModel.addEventListener('collaboratorPresenceChanged', changeCollaboratorPresence);
+	collaborationModel.addEventListener('followedCollaboratorChanged', changeFollowedCollaborator);
 
-	collaborationModel.addEventListener('collaboratorPresenceChanged', function (collaborator, isOnline) {
-		if (isOnline) {
-			showPictureForCollaborator(collaborator);
-		}
-		else {
-			var cached = cachedImages[collaborator.sessionId];
-			if (cached && cached.length > 0) {
-				cached.remove();
-				cachedImages[collaborator.sessionId] = undefined;
-			}
-		}
-	});
 	return self;
 };
 MM.CollaboratorAlerts = function (alert, collaborationModel) {
