@@ -43,7 +43,7 @@ describe('Collaborator Photo Widget', function () {
 				loaderDeferred.resolve(firstImage);
 				firstImage.trigger('tap');
 
-				expect(collaborationModel.toggleFollow).toHaveBeenCalledWith(123);
+				expect(collaborationModel.toggleFollow).toHaveBeenCalledWith('123');
 			});
 			it('adds the image class', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
