@@ -131,7 +131,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 								}
 							} else {
 								if (error.type === gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
-									self.dispatchEvent('realtimeError', 'Session expired', true);
+									googleDriveAdapter.ready(false).fail(function () {
+										self.dispatchEvent('realtimeError', 'Session expired', true);
+									});
 								} else {
 									self.dispatchEvent('realtimeError', error.message || error, error.isFatal);
 								}
@@ -160,11 +162,12 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 		return (/^cg/).test(mapId);
 	};
 };
-MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMapId, mapController) {
+MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMapId, mapController, unloadNotifier) {
 	'use strict';
 	var focusNodes,
 			events,
 			localSessionId,
+			self = this,
 			getGoogleCollaboratorBySession = function (sessionKey) {
 				return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
 			},
@@ -178,12 +181,6 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 			},
 			onMyFocusChanged = function (nodeId) {
 				focusNodes.set(localSessionId, nodeId);
-			},
-			onRemoteFocusChanged = function (event) {
-				if (event.isLocal) {
-					return;
-				}
-				triggerFocusForEvent(event);
 			},
 			onCollaboratorJoined = function (event) {
 				if (!event.collaborator.isMe) {
@@ -212,33 +209,34 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 			closeDocOnUnload = function () {
 				doc.close();
 			},
-			stop = function () {
-				collaborationModel.stop();
-				events.removeEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, triggerFocusForEvent);
-				focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
-				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
-				doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
-				collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
-				mapController.removeEventListener('mapLoaded mapSaved', trackMapId);
-				jQuery(window).unbind('beforeunload', closeDocOnUnload);
-				doc.close();
-			},
 			start = function () {
 				events.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, triggerFocusForEvent);
-				focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, onRemoteFocusChanged);
+				focusNodes.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, triggerFocusForEvent);
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 				collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
 				mapController.addEventListener('mapLoaded mapSaved', trackMapId);
-
-				jQuery(window).bind('beforeunload', closeDocOnUnload);
+				unloadNotifier.bind('beforeunload', closeDocOnUnload);
 				collaborationModel.start(getCollaborators());
 			},
 			trackMapId = function (mapId) {
 				if (mindmupMapId !== mapId) {
-					stop();
+					self.stop();
 				}
 			};
+	self.stop = function () {
+		collaborationModel.stop();
+		events.removeEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, triggerFocusForEvent);
+		focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, triggerFocusForEvent);
+		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
+		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+		collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
+		mapController.removeEventListener('mapSaved mapLoaded', trackMapId);
+		unloadNotifier.unbind('beforeunload', closeDocOnUnload);
+		doc.close();
+	};
+
+	unloadNotifier = unloadNotifier || jQuery(window);
 	focusNodes = doc.getModel().getRoot().get('focusNodes');
 	events = doc.getModel().getRoot().get('events');
 	localSessionId = _.find(doc.getCollaborators(), isMe).sessionId;
@@ -331,4 +329,7 @@ MM.Extensions.googleCollaboration = function () {
 	$.get(MM.Extensions.mmConfig.publicUrl + '/e/google-collaboration.html', loadUI);
 	$('<link rel="stylesheet" href="' + MM.Extensions.mmConfig.publicUrl + '/e/google-collaboration.css" />').appendTo($('body'));
 };
-MM.Extensions.googleCollaboration();
+
+if (!window.jasmine) {
+	MM.Extensions.googleCollaboration();
+}

@@ -92,6 +92,7 @@ module.exports = function (grunt) {
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
+					'public/e/google-collaboration.js',
 				],
 				options: {
 					template: 'test-lib/grunt.tmpl',
