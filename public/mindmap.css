@@ -934,6 +934,7 @@ body .modal.huge {
 	opacity: 0.6;
 	border-radius: 15px;
   transform: translate(5px, 5px);
+	min-width: 30px;
 }
 .mm-collaborator.mm-collaborator-followed {
 	opacity: 1;
