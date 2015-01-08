@@ -186,8 +186,8 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 			  var ghosts = _.filter(doc.getCollaborators(), function (googleCollab) {
 						return googleCollab.userId === event.collaborator.userId && googleCollab.sessionId !== event.collaborator.sessionId;
 				});
-				_.each(ghosts, function () {
-					collaborationModel.collaboratorPresenceChanged(mmCollaborator(event.collaborator), false);
+				_.each(ghosts, function (ghost) {
+					collaborationModel.collaboratorPresenceChanged(mmCollaborator(ghost), false);
 				});
 				if (!event.collaborator.isMe) {
 					collaborationModel.collaboratorPresenceChanged(mmCollaborator(event.collaborator), true);
