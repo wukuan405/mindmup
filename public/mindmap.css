@@ -933,6 +933,7 @@ body .modal.huge {
 	height: 32px;
 	opacity: 0.6;
 	border-radius: 15px;
+  transform: translate(5px, 5px);
 }
 .mm-collaborator.mm-collaborator-followed {
 	opacity: 1;
