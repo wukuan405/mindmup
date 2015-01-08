@@ -183,6 +183,12 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				focusNodes.set(localSessionId, nodeId);
 			},
 			onCollaboratorJoined = function (event) {
+			  var ghosts = _.filter(doc.getCollaborators(), function (googleCollab) {
+						return googleCollab.userId === event.collaborator.userId && googleCollab.sessionId !== event.collaborator.sessionId;
+				});
+				_.each(ghosts, function () {
+					collaborationModel.collaboratorPresenceChanged(mmCollaborator(event.collaborator), false);
+				});
 				if (!event.collaborator.isMe) {
 					collaborationModel.collaboratorPresenceChanged(mmCollaborator(event.collaborator), true);
 				}

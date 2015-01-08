@@ -47,8 +47,8 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 		mapController = observable({});
 		googleDoc = new MM.FakeGoogleRealtime();
 		sessions = {'remote session 1': 'node.1234'};
-		remoteGoogleCollaborator = { sessionId: 'remote session 1', photoUrl: 'photo2', displayName: 'Someone else'};
-		myGoogleCollaborator = { isMe: true, sessionId: 'my session id', photoUrl: 'photo1', displayName: 'Me'};
+		remoteGoogleCollaborator = { userId: 'someone remote', sessionId: 'remote session 1', photoUrl: 'photo2', displayName: 'Someone else'};
+		myGoogleCollaborator = { userId: 'it is me', isMe: true, sessionId: 'my session id', photoUrl: 'photo1', displayName: 'Me'};
 		googleDoc.collaborators = [
 				myGoogleCollaborator,
 				remoteGoogleCollaborator
@@ -115,6 +115,7 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 				expect(collaborationModel.collaboratorFocusChanged).not.toHaveBeenCalled();
 			});
 			it('does not change the collaborator presence', function () {
+				collaborationModel.collaboratorPresenceChanged.calls.reset();
 				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, {collaborator: myGoogleCollaborator});
 				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, {collaborator: myGoogleCollaborator});
 				expect(collaborationModel.collaboratorPresenceChanged).not.toHaveBeenCalled();
