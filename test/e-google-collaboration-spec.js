@@ -97,6 +97,16 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, {collaborator: remoteGoogleCollaborator});
 				expect(collaborationModel.collaboratorPresenceChanged).toHaveBeenCalledWith(remoteCollaborator, false);
 			});
+			it('forces a focus event when a remote session is followed', function () {
+				collaborationModel.dispatchEvent('followedCollaboratorChanged', remoteCollaborator.sessionId);
+				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith(remoteCollaborator);
+			});
+			it('does not force a focus event after a remote session is no longer followed', function () {
+				collaborationModel.dispatchEvent('followedCollaboratorChanged', remoteCollaborator.sessionId);
+				collaborationModel.collaboratorFocusChanged.calls.reset();
+				collaborationModel.dispatchEvent('followedCollaboratorChanged', false);
+				expect(collaborationModel.collaboratorFocusChanged).not.toHaveBeenCalled();
+			});
 		});
 		describe('ignores local drive realtime notifications', function () {
 			it('does not change collaborator focus', function () {
@@ -134,6 +144,7 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_LEFT)).toEqual([]);
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_JOINED)).toEqual([]);
 				expect(collaborationModel.listeners('myFocusChanged')).toEqual([]);
+				expect(collaborationModel.listeners('followedCollaboratorChanged')).toEqual([]);
 				expect(mapController.listeners('mapLoaded')).toEqual([]);
 				expect(mapController.listeners('mapSaved')).toEqual([]);
 			});

@@ -203,8 +203,13 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				if (event.sessionId === localSessionId) {
 					return;
 				}
-				var googleCollaborator = getGoogleCollaboratorBySession(event.sessionId);
-				collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
+				triggerFocusForSession(event.sessionId);
+			},
+			triggerFocusForSession = function (sessionId) {
+				if (sessionId) {
+					var googleCollaborator = getGoogleCollaboratorBySession(sessionId);
+					collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
+				}
 			},
 			closeDocOnUnload = function () {
 				doc.close();
@@ -215,6 +220,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 				collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
+				collaborationModel.addEventListener('followedCollaboratorChanged', triggerFocusForSession);
 				mapController.addEventListener('mapLoaded mapSaved', trackMapId);
 				unloadNotifier.bind('beforeunload', closeDocOnUnload);
 				collaborationModel.start(getCollaborators());
@@ -230,6 +236,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 		focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, triggerFocusForEvent);
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+		collaborationModel.removeEventListener('followedCollaboratorChanged', triggerFocusForSession);
 		collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
 		mapController.removeEventListener('mapSaved mapLoaded', trackMapId);
 		unloadNotifier.unbind('beforeunload', closeDocOnUnload);
