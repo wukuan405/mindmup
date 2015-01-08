@@ -1,0 +1,27 @@
+{
+  "name": "MindMup App - Free Mind Mapping",
+  "short_name": "MindMup App",
+  "description": "Free online mind mapping. Google Drive or Dropbox mindmap storage, realtime collaborative mindmapping, Freemind mind map import",
+  "version": "0.0.0.19",
+  "manifest_version": 2,
+  "container" : ["DOMAIN_INSTALLABLE", "GOOGLE_DRIVE"],
+  "api_console_project_id" : "399581875395",
+  "gdrive_mime_types": {
+    "http://drive.google.com/intents/opendrivedoc": [{ 
+        "type": ["application/vnd.mindmup.collab", "application/vnd-freemind", "application/json", "application/vnd.google.drive.ext-type.mup","application/x-freemind","application/vnd.google.drive.ext-type.mm"],
+        "href": "https://www.mindmup.com/",
+        "title" : "Open",
+        "disposition" : "window"
+      }
+    ]
+  },
+	"app" : {
+    "launch" : {
+      "web_url" : "https://www.mindmup.com"
+    }
+  },
+  "icons":{"128":"icon_128.png", "16":"logo_16.png"},"app":{"urls":["https://www.mindmup.com/"],"launch":{"web_url":"https://www.mindmup.com/"}},
+  "permissions": [
+    "unlimitedStorage"
+  ]
+}
