@@ -13,7 +13,7 @@ MM.CollaborationModel = function(mapModel) {
 		if (running) {
 			self.dispatchEvent('collaboratorFocusChanged', collaborator);
 			if (collaborator.sessionId === followedSessionId) {
-				mapModel.selectNode(collaborator.focusNodeId);
+				mapModel.selectNode(collaborator.focusNodeId, true);
 			}
 		}
 	};

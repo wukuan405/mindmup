@@ -80,7 +80,7 @@ describe('Collaboration Model', function () {
 			underTest.toggleFollow(123);
 			underTest.collaboratorFocusChanged({sessionId: 123, focusNodeId: '456'});
 
-			expect(mapModel.selectNode).toHaveBeenCalledWith('456');
+			expect(mapModel.selectNode).toHaveBeenCalledWith('456', true);
 		});
 		it('dispatches follow events only for the session which is followed', function () {
 			underTest.toggleFollow(123);
@@ -88,14 +88,14 @@ describe('Collaboration Model', function () {
 			underTest.collaboratorFocusChanged({sessionId: 123, focusNodeId: '456'});
 			underTest.collaboratorFocusChanged({sessionId: 123, focusNodeId: '789'});
 
-			expect(mapModel.selectNode).toHaveBeenCalledWith('456');
+			expect(mapModel.selectNode).toHaveBeenCalledWith('456', true);
 		});
 		it('follows someone else with if subsequent toggleFollow is for a different session ID', function () {
 			underTest.toggleFollow(123);
 			underTest.toggleFollow(567);
 			underTest.collaboratorFocusChanged({sessionId: 123, focusNodeId: '456'});
 			underTest.collaboratorFocusChanged({sessionId: 567, focusNodeId: '422'});
-			expect(mapModel.selectNode).toHaveBeenCalledWith('422');
+			expect(mapModel.selectNode).toHaveBeenCalledWith('422', true);
 		});
 		it('stops following if subsequent toggleFollow is for the same session ID', function () {
 			underTest.toggleFollow(123);
