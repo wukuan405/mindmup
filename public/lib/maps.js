@@ -2,9 +2,9 @@
 MM.Maps = {};
 MM.Maps['default'] = MM.Maps['new'] = {'title': 'Press Space or double-click to edit', 'id': 1};
 
-MM.EmbeddedMapSource = function () {
+MM.EmbeddedMapSource = function (newMapProperties) {
 	'use strict';
-	var properties = {editable: true};
+	var properties = newMapProperties ||  {editable: true};
 	this.recognises = function (mapId) {
 		if ((/^new-/).test(mapId)) {
 			mapId = 'new';

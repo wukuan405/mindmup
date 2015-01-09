@@ -57,7 +57,7 @@ MM.main = function (config) {
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(goldStorage.fileSystemFor('b'), resourceCompressor.compress)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(goldStorage.fileSystemFor('p'), resourceCompressor.compress)),
 				new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(googleDriveAdapter, resourceCompressor.compress)),
-				new MM.EmbeddedMapSource()
+				new MM.EmbeddedMapSource(config.newMapProperties)
 			]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
