@@ -146,9 +146,6 @@ MM.main = function (config) {
 				jQuery('#nodeContextMenu').contextMenuWidget(mapModel).mapToolbarWidget(mapModel);
 				jQuery('.dropdown-submenu>a').click(function () { return false; });
 				jQuery('[data-category]').trackingWidget(activityLog);
-				jQuery('.modal')
-					.on('show',  mapModel.setInputEnabled.bind(mapModel, false, false))
-					.on('hide', mapModel.setInputEnabled.bind(mapModel, true, false));
 				jQuery('#modalKeyActions').keyActionsWidget();
 				jQuery('#topbar .updateStyle').attr('data-mm-align', 'top').colorPicker();
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
@@ -173,8 +170,9 @@ MM.main = function (config) {
         jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
 				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'mm-has-collaborators');
-				jQuery('.modal[data-mm-launch-keys]').modalLauncherWidget();
+				jQuery('.modal').modalLauncherWidget(mapModel);
 				MM.CollaboratorAlerts(alert, collaborationModel);
+
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

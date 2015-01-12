@@ -1,16 +1,39 @@
 /*global jQuery, document*/
-jQuery.fn.modalLauncherWidget = function () {
+jQuery.fn.modalLauncherWidget = function (mapModel) {
 	'use strict';
 	return this.each(function () {
 		var element = jQuery(this),
-				keys = element.data('mm-launch-keys');
-		if (keys) {
-			jQuery(document).keydown(keys, function (event) {
+				keyCode = element.data('mm-launch-key-code'),
+				wasFocussed;
+		element.on('show',  function () {
+			wasFocussed = jQuery(':focus');
+			if (wasFocussed.length === 0) {
+				wasFocussed = jQuery(document.activeElement);
+			}
+			wasFocussed.blur();
+			mapModel.setInputEnabled(false, false);
+		}).on('hide',  function () {
+			mapModel.setInputEnabled(true, false);
+			if (wasFocussed && wasFocussed.length > 0) {
+				wasFocussed.focus();
+			} else {
+				jQuery(document).focus();
+			}
+			wasFocussed = undefined;
+		}).on('shown', function () {
+
+			element.find('[data-mm-modal-shown-focus]').focus();
+		});
+		if (keyCode) {
+			jQuery(document).keydown(function (event) {
 				if (element.parent().length === 0) {
 					return;
 				}
-				event.stopImmediatePropagation();
+				if (String(event.which) !== String(keyCode) || !(event.metaKey || event.ctrlKey) || event.altKey) {
+					return;
+				}
 				event.preventDefault();
+				event.stopImmediatePropagation();
 				if (jQuery('.modal:visible').length > 0) {
 					return;
 				}
@@ -19,3 +42,5 @@ jQuery.fn.modalLauncherWidget = function () {
 		}
 	});
 };
+
+
