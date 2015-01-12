@@ -1,11 +1,13 @@
-<div id="modalPDFExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="pdf">
+<div id="modalPDFExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="pdf" data-mm-launch-keys="ctrl+p meta+p">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Export to PDF</h3>
+    <h3>Create a Printable PDF</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
-      <p>The map will be securely uploaded to our server for processing. The <a href="http://blog.mindmup.com/p/pdf-export.html" target="_blank" >PDF export documentation</a> page explains PDF file export in greater detail.</p>
+
+      <p>The map will be <a href="http://blog.mindmup.com/p/pdf-export.html" target="_blank" >securely uploaded</a> to our server for processing.
+      </p>
       <form class="form-horizontal" data-mm-role="export-parameters">
         <div class="control-group">
           <label class="control-label">Orientation:</label>
@@ -82,7 +84,8 @@
     </div>
   </div>
   <div class="modal-footer">
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Export</a>
+    <a class="pull-left btn visible initial" href="http://helpx.adobe.com/acrobat/kb/print-posters-banners-acrobat-reader.html" target="_blank"><i class="icon-question-sign"></i>&nbsp;Printing to multiple sheets</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Create PDF</a>
     <a tabstop="2" href="#" class="btn visible initial inprogress" data-dismiss="modal">Cancel</a>
     <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
   </div>

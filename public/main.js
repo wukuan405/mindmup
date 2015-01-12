@@ -173,6 +173,7 @@ MM.main = function (config) {
         jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
 				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'mm-has-collaborators');
+				jQuery('.modal[data-mm-launch-keys]').modalLauncherWidget();
 				MM.CollaboratorAlerts(alert, collaborationModel);
 			};
 		config.activeContentConfiguration = {
@@ -205,7 +206,7 @@ MM.main = function (config) {
 			window.mmtimestamp.log('mm initialized');
 		}
 
-		_.each(jQuery('a'), function(l) { if(/^mailto:/.test(l.href)) { l.target ='mailtoIframe'; }});
+		_.each(jQuery('a'), function (l) { if (/^mailto:/.test(l.href)) { l.target = 'mailtoIframe'; }});
 
 		extensions.load(navigation.initialMapId()).then(function () {
 			if (window.mmtimestamp) {
