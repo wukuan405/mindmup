@@ -89,7 +89,7 @@ describe('LayoutExport', function () {
 			underTest.startExport('pdf').then(resolved);
 
 			storageApi.deferred.outputlisturl.resolve();
-			expect(resolved).toHaveBeenCalledWith('outputurl');
+			expect(resolved).toHaveBeenCalledWith('outputurl', requestId);
 		});
 		it('rejects if the configuationGenerator fails', function () {
 			var fail = jasmine.createSpy('fail'),

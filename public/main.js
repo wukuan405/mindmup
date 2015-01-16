@@ -69,7 +69,8 @@ MM.main = function (config) {
 				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource)
+				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
+				'publish.json':  activeContentListener.getActiveContent
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
@@ -133,6 +134,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
+				jQuery('[data-mm-role=atlas-publish]').layoutExportWidget(layoutExportController, MM.ajaxResultProcessor);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
@@ -171,6 +173,7 @@ MM.main = function (config) {
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
 				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'mm-has-collaborators');
 				jQuery('.modal').modalLauncherWidget(mapModel);
+				jQuery('input[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
 				MM.CollaboratorAlerts(alert, collaborationModel);
 
 			};

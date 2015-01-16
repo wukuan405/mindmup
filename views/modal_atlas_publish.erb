@@ -1,0 +1,78 @@
+<div id="modalAtlasPublish" data-mm-role="atlas-publish" class="modal hide fade" data-mm-format="publish.json">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Publish this map</h3>
+  </div>
+  <div class="modal-body">
+    <div class="visible initial">
+      <form class="form-horizontal" data-mm-role="export-parameters">
+        <div class="control-group">
+          <label class="control-label">Title:</label>
+          <div class="controls">
+            <input name="title" placeholder="Descriptive title for your map" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Text that will show in the browser title bar. Keep it under 40 characters." data-placement="bottom"></i>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">URL slug:</label>
+          <div class="controls">
+            <input name="slug" placeholder="URL slug" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Descriptive text that will form part of the URL. Keep it short!"></i>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Description:</label>
+          <div class="controls">
+            <input name="description" placeholder="Description" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Page description for search engines. Keep it under 150 characters."></i>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="visible inprogress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
+    </div>
+    <div class="visible done">
+      <div class="alert alert-success alert-block">
+        <h4>Your map was published</h4> 
+        <p>Click the URL below to copy it, and then post to social networks, embed in your web site or share with friends and colleagues.</p>
+      </div>
+      <form class="form-horizontal">
+        <div class="control-group">
+            <input data-mm-role="output-url selectable-read-only" class="span5" style="outline:none" />
+            <a class="btn btn-small" href="#" data-mm-role="output-url" target="_blank"><i class="icon-share"></i></a>
+        </div>
+      </form>
+    </div>
+    <div class="visible error alert alert-error alert-block">
+      <h4>Unable to publish your map:</h4>
+      <br/>
+
+      <span data-mm-role="error-message"></span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The map you are publishing is too large. The maximum size of maps that can be published online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
+              <li><a href="http://discover.mindmup.com/mindmup-gold" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size.to_i/(1024*1024)%> Mb</li>
+           </ul>
+           <p>For maps larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+
+         </p>
+      </span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+      <span data-mm-role="network-error">
+        This operation requires a network connection and we can't reach MindMup servers at the moment. Please ensure that you are online and try again. If this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <!--
+    <a class="pull-left btn visible initial author" href="http://blog.mindmup.com/" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="author">Next &gt;</a>
+    -->
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Publish</a>
+    <a tabstop="2" href="#" class="btn visible initial inprogress author" data-dismiss="modal">Cancel</a>
+    <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
+  </div>
+</div>

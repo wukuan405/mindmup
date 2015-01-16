@@ -97,7 +97,7 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 							resolve = function () {
 								pollTimer.end();
 								activityLog.log(category, eventType + ' completed');
-								deferred.resolve(exportConfig.signedOutputUrl);
+								deferred.resolve(exportConfig.signedOutputUrl, fileId);
 							};
 						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 15000}).then(
 							function () {
@@ -120,8 +120,14 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 	};
 };
 
-jQuery.fn.layoutExportWidget = function (layoutExportController) {
+jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) {
 	'use strict';
+	var defaultResultHandler = function (url) {
+		return jQuery.Deferred().resolve({
+			'output-url': url
+		});
+	};
+	resultHandler = resultHandler || defaultResultHandler;
 	return this.each(function () {
 		var self = jQuery(this),
 			selectedFormat = function () {
@@ -137,19 +143,35 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				self.find('.visible').hide();
 				self.find('.visible' + '.' + state).show();
 			},
-			exportComplete = function (url) {
-				self.find('[data-mm-role=output-url]').attr('href', url);
+			exportComplete = function (url, fileId) {
+				resultHandler(url, fileId).then(publishResult, exportFailed);
+			},
+			publishResult = function (result) {
+				_.each(result, function (value, key) {
+					self.find('[data-mm-role~='+key+']').each(function() {
+						var element = jQuery(this);
+						if (element.prop('tagName') ==='A') {
+							element.attr('href', value);
+						}
+						else if (element.prop('tagName') === 'INPUT') {
+							element.val(value).attr('data-mm-val', value);
+						}
+						else {
+							element.text(value);
+						}
+					});
+				});
 				setState('done');
 			},
 			getExportMetadata = function () {
 				var form = self.find('form[data-mm-role=export-parameters]'),
-					exportType = {};
+					meta = {};
 				if (form) {
-					form.find('button.active').add(form.find('select')).add(form.find('input[type=hidden]')).each(function () {
-						exportType[jQuery(this).attr('name')] = jQuery(this).val();
+					form.find('button.active').add(form.find('select')).add(form.find('input')).each(function () {
+						meta[jQuery(this).attr('name')] = jQuery(this).val();
 					});
 				}
-				return exportType;
+				return meta;
 			},
 			exportFailed = function (reason, fileId) {
 				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + selectedFormat().toUpperCase() + '%20Export%20Error%20' + fileId; });
@@ -171,6 +193,9 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 		self.find('form').submit(function () {return false; });
 		confirmElement.click(doExport).keydown('space', doExport);
 		self.modal({keyboard: true, show: false});
+		self.find('[data-mm-role=set-state]').click(function () {
+			setState(jQuery(this).attr('data-mm-state'));
+		});
 		self.on('show', function () {
 			setState('initial');
 		}).on('shown', function () {
@@ -192,3 +217,15 @@ MM.buildMapLayoutExporter = function (mapModel, resourceTranslator) {
 		return layout;
 	};
 };
+MM.ajaxResultProcessor = function (url, fileId) {
+	'use strict';
+	var result = jQuery.Deferred();
+	jQuery.ajax({url: url, dataType: 'json'}).then(
+			result.resolve,
+			function () {
+				result.reject('result-fetch-error', fileId);
+			}
+	);
+	return result.promise();
+};
+
