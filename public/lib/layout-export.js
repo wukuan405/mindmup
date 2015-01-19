@@ -220,7 +220,7 @@ MM.ajaxResultProcessor = function (url, fileId) {
 	jQuery.ajax({url: url, dataType: 'json'}).then(
 			result.resolve,
 			function () {
-				result.reject('result-fetch-error', fileId);
+				result.reject('generation-error', fileId);
 			}
 	);
 	return result.promise();
