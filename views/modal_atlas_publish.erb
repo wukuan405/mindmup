@@ -1,11 +1,18 @@
 <div id="modalAtlasPublish" data-mm-role="atlas-publish" class="modal hide fade" data-mm-format="publish.json">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 class="icon-cloud-upload">&nbsp;Publish to MindMup Atlas</h3>
+    <h3 class="icon-cloud-upload">&nbsp;Publish to MindMup Atlas (Beta)</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
 			<p><a target="_blank" href="http://discover.mindmup.com/atlas">MindMup Atlas</a> is a cloud mind map library that enables authors to publish interactive, read-only maps, optimised for posting to social networks and embedding in web sites.</p>
+			<ul>
+				<li>Anyone can publish maps up to 100KB. Published maps will be available for at least 6 months.</li>
+				<li><a target="_blank" href="http://discover.mindmup.com/mindmup-gold">MindMup Gold</a> users can publish maps up to 100MB for the duration of their subscription.</li>
+			</ul>
+			<p>By clicking on <b>Start</b>, you accept the <a href="/legal/atlas" target="#blank">Terms and Conditions</a> for MindMup Atlas.</p>
+    </div>
+		<div class="visible seo">
       <form class="form-horizontal" data-mm-role="export-parameters atlas-metadata">
         <div class="control-group">
           <label class="control-label">Title:</label>
@@ -26,8 +33,7 @@
           </div>
         </div>
       </form>
-			<p>By clicking on <b>Publish</b>, you accept the <a href="/legal/atlas" target="#blank">Terms and Conditions</a> for MindMup Atlas.</p>
-    </div>
+		</div>
     <div class="visible inprogress alert alert-info alert-block">
       <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
     </div>
@@ -84,11 +90,9 @@
     </div>
   </div>
   <div class="modal-footer">
-    <a class="pull-left btn visible initial author" href="http://discover.mindmup.com/atlas" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
-	<!--
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="author">Next &gt;</a>
-    -->
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="export">Publish</a>
+    <a class="pull-left btn visible initial author seo" href="http://discover.mindmup.com/atlas" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="seo">Start &gt;</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible seo" data-mm-role="export">Publish</a>
     <a tabstop="2" href="#" class="btn visible initial inprogress author" data-dismiss="modal">Cancel</a>
     <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
   </div>
