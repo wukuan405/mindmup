@@ -8,9 +8,9 @@ jQuery.fn.atlasPrepopulationWidget = function (activeContentListener, titleLengt
 				var form = self.find('form[data-mm-role~=atlas-metadata]'),
 						idea = activeContentListener.getActiveContent(),
 						title = idea && idea.title;
-				form.find('[name=title]').attr('placeholder', truncFunction(title, titleLengthLimit));
-				form.find('[name=description]').attr('placeholder', truncFunction('MindMup mind map: '+ title, descriptionLengthLimit));
-				form.find('[name=slug]').attr('placeholder', sanitizeFunction(truncFunction(title, titleLengthLimit)));
+				form.find('[name=title]').attr('placeholder', truncFunction(title, titleLengthLimit)).val('');
+				form.find('[name=description]').attr('placeholder', truncFunction('MindMup mind map: '+ title, descriptionLengthLimit)).val('');
+				form.find('[name=slug]').attr('placeholder', sanitizeFunction(truncFunction(title, titleLengthLimit))).val('');
 			};
 	self.on('show', function (evt) {
 		if (this === evt.target) {
