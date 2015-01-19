@@ -128,6 +128,18 @@ describe('LayoutExportWidget', function () {
 							}
 						});
 					});
+					it('uses placeholder if a field is empty', function () {
+						jQuery('<form data-mm-role="export-parameters">' +
+										'<input name="size" placeholder="huge" value="" />' +
+									'</form>').appendTo(underTest);
+						underTest.find('#bexport').click();
+
+						expect(layoutExportController.startExport.calls.argsFor(0)[1]).toEqual({
+							export: {
+								size: 'huge',
+							}
+						});
+					});
 					it('adds values of active buttons, ignoring inactive', function () {
 						jQuery('<form data-mm-role="export-parameters">' +
 										'<button class="active" name="size" value="huge" />' +
@@ -189,7 +201,7 @@ describe('LayoutExportWidget', function () {
 						});
 					});
 				});
-				describe('when export succeeds', function () {
+				describe('when export succeeds without a custom processor', function () {
 					beforeEach(function () {
 						underTest.find('#bexport').click();
 					});
@@ -197,7 +209,7 @@ describe('LayoutExportWidget', function () {
 						exportDeferred.resolve();
 						expect(underTest.find('#d-initial').css('display')).toBe('none');
 						expect(underTest.find('#d-inprogress').css('display')).toBe('none');
-						expect(underTest.find('#d-success').css('display')).not.toBe('none');
+						expect(underTest.find('#d-done').css('display')).not.toBe('none');
 					});
 					describe('setting data-mm-role=output-url elements', function () {
 						it('sets href on links, without changing text', function () {
@@ -219,9 +231,54 @@ describe('LayoutExportWidget', function () {
 						});
 					});
 				});
+				describe('when export succeeds using a custom result processor', function () {
+					var resultDeferred;
+						beforeEach(function () {
+							underTest.remove();
+							resultDeferred = jQuery.Deferred();
+							var deferredProcessor = function () {
+								return resultDeferred;
+							};
+							underTest= jQuery(template).appendTo('body');
+							fakeBootstrapModal(underTest);
+							underTest.layoutExportWidget(layoutExportController, deferredProcessor);
+							underTest.show();
+							underTest.find('#bexport').click();
+							exportDeferred.resolve();
+						});
+						it('does not change state until the deferred resolves', function () {
+							expect(underTest.find('#d-inprogress').css('display')).not.toBe('none');
+							expect(underTest.find('#d-done').css('display')).toBe('none');
+						});
+						it('changes state to done once the deferred result resolves', function () {
+							resultDeferred.resolve();
+							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
+							expect(underTest.find('#d-done').css('display')).not.toBe('none');
+						});
+						it('changes state to error if the deferred result rejects', function () {
+							resultDeferred.reject('snafu', 'request124');
+
+							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
+							expect(underTest.find('#d-error').css('display')).not.toBe('none');
+						});
+						it('fills in all elements matching data-mm-role from the result object', function () {
+							var name= jQuery('<input>').attr('data-mm-role','name').appendTo(underTest),
+								link=	jQuery('<a>').attr('data-mm-role','link').appendTo(underTest);
+
+							resultDeferred.resolve({name: 'Jim Jom', link: 'http://iron'});
+
+							expect(name.val()).toEqual('Jim Jom');
+							expect(name.attr('data-mm-val')).toEqual('Jim Jom');
+							expect(link.attr('href')).toEqual('http://iron');
+						});
+				});
 				describe('when export fails', function () {
+					var genericError, customError;
 					beforeEach(function () {
 						underTest.find('#bexport').click();
+						var errorDiv = jQuery('<div>').addClass('error').appendTo(underTest);
+						genericError = jQuery('<span>').attr('data-mm-role','error-message').appendTo(errorDiv);
+						customError = jQuery('<span>').attr('data-mm-role','nuclear-disaster').appendTo(errorDiv);
 					});
 					describe('filling in error code fields', function () {
 						it('fills in data-mm-role file-id contents with the second argument of the failure rejection', function () {
@@ -240,6 +297,16 @@ describe('LayoutExportWidget', function () {
 							expect(underTest.find('#d-initial').css('display')).toBe('none');
 							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
 							expect(underTest.find('#d-error').css('display')).not.toBe('none');
+						});
+						it('shows a custom error section if one is available', function () {
+							exportDeferred.reject('nuclear-disaster', 'request124');
+							expect(genericError.css('display')).toBe('none');
+							expect(customError.css('display')).not.toBe('none');
+						});
+						it('shows a generic error section if no available section matches error reason', function () {
+							exportDeferred.reject('snafu', 'request124');
+							expect(genericError.css('display')).not.toBe('none');
+							expect(customError.css('display')).toBe('none');
 						});
 					});
 				});
