@@ -11,7 +11,7 @@
             <li> <a href="#" data-category="Top Bar" data-mm-role="new-map" data-event-type="Create a Map"><i class="icon-lightbulb"></i>&nbsp;New&nbsp;Map</a> </li>
             <li> <a href="#" data-mm-role="new-from-clipboard" data-category="Top Bar" data-event-type="New From Clipboard"><i class="icon-paste"></i>&nbsp;New&nbsp;From&nbsp;Clipboard</a> </li>
             <li class="dropdown-submenu visible-online">
-              <a href="#"><i class="icon-cloud-upload"></i>&nbsp;Open/Import</a>
+              <a href="#"><i class="icon-cloud-download"></i>&nbsp;Open/Import</a>
               <ul data-mm-role="open-sources" class="dropdown-menu" role="menu">
                 <li  class="hidden-touch">
                   <a data-event-type="Import" data-category="Top Bar" data-target="#modalImport" data-toggle="modal"><i class="icon-laptop"></i>&nbsp;From a local drive</a>
@@ -53,10 +53,11 @@
                 <li><a href="#" data-target="#modalPresentationExport" data-toggle="modal"  data-category="Top Bar" data-event-type="Export presentation slides">Presentation (PDF/PPT)</a></li>
               </ul>
             </li>
+						<li><a href="#" data-target="#modalAtlasPublish" data-toggle="modal" data-category="Top Bar" data-event-type="Publish to Atlas"><i class="icon-cloud-upload"></i>&nbsp;Publish to Atlas</a></li>
             <li class="dropdown-submenu visible-online">
               <a href="#"><i class="icon-share-alt"></i>&nbsp;Share Map</a>
               <ul class="dropdown-menu" role="menu" id="sharelinks" data-mm-role="sharelinks">
-                <li><a href="#" data-target="#modalAtlasPublish" data-toggle="modal" data-category="Top Bar" data-event-type="Publish online">Publish online</a></li>
+
                 <li class="visible-map-source-a hidden-map-changed"><a data-target="#modalEmbedMap" data-toggle="modal" data-category='Top Bar' data-event-type='Embed this map'><i class="icon-code"></i>&nbsp;Embed this map</a></li>
                 <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="email" data-category='Top Bar' data-event-type='Share Email'><i class="icon-envelope"></i>&nbsp;by e-mail</a></li>
                 <li class="visible-map-source-a hidden-map-changed"><a data-mm-role="share" data-mm-target="twitter"  data-category='Top Bar' data-event-type='Share Twitter'><i class="icon-twitter"></i>&nbsp;on Twitter</a></li>
@@ -207,6 +208,7 @@
               <li><a data-mm-repository='g' rel="nofollow" href="#" data-category="Top Bar" data-event-type="Save to Google Drive">Google&nbsp;Drive</a></li>
             </ul>
           </li>
+					<li class="hidden-phone">&nbsp;<button class="btn" data-target="#modalAtlasPublish" data-toggle="modal" data-category="Top Bar" data-event-type="Publish to Atlas">Publish&nbsp;<i class="icon-cloud-upload"></i></button></li>
 
           <li class="dropdown hidden-phone-portrait">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" data-category="About" data-event-type="Open"><i class="icon-info-sign"></i></a>

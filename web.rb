@@ -74,6 +74,9 @@ end
 get '/legal/privacy' do
   erb :privacy
 end
+get '/legal/atlas' do
+  erb :atlas_terms
+end
 get '/gd' do
   begin
     state = params[:state] && JSON.parse(params[:state])

@@ -1,10 +1,11 @@
 <div id="modalAtlasPublish" data-mm-role="atlas-publish" class="modal hide fade" data-mm-format="publish.json">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Publish this map</h3>
+    <h3 class="icon-cloud-upload">&nbsp;Publish to MindMup Atlas</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
+			<p><a target="_blank" href="http://discover.mindmup.com/atlas">MindMup Atlas</a> is a cloud mind map library that enables authors to publish interactive, read-only maps, optimised for posting to social networks and embedding in web sites.</p>
       <form class="form-horizontal" data-mm-role="export-parameters">
         <div class="control-group">
           <label class="control-label">Title:</label>
@@ -25,6 +26,7 @@
           </div>
         </div>
       </form>
+			<p>By clicking on <b>Publish</b>, you accept the <a href="/legal/atlas" target="#blank">Terms and Conditions</a> for MindMup Atlas.</p>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
       <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
@@ -32,12 +34,25 @@
     <div class="visible done">
       <div class="alert alert-success alert-block">
         <h4>Your map was published</h4> 
-        <p>Click the URL below to copy it, and then post to social networks, embed in your web site or share with friends and colleagues.</p>
+
       </div>
-      <form class="form-horizontal">
+			<p>
+			Share the URLs below directly with your readers, or download the web page and self-host it. (Click the URLs below, then press Ctrl+C [Cmd+C on OSX] to copy them.)
+			</p>
+      <form class="form">
         <div class="control-group">
-            <input data-mm-role="output-url selectable-read-only" class="span5" style="outline:none" />
-            <a class="btn btn-small" href="#" data-mm-role="output-url" target="_blank"><i class="icon-share"></i></a>
+					<label>Web page:</label>
+					<div class="input-append">
+            <input data-mm-role="index-html selectable-read-only" class="span5" style="outline:none" />
+            <a class="btn btn-small" href="#" data-mm-role="index-html" target="_blank"><i class="icon-share"></i></a>
+					</div>
+        </div>
+        <div class="control-group">
+					<label>Thumbnail image:</label>
+					<div class="input-append">
+            <input data-mm-role="thumb-png selectable-read-only" class="span5" style="outline:none" />
+            <a class="btn btn-small" href="#" data-mm-role="thumb-png" target="_blank"><i class="icon-share"></i></a>
+					</div>
         </div>
       </form>
     </div>
@@ -69,9 +84,8 @@
     </div>
   </div>
   <div class="modal-footer">
-    <!--
-    <a class="pull-left btn visible initial author" href="http://blog.mindmup.com/" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
-
+    <a class="pull-left btn visible initial author" href="http://discover.mindmup.com/atlas" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+	<!--
     <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="author">Next &gt;</a>
     -->
     <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="export">Publish</a>
