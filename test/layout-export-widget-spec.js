@@ -3,13 +3,13 @@ describe('LayoutExportWidget', function () {
 	'use strict';
 	var layoutExportController, underTest, exportDeferred,
 			template ='<div data-mm-format="format-from-header">' +
-								'	<div id="d1" class="visible initial">initial</div> '+
+								'	<div id="d-initial" class="visible initial">initial</div> '+
 								'	<div id="d2" class="visible secondary">secondary</div> '+
 								'	<div id="d3" class="visible done">done</div> '+
 								'	<div id="d4" class="secondary">not touched by visible selection</div> '+
-								'	<div id="d5" class="visible inprogress">inprogress</div> '+
-								'	<div id="d6" class="visible done">done</div> '+
-								'	<div id="d7" class="visible error">error</div> '+
+								'	<div id="d-inprogress" class="visible inprogress">inprogress</div> '+
+								'	<div id="d-done" class="visible done">done</div> '+
+								'	<div id="d-error" class="visible error">error</div> '+
 								'	<button id="b1" data-mm-role="set-state" data-mm-state="secondary" />' +
 								'	<button id="bexport" data-mm-role="export" />' +
 								'	<input data-mm-role="format-selector" value="format-from-input" />' +
@@ -41,12 +41,12 @@ describe('LayoutExportWidget', function () {
 				beforeEach(function () {
 
 					underTest.find('#d2').show();
-					underTest.find('#d1').hide();
+					underTest.find('#d-initial').hide();
 				});
 				it('shows the initial state section, marked by visible and initial css classes', function () {
 					underTest.modal('show');
 
-					expect(underTest.find('#d1').css('display')).not.toBe('none');
+					expect(underTest.find('#d-initial').css('display')).not.toBe('none');
 				});
 				it('hides all other state sections, marked by visible css class and not marked by initial', function () {
 					underTest.modal('show');
@@ -60,9 +60,9 @@ describe('LayoutExportWidget', function () {
 					expect(underTest.find('#d4').css('display')).not.toBe('none');
 				});
 				it('does not change visibility of sections if show is dispatched on a sub-element', function () {
-					underTest.find('#d1').trigger('show');
+					underTest.find('#d-initial').trigger('show');
 
-					expect(underTest.find('#d1').css('display')).toBe('none');
+					expect(underTest.find('#d-initial').css('display')).toBe('none');
 					expect(underTest.find('#d2').css('display')).not.toBe('none');
 				});
 				it('does not kick off export automatically', function () {
@@ -77,7 +77,7 @@ describe('LayoutExportWidget', function () {
 					it('sets the visible elements using the visible css class and data-mm-state attribute', function (){
 						underTest.find('#b1').click();
 
-						expect(underTest.find('#d1').css('display')).toBe('none');
+						expect(underTest.find('#d-initial').css('display')).toBe('none');
 						expect(underTest.find('#d2').css('display')).not.toBe('none');
 						expect(underTest.find('#d3').css('display')).toBe('none');
 					});
@@ -97,8 +97,8 @@ describe('LayoutExportWidget', function () {
 				it('switches visible state to inprogress', function () {
 					underTest.find('#bexport').click();
 
-					expect(underTest.find('#d1').css('display')).toBe('none');
-					expect(underTest.find('#d5').css('display')).not.toBe('none');
+					expect(underTest.find('#d-initial').css('display')).toBe('none');
+					expect(underTest.find('#d-inprogress').css('display')).not.toBe('none');
 				});
 				describe('format selection', function () {
 					it('uses the value of the format-selector role input element if such element exists', function () {
@@ -195,9 +195,9 @@ describe('LayoutExportWidget', function () {
 					});
 					it('sets the visible state to done', function () {
 						exportDeferred.resolve();
-						expect(underTest.find('#d1').css('display')).toBe('none');
-						expect(underTest.find('#d5').css('display')).toBe('none');
-						expect(underTest.find('#d6').css('display')).not.toBe('none');
+						expect(underTest.find('#d-initial').css('display')).toBe('none');
+						expect(underTest.find('#d-inprogress').css('display')).toBe('none');
+						expect(underTest.find('#d-success').css('display')).not.toBe('none');
 					});
 					describe('setting data-mm-role=output-url elements', function () {
 						it('sets href on links, without changing text', function () {
@@ -237,9 +237,9 @@ describe('LayoutExportWidget', function () {
 						it('switches state to error', function () {
 							exportDeferred.reject('snafu', 'request124');
 
-							expect(underTest.find('#d1').css('display')).toBe('none');
-							expect(underTest.find('#d5').css('display')).toBe('none');
-							expect(underTest.find('#d7').css('display')).not.toBe('none');
+							expect(underTest.find('#d-initial').css('display')).toBe('none');
+							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
+							expect(underTest.find('#d-error').css('display')).not.toBe('none');
 						});
 					});
 				});
