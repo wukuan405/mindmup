@@ -161,11 +161,11 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) 
 				setState('done');
 			},
 			getExportMetadata = function () {
-				var form = self.find('form[data-mm-role=export-parameters]'),
+				var form = self.find('form[data-mm-role~=export-parameters]'),
 					meta = {};
 				if (form) {
 					form.find('button.active').add(form.find('select')).add(form.find('input')).each(function () {
-						meta[jQuery(this).attr('name')] = jQuery(this).val();
+						 meta[jQuery(this).attr('name')] = jQuery(this).val() || jQuery(this).attr('placeholder');
 					});
 				}
 				return meta;

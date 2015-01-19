@@ -134,7 +134,8 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
-				jQuery('[data-mm-role=atlas-publish]').layoutExportWidget(layoutExportController, MM.ajaxResultProcessor);
+				jQuery('[data-mm-role=atlas-publish]').layoutExportWidget(layoutExportController, MM.ajaxResultProcessor)
+					.atlasPrepopulationWidget(activeContentListener, 40, 150);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')
@@ -175,7 +176,6 @@ MM.main = function (config) {
 				jQuery('.modal').modalLauncherWidget(mapModel);
 				jQuery('input[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
 				MM.CollaboratorAlerts(alert, collaborationModel);
-
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
