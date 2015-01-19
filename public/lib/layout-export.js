@@ -156,9 +156,6 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) 
 						else if (element.prop('tagName') === 'INPUT') {
 							element.val(value).attr('data-mm-val', value);
 						}
-						else {
-							element.text(value);
-						}
 					});
 				});
 				setState('done');
