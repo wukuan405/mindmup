@@ -192,14 +192,14 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) 
 			};
 		self.find('form').submit(function () {return false; });
 		confirmElement.click(doExport).keydown('space', doExport);
-		self.modal({keyboard: true, show: false});
+		self.modal({keyboard: true, show: false, backdrop: 'static'});
 		self.find('[data-mm-role=set-state]').click(function () {
 			setState(jQuery(this).attr('data-mm-state'));
 		});
-		self.on('show', function () {
-			setState('initial');
-		}).on('shown', function () {
-			confirmElement.focus();
+		self.on('show', function (evt) {
+			if (this === evt.target) {
+				setState('initial');
+			}
 		});
 	});
 };
