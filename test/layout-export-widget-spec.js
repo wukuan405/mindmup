@@ -8,6 +8,8 @@ describe('LayoutExportWidget', function () {
 								'	<div id="d3" class="visible done">done</div> '+
 								'	<div id="d4" class="secondary">not touched by visible selection</div> '+
 								'	<div id="d5" class="visible inprogress">inprogress</div> '+
+								'	<div id="d6" class="visible done">done</div> '+
+								'	<div id="d7" class="visible error">error</div> '+
 								'	<button id="b1" data-mm-role="set-state" data-mm-state="secondary" />' +
 								'	<button id="bexport" data-mm-role="export" />' +
 								'	<input data-mm-role="format-selector" value="format-from-input" />' +
@@ -81,12 +83,7 @@ describe('LayoutExportWidget', function () {
 					});
 				});
 				describe('export', function () {
-					it('switches visible state to inprogress', function () {
-						underTest.find('#bexport').click();
 
-						expect(underTest.find('#d1').css('display')).toBe('none');
-						expect(underTest.find('#d5').css('display')).not.toBe('none');
-					});
 					it('kicks off the export process', function () {
 						underTest.find('#bexport').click();
 						expect(layoutExportController.startExport).toHaveBeenCalled();
@@ -96,6 +93,12 @@ describe('LayoutExportWidget', function () {
 			describe('export workflow', function () {
 				beforeEach(function () {
 						underTest.modal('show');
+				});
+				it('switches visible state to inprogress', function () {
+					underTest.find('#bexport').click();
+
+					expect(underTest.find('#d1').css('display')).toBe('none');
+					expect(underTest.find('#d5').css('display')).not.toBe('none');
 				});
 				describe('format selection', function () {
 					it('uses the value of the format-selector role input element if such element exists', function () {
@@ -184,7 +187,60 @@ describe('LayoutExportWidget', function () {
 								size: 'huge'
 							}
 						});
+					});
+				});
+				describe('when export succeeds', function () {
+					beforeEach(function () {
+						underTest.find('#bexport').click();
+					});
+					it('sets the visible state to done', function () {
+						exportDeferred.resolve();
+						expect(underTest.find('#d1').css('display')).toBe('none');
+						expect(underTest.find('#d5').css('display')).toBe('none');
+						expect(underTest.find('#d6').css('display')).not.toBe('none');
+					});
+					describe('setting data-mm-role=output-url elements', function () {
+						it('sets href on links, without changing text', function () {
+							var element = jQuery('<a href="#" data-mm-role="output-url">old text</a>').appendTo(underTest);
+							exportDeferred.resolve('http://exported');
+							expect(element.attr('href')).toEqual('http://exported');
+							expect(element.text()).toEqual('old text');
+						});
+						it('sets value and data-mm-val on inputs', function () {
+							var element = jQuery('<input value="old val" data-mm-val="old mm val" data-mm-role="output-url"/>').appendTo(underTest);
+							exportDeferred.resolve('http://exported');
+							expect(element.attr('data-mm-val')).toEqual('http://exported');
+							expect(element.val()).toEqual('http://exported');
+						});
+						it('works even if elements have more than one role', function() {
+							var element = jQuery('<a href="#" data-mm-role="output-url another-role">old text</a>').appendTo(underTest);
+							exportDeferred.resolve('http://exported');
+							expect(element.attr('href')).toEqual('http://exported');
+						});
+					});
+				});
+				describe('when export fails', function () {
+					beforeEach(function () {
+						underTest.find('#bexport').click();
+					});
+					describe('filling in error code fields', function () {
+						it('fills in data-mm-role file-id contents with the second argument of the failure rejection', function () {
+							var errorFileField = jQuery('<span data-mm-role="file-id"/>').appendTo(underTest);
+							exportDeferred.reject('snafu', 'request124');
+							expect(errorFileField.text()).toBe('request124');
+						});
+						it('creates an e-mail contact template', function () {
+							var errorContactLink = jQuery('<a data-mm-role="contact-email"/>').appendTo(underTest);
+							exportDeferred.reject('snafu', 'request124');
+							expect(errorContactLink.attr('href')).toBe('mailto:?subject=MindMup%20FORMAT-FROM-INPUT%20Export%20Error%20request124');
+						});
+						it('switches state to error', function () {
+							exportDeferred.reject('snafu', 'request124');
 
+							expect(underTest.find('#d1').css('display')).toBe('none');
+							expect(underTest.find('#d5').css('display')).toBe('none');
+							expect(underTest.find('#d7').css('display')).not.toBe('none');
+						});
 					});
 				});
 			});
