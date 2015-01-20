@@ -7,10 +7,14 @@ jQuery.fn.atlasPrepopulationWidget = function (activeContentListener, titleLengt
 			fillInValues = function () {
 				var form = self.find('form[data-mm-role~=atlas-metadata]'),
 						idea = activeContentListener.getActiveContent(),
-						title = idea && idea.title;
-				form.find('[name=title]').attr('placeholder', truncFunction(title, titleLengthLimit)).val('');
-				form.find('[name=description]').attr('placeholder', truncFunction('MindMup mind map: '+ title, descriptionLengthLimit)).val('');
-				form.find('[name=slug]').attr('placeholder', sanitizeFunction(truncFunction(title, titleLengthLimit))).val('');
+						title = idea && idea.title,
+						saneTitle = truncFunction(title, titleLengthLimit),
+						saneDescription = truncFunction('MindMup mind map: ' + title, descriptionLengthLimit),
+						saneSlug = sanitizeFunction(truncFunction(title, titleLengthLimit));
+
+				form.find('[name=title]').attr('placeholder', saneTitle).val(saneTitle);
+				form.find('[name=description]').attr('placeholder', saneDescription).val(saneDescription);
+				form.find('[name=slug]').attr('placeholder', saneSlug).val(saneSlug);
 			};
 	self.on('show', function (evt) {
 		if (this === evt.target) {
@@ -20,9 +24,13 @@ jQuery.fn.atlasPrepopulationWidget = function (activeContentListener, titleLengt
 	return self;
 };
 MM.AtlasUtil = {
-	truncate: function (str, length) { 'use strict'; return str.substring(0, length);},
+	truncate: function (str, length) {
+		'use strict';
+		return str.substring(0, length);
+	},
 	sanitize: function (s) {
 		'use strict';
-		return s.substr(0,100).trim().toLowerCase().replace(/[\\/:*'?"<>|.\n\s]+/g, '_');
+		var slug = s.substr(0, 100).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+		return slug === '_' ? 'map' : slug;
 	}
 };

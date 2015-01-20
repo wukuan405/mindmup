@@ -7,19 +7,19 @@ describe('AtlasPrepopulateWidget', function () {
 									'<input name="title" placeholder="old title"/>' +
 									'<input name="description" placeholder="old description"/>' +
 									'<input name="slug" placeholder="old slug"/>' +
-									'</form>'+
+									'</form>' +
 								'</div>',
 			field = function (name) {
-				return underTest.find('input[name='+name+']');
+				return underTest.find('input[name=' + name + ']');
 			},
 			truncFunction, sanitizeFunction;
 	beforeEach(function () {
 		content = {
 			title: 'map title'
 		};
-		truncFunction = function(x, length) { return 'truncated ' + x  + ' ' + length;};
-		sanitizeFunction = function(x) { return x.replace(/ /g,'_');};
-		activeContentListener = { getActiveContent: function () { return content;} };
+		truncFunction = function (x, length) { return 'truncated ' + x  + ' ' + length; };
+		sanitizeFunction = function (x) { return x.replace(/ /g, '_'); };
+		activeContentListener = { getActiveContent: function () { return content; } };
 		underTest = jQuery(template).appendTo('body').atlasPrepopulationWidget(activeContentListener, 15, 30, truncFunction, sanitizeFunction);
 	});
 	afterEach(function () {
@@ -72,7 +72,7 @@ describe('MM.AtlasUtil', function () {
 	});
 	describe('sanitize', function () {
 		it('cleans up problematic characters for URLs', function () {
-			expect(MM.AtlasUtil.sanitize('\\/:\'*?"<>|.')).toEqual('_');
+			expect(MM.AtlasUtil.sanitize('\\/:\'*?"<>|.')).toEqual('map');
 		});
 		it('replaces spaces with underscores', function () {
 			expect(MM.AtlasUtil.sanitize('who is this\nhere\tthere')).toEqual('who_is_this_here_there');
@@ -84,11 +84,11 @@ describe('MM.AtlasUtil', function () {
 			expect(MM.AtlasUtil.sanitize('How Do You Do')).toEqual('how_do_you_do');
 		});
 		it('trims text', function () {
-			expect(MM.AtlasUtil.sanitize('How Do You Do ')).toEqual('how_do_you_do');
+			expect(MM.AtlasUtil.sanitize('How Do You Do ')).toEqual('how_do_you_do_');
 		});
 		it('truncates at 100', function () {
 			var text = '';
-			while(text.length<120) {
+			while (text.length < 120) {
 				text += 'How Do You Do';
 			}
 			expect(MM.AtlasUtil.sanitize(text).length).toEqual(100);
