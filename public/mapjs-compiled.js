@@ -3933,7 +3933,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			element.on('hold', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				mapModel.clickNode(node.id, realEvent);
-				if (mapModel.requestContextMenu(evt.gesture.center.pageX, evt.gesture.center.pageY)){
+				if (mapModel.requestContextMenu(evt.gesture.center.pageX, evt.gesture.center.pageY)) {
 					evt.preventDefault();
 					if (evt.gesture) {
 						evt.gesture.preventDefault();
@@ -4230,6 +4230,9 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 				if (!event || !event.gesture || !event.gesture.scale) {
 					return;
 				}
+				event.preventDefault();
+				event.gesture.preventDefault();
+
 				var scale = event.gesture.scale;
 				if (previousPinchScale) {
 					scale = scale / previousPinchScale;
