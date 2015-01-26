@@ -234,6 +234,19 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		}
 		return deferred.promise();
 	};
+	self.deleteFile = function (fileNameKey) {
+		var deferred = jQuery.Deferred(),
+			license = goldLicenseManager.getLicense();
+		if (license) {
+			self.exec('file/delete', {'license': JSON.stringify(license), 'file_key': fileNameKey}).then(
+				deferred.resolve,
+				deferred.reject
+				);
+		} else {
+			deferred.reject('not-authenticated');
+		}
+		return deferred.promise();
+	};
 };
 MM.onetimePassword = function () {
 	'use strict';

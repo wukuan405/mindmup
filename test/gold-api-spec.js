@@ -302,4 +302,29 @@ describe('MM.GoldApi', function () {
 		});
 	});
 
+	describe('deleteFile', function  () {
+		it('should reject as not-authenticated if the license is not set', function () {
+			goldLicenseManager.getLicense.and.returnValue(false);
+			underTest.deleteFile('foo.mup').fail(rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
+		});
+		it('should resolve if the file was deleted', function () {
+			ajaxDeferred.resolve('OK');
+			underTest.deleteFile('foo.mup').then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith('OK');
+		});
+		it('should reject if the file was not deleted', function () {
+			ajaxDeferred.reject({responseText: 'invalid-args'});
+			underTest.deleteFile('foo.mup').then(resolveSpy, rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('invalid-args');
+		});
+		it('posts an AJAX request to the API url without encoding file names', function () {
+			underTest.deleteFile('foo ? mup.mup');
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+			expect(ajaxPost.url).toEqual('API_URL/file/delete');
+			expect(ajaxPost.dataType).toBeUndefined();
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license), 'file_key': 'foo ? mup.mup'}));
+		});
+	});
 });
