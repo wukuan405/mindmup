@@ -1,17 +1,18 @@
 /*global spyOn, MAPJS, jasmine, describe, it, MM, observable, expect, beforeEach, localStorage*/
 describe('Auto save', function () {
 	'use strict';
-	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert, mapModel;
+	var storage, mapController, autoSave, unsavedChangesAvailableListener, idea, alert, mapModel, warningId;
 	beforeEach(function () {
 		storage = new MM.JsonStorage(localStorage);
 		mapModel = jasmine.createSpyObj('mapModel', ['pause', 'resume']);
 		mapController = observable({});
-		alert = {show: function () {} };
-		autoSave = new MM.AutoSave(mapController, storage, alert, mapModel);
+		warningId = 101;
+		alert = jasmine.createSpyObj('alert', ['show', 'hide']);
+		alert.show.and.callFake(function () { return warningId; });
+		autoSave = new MM.AutoSave(mapController, storage, alert, mapModel, 'clippy');
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
 		idea = observable({});
 		storage.remove('auto-save-mapId');
-		spyOn(alert, 'show');
 	});
 	it('should trigger unsavedChangesAvailable event when unsaved changes exist for loaded map', function () {
 		autoSave.addEventListener('unsavedChangesAvailable', unsavedChangesAvailableListener);
@@ -125,43 +126,92 @@ describe('Auto save', function () {
 
 			expect(storage.remove).toHaveBeenCalledWith('auto-save-mapId');
 		});
-		it('should warn when changes could not be saved', function () {
-			spyOn(storage, 'setItem').and.throwError('failed');
-			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			idea.dispatchEvent('changed', 'cmd1', [1]);
-			expect(alert.show).toHaveBeenCalled();
-		});
-		it('should not warn for the same map twice', function () {
-			spyOn(storage, 'setItem').and.throwError('failed');
-			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			idea.dispatchEvent('changed', 'cmd1', [1]);
-			alert.show.calls.reset();
+		describe('when changes could not be saved', function () {
+			var timesToFailOnSetItem, removedKeys;
+			beforeEach(function () {
+				timesToFailOnSetItem = 1;
+				removedKeys = 1;
 
-			idea.dispatchEvent('changed', 'cmd1', [1]);
+				spyOn(storage, 'setItem').and.callFake(function () {
+					if (timesToFailOnSetItem > 0) {
+						timesToFailOnSetItem = timesToFailOnSetItem - 1;
+						throw 'Oh';
+					}
+				});
+				spyOn(storage, 'removeKeysWithPrefix').and.callFake(function () { return removedKeys; });
+				mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+			});
+			it('should clear unsaved changes for other maps when changes could not be saved', function () {
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(storage.removeKeysWithPrefix).toHaveBeenCalledWith('auto-save-');
+			});
+			it('should clear stored clipboard when changes could not be saved', function () {
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(storage.removeKeysWithPrefix).toHaveBeenCalledWith('clippy');
+			});
+			it('should not re-attempt saving if clearing unsaved changes affected 0 keys', function () {
+				removedKeys = 0;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(storage.setItem.calls.count()).toBe(1);
+			});
+			it('should warn clearing unsaved changes affected 0 keys', function () {
+				removedKeys = 0;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(alert.show).toHaveBeenCalled();
+			});
+			it('should not warn if it succeeed in saving after clearing unsaved changes and clipboard', function () {
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(alert.show).not.toHaveBeenCalled();
+			});
+			it('should warn when changes could not be saved after clearing', function () {
+				timesToFailOnSetItem = 2;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(alert.show).toHaveBeenCalled();
+			});
 
-			expect(alert.show).not.toHaveBeenCalled();
-		});
-		it('should show warning after save', function () {
-			spyOn(storage, 'setItem').and.throwError('failed');
-			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			idea.dispatchEvent('changed', 'cmd1', [1]);
-			mapController.dispatchEvent('mapSaved', 'mapId', idea);
-			alert.show.calls.reset();
+			it('should not warn for the same map twice', function () {
+				timesToFailOnSetItem = 2;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				alert.show.calls.reset();
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				expect(alert.show).not.toHaveBeenCalled();
+			});
+			it('should remove warning after save', function () {
+				timesToFailOnSetItem = 2;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				mapController.dispatchEvent('mapSaved', 'mapId', idea);
+				expect(alert.hide).toHaveBeenCalledWith(warningId);
+			});
+			it('should remove warning after load', function () {
+				timesToFailOnSetItem = 2;
+				idea.dispatchEvent('changed', 'cmd1', [1]);
+				mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+				expect(alert.hide).toHaveBeenCalledWith(warningId);
+			});
+			describe('on subsequent failure after save or load', function () {
+				beforeEach(function () {
+					removedKeys = 0;
+					timesToFailOnSetItem = 2;
+				});
+				it('should show warning after save', function () {
+					idea.dispatchEvent('changed', 'cmd1', [1]);
+					mapController.dispatchEvent('mapSaved', 'mapId', idea);
+					alert.show.calls.reset();
 
-			idea.dispatchEvent('changed', 'cmd1', [1]);
+					idea.dispatchEvent('changed', 'cmd1', [1]);
 
-			expect(alert.show).toHaveBeenCalled();
-		});
-		it('should show warning after load', function () {
-			spyOn(storage, 'setItem').and.throwError('failed');
-			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			idea.dispatchEvent('changed', 'cmd1', [1]);
-			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
-			alert.show.calls.reset();
+					expect(alert.show).toHaveBeenCalled();
+				});
+				it('should show warning after load', function () {
+					idea.dispatchEvent('changed', 'cmd1', [1]);
+					mapController.dispatchEvent('mapLoaded', 'mapId', idea);
+					alert.show.calls.reset();
 
-			idea.dispatchEvent('changed', 'cmd1', [1]);
+					idea.dispatchEvent('changed', 'cmd1', [1]);
 
-			expect(alert.show).toHaveBeenCalled();
+					expect(alert.show).toHaveBeenCalled();
+				});
+			});
 		});
 	});
 	describe('resources caching', function () {
