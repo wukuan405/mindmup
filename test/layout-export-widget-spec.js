@@ -201,7 +201,7 @@ describe('LayoutExportWidget', function () {
 						});
 					});
 				});
-				describe('when export succeeds without a custom processor', function () {
+				describe('when export succeeds', function () {
 					beforeEach(function () {
 						underTest.find('#bexport').click();
 					});
@@ -214,63 +214,32 @@ describe('LayoutExportWidget', function () {
 					describe('setting data-mm-role=output-url elements', function () {
 						it('sets href on links, without changing text', function () {
 							var element = jQuery('<a href="#" data-mm-role="output-url">old text</a>').appendTo(underTest);
-							exportDeferred.resolve('http://exported');
+							exportDeferred.resolve({'output-url': 'http://exported'});
 							expect(element.attr('href')).toEqual('http://exported');
 							expect(element.text()).toEqual('old text');
 						});
 						it('sets value and data-mm-val on inputs', function () {
 							var element = jQuery('<input value="old val" data-mm-val="old mm val" data-mm-role="output-url"/>').appendTo(underTest);
-							exportDeferred.resolve('http://exported');
+							exportDeferred.resolve({'output-url': 'http://exported'});
 							expect(element.attr('data-mm-val')).toEqual('http://exported');
 							expect(element.val()).toEqual('http://exported');
 						});
 						it('works even if elements have more than one role', function() {
 							var element = jQuery('<a href="#" data-mm-role="output-url another-role">old text</a>').appendTo(underTest);
-							exportDeferred.resolve('http://exported');
+							exportDeferred.resolve({'output-url': 'http://exported'});
 							expect(element.attr('href')).toEqual('http://exported');
-						});
-					});
-				});
-				describe('when export succeeds using a custom result processor', function () {
-					var resultDeferred;
-						beforeEach(function () {
-							underTest.remove();
-							resultDeferred = jQuery.Deferred();
-							var deferredProcessor = function () {
-								return resultDeferred;
-							};
-							underTest= jQuery(template).appendTo('body');
-							fakeBootstrapModal(underTest);
-							underTest.layoutExportWidget(layoutExportController, deferredProcessor);
-							underTest.show();
-							underTest.find('#bexport').click();
-							exportDeferred.resolve();
-						});
-						it('does not change state until the deferred resolves', function () {
-							expect(underTest.find('#d-inprogress').css('display')).not.toBe('none');
-							expect(underTest.find('#d-done').css('display')).toBe('none');
-						});
-						it('changes state to done once the deferred result resolves', function () {
-							resultDeferred.resolve();
-							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
-							expect(underTest.find('#d-done').css('display')).not.toBe('none');
-						});
-						it('changes state to error if the deferred result rejects', function () {
-							resultDeferred.reject('snafu', 'request124');
-
-							expect(underTest.find('#d-inprogress').css('display')).toBe('none');
-							expect(underTest.find('#d-error').css('display')).not.toBe('none');
 						});
 						it('fills in all elements matching data-mm-role from the result object', function () {
 							var name= jQuery('<input>').attr('data-mm-role','name').appendTo(underTest),
 								link=	jQuery('<a>').attr('data-mm-role','link').appendTo(underTest);
 
-							resultDeferred.resolve({name: 'Jim Jom', link: 'http://iron'});
+							exportDeferred.resolve({name: 'Jim Jom', link: 'http://iron'});
 
 							expect(name.val()).toEqual('Jim Jom');
 							expect(name.attr('data-mm-val')).toEqual('Jim Jom');
 							expect(link.attr('href')).toEqual('http://iron');
 						});
+					});
 				});
 				describe('when export fails', function () {
 					var genericError, customError;

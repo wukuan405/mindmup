@@ -49,7 +49,7 @@
  * @param {function} storageApi.poll (URL urlToPoll, Object options)
  * @param {ActivityLog} activityLog logging interface
  */
-MM.LayoutExportController = function (exportFunctions, configurationGenerator, storageApi, activityLog) {
+MM.LayoutExportController = function (formatFunctions, configurationGenerator, storageApi, activityLog) {
 	'use strict';
 	var self = this,
 		category = 'Map',
@@ -58,6 +58,15 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 				return 'Export';
 			}
 			return format.toUpperCase() + ' Export';
+		},
+		getExportFunction = function(format) {
+				return formatFunctions[format].exporter || formatFunctions[format];
+		},
+		postProcess = function(format, url) {
+			if (formatFunctions[format].processor) {
+				return formatFunctions[format].processor(url);
+			}
+			return jQuery.Deferred().resolve({'output-url': url}).promise();
 		};
     /**
      * Kick-off an export workflow
@@ -80,7 +89,7 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
-			exported = exportFunctions[format](),
+			exported = getExportFunction(format)(),
 			layout = _.extend({}, exported, exportProperties);
 		if (_.isEmpty(exported)) {
 			return deferred.reject('empty').promise();
@@ -97,7 +106,11 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 							resolve = function () {
 								pollTimer.end();
 								activityLog.log(category, eventType + ' completed');
-								deferred.resolve(exportConfig.signedOutputUrl, fileId);
+								postProcess(format, exportConfig.signedOutputUrl).then(function (result) {
+									deferred.resolve(result, fileId);
+								}, function(reason) {
+									reject(reason, fileId);
+								});
 							};
 						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 15000}).then(
 							function () {
@@ -120,14 +133,8 @@ MM.LayoutExportController = function (exportFunctions, configurationGenerator, s
 	};
 };
 
-jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) {
+jQuery.fn.layoutExportWidget = function (layoutExportController) {
 	'use strict';
-	var defaultResultHandler = function (url) {
-		return jQuery.Deferred().resolve({
-			'output-url': url
-		});
-	};
-	resultHandler = resultHandler || defaultResultHandler;
 	return this.each(function () {
 		var self = jQuery(this),
 			selectedFormat = function () {
@@ -142,9 +149,6 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) 
 			setState = function (state) {
 				self.find('.visible').hide();
 				self.find('.visible' + '.' + state).show();
-			},
-			exportComplete = function (url, fileId) {
-				resultHandler(url, fileId).then(publishResult, exportFailed);
 			},
 			publishResult = function (result) {
 				_.each(result, function (value, key) {
@@ -185,7 +189,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController, resultHandler) 
 			},
 			doExport = function () {
 				setState('inprogress');
-				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(exportComplete, exportFailed);
+				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed);
 			};
 		self.find('form').submit(function () {return false; });
 		confirmElement.click(doExport).keydown('space', doExport);

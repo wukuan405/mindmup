@@ -70,7 +70,7 @@ MM.main = function (config) {
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
 				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'publish.json':  activeContentListener.getActiveContent
+				'publish.json': { exporter: activeContentListener.getActiveContent, processor: MM.ajaxResultProcessor}
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
@@ -133,9 +133,8 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
-				jQuery('[data-mm-role=layout-export]').layoutExportWidget(layoutExportController);
-				jQuery('[data-mm-role=atlas-publish]').layoutExportWidget(layoutExportController, MM.ajaxResultProcessor)
-					.atlasPrepopulationWidget(activeContentListener, 40, 150);
+				jQuery('[data-mm-role~=layout-export]').layoutExportWidget(layoutExportController);
+				jQuery('[data-mm-role~=atlas-publish]').atlasPrepopulationWidget(activeContentListener, 40, 150);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
 				jQuery('body')

@@ -44,10 +44,60 @@ describe('LayoutExport', function () {
 			underTest = new MM.LayoutExportController(exportFunctions, configurationGenerator, storageApi, activityLog);
 
 		});
-		it('pulls out current map model layout, passes the format to the configuration generator, and publishes JSON version of that to the storageApi', function () {
+		it('pulls out the export from the export function for the selected format, passes the format to the configuration generator, and publishes JSON version of that to the storageApi', function () {
 			underTest.startExport('pdf');
 			expect(configurationGenerator.generateExportConfiguration).toHaveBeenCalledWith('pdf');
 			expect(storageApi.save).toHaveBeenCalledWith(JSON.stringify(currentLayout), saveConfiguration, saveOptions);
+		});
+		describe('format configurations', function () {
+			var processorDeferred, resolved, postProcessor, rejected;
+			beforeEach(function () {
+				processorDeferred = jQuery.Deferred();
+				postProcessor = jasmine.createSpy('postProcessor').and.returnValue(processorDeferred.promise());
+				resolved = jasmine.createSpy('resolved');
+				rejected = jasmine.createSpy('rejected');
+				underTest = new MM.LayoutExportController({
+					'ppt': function () { return {what: 'PPT'}; },
+					'pdf': {exporter: function () { return {what: 'PDF'}; }, processor: postProcessor }
+				}, configurationGenerator, storageApi, activityLog);
+			});
+			describe('with just an exporter function and no processor', function () {
+				it('use the export function to generate content to send to the storage API', function () {
+						underTest.startExport('ppt');
+						expect(storageApi.save).toHaveBeenCalledWith('{"what":"PPT"}', saveConfiguration, saveOptions);
+				});
+				it('do not post-process results before resolving, but return a hash with output-url', function () {
+						var resolved = jasmine.createSpy('resolved');
+						underTest.startExport('ppt').then(resolved);
+						storageApi.deferred.outputlisturl.resolve();
+						expect(resolved).toHaveBeenCalledWith({ 'output-url': 'outputurl' }, requestId);
+				});
+			});
+			describe('with an exporter and a processor', function () {
+				it('use the export function to generate content to send to the storage API', function () {
+						underTest.startExport('pdf');
+						expect(storageApi.save).toHaveBeenCalledWith('{"what":"PDF"}', saveConfiguration, saveOptions);
+				});
+
+				it('do not resolve immediately when storage api resolves, but instead kick off the post-processor', function () {
+						underTest.startExport('pdf').then(resolved);
+						storageApi.deferred.outputlisturl.resolve();
+						expect(resolved).not.toHaveBeenCalled();
+						expect(postProcessor).toHaveBeenCalledWith('outputurl');
+				});
+				it('resolve when the post-processor resolves', function () {
+						underTest.startExport('pdf').then(resolved);
+						storageApi.deferred.outputlisturl.resolve();
+						processorDeferred.resolve({hi: 'there'});
+						expect(resolved).toHaveBeenCalledWith({hi:'there'}, requestId);
+				});
+				it('reject if the post-processor rejects', function () {
+						underTest.startExport('pdf').then(resolved, rejected);
+						storageApi.deferred.outputlisturl.resolve();
+						processorDeferred.reject('network-error');
+						expect(rejected).toHaveBeenCalledWith('network-error', requestId);
+				});
+			});
 		});
 		it('merges any object passed with the current map model layout, and publishes JSON version of that to an fileSystem, leaving current layout unchanged', function () {
 			underTest.startExport('pdf', {'foo': 'bar'});
@@ -89,7 +139,7 @@ describe('LayoutExport', function () {
 			underTest.startExport('pdf').then(resolved);
 
 			storageApi.deferred.outputlisturl.resolve();
-			expect(resolved).toHaveBeenCalledWith('outputurl', requestId);
+			expect(resolved).toHaveBeenCalledWith({'output-url': 'outputurl'}, requestId);
 		});
 		it('rejects if the configuationGenerator fails', function () {
 			var fail = jasmine.createSpy('fail'),
