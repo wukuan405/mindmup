@@ -5,24 +5,29 @@ jQuery.fn.modalLauncherWidget = function (mapModel) {
 		var element = jQuery(this),
 				keyCode = element.data('mm-launch-key-code'),
 				wasFocussed;
-		element.on('show',  function () {
-			wasFocussed = jQuery(':focus');
-			if (wasFocussed.length === 0) {
-				wasFocussed = jQuery(document.activeElement);
+		element.on('show',  function (evt) {
+			if (this === evt.target) {
+				wasFocussed = jQuery(':focus');
+				if (wasFocussed.length === 0) {
+					wasFocussed = jQuery(document.activeElement);
+				}
+				wasFocussed.blur();
+				mapModel.setInputEnabled(false, false);
 			}
-			wasFocussed.blur();
-			mapModel.setInputEnabled(false, false);
-		}).on('hide',  function () {
-			mapModel.setInputEnabled(true, false);
-			if (wasFocussed && wasFocussed.length > 0) {
-				wasFocussed.focus();
-			} else {
-				jQuery(document).focus();
+		}).on('hide',  function (evt) {
+			if (this === evt.target) {
+				mapModel.setInputEnabled(true, false);
+				if (wasFocussed && wasFocussed.length > 0) {
+					wasFocussed.focus();
+				} else {
+					jQuery(document).focus();
+				}
+				wasFocussed = undefined;
 			}
-			wasFocussed = undefined;
-		}).on('shown', function () {
-
-			element.find('[data-mm-modal-shown-focus]').focus();
+		}).on('shown', function (evt) {
+			if (this === evt.target) {
+				element.find('[data-mm-modal-shown-focus]').focus();
+			}
 		});
 		if (keyCode) {
 			jQuery(document).keydown(function (event) {

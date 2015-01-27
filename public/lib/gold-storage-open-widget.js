@@ -1,6 +1,6 @@
-/*global $, _ */
+/*global jQuery, _ */
 
-$.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
+jQuery.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 	'use strict';
 	var modal = this,
 		template = this.find('[data-mm-role=template]'),
@@ -16,10 +16,15 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 			}
 			html = html + '</div>';
 			statusDiv.html(html);
-			$('[data-mm-role=auth]').click(function () {
+			jQuery('[data-mm-role=auth]').click(function () {
 				statusDiv.empty();
 				callback();
 			});
+		},
+		showSection = function (sectionName) {
+			modal.find('[data-mm-section]').hide();
+			modal.find('[data-mm-section~="' + sectionName + '"]').show();
+
 		},
 		loaded = function (files) {
 			statusDiv.empty();
@@ -32,17 +37,23 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 					var added;
 					if (file) {
 						added = template.clone().appendTo(parent);
+						added.find('[rel=tooltip]').tooltip();
 						added.find('a[data-mm-role=file-link]')
 							.text(file.title)
 							.click(function () {
 								modal.modal('hide');
 								mapController.loadMap(file.id);
 							});
+
+						added.find('[data-mm-role~=map-delete]').click(function () {
+							modal.find('[data-mm-section~="delete-map"] [data-mm-role~="map-name"]').text(file.title);
+							showSection('delete-map');
+						});
 						added.find('[data-mm-role=modification-status]').text(new Date(file.modifiedDate).toLocaleString());
 					}
 				});
 			} else {
-				$('<tr><td colspan="3">No maps found</td></tr>').appendTo(parent);
+				jQuery('<tr><td colspan="3">No maps found</td></tr>').appendTo(parent);
 			}
 		},
 		fileRetrieval = function () {
@@ -73,8 +84,29 @@ $.fn.goldStorageOpenWidget = function (goldMapStorageAdapter, mapController) {
 				});
 		};
 	template.detach();
-	modal.on('show', function () {
-		fileRetrieval();
+	modal.find('[data-mm-target-section]').click(function () {
+		var elem = jQuery(this),
+				sectionName = elem.data('mm-target-section');
+		showSection(sectionName);
 	});
+	modal.find('[data-mm-role~="delete-map-confirmed"]').click(function () {
+		var mapName = modal.find('[data-mm-section~="delete-map"] [data-mm-role~="map-name"]').text();
+		showSection('delete-map-in-progress');
+		goldMapStorageAdapter.deleteMap(mapName).then(
+			function () {
+				showSection('delete-map-successful');
+			},
+			function (reason) {
+				modal.find('[data-mm-section="delete-map-failed"] [data-mm-role="reason"]').text(reason);
+				showSection('delete-map-failed');
+			});
+	});
+	modal.on('show', function (evt) {
+		if (this === evt.target) {
+			showSection('file-list');
+			fileRetrieval();
+		}
+	});
+	modal.modal({keyboard: true, show: false, backdrop: 'static'});
 	return modal;
 };

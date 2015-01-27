@@ -43,7 +43,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 			loadMap: self.loadMap
 		};
 	};
-
+	self.deleteMap = goldApi.deleteFile;
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
