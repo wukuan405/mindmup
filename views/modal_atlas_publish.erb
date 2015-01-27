@@ -40,27 +40,49 @@
     <div class="visible done">
       <div class="alert alert-success alert-block">
         <h4>Your map was published</h4> 
-
       </div>
-			<p>
-			Share the URLs below directly with your readers, or download the web page and self-host it. (Click the URLs below, then press Ctrl+C [Cmd+C on OSX] to copy them.)
-			</p>
-      <form class="form">
-        <div class="control-group">
-					<label>Web page:</label>
-					<div class="input-append">
-            <input data-mm-role="index-html selectable-read-only" class="span5" style="outline:none" />
-            <a class="btn btn-small" href="#" data-mm-role="index-html" target="_blank"><i class="icon-share"></i></a>
-					</div>
-        </div>
-        <div class="control-group">
-					<label>Thumbnail image:</label>
-					<div class="input-append">
-            <input data-mm-role="thumb-png selectable-read-only" class="span5" style="outline:none" />
-            <a class="btn btn-small" href="#" data-mm-role="thumb-png" target="_blank"><i class="icon-share"></i></a>
-					</div>
-        </div>
-      </form>
+
+
+      <div class="tabbable tabs-top">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#publish-tab-links" data-toggle="tab">Web links</a></li>
+          <li><a href="#publish-tab-embed" data-toggle="tab">Embed code</a></li>
+          <li><a href="#publish-tab-popular" data-toggle="tab">Post to popular sites</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="publish-tab-links">
+						<p>
+						Share the URLs below directly with your readers, or download the web page and self-host it. (Click the URLs below, then press Ctrl+C [Cmd+C on OSX] to copy them.)
+						</p>
+						<form class="form">
+							<div class="control-group">
+								<label>Web page:</label>
+								<div class="input-append">
+									<input data-mm-role="index-html selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="index-html" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+							<div class="control-group">
+								<label>Thumbnail image:</label>
+								<div class="input-append">
+									<input data-mm-role="thumb-png selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="thumb-png" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+						</form>
+          </div>
+          <div class="tab-pane" id="publish-tab-embed">
+						<p>Paste the code snippet below in your web site to embed the map. Don't forget to configure the width and height of the iFrame!</p>
+							<textarea data-mm-role="embed-url selectable-read-only" class="span5"></textarea>
+          </div>
+          <div class="tab-pane" id="publish-tab-popular">
+						<p>Click on a button below to post to one of the popular sites quickly:</p>
+						<p>
+							<a href="" data-mm-role="twitter-url" target="_blank">Share to twitter</a>
+						</p>
+          </div>
+				</div>
+			</div>
     </div>
     <div class="visible error alert alert-error alert-block">
       <h4>Unable to publish your map:</h4>
