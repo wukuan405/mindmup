@@ -60,6 +60,7 @@ MM.main = function (config) {
 				new MM.EmbeddedMapSource(config.newMapProperties)
 			]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
+			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, [MM.twitterIntentResultDecorator,MM.embedResultDecorator]),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
 			navigation = MM.navigation(browserStorage, mapController),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
@@ -70,7 +71,7 @@ MM.main = function (config) {
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
 				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'publish.json': { exporter: activeContentListener.getActiveContent, processor: MM.ajaxResultProcessor}
+				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),

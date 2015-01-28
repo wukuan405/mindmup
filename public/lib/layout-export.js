@@ -62,11 +62,12 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 		getExportFunction = function(format) {
 				return formatFunctions[format].exporter || formatFunctions[format];
 		},
-		postProcess = function(format, url) {
+		postProcess = function(format, url, exportProperties) {
+			var result = {'output-url': url};
 			if (formatFunctions[format].processor) {
-				return formatFunctions[format].processor(url);
+				return formatFunctions[format].processor(_.extend(result, exportProperties));
 			}
-			return jQuery.Deferred().resolve({'output-url': url}).promise();
+			return jQuery.Deferred().resolve(result).promise();
 		};
     /**
      * Kick-off an export workflow
@@ -106,7 +107,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 							resolve = function () {
 								pollTimer.end();
 								activityLog.log(category, eventType + ' completed');
-								postProcess(format, exportConfig.signedOutputUrl).then(function (result) {
+								postProcess(format, exportConfig.signedOutputUrl, exportProperties).then(function (result) {
 									deferred.resolve(result, fileId);
 								}, function(reason) {
 									reject(reason, fileId);
@@ -157,7 +158,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 						if (element.prop('tagName') ==='A') {
 							element.attr('href', value);
 						}
-						else if (element.prop('tagName') === 'INPUT') {
+						else if (element.prop('tagName') === 'INPUT' || element.prop('tagName') === 'TEXTAREA') {
 							element.val(value).attr('data-mm-val', value);
 						}
 					});
@@ -218,15 +219,41 @@ MM.buildMapLayoutExporter = function (mapModel, resourceTranslator) {
 		return layout;
 	};
 };
-MM.ajaxResultProcessor = function (url, fileId) {
+MM.ajaxResultProcessor = function (exportConfig) {
 	'use strict';
 	var result = jQuery.Deferred();
-	jQuery.ajax({url: url, dataType: 'json'}).then(
-			result.resolve,
+	jQuery.ajax({url: exportConfig['output-url'], dataType: 'json'}).then(
+			function (jsonContent) {
+				result.resolve(_.extend({}, exportConfig, jsonContent));
+			},
 			function () {
-				result.reject('generation-error', fileId);
+				result.reject('generation-error');
 			}
 	);
 	return result.promise();
 };
 
+MM.twitterIntentResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['twitter-url'] =  'https://twitter.com/intent/tweet?text=' + exportResult.export.title +
+		'&url=' + exportResult['index-html'] +
+		'&source=mindmup.com&related=mindmup&via=mindmup';
+};
+MM.embedResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['embed-markup'] = '<iframe src="'+exportResult['index-html']+'"></iframe>';
+};
+MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
+	'use strict';
+	return function (exportConfig) {
+		var deferred = jQuery.Deferred();
+		resultProcessor(exportConfig).then(function(result) {
+			_.each(decorators, function (decorator) {
+				decorator(result);
+			});
+			deferred.resolve(result);
+		},
+		deferred.reject);
+		return deferred.promise();
+	};
+};

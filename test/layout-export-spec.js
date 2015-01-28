@@ -78,12 +78,11 @@ describe('LayoutExport', function () {
 						underTest.startExport('pdf');
 						expect(storageApi.save).toHaveBeenCalledWith('{"what":"PDF"}', saveConfiguration, saveOptions);
 				});
-
 				it('do not resolve immediately when storage api resolves, but instead kick off the post-processor', function () {
 						underTest.startExport('pdf').then(resolved);
 						storageApi.deferred.outputlisturl.resolve();
 						expect(resolved).not.toHaveBeenCalled();
-						expect(postProcessor).toHaveBeenCalledWith('outputurl');
+						expect(postProcessor).toHaveBeenCalledWith({'output-url': 'outputurl'});
 				});
 				it('resolve when the post-processor resolves', function () {
 						underTest.startExport('pdf').then(resolved);
@@ -202,5 +201,34 @@ describe('MM.buildMapLayoutExporter', function () {
 	it('survives no nodes', function () {
 		mapModel.getCurrentLayout.and.returnValue({links: []});
 		expect(underTest()).toEqual({links: []});
+	});
+});
+describe('MM.buildDecoratedResultProcessor', function () {
+	'use strict';
+	var one, two, three, deferredOne, underTest, resolved, rejected;
+	beforeEach(function () {
+		resolved = jasmine.createSpy('resolved');
+		rejected = jasmine.createSpy('rejected');
+		deferredOne = jQuery.Deferred();
+		one = jasmine.createSpy('one').and.returnValue(deferredOne.promise());
+		two = function (r) { r.two = true; };
+		three = function (r) { r.three= true; };
+		underTest = MM.buildDecoratedResultProcessor(one, [two, three]);
+	});
+	it('executes a deferred result processor first', function () {
+		underTest({start: 1}).then(resolved, rejected);
+		expect(one).toHaveBeenCalledWith({start: 1});
+		deferredOne.resolve({one: true});
+		expect(resolved).toHaveBeenCalled();
+	});
+	it('synchronously applies a chain of decorators to the result', function () {
+		underTest({start: 1}).then(resolved, rejected);
+		deferredOne.resolve({one: true});
+		expect(resolved).toHaveBeenCalledWith({one: true, two: true, three: true});
+	});
+	it('rejects if a deferred result processor rejects', function () {
+		underTest({start: 1}).then(resolved, rejected);
+		deferredOne.reject('oops');
+		expect(rejected).toHaveBeenCalledWith('oops');
 	});
 });
