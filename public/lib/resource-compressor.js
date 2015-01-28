@@ -1,6 +1,6 @@
 /*global MM, _ */
 MM.ResourceCompressor = function (prefixTemplate) {
-  'use strict';
+	'use strict';
 	var self = this,
 		prefix = prefixTemplate + ':',
 		prefixMatcher = new RegExp('^' + prefix),
@@ -22,16 +22,16 @@ MM.ResourceCompressor = function (prefixTemplate) {
 				delete contentAggregate.resources[key];
 			});
 		},
-    replaceInlineWithResources = function (contentAggregate) {
-      contentAggregate.traverse(function (idea) {
-        var url = idea && idea.attr && idea.attr.icon && idea.attr.icon.url;
-        if (url && !prefixMatcher.test(url)) {
-         idea.attr.icon.url = prefix + contentAggregate.storeResource(url);
-        }
-      });
-    };
-  self.compress = function (contentAggregate) {
-    replaceInlineWithResources(contentAggregate);
-    cleanUpResources(contentAggregate);
-  };
+		replaceInlineWithResources = function (contentAggregate) {
+			contentAggregate.traverse(function (idea) {
+				var url = idea && idea.attr && idea.attr.icon && idea.attr.icon.url;
+				if (url && !prefixMatcher.test(url)) {
+					idea.attr.icon.url = prefix + contentAggregate.storeResource(url);
+				}
+			});
+		};
+	self.compress = function (contentAggregate) {
+		replaceInlineWithResources(contentAggregate);
+		cleanUpResources(contentAggregate);
+	};
 };
