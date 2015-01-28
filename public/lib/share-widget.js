@@ -16,8 +16,7 @@ $.fn.shareWidget = function () {
 					'&url=' + url +
 					'&source=mindmup.com&related=mindmup&via=mindmup');
 				return true;
-			}
-			else if (target === 'facebook') {
+			} else if (target === 'facebook') {
 				self.attr('target', '_blank');
 				self.attr('href', 'https://www.facebook.com/dialog/feed?app_id=621299297886954&' +
 					'link=' + url + '&' +
@@ -31,7 +30,7 @@ $.fn.shareWidget = function () {
 				self.attr('target', 'mailtoIframe');
 				self.attr('href', 'mailto:?' +
 					'subject=' + title + '&' +
-					'body=' + encodeURIComponent('Hi,\n\nHere is your mind map:\n\n'+ window.location.href) );
+					'body=' + encodeURIComponent('Hi,\n\nHere is your mind map:\n\n' + window.location.href));
 				return true;
 			}
 			return false;
