@@ -963,3 +963,8 @@ img.collab-photo {
 .mm-has-collaborators .visible-has-collaborators {
 	display: block;
 }
+
+.btn-share {
+	margin-left: 10px;
+	margin-right: 10px;
+}

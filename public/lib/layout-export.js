@@ -235,9 +235,43 @@ MM.ajaxResultProcessor = function (exportConfig) {
 
 MM.twitterIntentResultDecorator = function (exportResult) {
 	'use strict';
-	exportResult['twitter-url'] =  'https://twitter.com/intent/tweet?text=' + exportResult.export.title +
-		'&url=' + exportResult['index-html'] +
+	exportResult['twitter-url'] =  'https://twitter.com/intent/tweet?text=' + encodeURIComponent(exportResult.export.title) +
+		'&url=' + encodeURIComponent(exportResult['index-html']) +
 		'&source=mindmup.com&related=mindmup&via=mindmup';
+};
+MM.facebookResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['facebook-url'] = 'https://www.facebook.com/dialog/share_open_graph?' +
+		'app_id=621299297886954' +
+		'&display=popup' +
+		'&action_type=og.likes' +
+	  '&action_properties=%7B%22object%22%3A%22' + encodeURIComponent(exportResult['index-html']) + '%22%7D' +
+		'&redirect_uri=' + encodeURIComponent('http://www.mindmup.com/fb');
+};
+MM.googlePlusResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['google-plus-url'] = 'https://plus.google.com/share?url=' + encodeURIComponent(exportResult['index-html']);
+};
+MM.linkedinResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['linkedin-url'] = 'http://www.linkedin.com/shareArticle?mini=true' +
+		'&url=' + encodeURIComponent(exportResult['index-html']) +
+		'&title=' + encodeURIComponent(exportResult.export.title) +
+		'&summary=' + encodeURIComponent(exportResult.export.description) +
+		'&source=MindMup';
+
+};
+MM.tumblrResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['tumblr-url'] = 'http://www.tumblr.com/share/link?url='+ encodeURIComponent(exportResult['index-html']) +
+		'&name='+ encodeURIComponent(exportResult.export.title) +
+		'&description=' + encodeURIComponent(exportResult.export.description);
+};
+MM.pinterestResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['pinterest-url'] = 'https://pinterest.com/pin/create/button/?media='+ encodeURIComponent(exportResult['thumb-png'])+
+			'&url=' + encodeURIComponent(exportResult['index-html']) +
+			'&is_video=false&description=' + encodeURIComponent(exportResult.export.description);
 };
 MM.embedResultDecorator = function (exportResult) {
 	'use strict';
@@ -257,3 +291,6 @@ MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 		return deferred.promise();
 	};
 };
+MM.sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, [MM.twitterIntentResultDecorator, MM.facebookResultDecorator, MM.googlePlusResultDecorator,
+		MM.linkedinResultDecorator, MM.tumblrResultDecorator, MM.pinterestResultDecorator, MM.embedResultDecorator]);
+
