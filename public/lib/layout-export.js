@@ -59,10 +59,10 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 			}
 			return format.toUpperCase() + ' Export';
 		},
-		getExportFunction = function(format) {
-				return formatFunctions[format].exporter || formatFunctions[format];
+		getExportFunction = function (format) {
+			return formatFunctions[format].exporter || formatFunctions[format];
 		},
-		postProcess = function(format, url, exportProperties) {
+		postProcess = function (format, url, exportProperties) {
 			var result = {'output-url': url};
 			if (formatFunctions[format].processor) {
 				return formatFunctions[format].processor(_.extend(result, exportProperties));
@@ -109,7 +109,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 								activityLog.log(category, eventType + ' completed');
 								postProcess(format, exportConfig.signedOutputUrl, exportProperties).then(function (result) {
 									deferred.resolve(result, fileId);
-								}, function(reason) {
+								}, function (reason) {
 									reject(reason, fileId);
 								});
 							};
@@ -153,12 +153,11 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			},
 			publishResult = function (result) {
 				_.each(result, function (value, key) {
-					self.find('[data-mm-role~='+key+']').each(function() {
+					self.find('[data-mm-role~=' + key + ']').each(function () {
 						var element = jQuery(this);
-						if (element.prop('tagName') ==='A') {
+						if (element.prop('tagName') === 'A') {
 							element.attr('href', value);
-						}
-						else if (element.prop('tagName') === 'INPUT' || element.prop('tagName') === 'TEXTAREA') {
+						} else if (element.prop('tagName') === 'INPUT' || element.prop('tagName') === 'TEXTAREA') {
 							element.val(value).attr('data-mm-val', value);
 						}
 					});
@@ -170,13 +169,15 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 					meta = {};
 				if (form) {
 					form.find('button.active').add(form.find('select')).add(form.find('input')).each(function () {
-						 meta[jQuery(this).attr('name')] = jQuery(this).val() || jQuery(this).attr('placeholder');
+						meta[jQuery(this).attr('name')] = jQuery(this).val() || jQuery(this).attr('placeholder');
 					});
 				}
 				return meta;
 			},
 			exportFailed = function (reason, fileId) {
-				self.find('[data-mm-role=contact-email]').attr('href', function () { return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + selectedFormat().toUpperCase() + '%20Export%20Error%20' + fileId; });
+				self.find('[data-mm-role=contact-email]').attr('href', function () {
+					return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + selectedFormat().toUpperCase() + '%20Export%20Error%20' + fileId;
+				});
 				self.find('[data-mm-role=file-id]').html(fileId);
 				self.find('.error span').hide();
 				setState('error');
@@ -192,7 +193,9 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				setState('inprogress');
 				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed);
 			};
-		self.find('form').submit(function () {return false; });
+		self.find('form').submit(function () {
+			return false;
+		});
 		confirmElement.click(doExport).keydown('space', doExport);
 		self.modal({keyboard: true, show: false, backdrop: 'static'});
 		self.find('[data-mm-role=set-state]').click(function () {
@@ -245,7 +248,7 @@ MM.facebookResultDecorator = function (exportResult) {
 		'app_id=621299297886954' +
 		'&display=popup' +
 		'&action_type=og.likes' +
-	  '&action_properties=%7B%22object%22%3A%22' + encodeURIComponent(exportResult['index-html']) + '%22%7D' +
+		'&action_properties=%7B%22object%22%3A%22' + encodeURIComponent(exportResult['index-html']) + '%22%7D' +
 		'&redirect_uri=' + encodeURIComponent('http://www.mindmup.com/fb');
 };
 MM.googlePlusResultDecorator = function (exportResult) {
@@ -263,25 +266,23 @@ MM.linkedinResultDecorator = function (exportResult) {
 };
 MM.tumblrResultDecorator = function (exportResult) {
 	'use strict';
-	exportResult['tumblr-url'] = 'http://www.tumblr.com/share/link?url='+ encodeURIComponent(exportResult['index-html']) +
-		'&name='+ encodeURIComponent(exportResult.export.title) +
+	exportResult['tumblr-url'] = 'http://www.tumblr.com/share/link?url=' + encodeURIComponent(exportResult['index-html']) +
+		'&name=' + encodeURIComponent(exportResult.export.title) +
 		'&description=' + encodeURIComponent(exportResult.export.description);
 };
 MM.pinterestResultDecorator = function (exportResult) {
 	'use strict';
-	exportResult['pinterest-url'] = 'https://pinterest.com/pin/create/button/?media='+ encodeURIComponent(exportResult['thumb-png'])+
-			'&url=' + encodeURIComponent(exportResult['index-html']) +
-			'&is_video=false&description=' + encodeURIComponent(exportResult.export.description);
+	exportResult['pinterest-url'] = 'https://pinterest.com/pin/create/button/?media=' + encodeURIComponent(exportResult['thumb-png']) + '&url=' + encodeURIComponent(exportResult['index-html']) + '&is_video=false&description=' + encodeURIComponent(exportResult.export.description);
 };
 MM.embedResultDecorator = function (exportResult) {
 	'use strict';
-	exportResult['embed-markup'] = '<iframe src="'+exportResult['index-html']+'"></iframe>';
+	exportResult['embed-markup'] = '<iframe src="' + exportResult['index-html'] + '"></iframe>';
 };
 MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 	'use strict';
 	return function (exportConfig) {
 		var deferred = jQuery.Deferred();
-		resultProcessor(exportConfig).then(function(result) {
+		resultProcessor(exportConfig).then(function (result) {
 			_.each(decorators, function (decorator) {
 				decorator(result);
 			});
