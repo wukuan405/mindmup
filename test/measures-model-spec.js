@@ -55,7 +55,9 @@ describe('MM.MeasuresModel', function () {
 		});
 		it('retrieves only filtered data in a two-dim array when filter is used', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			underTest.editWithFilter({predicate: function (idea) { return idea.id === 121; }});
+			underTest.editWithFilter({predicate: function (idea) {
+				return idea.id === 121;
+			}});
 			expect(underTest.getRawData()).toEqual([
 				['Name', 'Speed', 'Efficiency'],
 				['one twenty one', undefined, -1]
@@ -63,7 +65,9 @@ describe('MM.MeasuresModel', function () {
 		});
 		it('retrieves all data in a two-dim array when ignore filter flag is used', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', activeContent);
-			underTest.editWithFilter({predicate: function (idea) { return idea.id === 121; }});
+			underTest.editWithFilter({predicate: function (idea) {
+				return idea.id === 121;
+			}});
 			expect(underTest.getRawData(true)).toEqual([
 				['Name', 'Speed', 'Efficiency'],
 				['one', 100, undefined],
@@ -175,7 +179,7 @@ describe('MM.MeasuresModel', function () {
 			underTest.editWithFilter(MM.MeasuresModel.filterByIds([1, 121]));
 			expect(underTest.getMeasurementValues()).toEqual([
 				{id: 1, title: 'one', values: {'Speed': 100}},
-				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
+				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}}
 			]);
 		});
 		it('listens for changes to filtered rows', function () {
@@ -195,7 +199,7 @@ describe('MM.MeasuresModel', function () {
 				{id: 1, title: 'one', values: {'Speed': 100}},
 				{id: 11, title: 'with values', values: {'Speed': 1, 'Efficiency': 2}},
 				{id: 12, title: 'no values', values: {}},
-				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
+				{id: 121, title: 'one twenty one', values: {'Efficiency': -1}}
 			]);
 		});
 	});
@@ -211,7 +215,7 @@ describe('MM.MeasuresModel', function () {
 					{id: 1, title: 'one', values: {'Speed': 100}},
 					{id: 11, title: 'with values', values: {'Speed': 1, 'Efficiency': 2}},
 					{id: 12, title: 'no values', values: {}},
-					{id: 121, title: 'one twenty one', values: {'Efficiency': -1}},
+					{id: 121, title: 'one twenty one', values: {'Efficiency': -1}}
 				]);
 
 			});
@@ -367,8 +371,12 @@ describe('MM.MeasuresModel', function () {
 					expect(underTest.validate(arg)).toEqual(expectation);
 				});
 			};
-			_.each(validValues,  function (arg) { doCase(arg, true); });
-			_.each(invalidValues,  function (arg) { doCase(arg, false); });
+			_.each(validValues,  function (arg) {
+				doCase(arg, true);
+			});
+			_.each(invalidValues,  function (arg) {
+				doCase(arg, false);
+			});
 		});
 		describe('setValue', function () {
 

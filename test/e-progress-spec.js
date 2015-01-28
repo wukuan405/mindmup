@@ -92,7 +92,7 @@ describe('MM.ContentStatusUpdater', function () {
 								style: { background: '#ff0000' },
 								icon: { url: 'http://old' },
 								'test-status': 'in-progress' // -> doomed should clear the background because in progress defined it
-													  // -> failure should not clear the icon because in progress did not define it
+													// -> failure should not clear the icon because in progress did not define it
 							}
 						},
 						2: {
@@ -104,8 +104,7 @@ describe('MM.ContentStatusUpdater', function () {
 							}
 						}
 					}
-				},
-
+				}
 			}
 		});
 		activeContentListener = new MM.ActiveContentListener(mapControllerStub(content));
@@ -211,7 +210,7 @@ describe('MM.ContentStatusUpdater', function () {
 				['passing',		'in-progress',	'in-progress',		'priority wins over no priority'],
 				['in-progress',	'in-progress',	'in-progress',		'same priority propagates'],
 				['in-progress',	'failure',		'failure',			'higher priority wins'],
-				['failure',		'in-progress',	'failure',			'higher priority wins even if on sibling'],
+				['failure',		'in-progress',	'failure',			'higher priority wins even if on sibling']
 			],
 			checkPropatation = function (sibling, child, expectedParent) {
 				content.updateAttr(11, 'test-status', 'same as before');
@@ -282,15 +281,15 @@ describe('MM.ContentStatusUpdater', function () {
 						ideas: {
 							1: {
 								id: 111,
-								attr: { style: { background: 'yellow' } },
+								attr: { style: { background: 'yellow' } }
 							},
 							2: {
 								id: 112,
-								attr: { icon: { url: 'http://old' } },
+								attr: { icon: { url: 'http://old' } }
 							},
 							3: {
 								id: 113,
-								attr: { status: 'onlyicon', style: { background: '#ff0000' }, icon: {url: 'http://icon2'} },
+								attr: { status: 'onlyicon', style: { background: '#ff0000' }, icon: {url: 'http://icon2'} }
 							}
 						}
 					}
@@ -485,7 +484,7 @@ describe('progressStatusUpdateWidget', function () {
 				'kbeta': {description: 'FB', style: {background: 'rgb(255, 0, 0)'}},
 				'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
 				'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-				'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+				'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}}
 			},
 				statuses;
 			updater.dispatchEvent('configChanged', numericOrderConfig);
@@ -669,7 +668,7 @@ describe('MM.Progress.Calc', function () {
 			{ status: 'k777', title: 'first3', id: 115, measurements: {'two': -300}},
 			{ status: 'kalpha2', title: 'first4', id: 4, measurements: {'one': '50', 'two': 100}},
 			{ status: 'k777', title: 'first5', id: 5, measurements: {'two': 300}},
-			{ status: 'kalpha', title: 'first6', id: 6},
+			{ status: 'kalpha', title: 'first6', id: 6}
 		];
 		measurementConfig = ['one', 'two'];
 		config = {
@@ -679,7 +678,7 @@ describe('MM.Progress.Calc', function () {
 			'k777': {description: 'X777', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
 			'k666': {description: 'X666', priority: 666, style: {background: 'rgb(255, 0, 0)'}},
 			'k999': {description: 'Y999', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-			'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+			'k888': {description: 'Z888', priority: 888, style: {background: 'rgb(255, 0, 0)'}}
 		};
 		activeContent = MAPJS.content({
 			id: 1,
@@ -724,12 +723,12 @@ describe('MM.Progress.Calc', function () {
 									one: 10,
 									two: 20
 								}
-							},
+							}
 						},
 						4: {
 							id: 114,
 							title: 'one hundred and fourteen',
-							attr: { status: 'k777'},
+							attr: { status: 'k777'}
 						},
 						5: {
 							id: 115
@@ -754,7 +753,9 @@ describe('MM.Progress.Calc', function () {
 			projections.percent = projections[1].iterator;
 		});
 		it('includes projections for measurements in supplied order', function () {
-			var names = _.map(projections, function (projection) { return projection.name; });
+			var names = _.map(projections, function (projection) {
+				return projection.name;
+			});
 			expect(names).toEqual(['Counts', 'Percentages', 'Total one', 'Percentage one',  'Total two', 'Percentage two']);
 		});
 		describe('measurement projections', function () {
@@ -793,7 +794,7 @@ describe('MM.Progress.Calc', function () {
 			});
 		});
 		describe('percent', function () {
-			it('converts a single data item to be 100%', function  () {
+			it('converts a single data item to be 100%', function () {
 				expect(projections.percent([
 						{status: 'k777'}
 					])).toEqual([['X777', '100%']]);
@@ -1087,14 +1088,16 @@ describe('MM.sortProgressConfig', function () {
 			'x': {description: 'MMM', style: {background: 'rgb(255, 0, 0)'}},
 			'k777': {description: 'F', priority: 777, style: {background: 'rgb(255, 0, 0)'}},
 			'k999': {description: 'F', priority: 999, style: {background: 'rgb(255, 0, 0)'}},
-			'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}},
+			'k888': {description: 'F', priority: 888, style: {background: 'rgb(255, 0, 0)'}}
 		}, result;
 		result = MM.sortProgressConfig(config);
-		expect(_.map(result, function (e) { return e.key; })).toEqual(['k999', 'k888', 'k777', 'z', 'x', 'y']);
+		expect(_.map(result, function (e) {
+			return e.key;
+		})).toEqual(['k999', 'k888', 'k777', 'z', 'x', 'y']);
 	});
 	it('flattens hash map into an array and adds the key element to each item', function () {
 		var config = {
-			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}},
+			'y': {description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}}
 		};
 		expect(MM.sortProgressConfig(config)).toEqual([{description: 'ZZZ', style: {background: 'rgb(255, 0, 0)'}, key: 'y'}]);
 	});
@@ -1108,7 +1111,9 @@ describe('MM.progressCalcChangeMediator', function () {
 		filter = {};
 		calcModel = {
 			dataUpdated: jasmine.createSpy('dataUpdated'),
-			getFilter: function () { return filter; },
+			getFilter: function () {
+				return filter;
+			},
 			setFilter: jasmine.createSpy('setFilter')
 		};
 		mapModel = observable({});

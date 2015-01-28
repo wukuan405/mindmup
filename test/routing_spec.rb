@@ -30,7 +30,7 @@ describe 'Map request routing' do
   describe 'browser whitelisting' do
     before(:each) do
       header "User-Agent", "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
-    end      
+    end
     def last_response_body_xml
       Nokogiri::HTML last_response.body
     end
@@ -56,5 +56,5 @@ describe 'Map request routing' do
       last_response.should be_redirect
       last_response.header["Location"].should=='http://example.org/#m:ABC'
     end
-  end 
+  end
 end

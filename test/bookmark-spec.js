@@ -45,16 +45,26 @@ describe('Bookmarks', function () {
 			});
 			it('fails if mapId or title are not provided', function () {
 				bookmark.store(url);
-				expect(function () {bookmark.store({title: 'zeka'}); }).toThrow(new Error('Invalid bookmark'));
-				expect(function () {bookmark.store({mapId: 'zeka'}); }).toThrow(new Error('Invalid bookmark'));
-				expect(function () {bookmark.store({mapId:  '', title: 'zeka'}); }).toThrow(new Error('Invalid bookmark'));
-				expect(function () {bookmark.store({mapId: 'zeka', title: ''}); }).toThrow(new Error('Invalid bookmark'));
+				expect(function () {
+					bookmark.store({title: 'zeka'});
+				}).toThrow(new Error('Invalid bookmark'));
+				expect(function () {
+					bookmark.store({mapId: 'zeka'});
+				}).toThrow(new Error('Invalid bookmark'));
+				expect(function () {
+					bookmark.store({mapId:  '', title: 'zeka'});
+				}).toThrow(new Error('Invalid bookmark'));
+				expect(function () {
+					bookmark.store({mapId: 'zeka', title: ''});
+				}).toThrow(new Error('Invalid bookmark'));
 				expect(_.size(bookmark.list())).toBe(1);
 				expect(bookmark.list()[0]).toEqual(url);
 			});
 			it('should save bookmarks to storage on store if provided', function () {
 				var url = {mapId: 'abc', title: 'def'}, bookmark,
-					storage = {getItem: function () { return []; }, setItem:  function () {}};
+					storage = {getItem: function () {
+						return [];
+					}, setItem:  function () {}};
 
 				spyOn(storage, 'setItem');
 				bookmark = new MM.Bookmark(observable({}), storage, 'book');
@@ -80,7 +90,9 @@ describe('Bookmarks', function () {
 			});
 			it('stores the list to external storage if defined', function () {
 				var url = {mapId: 'abc', title: 'def'}, bookmark,
-					storage = {getItem: function () { return []; }, setItem:  function () {}};
+					storage = {getItem: function () {
+						return [];
+					}, setItem:  function () {}};
 				bookmark = new MM.Bookmark(observable({}), storage, 'book');
 				bookmark.store(url);
 				bookmark.store({mapId: 'xx', title: 'yy'});
@@ -203,7 +215,9 @@ describe('Bookmarks', function () {
 		var ulTemplate = '<ul><li data-mm-role="bookmark">Old</li><li class="template" style="display: none"><a data-category="Top Bar" data-event-type="Bookmark click"><span data-mm-role="x"></span></a></li></ul>',
 			wrap = function (list, repo) {
 				repo = repo || observable({});
-				return new MM.Bookmark(repo, { getItem: function () { return list; }, setItem: function () { } }, 'key');
+				return new MM.Bookmark(repo, { getItem: function () {
+					return list;
+				}, setItem: function () { } }, 'key');
 			};
 		it('does not remove previous content if the bookmark list is empty', function () {
 			var list = jQuery(ulTemplate).bookmarkWidget(wrap([]));

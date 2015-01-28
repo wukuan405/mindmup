@@ -1,4 +1,4 @@
-/*global beforeEach, describe, expect, it, jasmine, jQuery, spyOn, MM*/
+/*global beforeEach, describe, expect, it, jasmine, jQuery, MM*/
 describe('alert', function () {
 	'use strict';
 	var alert;
@@ -66,7 +66,7 @@ describe('alertWidget', function () {
 		element.alertWidget(alert);
 
 		var clickSpy = jasmine.createSpy('click'),
-			dom = $('<a>Bongo</a>').click(clickSpy).appendTo('<div>');
+			dom = jQuery('<a>Bongo</a>').click(clickSpy).appendTo('<div>');
 
 		alert.dispatchEvent('shown', 123, dom, undefined, 'success');
 		element.find('a').click();

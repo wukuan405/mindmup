@@ -166,7 +166,7 @@ describe('Github integration', function () {
 				expect(jQuery.ajax).toHaveBeenCalledWith({
 					url: 'https://api.github.com/repos/r/contents/p.txt?ref=br',
 					type : 'GET',
-					headers : { Authorization : 'bearer x' },
+					headers : { Authorization : 'bearer x' }
 				});
 			});
 			it('attaches the branch to PUT request as a branch data arg if defined', function () {
@@ -249,7 +249,9 @@ describe('Github integration', function () {
 				spyOn(jQuery, 'ajax').and.returnValue(ajaxCall.promise());
 			});
 			describe('general error control', function () {
-				var ajaxGetters = _.functions(new MM.GitHub.GithubAPI()).filter(function (name) {return (/^get/).test(name); });
+				var ajaxGetters = _.functions(new MM.GitHub.GithubAPI()).filter(function (name) {
+					return (/^get/).test(name);
+				});
 				ajaxGetters.forEach(function (name) {
 					it(name + ' rejects if not authenticated', function () {
 						delete sessionStorage.github_auth_token;
@@ -313,7 +315,7 @@ describe('Github integration', function () {
 							{ full_name: 'n1', default_branch: 'b1'},
 							{ full_name: 'n2', default_branch: 'b2'}
 						],
-						links = '<https://api.github.com/user/repos?page=3&per_page=100>; rel="next", '+
+						links = '<https://api.github.com/user/repos?page=3&per_page=100>; rel="next", ' +
 								'<https://api.github.com/user/repos?page=50&per_page=100>; rel="last"';
 					fakeXhr.getResponseHeader.and.returnValue(links);
 					ajaxCall.resolve(githubData, 200, fakeXhr);
@@ -332,7 +334,7 @@ describe('Github integration', function () {
 							{ full_name: 'n1', default_branch: 'b1'},
 							{ full_name: 'n2', default_branch: 'b2'}
 						],
-						links = '<https://api.github.com/user/repos?page=5&per_page=100>; rel="next", '+
+						links = '<https://api.github.com/user/repos?page=5&per_page=100>; rel="next", ' +
 								'<https://api.github.com/user/repos?page=5&per_page=100>; rel="last"';
 					fakeXhr.getResponseHeader.and.returnValue(links);
 					ajaxCall.resolve(githubData, 200, fakeXhr);

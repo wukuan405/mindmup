@@ -30,7 +30,9 @@ describe('iosContextMenuWidget', function () {
 		expect(spy.calls.mostRecent().args[0].y).toBe(30);
 	});
 	it('should not trigger showPopover event when context menu is requested is editing is not enabled', function () {
-		mapModel.getEditingEnabled = function () { return false; };
+		mapModel.getEditingEnabled = function () {
+			return false;
+		};
 
 		var spy = jasmine.createSpy('showPopover');
 		underTest.on('showPopover', spy);

@@ -1,4 +1,4 @@
-/* global jasmine, it, describe, beforeEach, afterEach, MM, observable, expect, jQuery, gapi, spyOn */
+/* global jasmine, it, describe, beforeEach, afterEach, MM, observable, expect, jQuery, gapi, spyOn, window */
 MM.FakeGoogleRealtime = function () {
 	'use strict';
 	var self = observable(this);
@@ -78,7 +78,7 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 	describe('event processing after init', function () {
 		beforeEach(function () {
 			underTest = new MM.RealtimeGoogleDocumentMediator(googleDoc, collaborationModel, mindmupMapId, mapController, unloadNotifier);
-			spyOn(underTest,'stop').and.callThrough();
+			spyOn(underTest, 'stop').and.callThrough();
 		});
 		describe('remote notifications', function () {
 			it('changes collaborator focus after an event is added to the events queue', function () {

@@ -4,14 +4,14 @@ describe('Collaborator List Widget', function () {
 	var underTest, collaborationModel,
 			template =
 				'  <div>' +
-				'	  <ul data-mm-role="collab-list">' +
-				'		  <li data-mm-role="template">' +
-				'		  <a data-mm-role="collaborator-follow">' +
-				'			  <img data-mm-role="collaborator-photo" class="collab-photo" />' +
-				'			  <span data-mm-role="collaborator-name" ></span>&nbsp;' +
-				'			  </a>' +
-				'		  </li>' +
-				'	  </ul>' +
+				'    <ul data-mm-role="collab-list">' +
+				'      <li data-mm-role="template">' +
+				'        <a data-mm-role="collaborator-follow">' +
+				'          <img data-mm-role="collaborator-photo" class="collab-photo" />' +
+				'          <span data-mm-role="collaborator-name" ></span>&nbsp;' +
+				'         </a>' +
+				'       </li>' +
+				'     </ul>' +
 				'  </div>',
 			firstCollaborator, secondCollaborator, session1, session2,
 			list, thirdCollaborator, session3;
@@ -144,7 +144,7 @@ describe('Collaborator List Widget', function () {
 		});
 	});
 	describe('followedCollaboratorChanged event handling', function () {
-		beforeEach(function() {
+		beforeEach(function () {
 			collaborationModel.start([firstCollaborator, secondCollaborator]);
 			list.children().first().addClass('mm-collaborator-followed');
 		});

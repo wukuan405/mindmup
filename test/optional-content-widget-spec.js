@@ -1,3 +1,4 @@
+/*global describe, beforeEach, afterEach, jasmine, jQuery, it, document, expect */
 describe('optionalContentWidget', function () {
 	'use strict';
 	var underTest, mapModel, splittableController, template = '<div data-mm-activation-key="f" data-mm-activation-role="optionalContentWidget"><a data-mm-role="optionalContentWidget" >aloha</a></div>';

@@ -30,7 +30,7 @@ describe('MM.IOS.ConfirmationProxy', function () {
 						'message': 'Well?',
 						'default': 'ok',
 						'cancel': 'dont do it',
-						'destructive': 'kill them',
+						'destructive': 'kill them'
 					}
 				}
 			);
@@ -47,7 +47,7 @@ describe('MM.IOS.ConfirmationProxy', function () {
 						'message': 'Well?',
 						'default': 'ok',
 						'cancel': 'dont do it',
-						'destructive': 'kill them',
+						'destructive': 'kill them'
 					}
 				}
 			);
@@ -160,7 +160,9 @@ describe('MM.IOS.ConfirmationProxy', function () {
 			expect(underTest.handleCommand(command)).toBe(true);
 		});
 		it('returns false and does not resolve if command is not handled', function () {
-			underTest.handlesCommand = function () { return false; };
+			underTest.handlesCommand = function () {
+				return false;
+			};
 			expect(underTest.handleCommand(command)).toBe(false);
 			expect(resolveListener).not.toHaveBeenCalled();
 		});

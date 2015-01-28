@@ -1,5 +1,5 @@
 /* global jasmine, describe, it, beforeEach, MM, expect*/
-describe('MM.EmbeddedMapUrlGenerator', function  () {
+describe('MM.EmbeddedMapUrlGenerator', function () {
 	'use strict';
 	var underTest, resolveSpy, rejectSpy;
 	beforeEach(function () {

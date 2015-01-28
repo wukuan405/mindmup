@@ -1,14 +1,14 @@
-/*global jQuery, beforeEach, afterEach, $, describe, it, expect */
-describe("toggle-class-widget", function () {
+/*global jQuery, beforeEach, afterEach, describe, it, expect */
+describe('toggle-class-widget', function () {
 	'use strict';
 	var link,
 		className = 'cls',
 		target,
 		nonChanged;
 	beforeEach(function () {
-		link = $('<a data-mm-role="toggle-class" data-mm-class="cls" data-mm-target="#tgt">x</a>');
-		target = $('<span>').attr('id', 'tgt').appendTo('body');
-		nonChanged = $('<span>').attr('id', 'tgt2').appendTo('body');
+		link = jQuery('<a data-mm-role="toggle-class" data-mm-class="cls" data-mm-target="#tgt">x</a>');
+		target = jQuery('<span>').attr('id', 'tgt').appendTo('body');
+		nonChanged = jQuery('<span>').attr('id', 'tgt2').appendTo('body');
 		link.toggleClassWidget();
 	});
 	afterEach(function () {
@@ -28,7 +28,7 @@ describe("toggle-class-widget", function () {
 		expect(nonChanged.hasClass(className)).toBeFalsy();
 	});
 	it('handles multiple classes (whitespace separated)', function () {
-		link.data('mm-class','image-disabled image-enabled');
+		link.data('mm-class', 'image-disabled image-enabled');
 		target.addClass('image-enabled');
 		link.click();
 		expect(target.hasClass('image-disabled')).toBeTruthy();

@@ -1,5 +1,5 @@
 /*global jasmine, MAPJS, MM, describe, it, expect*/
-describe("Freemind Import", function () {
+describe('Freemind Import', function () {
 	'use strict';
 	var complex_xml = '<map version="0.7.1"><node ID="1" TEXT="A">' +
 		'<node ID="2" TEXT="B"></node>' +
@@ -78,7 +78,7 @@ describe("Freemind Import", function () {
 		expect(result.formatVersion).toBe(2);
 	});
 });
-describe("Freemind Export", function () {
+describe('Freemind Export', function () {
 	'use strict';
 	it('converts a single node map into a MAP/NODE XML element in freemind format', function () {
 		var idea = MAPJS.content({id: 1, title: 'Root'});

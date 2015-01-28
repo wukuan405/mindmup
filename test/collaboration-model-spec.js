@@ -1,14 +1,14 @@
 /*global jasmine, describe, it, expect, beforeEach, MM, observable*/
 describe('Collaboration Model', function () {
 	'use strict';
-	var underTest,mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener;
+	var underTest, mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener;
 	beforeEach(function () {
 		collaboratorFocusChangedListener = jasmine.createSpy('collaboratorFocusChanged');
 		collaboratorJoinedListener = jasmine.createSpy('collaboratorJoined');
 		collaboratorLeftListener = jasmine.createSpy('collaboratorLeft');
 		myFocusChangedListener = jasmine.createSpy('myFocusChanged');
 		mapModel = observable(jasmine.createSpyObj('mapModel', ['selectNode']));
-    underTest = new MM.CollaborationModel(mapModel);
+		underTest = new MM.CollaborationModel(mapModel);
 		underTest.addEventListener('collaboratorFocusChanged', collaboratorFocusChangedListener);
 		underTest.addEventListener('collaboratorJoined', collaboratorJoinedListener);
 		underTest.addEventListener('collaboratorLeft', collaboratorLeftListener);
@@ -127,11 +127,11 @@ describe('Collaboration Model', function () {
 				listener = jasmine.createSpy('followedCollaboratorChanged');
 				underTest.addEventListener('followedCollaboratorChanged', listener);
 			});
-			it('dispatches with collaborator session ID when a collaborator is followed changes', function (){
+			it('dispatches with collaborator session ID when a collaborator is followed changes', function () {
 				underTest.toggleFollow(123);
 				expect(listener).toHaveBeenCalledWith(123);
 			});
-			it('dispatches with collaborator session ID when the followed collaborator changes', function (){
+			it('dispatches with collaborator session ID when the followed collaborator changes', function () {
 				underTest.toggleFollow(123);
 				listener.calls.reset();
 				underTest.toggleFollow(345);
@@ -153,7 +153,7 @@ describe('Collaboration Model', function () {
 			});
 		});
 		describe('after the model is started', function () {
-			beforeEach(function(){
+			beforeEach(function () {
 				underTest.start();
 			});
 			it('notifies the api about a focus change when the mapModel selection changes', function () {

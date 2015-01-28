@@ -1,11 +1,11 @@
 /*global describe, beforeEach, observable, jasmine, jQuery, afterEach, it, expect, MM, spyOn */
 describe('Collaborator Photo Widget', function () {
 	'use strict';
-	var underTest, collaborationModel, template ='<div><div id="node_124"></div><div id="node_125"></div></div>',
+	var underTest, collaborationModel, template = '<div><div id="node_124"></div><div id="node_125"></div></div>',
 			imageLoader, loaderDeferred, firstImage, secondImage;
 	beforeEach(function () {
-			firstImage = jQuery('<div name="firstimage">').css({width: 80, height: 60, position: 'absolute'});
-			secondImage = jQuery('<div name="secondimage">').css({width:50, height:20, position: 'absolute'});
+		firstImage = jQuery('<div name="firstimage">').css({width: 80, height: 60, position: 'absolute'});
+		secondImage = jQuery('<div name="secondimage">').css({width:50, height:20, position: 'absolute'});
 		imageLoader = jasmine.createSpy('imageLoader').and.callFake(function () {
 			loaderDeferred = jQuery.Deferred();
 			return loaderDeferred.promise();
@@ -21,7 +21,7 @@ describe('Collaborator Photo Widget', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
 				expect(imageLoader).toHaveBeenCalledWith('http://x.y');
 			});
-			it('positions the image at the bottom right corner of the node', function (){
+			it('positions the image at the bottom right corner of the node', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
 				loaderDeferred.resolve(firstImage);
 

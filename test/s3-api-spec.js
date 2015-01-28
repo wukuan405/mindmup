@@ -78,8 +78,8 @@ describe('MM.S3Api', function () {
 				expect(resolved).not.toHaveBeenCalled();
 			});
 			describe('rejection', function () {
-				var fileTooLargeResponse = '<Error><Code>EntityTooLarge</Code><Message>Your proposed upload exceeds the maximum allowed size</Message><ProposedSize>5245254</ProposedSize><RequestId>645D7BA0DCC454D9</RequestId><HostId>9ZX65MGwKi/hpe05eJuNp6mPgsRPZk54bplqX93ImjlLzojSesXCGRCZRjrkUDK8</HostId><MaxSizeAllowed>5242880</MaxSizeAllowed></Error>';
-				var noErrorCodeResponse = '<Error><Message>Your proposed upload exceeds the maximum allowed size</Message><ProposedSize>5245254</ProposedSize><RequestId>645D7BA0DCC454D9</RequestId><HostId>9ZX65MGwKi/hpe05eJuNp6mPgsRPZk54bplqX93ImjlLzojSesXCGRCZRjrkUDK8</HostId><MaxSizeAllowed>5242880</MaxSizeAllowed></Error>';
+				var fileTooLargeResponse = '<Error><Code>EntityTooLarge</Code><Message>Your proposed upload exceeds the maximum allowed size</Message><ProposedSize>5245254</ProposedSize><RequestId>645D7BA0DCC454D9</RequestId><HostId>9ZX65MGwKi/hpe05eJuNp6mPgsRPZk54bplqX93ImjlLzojSesXCGRCZRjrkUDK8</HostId><MaxSizeAllowed>5242880</MaxSizeAllowed></Error>',
+					noErrorCodeResponse = '<Error><Message>Your proposed upload exceeds the maximum allowed size</Message><ProposedSize>5245254</ProposedSize><RequestId>645D7BA0DCC454D9</RequestId><HostId>9ZX65MGwKi/hpe05eJuNp6mPgsRPZk54bplqX93ImjlLzojSesXCGRCZRjrkUDK8</HostId><MaxSizeAllowed>5242880</MaxSizeAllowed></Error>';
 
 				it('should fail with failed-authentication when response status is 403', function () {
 					ajaxDeferred.reject({status: 403});
@@ -155,12 +155,16 @@ describe('MM.S3Api', function () {
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
 		it('should not make initial call when semaphore function shows stopped', function () {
-			underTest.poll('REQUEST', {stoppedSemaphore: function () {return true; }});
+			underTest.poll('REQUEST', {stoppedSemaphore: function () {
+				return true;
+			}});
 			expect(jQuery.ajax).not.toHaveBeenCalled();
 		});
 		it('stops polling when semaphore function shows stopped', function () {
 			var stopped = false;
-			underTest.poll('REQUEST', {stoppedSemaphore: function () {return stopped; }});
+			underTest.poll('REQUEST', {stoppedSemaphore: function () {
+				return stopped;
+			}});
 			jQuery.ajax.calls.reset();
 			ajaxDeferred.resolve(withoutFile);
 			stopped = true;
@@ -213,7 +217,9 @@ describe('MM.S3Api', function () {
 		it('should not time out if stopped after the initial request', function () {
 			var rejected = jasmine.createSpy('rejected'),
 				stopped = false;
-			underTest.poll('REQUEST', {stoppedSemaphore: function () {return stopped; }}).fail(rejected);
+			underTest.poll('REQUEST', {stoppedSemaphore: function () {
+				return stopped;
+			}}).fail(rejected);
 			stopped = true;
 			clock.tick(underTest.pollerDefaults.timeoutPeriod + 1);
 			expect(rejected).not.toHaveBeenCalled();

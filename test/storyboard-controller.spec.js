@@ -8,8 +8,8 @@ describe('Storyboards', function () {
 			id: 1,
 			ideas: {
 				1: {id: 11, title: 'not in any storyboards'},
-			    2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
-			    3: {id: 14, title: 'only in bed storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 10}}]}},
+				2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
+				3: {id: 14, title: 'only in bed storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 10}}]}},
 				4: {id: 13, title: 'in two storyboards', attr: {'test-scenes': [{storyboards: {'ted talk': 2, 'bed talk': 1}}]}}
 			}
 		});
@@ -121,15 +121,15 @@ describe('Storyboards', function () {
 						});
 					});
 				});
-        describe('when the scene type is provided', function () {
-          beforeEach(function () {
-            storyboardModel.getActiveStoryboardName.and.returnValue('zed talk');
-          });
-          it('adds a scene by declaring the additional scene type', function () {
-            underTest.addScene(11, undefined, 'with-children');
-            expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'zed talk': 1}, type: 'with-children'}]);
-          });
-        });
+				describe('when the scene type is provided', function () {
+					beforeEach(function () {
+						storyboardModel.getActiveStoryboardName.and.returnValue('zed talk');
+					});
+					it('adds a scene by declaring the additional scene type', function () {
+						underTest.addScene(11, undefined, 'with-children');
+						expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(11, [{storyboards: {'zed talk': 1}, type: 'with-children'}]);
+					});
+				});
 			});
 			describe('removeScenesForIdeaId', function () {
 				beforeEach(function () {
@@ -268,7 +268,7 @@ describe('Storyboards', function () {
 
 					expect(storyboardModel.getScenesForNodeId).toHaveBeenCalledWith(2);
 					expect(storyboardModel.setScenesForNodeId).toHaveBeenCalledWith(2, [
-						{storyboards: {'ted talk': 1, 'red talk': 1}},
+						{storyboards: {'ted talk': 1, 'red talk': 1}}
 					]);
 
 				});

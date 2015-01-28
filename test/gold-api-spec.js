@@ -148,16 +148,20 @@ describe('MM.GoldApi', function () {
 			expect(resolveSpy).toHaveBeenCalledWith(expected, license.account);
 		});
 	});
-	describe('methods posting a license to the gold api ', function  () {
+	describe('methods posting a license to the gold api ', function () {
 		_.each([
 			['listFiles', 'API_URL/file/list', undefined],
 			['generateSaveConfig', 'API_URL/file/upload_config', 'json'],
-			['fileUrl', 'API_URL/file/url', undefined, function (showLicenseDialog) { return underTest.fileUrl(showLicenseDialog, 'test', 'filekey', true); }]
+			['fileUrl', 'API_URL/file/url', undefined, function (showLicenseDialog) {
+				return underTest.fileUrl(showLicenseDialog, 'test', 'filekey', true);
+			}]
 		], function (args) {
 			var methodName = args[0],
 				expectedUrl = args[1],
 				dataType = args[2],
-				call = args[3] || function (showLicenseDialog) { return underTest[methodName](showLicenseDialog); };
+				call = args[3] || function (showLicenseDialog) {
+					return underTest[methodName](showLicenseDialog);
+				};
 			describe(methodName, function () {
 				_.each([true, false], function (arg) {
 					it('when showLicenseDialog is ' + arg, function () {
@@ -249,7 +253,7 @@ describe('MM.GoldApi', function () {
 			});
 		});
 	});
-	describe('fileUrl', function  () {
+	describe('fileUrl', function () {
 		it('should return unsigned url immediately', function () {
 			underTest.fileUrl(true, 'jimmy', 'foo ? mup.mup', false).then(resolveSpy);
 			expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/jimmy/foo%20%3F%20mup.mup');
@@ -276,7 +280,7 @@ describe('MM.GoldApi', function () {
 			});
 		});
 	});
-	describe('exists', function  () {
+	describe('exists', function () {
 		it('should reject as not-authenticated if the license is not set', function () {
 			goldLicenseManager.getLicense.and.returnValue(false);
 			underTest.exists('foo.mup').fail(rejectSpy);
@@ -302,7 +306,7 @@ describe('MM.GoldApi', function () {
 		});
 	});
 
-	describe('deleteFile', function  () {
+	describe('deleteFile', function () {
 		it('should reject as not-authenticated if the license is not set', function () {
 			goldLicenseManager.getLicense.and.returnValue(false);
 			underTest.deleteFile('foo.mup').fail(rejectSpy);

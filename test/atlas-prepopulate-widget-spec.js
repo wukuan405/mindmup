@@ -17,9 +17,16 @@ describe('AtlasPrepopulateWidget', function () {
 		content = {
 			title: 'map title'
 		};
-		truncFunction = function (x, length) { return 'truncated ' + x  + ' ' + length; };
-		sanitizeFunction = function (x) { return x.replace(/ /g, '_'); };
-		activeContentListener = { getActiveContent: function () { return content; } };
+		truncFunction = function (x, length) {
+			return 'truncated ' + x  + ' ' + length;
+		};
+		sanitizeFunction = function (x) {
+			return x.replace(/ /g, '_');
+		};
+		activeContentListener = { getActiveContent: function () {
+				return content;
+			}
+		};
 		underTest = jQuery(template).appendTo('body').atlasPrepopulationWidget(activeContentListener, 15, 30, truncFunction, sanitizeFunction);
 	});
 	afterEach(function () {

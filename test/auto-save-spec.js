@@ -8,7 +8,9 @@ describe('Auto save', function () {
 		mapController = observable({});
 		warningId = 101;
 		alert = jasmine.createSpyObj('alert', ['show', 'hide']);
-		alert.show.and.callFake(function () { return warningId; });
+		alert.show.and.callFake(function () {
+			return warningId;
+		});
 		autoSave = new MM.AutoSave(mapController, storage, alert, mapModel, 'clippy');
 		unsavedChangesAvailableListener = jasmine.createSpy('unsavedChangesAvailableListener');
 		idea = observable({});
@@ -38,7 +40,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('changed', changeCmd, changeArgs);
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'updateTitle', args: [1, 'new']}]);
 		});
 		it('should not cache any change events if map is autoSaved', function () {
 			var changeCmd = 'updateTitle',
@@ -55,7 +57,7 @@ describe('Auto save', function () {
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd1', args: [1]}, {cmd: 'cmd2', args: [2]} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'cmd1', args: [1]}, {cmd: 'cmd2', args: [2]}]);
 		});
 		it('should not mix events from different documents', function () {
 			var idea2 = observable({});
@@ -66,7 +68,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd2', args: [2]} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'cmd2', args: [2]}]);
 		});
 		it('should not record previously saved events', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
@@ -76,7 +78,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd2', args: [2]} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'cmd2', args: [2]}]);
 		});
 		it('should unsubscribe old listener when map saved with new id and idea is changed', function () {
 			var newIdea = observable({});
@@ -106,7 +108,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('changed', 'cmd2', [2]);
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-newmapId', [ {cmd: 'cmd2', args: [2]} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-newmapId', [{cmd: 'cmd2', args: [2]}]);
 		});
 		it('should drop unsaved changes from storage when a map is saved', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
@@ -138,7 +140,9 @@ describe('Auto save', function () {
 						throw 'Oh';
 					}
 				});
-				spyOn(storage, 'removeKeysWithPrefix').and.callFake(function () { return removedKeys; });
+				spyOn(storage, 'removeKeysWithPrefix').and.callFake(function () {
+					return removedKeys;
+				});
 				mapController.dispatchEvent('mapLoaded', 'mapId', idea);
 			});
 			it('should clear unsaved changes for other maps when changes could not be saved', function () {
@@ -221,7 +225,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('resourceStored', 'resourcedata', 'resurl', 'sessionkey');
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'storeResource', args: ['resourcedata', 'resurl']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'storeResource', args: ['resourcedata', 'resurl']}]);
 		});
 		it('should not cache any change events if map is autoSaved', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea, {autoSave: true});
@@ -238,7 +242,7 @@ describe('Auto save', function () {
 			idea.dispatchEvent('changed', 'cmd1', [1]);
 			idea.dispatchEvent('resourceStored', 'resourcedata', 'resurl', 'sessionkey');
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'cmd1', args: [1]}, {cmd: 'storeResource', args: ['resourcedata', 'resurl']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'cmd1', args: [1]}, {cmd: 'storeResource', args: ['resourcedata', 'resurl']}]);
 		});
 		it('should not mix events from different documents', function () {
 			var idea2 = observable({});
@@ -248,7 +252,7 @@ describe('Auto save', function () {
 			spyOn(storage, 'setItem');
 			idea.dispatchEvent('resourceStored', 'resourcedata', 'resurl', 'sessionkey');
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'storeResource', args: ['resourcedata', 'resurl']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'storeResource', args: ['resourcedata', 'resurl']}]);
 		});
 		it('should not record previously saved events', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
@@ -258,7 +262,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('resourceStored', 'resourcedata2', 'resurl2', 'sessionkey');
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [ {cmd: 'storeResource', args: ['resourcedata2', 'resurl2']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-mapId', [{cmd: 'storeResource', args: ['resourcedata2', 'resurl2']}]);
 		});
 		it('should unsubscribe old listener when map saved with new id and idea is changed', function () {
 			var newIdea = observable({});
@@ -288,7 +292,7 @@ describe('Auto save', function () {
 
 			idea.dispatchEvent('resourceStored', 'resourcedata2', 'resurl2', 'sessionkey');
 
-			expect(storage.setItem).toHaveBeenCalledWith('auto-save-newmapId', [ {cmd: 'storeResource', args: ['resourcedata2', 'resurl2']} ]);
+			expect(storage.setItem).toHaveBeenCalledWith('auto-save-newmapId', [{cmd: 'storeResource', args: ['resourcedata2', 'resurl2']}]);
 		});
 		it('should drop unsaved changes from storage when a map is saved', function () {
 			mapController.dispatchEvent('mapLoaded', 'mapId', idea);
@@ -352,7 +356,7 @@ describe('Auto save', function () {
 	describe('applyUnsavedChanges', function () {
 		it('should apply all unsaved events to the current idea aggregate', function () {
 			var aggregate = MAPJS.content({id: 1, title: 'old'});
-			storage.setItem('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new title']} ]);
+			storage.setItem('auto-save-mapId', [{cmd: 'updateTitle', args: [1, 'new title']}]);
 			mapController.dispatchEvent('mapLoaded', 'mapId', aggregate);
 
 			autoSave.applyUnsavedChanges();
@@ -369,7 +373,7 @@ describe('Auto save', function () {
 		});
 		it('should pause and resume whilte applying saved changes', function () {
 			var aggregate = MAPJS.content({id: 1, title: 'old'});
-			storage.setItem('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new title']} ]);
+			storage.setItem('auto-save-mapId', [{cmd: 'updateTitle', args: [1, 'new title']}]);
 			mapController.dispatchEvent('mapLoaded', 'mapId', aggregate);
 
 			autoSave.applyUnsavedChanges();
@@ -381,7 +385,7 @@ describe('Auto save', function () {
 	describe('discardUnsavedChanges', function () {
 		it('should drop unsaved changes from storage without applying them', function () {
 			var aggregate = MAPJS.content({id: 1, title: 'old'});
-			storage.setItem('auto-save-mapId', [ {cmd: 'updateTitle', args: [1, 'new title']} ]);
+			storage.setItem('auto-save-mapId', [{cmd: 'updateTitle', args: [1, 'new title']}]);
 			mapController.dispatchEvent('mapLoaded', 'mapId', aggregate);
 			spyOn(storage, 'remove');
 

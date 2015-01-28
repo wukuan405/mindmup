@@ -265,9 +265,10 @@ describe('MM.GoldStorage', function () {
 		});
 		it('returns the promise passed from the gold api', function () {
 			var deferred = jQuery.Deferred(),
-					promise = deferred.promise();
+				promise = deferred.promise(),
+				result;
 			goldApi.deleteFile.and.returnValue(promise);
-			var result = underTest.deleteMap('hello');
+			result = underTest.deleteMap('hello');
 			expect(result).toBe(promise);
 		});
 	});

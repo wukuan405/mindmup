@@ -386,35 +386,34 @@ describe('Gold License Widget', function () {
 				expect(jQuery(this).val()).toEqual('');
 			});
 		});
-    it('fills in any fields matching license-* roles', function () {
-      subscriptionDeferred.resolve({status: 'active', expiry: futureTs, period: 'eternal', provider: 'a-real-bank', method: 'firstborn child', renewalPrice: '1 million dollars mwahahaha'});
-      underTest.modal('show');
-      expect(underTest.find('span[data-mm-role~=license-method]').text()).toEqual('firstborn child');
-      expect(underTest.find('span[data-mm-role~=license-provider]').text()).toEqual('a-real-bank');
-      expect(underTest.find('span[data-mm-role~=license-period]').text()).toEqual('eternal');
-    });
+		it('fills in any fields matching license-* roles', function () {
+			subscriptionDeferred.resolve({status: 'active', expiry: futureTs, period: 'eternal', provider: 'a-real-bank', method: 'firstborn child', renewalPrice: '1 million dollars mwahahaha'});
+			underTest.modal('show');
+			expect(underTest.find('span[data-mm-role~=license-method]').text()).toEqual('firstborn child');
+			expect(underTest.find('span[data-mm-role~=license-provider]').text()).toEqual('a-real-bank');
+			expect(underTest.find('span[data-mm-role~=license-period]').text()).toEqual('eternal');
+		});
 
 	});
 
-  describe('hide/show action buttons according to license status', function () {
+	describe('hide/show action buttons according to license status', function () {
 		var currentLicense;
 		beforeEach(function () {
 			currentLicense = {account: 'test-acc'};
 			licenseManager.getLicense.and.returnValue(currentLicense);
 		});
-    it('activates required action buttons when license resolves', function () {
+		it('activates required action buttons when license resolves', function () {
+			underTest.find('[data-mm-role~=action-Fart]').hide();
+			underTest.find('[data-mm-role~=action-Burp]').show();
+			underTest.find('[data-mm-role~=action-Curse]').show();
 
-      underTest.find('[data-mm-role~=action-Fart]').hide();
-      underTest.find('[data-mm-role~=action-Burp]').show();
-      underTest.find('[data-mm-role~=action-Curse]').show();
-
-      subscriptionDeferred.resolve({status: 'active', expiry: futureTs, actions:['Fart', 'Burp']});
-      underTest.modal('show');
-      expect(underTest.find('[data-mm-role~=action-Fart]').css('display')).not.toBe('none');
-      expect(underTest.find('[data-mm-role~=action-Burp]').css('display')).not.toBe('none');
-      expect(underTest.find('[data-mm-role~=action-Curse]').css('display')).toBe('none');
-    });
-  });
+			subscriptionDeferred.resolve({status: 'active', expiry: futureTs, actions:['Fart', 'Burp']});
+			underTest.modal('show');
+			expect(underTest.find('[data-mm-role~=action-Fart]').css('display')).not.toBe('none');
+			expect(underTest.find('[data-mm-role~=action-Burp]').css('display')).not.toBe('none');
+			expect(underTest.find('[data-mm-role~=action-Curse]').css('display')).toBe('none');
+		});
+	});
 	describe('handling invalid or expired licenses when view-license or loading-subscription is showing', function () {
 		describe('when view-license is showing', function () {
 			beforeEach(function () {
@@ -490,23 +489,23 @@ describe('Gold License Widget', function () {
 			checkSectionShown('registration-progress');
 		});
 		describe('marks email as invalid if it does not contain @ and is followed by a .: ', function () {
-            _.each(['@test@test.com', 'test@.test.com', 'test.test.com', 'test', 'test@test', 'test@test.com.', 'test@test.com@', 'test.test.com@'], function (email) {
-                it ('rejects ' + email, function () {
-                    underTest.find('[data-mm-section=register] input[name=email]').val(email);
-                    underTest.find('[data-mm-role=register]').click();
-                    expect(goldApi.register).not.toHaveBeenCalled();
-                    expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
-                });
-            });
-            _.each(['test..test@test.com', 'test@test.me.uk', 'test.@test.com', '.test@test.com', 'test.test@test.test','test@test.com', '123@123.123', 'ABDC@ABDC.COM'], function (email) {
-                it ('accepts ' + email, function () {
-                    underTest.find('[data-mm-section=register] input[name=email]').val(email);
-                    underTest.find('[data-mm-role=register]').click();
-                    expect(goldApi.register).toHaveBeenCalled();
-                    expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeFalsy();
-                });
+			_.each(['@test@test.com', 'test@.test.com', 'test.test.com', 'test', 'test@test', 'test@test.com.', 'test@test.com@', 'test.test.com@'], function (email) {
+				it ('rejects ' + email, function () {
+					underTest.find('[data-mm-section=register] input[name=email]').val(email);
+					underTest.find('[data-mm-role=register]').click();
+					expect(goldApi.register).not.toHaveBeenCalled();
+					expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeTruthy();
+				});
+			});
+			_.each(['test..test@test.com', 'test@test.me.uk', 'test.@test.com', '.test@test.com', 'test.test@test.test', 'test@test.com', '123@123.123', 'ABDC@ABDC.COM'], function (email) {
+				it ('accepts ' + email, function () {
+					underTest.find('[data-mm-section=register] input[name=email]').val(email);
+					underTest.find('[data-mm-role=register]').click();
+					expect(goldApi.register).toHaveBeenCalled();
+					expect(underTest.find('input[name=email]').parents('.control-group').hasClass('error')).toBeFalsy();
+				});
 
-            });
+			});
 		});
 		describe('marks account name as invalid if it is not 4-20 chars and only alphanumeric lowercase', function () {
 			_.each(['abc', '123456789012345678901', 'ab_cd', 'abc@d', 'abcD', 'abcd efgh', 'abcd-efgh'], function (name) {

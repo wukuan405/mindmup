@@ -57,44 +57,48 @@ describe('LayoutExport', function () {
 				resolved = jasmine.createSpy('resolved');
 				rejected = jasmine.createSpy('rejected');
 				underTest = new MM.LayoutExportController({
-					'ppt': function () { return {what: 'PPT'}; },
-					'pdf': {exporter: function () { return {what: 'PDF'}; }, processor: postProcessor }
+					'ppt': function () {
+						return {what: 'PPT'};
+					},
+					'pdf': {exporter: function () {
+						return {what: 'PDF'};
+					}, processor: postProcessor }
 				}, configurationGenerator, storageApi, activityLog);
 			});
 			describe('with just an exporter function and no processor', function () {
 				it('use the export function to generate content to send to the storage API', function () {
-						underTest.startExport('ppt');
-						expect(storageApi.save).toHaveBeenCalledWith('{"what":"PPT"}', saveConfiguration, saveOptions);
+					underTest.startExport('ppt');
+					expect(storageApi.save).toHaveBeenCalledWith('{"what":"PPT"}', saveConfiguration, saveOptions);
 				});
 				it('do not post-process results before resolving, but return a hash with output-url', function () {
-						var resolved = jasmine.createSpy('resolved');
-						underTest.startExport('ppt').then(resolved);
-						storageApi.deferred.outputlisturl.resolve();
-						expect(resolved).toHaveBeenCalledWith({ 'output-url': 'outputurl' }, requestId);
+					var resolved = jasmine.createSpy('resolved');
+					underTest.startExport('ppt').then(resolved);
+					storageApi.deferred.outputlisturl.resolve();
+					expect(resolved).toHaveBeenCalledWith({ 'output-url': 'outputurl' }, requestId);
 				});
 			});
 			describe('with an exporter and a processor', function () {
 				it('use the export function to generate content to send to the storage API', function () {
-						underTest.startExport('pdf');
-						expect(storageApi.save).toHaveBeenCalledWith('{"what":"PDF"}', saveConfiguration, saveOptions);
+					underTest.startExport('pdf');
+					expect(storageApi.save).toHaveBeenCalledWith('{"what":"PDF"}', saveConfiguration, saveOptions);
 				});
 				it('do not resolve immediately when storage api resolves, but instead kick off the post-processor', function () {
-						underTest.startExport('pdf').then(resolved);
-						storageApi.deferred.outputlisturl.resolve();
-						expect(resolved).not.toHaveBeenCalled();
-						expect(postProcessor).toHaveBeenCalledWith({'output-url': 'outputurl'});
+					underTest.startExport('pdf').then(resolved);
+					storageApi.deferred.outputlisturl.resolve();
+					expect(resolved).not.toHaveBeenCalled();
+					expect(postProcessor).toHaveBeenCalledWith({'output-url': 'outputurl'});
 				});
 				it('resolve when the post-processor resolves', function () {
-						underTest.startExport('pdf').then(resolved);
-						storageApi.deferred.outputlisturl.resolve();
-						processorDeferred.resolve({hi: 'there'});
-						expect(resolved).toHaveBeenCalledWith({hi:'there'}, requestId);
+					underTest.startExport('pdf').then(resolved);
+					storageApi.deferred.outputlisturl.resolve();
+					processorDeferred.resolve({hi: 'there'});
+					expect(resolved).toHaveBeenCalledWith({hi:'there'}, requestId);
 				});
 				it('reject if the post-processor rejects', function () {
-						underTest.startExport('pdf').then(resolved, rejected);
-						storageApi.deferred.outputlisturl.resolve();
-						processorDeferred.reject('network-error');
-						expect(rejected).toHaveBeenCalledWith('network-error', requestId);
+					underTest.startExport('pdf').then(resolved, rejected);
+					storageApi.deferred.outputlisturl.resolve();
+					processorDeferred.reject('network-error');
+					expect(rejected).toHaveBeenCalledWith('network-error', requestId);
 				});
 			});
 		});
@@ -191,7 +195,9 @@ describe('MM.buildMapLayoutExporter', function () {
 	var underTest, mapModel, resourceTranslator;
 	beforeEach(function () {
 		mapModel = jasmine.createSpyObj('mapModel', ['getCurrentLayout']);
-		resourceTranslator = function (x) { return 'get+' + x; };
+		resourceTranslator = function (x) {
+			return 'get+' + x;
+		};
 		underTest = MM.buildMapLayoutExporter(mapModel, resourceTranslator);
 	});
 	it('replaces all icon URLs in the layout nodes with resource URLs', function () {
@@ -211,8 +217,12 @@ describe('MM.buildDecoratedResultProcessor', function () {
 		rejected = jasmine.createSpy('rejected');
 		deferredOne = jQuery.Deferred();
 		one = jasmine.createSpy('one').and.returnValue(deferredOne.promise());
-		two = function (r) { r.two = true; };
-		three = function (r) { r.three= true; };
+		two = function (r) {
+			r.two = true;
+		};
+		three = function (r) {
+			r.three = true;
+		};
 		underTest = MM.buildDecoratedResultProcessor(one, [two, three]);
 	});
 	it('executes a deferred result processor first', function () {

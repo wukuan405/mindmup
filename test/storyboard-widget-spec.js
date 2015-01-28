@@ -10,8 +10,12 @@ describe('updateScene', function () {
 		defaultHeight = 120;
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
-			text: {toCss: function () { return {width: '20px'}; }},
-			image: {toCss: function () {return {width: '40px'}; }}
+			text: {toCss: function () {
+				return {width: '20px'};
+			}},
+			image: {toCss: function () {
+				return {width: '40px'};
+			}}
 		});
 		underTest = jQuery(template).css({width: defaultWidth, height: defaultHeight}).appendTo('body');
 		spyOn(jQuery, 'css').and.callThrough();
@@ -148,7 +152,7 @@ describe('Storyboard widget', function () {
 		storyboardModel,
 		dimensionProvider,
 		noScenes,
-        mapModel,
+		mapModel,
 		template = '<div><div>' +
 					'<a data-mm-role="storyboard-remove-scene"></a>' +
 					'<a data-mm-role="storyboard-move-scene-left"></a>' +
@@ -166,8 +170,16 @@ describe('Storyboard widget', function () {
 		dimensionProvider = jasmine.createSpyObj('dimensionProvider', ['getDimensionsForScene']);
 		mapModel = jasmine.createSpyObj('mapModel', ['focusAndSelect', 'editNode']);
 		dimensionProvider.getDimensionsForScene.and.returnValue({
-			text: {toCss: function () { return {width: '20px'}; }},
-			image: {toCss: function () { return {width: '30px'}; }}
+			text: {
+				toCss: function () {
+					return {width: '20px'};
+				}
+			},
+			image: {
+				toCss: function () {
+					return {width: '30px'};
+				}
+			}
 		});
 		underTest = jQuery(template).appendTo('body');
 		noScenes = underTest.find('[data-mm-role=no-scenes]');
@@ -414,7 +426,7 @@ describe('Storyboard widget', function () {
 			expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(dummyElement);
 		});
 	});
-    describe('mapModel sync', function () {
+	describe('mapModel sync', function () {
 		var selectedScene;
 		beforeEach(function () {
 			storyboardModel.getScenes.and.returnValue([
@@ -424,22 +436,22 @@ describe('Storyboard widget', function () {
 			underTest.trigger('show');
 			selectedScene = underTest.find('[data-mm-role=scene]').last();
 		});
-        it('does not trigger focusAndSelect when scene focused', function () {
-            selectedScene.trigger('focus');
-            expect(mapModel.focusAndSelect).not.toHaveBeenCalledWith(14);
-            expect(mapModel.editNode).not.toHaveBeenCalled();
-        });
-        it('does not trigger focusAndSelect when scene tapped', function () {
-            selectedScene.trigger('tap');
-            expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
-            expect(mapModel.editNode).not.toHaveBeenCalled();
-        });
-        it('triggers focusAndSelect + edit on mapModel when double-tapped', function () {
-            selectedScene.trigger('doubletap');
-            expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
-            expect(mapModel.editNode).toHaveBeenCalled();
-        });
-    });
+		it('does not trigger focusAndSelect when scene focused', function () {
+			selectedScene.trigger('focus');
+			expect(mapModel.focusAndSelect).not.toHaveBeenCalledWith(14);
+			expect(mapModel.editNode).not.toHaveBeenCalled();
+		});
+		it('does not trigger focusAndSelect when scene tapped', function () {
+			selectedScene.trigger('tap');
+			expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
+			expect(mapModel.editNode).not.toHaveBeenCalled();
+		});
+		it('triggers focusAndSelect + edit on mapModel when double-tapped', function () {
+			selectedScene.trigger('doubletap');
+			expect(mapModel.focusAndSelect).toHaveBeenCalledWith(14);
+			expect(mapModel.editNode).toHaveBeenCalled();
+		});
+	});
 	describe('editing a storyboard', function () {
 		beforeEach(function () {
 			storyboardModel.getScenes.and.returnValue([

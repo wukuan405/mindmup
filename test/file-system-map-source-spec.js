@@ -73,7 +73,9 @@ describe('MM.FileSystemMapSource', function () {
 			var fs = fakeFS(),
 				underTest = new MM.FileSystemMapSource(fs),
 				progCallback = jasmine.createSpy('progress');
-			fs.loadMap = function () { return jQuery.Deferred().notify('ABC').promise(); };
+			fs.loadMap = function () {
+				return jQuery.Deferred().notify('ABC').promise();
+			};
 			underTest.loadMap('abc').progress(progCallback);
 			expect(progCallback).toHaveBeenCalledWith('ABC');
 		});
@@ -81,7 +83,9 @@ describe('MM.FileSystemMapSource', function () {
 			var fs = fakeFS(),
 				underTest = new MM.FileSystemMapSource(fs),
 				errorCallback = jasmine.createSpy('error');
-			fs.loadMap = function () { return jQuery.Deferred().reject('ABC').promise(); };
+			fs.loadMap = function () {
+				return jQuery.Deferred().reject('ABC').promise();
+			};
 			underTest.loadMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('ABC');
 		});
@@ -100,10 +104,10 @@ describe('MM.FileSystemMapSource', function () {
 		describe('tries to guess mime type if not defined',
 			[
 				['guesses .mm files starting with <map as freemind',	'freemind.mm',	'<map version="0.7.1"><node ID="1" TEXT="X"></node></map>'],
-				['guesses .mup as mindmup format',						'map.mup'		],
-				['ignores case when guessing, so .Mup is OK',			'map.Mup'		],
-				['uses only the last .XX when guessing',				'map.mm.mup'	],
-				['defaults to application/json when unknown extension',	'map.mindmap'	]
+				['guesses .mup as mindmup format',						'map.mup'],
+				['ignores case when guessing, so .Mup is OK',			'map.Mup'],
+				['uses only the last .XX when guessing',				'map.mm.mup'],
+				['defaults to application/json when unknown extension',	'map.mindmap']
 			],
 			function (fileName, fileContent) {
 				var map = {id: 1, title: 'X'},
@@ -130,7 +134,9 @@ describe('MM.FileSystemMapSource', function () {
 			var fs = fakeFS(),
 				underTest = new MM.FileSystemMapSource(fs),
 				successCallback = jasmine.createSpy('success');
-			fs.saveMap = function () { return jQuery.Deferred().resolve('ABC').promise(); };
+			fs.saveMap = function () {
+				return jQuery.Deferred().resolve('ABC').promise();
+			};
 			underTest.saveMap('abc').done(successCallback);
 			expect(successCallback).toHaveBeenCalledWith('ABC');
 		});
@@ -138,7 +144,9 @@ describe('MM.FileSystemMapSource', function () {
 			var fs = fakeFS(),
 				underTest = new MM.FileSystemMapSource(fs),
 				progCallback = jasmine.createSpy('progress');
-			fs.saveMap = function () { return jQuery.Deferred().notify('ABC').promise(); };
+			fs.saveMap = function () {
+				return jQuery.Deferred().notify('ABC').promise();
+			};
 			underTest.saveMap('abc').progress(progCallback);
 			expect(progCallback).toHaveBeenCalledWith('ABC');
 		});
@@ -146,7 +154,9 @@ describe('MM.FileSystemMapSource', function () {
 			var fs = fakeFS(),
 				underTest = new MM.FileSystemMapSource(fs),
 				errorCallback = jasmine.createSpy('error');
-			fs.saveMap = function () { return jQuery.Deferred().reject('ABC').promise(); };
+			fs.saveMap = function () {
+				return jQuery.Deferred().reject('ABC').promise();
+			};
 			underTest.saveMap('abc').fail(errorCallback);
 			expect(errorCallback).toHaveBeenCalledWith('ABC');
 		});

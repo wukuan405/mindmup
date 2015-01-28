@@ -30,16 +30,22 @@ describe('Dropbox integration', function () {
 		describe('initialization and authentication', function () {
 			var methods = {
 				loadMap: {
-					exec: function (interactive) { underTest.loadMap('mapId', interactive).then(success, fail, notify); },
-					api: 'readFile',
+					exec: function (interactive) {
+						underTest.loadMap('mapId', interactive).then(success, fail, notify);
+					},
+					api: 'readFile'
 				},
 				saveMap: {
-					exec: function (interactive) { underTest.saveMap('', 'mapId', '', interactive).then(success, fail, notify); },
-					api: 'writeFile',
+					exec: function (interactive) {
+						underTest.saveMap('', 'mapId', '', interactive).then(success, fail, notify);
+					},
+					api: 'writeFile'
 				},
 				listFiles: {
-					exec: function (interactive) { underTest.listFiles(interactive, '').then(success, fail, notify); },
-					api: 'readdir',
+					exec: function (interactive) {
+						underTest.listFiles(interactive, '').then(success, fail, notify);
+					},
+					api: 'readdir'
 				}
 			};
 			_.each(methods, function (testMethods, methodName) {
