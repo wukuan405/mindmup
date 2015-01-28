@@ -8,7 +8,9 @@ MM.Alert = function () {
 		lastId += 1;
 		self.dispatchEvent('shown', currentId, message, detail, type === 'flash' ? 'info' : type);
 		if (type === 'flash') {
-			setTimeout(function () { self.hide(currentId); }, 3000);
+			setTimeout(function () {
+				self.hide(currentId);
+			}, 3000);
 		}
 		return currentId;
 	};
