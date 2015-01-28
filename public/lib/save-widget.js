@@ -18,7 +18,9 @@ jQuery.fn.saveWidget = function (mapController) {
 		},
 		setDefaultRepo = function (mapId) {
 			var validrepos = mapController.validMapSourcePrefixesForSaving,
-				repoClasses = _.map(validrepos, function (x) { return 'repo-' + x + ' '; }).join('');
+				repoClasses = _.map(validrepos, function (x) {
+					return 'repo-' + x + ' ';
+				}).join('');
 			repository = (mapId && mapId[0]);
 			if (/^new-/.test(mapId) && mapId.length > 4) {
 				repository = mapId[4];

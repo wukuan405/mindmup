@@ -1,4 +1,4 @@
-/*global $,document*/
+/*global $, document, window*/
 $.fn.shareWidget = function () {
 	'use strict';
 	return this.each(function () {

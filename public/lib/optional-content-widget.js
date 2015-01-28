@@ -1,4 +1,4 @@
-
+/*global jQuery, document*/
 jQuery.fn.optionalContentWidget = function (mapModel, splittableController) {
 	'use strict';
 	var	toggleMeasures = function (force, splitContentId) {

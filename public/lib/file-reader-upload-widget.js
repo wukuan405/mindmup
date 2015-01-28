@@ -1,11 +1,11 @@
-/*global $, FileReader */
+/*global $, FileReader, _, window, console */
 $.fn.file_reader_upload = function (start, complete, fail, formats) {
 	'use strict';
 	var element = this,
 		oFReader = window.FileReader && new FileReader(),
 		fileName,
-		fileType,
-		formats = formats || ['mup', 'mm'];
+		fileType;
+	formats = formats || ['mup', 'mm'];
 	if (!oFReader) {
 		return element;
 	}

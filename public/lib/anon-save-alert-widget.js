@@ -6,7 +6,7 @@ jQuery.fn.anonSaveAlertWidget = function (alertController, mapController, mapSou
 		destroyedProblemTemplate = this.find('[data-mm-role=destroyed-problem]').detach(),
 		currentAlertId,
 		enabled = function () {
-			return ! propertyStorage.getItem(propertyName);
+			return !propertyStorage.getItem(propertyName);
 		},
 		hideAlert = function () {
 			if (currentAlertId) {

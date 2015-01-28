@@ -1,4 +1,4 @@
-/*global jQuery, document, escape*/
+/*global jQuery, document*/
 jQuery.fn.embedMapWidget = function (mapController) {
 	'use strict';
 	var element = this,

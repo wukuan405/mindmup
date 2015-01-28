@@ -119,7 +119,7 @@ MM.S3Api = function () {
 		}
 		return deferred.promise();
 	};
-	self.loadUrl = function  (url) {
+	self.loadUrl = function (url) {
 		var deferred = jQuery.Deferred();
 		jQuery.ajax(
 			url, { cache: false}).then(

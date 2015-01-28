@@ -1,5 +1,5 @@
 /*global MM, _, observable */
-MM.CollaborationModel = function(mapModel) {
+MM.CollaborationModel = function (mapModel) {
 	'use strict';
 	var self = observable(this),
 			followedSessionId,
@@ -19,14 +19,14 @@ MM.CollaborationModel = function(mapModel) {
 	};
 	self.collaboratorPresenceChanged = function (collaborator, isOnline) {
 		if (running) {
-			var eventName = isOnline? 'collaboratorJoined' : 'collaboratorLeft';
+			var eventName = isOnline ? 'collaboratorJoined' : 'collaboratorLeft';
 			self.dispatchEvent(eventName, collaborator, isOnline);
 		}
 	};
 	self.start = function (collaborators) {
 		running = true;
 		followedSessionId = undefined;
-		if (_.size(collaborators)> 0) {
+		if (_.size(collaborators) > 0) {
 			_.each(collaborators, self.collaboratorFocusChanged);
 		}
 
@@ -35,7 +35,7 @@ MM.CollaborationModel = function(mapModel) {
 		self.dispatchEvent('stopped');
 		running = false;
 	};
-	self.toggleFollow = function(sessionId) {
+	self.toggleFollow = function (sessionId) {
 		/*jshint eqeqeq:false*/
 		if (followedSessionId == sessionId) {
 			followedSessionId = undefined;

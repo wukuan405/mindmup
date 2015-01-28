@@ -10,7 +10,9 @@ jQuery.fn.mapStatusWidget = function (mapController, activeContentListener) {
 			element.removeClass('map-changed').addClass('map-unchanged');
 		}
 		autoSave = properties.autoSave;
-		element.removeClass(_.filter(element.attr('class').split(' '), function (css) { return (/^map-source-/).test(css); }).join(' '));
+		element.removeClass(_.filter(element.attr('class').split(' '), function (css) {
+			return (/^map-source-/).test(css);
+		}).join(' '));
 		if (mapId) {
 			element.addClass('map-source-' + mapId[0]);
 		}

@@ -28,15 +28,15 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 				}
 				collaborationModel.toggleFollow(jQuery(this).attr('data-mm-collaborator-id'));
 			},
-			imageForCollaborator = function(sessionId) {
+			imageForCollaborator = function (sessionId) {
 				return self.find('.' + imgClass + '[data-mm-collaborator-id=' + sessionId + ']');
 			},
 			showPictureForCollaborator = function (collaborator) {
 				var cached = imageForCollaborator(collaborator.sessionId);
 				if (cached && cached.length > 0) {
-						showPictureInNode(collaborator.focusNodeId, cached);
+					showPictureInNode(collaborator.focusNodeId, cached);
 				} else {
-					imageLoader(collaborator.photoUrl).then(function(jQueryImg) {
+					imageLoader(collaborator.photoUrl).then(function (jQueryImg) {
 						if (imageForCollaborator(collaborator.sessionId).length === 0) {
 							jQueryImg.addClass(imgClass).attr('data-mm-collaborator-id', collaborator.sessionId).on('tap', onPhotoTap);
 							showPictureInNode(collaborator.focusNodeId, jQueryImg);

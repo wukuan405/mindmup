@@ -308,7 +308,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			if (jQuery(e.target).attr('data-mapjs-role') === 'node') {
 				if (insideWidget(e)) {
 					var	potentialRight = templateParent.find('.potential-drop-right');
-					storyboardController.addScene(target.data('nodeId'), potentialRight && potentialRight.data('scene'));
+					storyboardController.addScene(e.target.data('nodeId'), potentialRight && potentialRight.data('scene'));
 				}
 			}
 			templateParent.children().removeClass('potential-drop-left potential-drop-right');

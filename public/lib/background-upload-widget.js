@@ -1,4 +1,4 @@
-/*global $ */
+/*global $, console */
 $.fn.background_upload = function (action, start, complete, fail) {
 	'use strict';
 	var element = this,

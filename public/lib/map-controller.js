@@ -136,7 +136,7 @@ MM.MapController = function (initialMapSources) {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
 			},
-            saveAsId = forceNew ? '' : mapInfo.mapId;
+			saveAsId = forceNew ? '' : mapInfo.mapId;
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
 		dispatchEvent('mapSaving', activeMapSource.description);
 		activeMapSource.saveMap(mapInfo.idea, saveAsId).then(
@@ -149,8 +149,8 @@ MM.MapController = function (initialMapSources) {
 MM.MapController.activityTracking = function (mapController, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
-		return idea.id === 1;
-	},
+			return idea.id === 1;
+		},
 		isNodeRelevant = function (ideaNode) {
 			return ideaNode.title && ideaNode.title.search(/MindMup|Lancelot|cunning|brilliant|Press Space|famous|Luke|daddy/) === -1;
 		},
@@ -215,7 +215,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		};
 
 	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
-    var isNew = /^new/.test(newMapId);
+		var isNew = /^new/.test(newMapId);
 		showAlertWithCallBack(
 			'There are unsaved changes in the current map. Please confirm that you would like to ' + (isNew ? 'create a new map' : 'load a different map.'),
 			(isNew ? 'Create New' : 'Load anyway'),

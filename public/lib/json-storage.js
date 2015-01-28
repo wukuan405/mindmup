@@ -49,7 +49,9 @@ MM.JsonStorage = function (storage) {
 			return 0;
 		}
 		var keysToMatch = Object.keys(storage),
-			keysToRemove = _.filter(keysToMatch, function (key) {return key.indexOf(prefixToMatch) === 0; });
+			keysToRemove = _.filter(keysToMatch, function (key) {
+				return key.indexOf(prefixToMatch) === 0;
+			});
 		_.each(keysToRemove, function (key) {
 			storage.removeItem(key);
 		});

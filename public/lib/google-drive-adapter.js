@@ -104,12 +104,12 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 		},
 		downloadFile = function (file) {
 			var deferred = jQuery.Deferred(),
-          fileSize = file && file.fileSize && parseFloat(file.fileSize),
-          progressMessage = function (evt) {
-            deferred.notify({total: fileSize, loaded: evt.loaded});
-          };
+				fileSize = file && file.fileSize && parseFloat(file.fileSize),
+				progressMessage = function (evt) {
+					deferred.notify({total: fileSize, loaded: evt.loaded});
+				};
 			if (file.downloadUrl) {
-			  jQuery.ajax(
+				jQuery.ajax(
 					file.downloadUrl,
 					{
 						progress: progressMessage,
@@ -121,6 +121,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 				);
 			} else {
 				deferred.reject('no-file-url');
+
 			}
 			return deferred.promise();
 		},

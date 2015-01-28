@@ -126,7 +126,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 							deferred.resolve(content, buildMapId(mapPrefix, account, fileNameKey), 'application/json', fileProperties);
 						},
 						function (reason) {
-							if (reason === 'map-not-found' && !privateMap && privatePrefix)  {
+							if (reason === 'map-not-found' && !privateMap && privatePrefix) {
 								loadMapInternal(privatePrefix, account, fileNameKey);
 							} else {
 								deferred.reject(reason);

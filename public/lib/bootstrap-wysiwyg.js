@@ -1,5 +1,5 @@
 /* http://github.com/mindmup/bootstrap-wysiwyg */
-/*global jQuery, $, FileReader*/
+/*global jQuery,  FileReader*/
 /*jslint browser:true*/
 jQuery(function ($) {
 	'use strict';
@@ -67,12 +67,13 @@ jQuery(function ($) {
 				selectedRange = getCurrentRange();
 			},
 			restoreSelection = function () {
-				var selection = window.getSelection();
+				var selection = window.getSelection(),
+					textRange;
 				if (selectedRange) {
 					try {
 						selection.removeAllRanges();
 					} catch (ex) {
-						var textRange = document.body.createTextRange();
+						textRange = document.body.createTextRange();
 						textRange.select();
 						document.selection.empty();
 					}

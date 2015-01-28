@@ -51,6 +51,8 @@ jQuery.fn.contextMenuWidget = function (mapModel) {
 		});
 		jQuery(document).on('touch keydown', hide);
 	});
-	element.on('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); return false; });
+	element.on('contextmenu', function (e) {
+		e.preventDefault(); e.stopPropagation(); return false;
+	});
 	return element;
 };

@@ -15,7 +15,9 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		getScriptsForExtensions = function (extensionNameArray) {
 			return _.flatten(_.reject(_.map(extensionNameArray, function (ext) {
 				return MM.Extensions.config[ext] && MM.Extensions.config[ext].script.split(' ');
-			}), function (e) { return !e; }));
+			}), function (e) {
+				return !e;
+			}));
 		};
 	if (storage[storageKey]) {
 		active = storage[storageKey].split(' ');
@@ -34,7 +36,11 @@ MM.Extensions = function (storage, storageKey, config, components) {
 		var optional = this.requiredExtension(optionalMapId),
 			loading = optional ? _.union(active, optional) : active,
 			scriptArray = getScriptsForExtensions(loading);
-		return _.map(scriptArray, function (script) { if ((/^http[s]?:/).test(script)) { return script; } return config.publicUrl + script; });
+		return _.map(scriptArray, function (script) {
+			if ((/^http[s]?:/).test(script)) {
+				return script;
+			} return config.publicUrl + script;
+		});
 	};
 	this.isActive = function (ext) {
 		return _.contains(active, ext);
@@ -183,9 +189,9 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 	mapController.addEventListener('mapIdNotRecognised', function (newMapId) {
 		var required = extensions.requiredExtension(newMapId);
 		alert.hide(alertId);
-        if (newMapId && newMapId[0] === 'o') { /* ignore former offline map URLs */
-            return;
-        }
+		if (newMapId && newMapId[0] === 'o') { /* ignore former offline map URLs */
+			return;
+		}
 		if (required) {
 			showAlertWithCallBack(
 				'This map requires an extension to load!',
@@ -202,13 +208,17 @@ jQuery.fn.extensionsWidget = function (extensions, mapController, alert) {
 
 	});
 	mapController.addEventListener('mapLoaded', function (mapId, mapContent) {
-		var requiredExtensions = _.filter(MM.Extensions.config, function (ext, id) { return ext.isActiveOnMapContent && ext.isActiveOnMapContent(mapContent) && !extensions.isActive(id); }),
+		var requiredExtensions = _.filter(MM.Extensions.config, function (ext, id) {
+				return ext.isActiveOnMapContent && ext.isActiveOnMapContent(mapContent) && !extensions.isActive(id);
+			}),
 			plural = requiredExtensions.length > 1 ? 's' : '';
 		alert.hide(alertId);
 		if (requiredExtensions.length) {
 			showAlertWithCallBack(
 				'This map uses additional extensions!',
-				'Click here to enable the ' +  _.map(requiredExtensions, function (ext) { return ext.name; }).join(', ') + ' extension' + plural,
+				'Click here to enable the ' +  _.map(requiredExtensions, function (ext) {
+					return ext.name;
+				}).join(', ') + ' extension' + plural,
 				'warning',
 				function () {
 					causedByMapId = mapId;

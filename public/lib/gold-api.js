@@ -95,8 +95,8 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 				activityLog.log(LOG_CATEGORY, 'error', apiProc + ':' + result);
 				deferred.reject(apiError(result));
 			},
-			timer  = activityLog.timer(LOG_CATEGORY, apiProc);
-		var formData = new FormData(),
+			timer  = activityLog.timer(LOG_CATEGORY, apiProc),
+			formData = new FormData(),
 			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json', 'license/request_license_using_code': 'json'};
 		formData.append('api_version', '3');
 		if (args) {

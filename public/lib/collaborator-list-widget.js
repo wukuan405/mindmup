@@ -6,7 +6,7 @@ jQuery.fn.collaboratorListWidget = function (collaborationModel, followedCollabo
 				list = element.find('[data-mm-role=collab-list]'),
 				template = list.find('[data-mm-role=template]').detach(),
 				itemForSession = function (sessionId) {
-					return list.find('[mm-session-id='+ sessionId + ']');
+					return list.find('[mm-session-id=' + sessionId + ']');
 				},
 				addCollaborator = function (collaborator) {
 					if (itemForSession(collaborator.sessionId).size() > 0) {
