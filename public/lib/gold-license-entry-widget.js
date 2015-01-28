@@ -26,31 +26,32 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				activityLog.log('Gold', action);
 			}
 		},
-    showPaymentConfirmation = function () {
-      var license = licenseManager.getLicense(),
-        accountName = (license && license.account) || '';
-			showSection('payment-complete');
-			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
-    },
-		displaySubscription = function (subscription) {
-			var expiryTs = subscription && subscription.expiry,
-				expiryDate = new Date(expiryTs * 1000),
-				renewalDescription = (expiryDate && expiryDate.toDateString()) || '',
-				license = licenseManager.getLicense(),
-				accountName = (license && license.account) || '',
-        provider  = subscription.provider ? ('-' + subscription.provider) : '';
-      showSection('license-' + subscription.status + provider);
-			self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
-			self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
+	showPaymentConfirmation = function () {
+		var license = licenseManager.getLicense(),
+			accountName = (license && license.account) || '';
+		showSection('payment-complete');
+		self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
+	},
+	displaySubscription = function (subscription) {
+		var expiryTs = subscription && subscription.expiry,
+			expiryDate = new Date(expiryTs * 1000),
+			renewalDescription = (expiryDate && expiryDate.toDateString()) || '',
+			license = licenseManager.getLicense(),
+			accountName = (license && license.account) || '',
+			provider  = subscription.provider ? ('-' + subscription.provider) : '';
+		showSection('license-' + subscription.status + provider);
+		self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
+		self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
 
-      _.each(subscription, function (val, key) {
-        self.find('[data-mm-role~=license-'+key+']').text(val);
-      });
-      if (subscription.actions) {
-        _.each(subscription.actions, function (key) {
-          self.find('[data-mm-role~=action-'+key+']').show();
-        });
-      }
+		_.each(subscription, function (val, key) {
+			self.find('[data-mm-role~=license-' + key + ']').text(val);
+		});
+		if (subscription.actions) {
+			_.each(subscription.actions, function (key) {
+				self.find('[data-mm-role~=action-' + key + ']').show();
+			});
+		}
+
 /*
 			if (subscription.paymentType) {
 				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-type-block]').show();
@@ -69,12 +70,12 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				}
 			} else {
 				self.find('[data-mm-role~=payment-type-block]').hide();
-                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
-                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
-                self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
+				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
+				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
+				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
 			}
 */
-		},
+	},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
 				failExpiry = function (reason) {
@@ -90,10 +91,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				},
 				showSubscription = function (subscription) {
 					var licenseStatus = subscription && subscription.status;
-					if (!licenseStatus)  {
+					if (!licenseStatus) {
 						failExpiry('not-authenticated');
 					} else {
-            displaySubscription(subscription);
+						displaySubscription(subscription);
 					}
 				},
 				accountName = (license && license.account) || '';
@@ -143,10 +144,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		regSuccess = function (apiResponse) {
 			/*jshint sub: true*/
 			var license = licenseManager.getLicense(),
-				account = (license && license.account) || apiResponse['email'];
-			self.find('[data-mm-role=license-capacity]').text(apiResponse['capacity']);
-			if (apiResponse['license']) {
-				self.find('[data-mm-role~=license-text]').val(apiResponse['license']);
+				account = (license && license.account) || apiResponse.email;
+			self.find('[data-mm-role=license-capacity]').text(apiResponse.capacity);
+			if (apiResponse.license) {
+				self.find('[data-mm-role~=license-text]').val(apiResponse.license);
 			}
 			if (apiResponse['grace-period']) {
 				self.find('[data-mm-role=license-grace-period]').text(apiResponse['grace-period']);
@@ -154,7 +155,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			} else {
 				self.find('[data-mm-role=license-has-grace-period]').hide();
 			}
-			self.find('[data-mm-role=license-email]').text(apiResponse['email']);
+			self.find('[data-mm-role=license-email]').text(apiResponse.email);
 			self.find('[data-mm-role=account-name]').text(account).val(account);
 			showSection('registration-success');
 		},
@@ -198,9 +199,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		checkForPurchasedSubscription = function (subscription) {
 			var licenseStatus = subscription && subscription.status;
 			if (licenseStatus === 'active') {
-          licenseManager.completeLicenseEntry();
-          showPaymentConfirmation();
-      }
+				licenseManager.completeLicenseEntry();
+				showPaymentConfirmation();
+			}
 		},
 		onWindowMessage = function (windowMessageEvt) {
 			if (windowMessageEvt && windowMessageEvt.data && windowMessageEvt.data.goldApi) {
@@ -208,8 +209,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				goldApi.getSubscription().then(checkForPurchasedSubscription);
 			}
 		};
-	self.find('form').submit(function () {return this.action; });
-
+	self.find('form').submit(function () {
+		return this.action;
+	});
 	self.find('[data-mm-role~=form-submit]').click(function () {
 		var id = jQuery(this).data('mm-form'),
 				form = jQuery(id),
@@ -243,10 +245,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		}
 	});
 
-  self.find('button[data-mm-role=view-subscription]').click(function () {
-    showSection('view-license');
-    fillInFields();
-  });
+	self.find('button[data-mm-role=view-subscription]').click(function () {
+		showSection('view-license');
+		fillInFields();
+	});
 
 	self.on('hidden', function () {
 		licenseManager.cancelLicenseEntry();
