@@ -1,6 +1,6 @@
 /*global MM, observable*/
 
-MM.ActiveContentListener = function (mapController)  {
+MM.ActiveContentListener = function (mapController) {
 	'use strict';
 	var self = observable(this),
 		activeContent,

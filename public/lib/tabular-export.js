@@ -8,9 +8,13 @@ MM.exportIdeas = function (contentAggregate, exporter) {
 			traverse(iterator, subIdea, level + 1);
 		});
 	};
-	if (exporter.begin) { exporter.begin(); }
+	if (exporter.begin) {
+		exporter.begin();
+	}
 	traverse(exporter.each, contentAggregate);
-	if (exporter.end) { exporter.end(); }
+	if (exporter.end) {
+		exporter.end();
+	}
 	return exporter.contents();
 };
 MM.TabSeparatedTextExporter = function () {
@@ -21,7 +25,9 @@ MM.TabSeparatedTextExporter = function () {
 	};
 	this.each = function (idea, level) {
 		contents.push(
-			_.map(_.range(level), function () {return '\t'; }).join('') + idea.title.replace(/\t|\n|\r/g, ' ')
+			_.map(_.range(level), function () {
+				return '\t';
+			}).join('') + idea.title.replace(/\t|\n|\r/g, ' ')
 		);
 	};
 };
