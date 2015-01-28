@@ -76,11 +76,11 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 				confirmElement.show();
 			}
 		},
-        openFile = function () {
-            fileUpload.click();
-        },
+		openFile = function () {
+			fileUpload.click();
+		},
 		insertController = new MAPJS.ImageInsertController(corsProxyUrl);
-    selectFile.click(openFile).keydown('space enter', openFile);
+	selectFile.click(openFile).keydown('space enter', openFile);
 	insertController.addEventListener('imageInserted',
 		function (dataUrl, imgWidth, imgHeight) {
 			imgPreview.attr('src', dataUrl);
@@ -89,7 +89,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 			self.find('[data-mm-role=attribs]').show();
 			imgPreview.show();
 			confirmElement.show();
-            confirmElement.focus();
+			confirmElement.focus();
 		}
 	);
 	dropZone.imageDropWidget(insertController);
@@ -132,7 +132,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 	this.on('shown', function () {
 		fileUpload.css('opacity', 0).css('position', 'absolute')
 			.offset(dropZone.offset()).width(dropZone.outerWidth()).height(dropZone.outerHeight());
-        selectFile.focus();
+		selectFile.focus();
 	});
 	iconEditor.addEventListener('iconEditRequested', function (icon) {
 		loadForm(icon);
