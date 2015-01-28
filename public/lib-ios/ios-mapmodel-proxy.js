@@ -22,15 +22,17 @@ MM.IOS.MapModelProxy = function (mapModel, mmProxy, activeContentResourceManager
 		return false;
 	};
 	self.handleCommand = function (command) {
+		var result,
+			modelCommand;
 		if (command.type === 'mapModel:setIcon') {
-			var result = command.args && command.args[0];
+			result = command.args && command.args[0];
 			if (result) {
 				return mapModel.setIcon('icon-editor', activeContentResourceManager.storeResource(result.url), result.width, result.height, result.position);
 			} else {
 				return mapModel.setIcon(false);
 			}
 		}
-		var modelCommand = self.handlesCommand(command);
+		modelCommand = self.handlesCommand(command);
 		if (modelCommand) {
 			return mapModel[modelCommand].apply(mapModel, command.args);
 		}

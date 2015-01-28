@@ -1,12 +1,12 @@
 /*global window, console, MM*/
 MM.IOS = MM.IOS || {};
 MM.IOS.defaultMap = function () {
-  'use strict';
-  return {
-    'title': 'double-tap this node to edit',
-    'id': 1,
-    'formatVersion': 2,
-  };
+	'use strict';
+	return {
+		'title': 'double-tap this node to edit',
+		'id': 1,
+		'formatVersion': 2
+	};
 };
 
 MM.IOS.Proxy = function (listenerName) {
