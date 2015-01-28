@@ -107,7 +107,9 @@ MM.RealtimeGoogleMapSource = function (googleDriveAdapter) {
 									$(window).off('error', realtimeError);
 									deferred = undefined;
 								},
-								me = _.find(doc.getCollaborators(), function (x) {return x.isMe; });
+								me = _.find(doc.getCollaborators(), function (x) {
+									return x.isMe;
+								});
 							if (me) {
 								onMyJoining(me);
 							} else {
@@ -169,12 +171,16 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 			me,
 			self = this,
 			getGoogleCollaboratorBySession = function (sessionKey) {
-				return _.find(doc.getCollaborators(), function (x) { return String(x.sessionId) === String(sessionKey); }) || {};
+				return _.find(doc.getCollaborators(), function (x) {
+					return String(x.sessionId) === String(sessionKey);
+				}) || {};
 			},
 			getGoogleCollaboratorByUserId = function (userId) {
-				return _.find(doc.getCollaborators(), function (x) { return String(x.userId) === String(userId); }) || {};
+				return _.find(doc.getCollaborators(), function (x) {
+					return String(x.userId) === String(userId);
+				}) || {};
 			},
-			mmCollaborator = function(googleCollaborator){
+			mmCollaborator = function (googleCollaborator) {
 				return {
 					photoUrl: googleCollaborator.photoUrl,
 					focusNodeId: focusNodes.get(googleCollaborator.sessionId),
@@ -252,7 +258,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 	unloadNotifier = unloadNotifier || jQuery(window);
 	focusNodes = doc.getModel().getRoot().get('focusNodes');
 	events = doc.getModel().getRoot().get('events');
-	me = _.find(doc.getCollaborators(), function(googleCollaborator) {
+	me = _.find(doc.getCollaborators(), function (googleCollaborator) {
 		return googleCollaborator.isMe;
 	});
 	start();

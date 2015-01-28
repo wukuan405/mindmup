@@ -16,7 +16,8 @@ npm install grunt-contrib-watch --save-dev
 npm install grunt-contrib-concat --save-dev
 npm install grunt-contrib-uglify --save-dev
 npm install grunt-contrib-cssmin --save-dev
-
+npm install grunt-jscs --save-dev
+npm install grunt-contrib-jshint --save-dev
 */
 module.exports = function (grunt) {
 	'use strict';
@@ -42,7 +43,7 @@ module.exports = function (grunt) {
 			},
 			lib: {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
-				dest: 'compiled/mm-compiled.js',
+				dest: 'compiled/mm-compiled.js'
 			},
 			libios: {
 				src: [
@@ -60,7 +61,7 @@ module.exports = function (grunt) {
 					'public/lib/json-storage.js',
 					'public/lib/local-storage-clipboard.js'
 				],
-				dest: 'compiled/mm-ios-compiled.js',
+				dest: 'compiled/mm-ios-compiled.js'
 			}
 		},
 		uglify: {
@@ -73,7 +74,7 @@ module.exports = function (grunt) {
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
 					'compiled/mm-ios-compiled.min.js': ['compiled/mm-ios-compiled.js']
 				}
-			},
+			}
 		},
 		cssmin: {
 			combine: {
@@ -84,6 +85,16 @@ module.exports = function (grunt) {
 				}
 			}
 		},
+		jscs: {
+			src: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js'],
+			options: {
+				config: '.jscsrc',
+				reporter: 'inline'
+			}
+		},
+		jshint: {
+			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js']
+		},
 		jasmine: {
 			all: {
 				src: [
@@ -92,7 +103,7 @@ module.exports = function (grunt) {
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
-					'public/e/google-collaboration.js',
+					'public/e/google-collaboration.js'
 				],
 				options: {
 					template: 'test-lib/grunt.tmpl',
@@ -101,7 +112,7 @@ module.exports = function (grunt) {
 					display: 'short',
 					keepRunner: true,
 					specs: [
-						'test/*.js',
+						'test/*.js'
 					],
 					vendor: [
 						grunt.option('external-scripts') || 'http://d1g6a398qq2djm.cloudfront.net/20150106142106/external.js'
@@ -113,13 +124,15 @@ module.exports = function (grunt) {
 						'test-lib/jasmine-tagname-match.js',
 						'test-lib/jquery-extension-matchers.js',
 						'public/mm.js',
-						'public/mapjs-compiled.js',
+						'public/mapjs-compiled.js'
 					]
 				}
 			}
 		}
 	});
-	grunt.registerTask('compile', ['jasmine', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
+	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
+	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
@@ -128,6 +141,8 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
+	grunt.loadNpmTasks('grunt-jscs');
+	grunt.loadNpmTasks('grunt-contrib-jshint');
 
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);

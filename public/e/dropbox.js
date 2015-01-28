@@ -70,7 +70,9 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 			parent.empty();
 			dropboxFileSystem.listFiles(interactive, path).then(loaded, loadError, loadNotify);
 		};
-	modal.on('show', function () { fileRetrieval(false, '/'); });
+	modal.on('show', function () {
+		fileRetrieval(false, '/');
+	});
 	return modal;
 };
 MM.Extensions.Dropbox = {
@@ -192,9 +194,9 @@ MM.Extensions.Dropbox = {
 		self.loadMap = function (mapId, interactive) {
 			var result = jQuery.Deferred(),
 				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
-                    if (typeof(dropboxFileStat) === 'string') {
-                        dropboxFileStat = JSON.parse(dropboxFileStat);
-                    }
+					if (typeof (dropboxFileStat) === 'string') {
+						dropboxFileStat = JSON.parse(dropboxFileStat);
+					}
 					if (dropboxApiError) {
 						var mmError = toMindMupError(dropboxApiError);
 						if (dropboxApiError.response && dropboxApiError.response.error) {
@@ -217,9 +219,9 @@ MM.Extensions.Dropbox = {
 		self.saveMap = function (contentToSave, mapId, fileName, interactive) {
 			var result = jQuery.Deferred(),
 				sendCallback = function (dropboxApiError, dropboxFileStat) {
-                    if (typeof(dropboxFileStat) === 'string') {
-                        dropboxFileStat = JSON.parse(dropboxFileStat);
-                    }
+					if (typeof (dropboxFileStat) === 'string') {
+						dropboxFileStat = JSON.parse(dropboxFileStat);
+					}
 					if (dropboxApiError) {
 						result.reject(toMindMupError(dropboxApiError));
 					} else if (dropboxFileStat && toMapId(dropboxFileStat)) {
