@@ -165,15 +165,6 @@ div.topbar-color-picker {
 	cursor: pointer;
 }
 
-.shareFacebook {
-	background-image: url('//static.mindmup.com/img/facebook_32.png');
-}
-.shareEmail {
-	background-image: url('//static.mindmup.com/img/email_32.png');
-}
-.shareTwitter {
-	background-image: url('//static.mindmup.com/img/twitter_32.png');
-}
 .btn-inline {
 	border: 0px;
 	background: transparent;
@@ -193,9 +184,6 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 	background-position:left center;
 	background-image: url('//static.mindmup.com/img/logo_16.png');
 }
-.non-repo {
-	padding-left: 5px !important;
-}
 .repo-a {
 	background-image: url('//static.mindmup.com/img/logo_16.png');
 }
@@ -208,7 +196,10 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 .repo-g {
 	background-image: url('//static.mindmup.com/img/google_drive.png');
 }
-
+.repo-menuitem {
+	background-position: 14px center;
+	padding-left: 35px !important;
+}
 a.repo, a.repo, a.repo {
 	margin-left: 5px;
 }
