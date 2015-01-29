@@ -133,7 +133,6 @@ MM.main = function (config) {
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 				jQuery(document).titleUpdateWidget(mapController);
 
-				jQuery('[data-mm-role=share]').shareWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
 				jQuery('#modalImport').importWidget(activityLog, mapController);
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
