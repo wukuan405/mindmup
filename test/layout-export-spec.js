@@ -242,3 +242,23 @@ describe('MM.buildDecoratedResultProcessor', function () {
 		expect(rejected).toHaveBeenCalledWith('oops');
 	});
 });
+describe('MM.layoutExportDecorators', function () {
+	'use strict';
+	var result;
+	beforeEach(function () {
+		result = {'index-html': 'www.foo.com/index.html', export: {title: 'hoo har title', description: 'hoo har' }};
+	});
+	describe('gmailResultDecorator', function () {
+		it('should add a gmail link into the result', function () {
+			MM.layoutExportDecorators.gmailResultDecorator(result);
+			expect(result['gmail-index-html']).toEqual('https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=hoo%20har%20title%0A%0Awww.foo.com%2Findex.html');
+		});
+	});
+	describe('emailResultDecorator', function () {
+		it('should add a email link into the result', function () {
+			MM.layoutExportDecorators.emailResultDecorator(result);
+			expect(result['email-index-html']).toEqual('mailto:?subject=hoo%20har%20title&body=hoo%20har%3A%0D%0A%0D%0Awww.foo.com%2Findex.html');
+		});
+	});
+
+});

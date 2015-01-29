@@ -1,7 +1,7 @@
 <div id="modalAtlasPublish" data-mm-role="atlas-publish layout-export" class="modal hide fade" data-mm-format="publish.json">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3><i class="icon-cloud-upload"></i>&nbsp;Publish to MindMup Atlas (Beta)</h3>
+    <h3><i class="icon-cloud-upload"></i>&nbsp;Publish to MindMup Atlas</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
@@ -39,42 +39,43 @@
     </div>
     <div class="visible done">
       <div class="alert alert-success alert-block">
-        <h4>Your map was published</h4> 
+        <h4>Your map was published</h4>
       </div>
 
 
       <div class="tabbable tabs-top">
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#publish-tab-popular" data-toggle="tab">Post to popular sites</a></li>
+          <li class="active"><a href="#publish-tab-social" data-toggle="tab">Share on social networks</a></li>
+          <li><a href="#publish-tab-send-links" data-toggle="tab">Send links</a></li>
           <li><a href="#publish-tab-embed" data-toggle="tab">Embed code</a></li>
-          <li><a href="#publish-tab-links" data-toggle="tab">Web links</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="publish-tab-popular">
+          <div class="tab-pane active" id="publish-tab-social">
 						<p style="margin-bottom: 20px">Click on a button below to share quickly:</p>
 						<p class="text-center">
-							<a data-event-type="Post to Twitter" 
+							<a data-event-type="Post to Twitter"
 								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
-								data-category="Atlas" class="btn btn-large btn-share icon-twitter" rel="tooltip" data-title="Twitter" data-mm-role="twitter-url" target="_blank"></a>
+								data-category="Atlas" data-event-type="Post to Twitter" class="btn btn-large btn-share icon-twitter" rel="tooltip" data-title="Twitter" data-mm-role="twitter-url" target="_blank"></a>
 							<a
 								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
 								data-event-type="Post to Facebook" data-category="Atlas" class="btn btn-large btn-share icon-facebook" rel="tooltip" data-title="Facebook"  data-mm-role="facebook-url" target="_blank"></a>
 							<a
 								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
 								data-event-type="Post to Google Plus" data-category="Atlas" class="btn btn-large btn-share icon-google-plus"  rel="tooltip" data-title="Google Plus"  data-mm-role="google-plus-url" target="_blank"></a>
-							<a 
+							<a
 								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
 								data-event-type="Post to LinkedIn" data-category="Atlas" class="btn btn-large btn-share icon-linkedin" rel="tooltip" data-title="LinkedIn" data-mm-role="linkedin-url" target="_blank"></a>
 							<a
 								data-event-type="Post to Tumblr" data-category="Atlas" class="btn btn-large btn-share icon-tumblr" rel="tooltip" data-title="Tumblr" data-mm-role="tumblr-url" target="_blank"></a>
-							<a 
+							<a
 								data-event-type="Post to Pinterest" data-category="Atlas" class="btn btn-large btn-share icon-pinterest" rel="tooltip" data-title="Pinterest" data-mm-role="pinterest-url" target="_blank"></a>
 						</p>
           </div>
-          <div class="tab-pane" id="publish-tab-links">
-						<p>
-						Share the URLs below directly with your readers, or download the web page and self-host it. (Click the URLs below, then press Ctrl+C [Cmd+C on OSX] to copy them.)
-						</p>
+          <div class="tab-pane" id="publish-tab-send-links">
+            <p class="text-center">
+              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-index-html" rel="tooltip" data-title="Email a link" data-event-type="Email Link" data-category="Atlas" ><i class="icon-envelope"></i></a>
+              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-index-html" rel="tooltip" data-title="Gmail a link" data-event-type="Gmail Link" data-category="Atlas" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+            </p>
 						<form class="form">
 							<div class="control-group">
 								<label>Web page:</label>
@@ -92,6 +93,7 @@
 							</div>
 						</form>
           </div>
+
           <div class="tab-pane" id="publish-tab-embed">
 						<p>Paste the code snippet below in your web site to embed the map. Don't forget to configure the width and height of the iFrame!</p>
 							<textarea data-mm-role="embed-markup selectable-read-only" class="span5"></textarea>

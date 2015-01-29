@@ -73,12 +73,13 @@ MM.main = function (config) {
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
 			storyboardDimensionProvider = new MM.StoryboardDimensionProvider(activeContentResourceManager),
+			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
 			layoutExportController = new MM.LayoutExportController({
 				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
 				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'publish.json': { exporter: activeContentListener.getActiveContent, processor: MM.sharePostProcessing}
+				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
