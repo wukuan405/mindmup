@@ -67,7 +67,8 @@ MM.main = function (config) {
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
-			commandHandlers = [mapModelProxy, confimationProxy],
+			windowProxy = new MM.IOS.WindowProxy(mapModel),
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy],
 			mapModelAnalytics = false;
 
 
@@ -96,38 +97,21 @@ MM.main = function (config) {
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
 	MM.command = MM.command || function (command) {
-		var completed = {'completed': true, 'command': command.type};
-		var commandHandler = _.find(commandHandlers, function (handler) {
-			return handler.handlesCommand(command);
-		});
+		var completed = {'completed': true, 'command': command.type},
+			commandHandler = _.find(commandHandlers, function (handler) {
+				return handler.handlesCommand(command);
+			});
 		if (commandHandler) {
 			commandHandler.handleCommand(command);
 			return completed;
-		}
-		else if (command.type === 'ping') {
+		} else if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
-		}
-		else if (command.type === 'setViewport') {
-			var currentViewPort = jQuery('meta[name=viewport]').attr('content');
-			if (currentViewPort === command.args) {
-				return;
-			}
-			jQuery('meta[name=viewport]').attr('content', command.args);
-			jQuery('[data-mm-role="ios-context-menu"]').trigger(jQuery.Event('hidePopover'));
-			jQuery('[data-mm-role="ios-link-editor"]').trigger(jQuery.Event('hidePopover'));
-			window.setTimeout(function	() {
-				if (mapModel && mapModel.resetView && mapModel.getIdea()) {
-					mapModel.centerOnNode(mapModel.getSelectedNodeId());
-				}
-			}, 100);
-		}
-		else if (command.type && command.type.substr && command.type.substr(0, 9) === 'iosStage:') {
+		} else if (command.type && command.type.substr && command.type.substr(0, 9) === 'iosStage:') {
 			var stageCommand = command.type.split(':')[1];
 			if (iosStage[stageCommand]) {
 				iosStage[stageCommand].apply(iosStage, command.args);
 			}
-		}
-		else if (command.type === 'loadMap') {
+		} else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					readonly = command.args[1],
 					quickEdit = command.args[2],
@@ -164,17 +148,13 @@ MM.main = function (config) {
 				jQuery('body').removeClass('ios-quick-edit-on');
 				jQuery('body').addClass('ios-quick-edit-off');
 			}
-		}
-		else if (command.type === 'contentSaved') {
+		} else if (command.type === 'contentSaved') {
 			autoSave.discardUnsavedChanges();
-		}
-		else if (command.type === 'keyboardShown') {
+		} else if (command.type === 'keyboardShown') {
 			jQuery('body').addClass('ios-keyboardShown');
-		}
-		else if (command.type === 'keyboardHidden') {
+		} else if (command.type === 'keyboardHidden') {
 			jQuery('body').removeClass('ios-keyboardShown');
-		}
-		else if (command.type === 'prepareForSave') {
+		} else if (command.type === 'prepareForSave') {
 			var saveScreenOnly = command.args && command.args[0] && command.args[0] === 'save-screen-only';
 			mapModel.resetView();
 			jQuery('[data-mm-role="ios-menu"]').hide();
@@ -196,8 +176,7 @@ MM.main = function (config) {
 				}, 100);
 			}, 100);
 
-		}
-		else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
+		} else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}
 		return completed;

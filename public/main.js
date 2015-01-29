@@ -28,15 +28,20 @@ MM.main = function (config) {
 		mapModelAnalytics = false,
 		setupTracking = function (activityLog, mapModel) {
 			activityLog.addEventListener('log', function () {
+			// jscs:disable disallowDanglingUnderscores
 				_gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3)));
+			// jscs:enable disallowDanglingUnderscores
 			});
 			activityLog.addEventListener('timer', function (category, action, time) {
+			// jscs:disable disallowDanglingUnderscores
 				_gaq.push(['_trackEvent', category,  action, '', time]);
+			// jscs:enable disallowDanglingUnderscores
 			});
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
 		};
+		// jscs:disable disallowDanglingUnderscores
 	window._gaq = window._gaq || [];
 
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
@@ -44,6 +49,7 @@ MM.main = function (config) {
 		['_setCustomVar', 2, 'Active Extensions', browserStorage['active-extensions'], 1],
 		['_trackPageview']
 			].concat(window._gaq);
+		// jscs:enable disallowDanglingUnderscores
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,

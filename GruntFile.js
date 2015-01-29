@@ -30,6 +30,13 @@ module.exports = function (grunt) {
 					spawn: false
 				}
 			},
+			specs_full: {
+				files: ['test/*.js'],
+				tasks: ['jasmine'],
+				options: {
+					spawn: false
+				}
+			},
 			src: {
 				files: ['public/**/*.js'],
 				tasks: ['jasmine'],
@@ -86,14 +93,14 @@ module.exports = function (grunt) {
 			}
 		},
 		jscs: {
-			src: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js'],
+			src: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main.js'],
 			options: {
 				config: '.jscsrc',
 				reporter: 'inline'
 			}
 		},
 		jshint: {
-			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js']
+			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main.js']
 		},
 		jasmine: {
 			all: {
@@ -147,7 +154,11 @@ module.exports = function (grunt) {
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);
-		if (target === 'specs') {
+		if (target.indexOf('_full') > 0) {
+			options.options.display = 'full';
+		}
+
+		if (target.indexOf('specs') === 0) {
 			options.options.specs = [filepath];
 		} else {
 			options.options.specs = ['test/*.js'];
