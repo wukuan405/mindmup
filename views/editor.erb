@@ -96,19 +96,18 @@ SOFTWARE.
     <%= erb :attachment_editor %>
     <%= erb :auto_save %>
     <%= erb :extensions %>
-    <%= erb :embed_map %>
-  <%= erb :key_actions %>
-  <%= erb :modal_confirm %>
-  <%= erb :modal_pdf_export %>
-  <%= erb :modal_atlas_publish %>
-  <%= erb :modal_image_export %>
-  <%= erb :modal_presentation_export %>
-  <%= erb :modal_gold_license %>
-  <%= erb :icon_editor %>
-  <%= erb :anon_alert_template %>
-  <%= erb :modal_custom_style %>
-  <%= erb :modal_collaborator_list %>
-  <%=erb :topbar %>
+    <%= erb :key_actions %>
+    <%= erb :modal_confirm %>
+    <%= erb :modal_pdf_export %>
+    <%= erb :modal_atlas_publish %>
+    <%= erb :modal_image_export %>
+    <%= erb :modal_presentation_export %>
+    <%= erb :modal_gold_license %>
+    <%= erb :icon_editor %>
+    <%= erb :anon_alert_template %>
+    <%= erb :modal_custom_style %>
+    <%= erb :modal_collaborator_list %>
+    <%=erb :topbar %>
   <div id="splittable">
     <div class="splittable-primary" id="container" data-mm-role="default"></div>
     <div class="splittable-optional" id="optionalPane" data-mm-role="optional">
@@ -139,6 +138,7 @@ SOFTWARE.
     </div>
   <%= erb :scripts %>
   <script id="main">
+    /*global document, window, MM */
     var _gaq = _gaq || [],
       scriptError = function (err) {
         var d=document.createElement("div"),
@@ -172,7 +172,7 @@ SOFTWARE.
           s3Url: 'https://<%= settings.s3_website %>/',
           s3Folder: '<%= settings.s3_upload_folder %>/',
           googleClientId: '<%= ENV['GOOGLE_CLIENT_ID'] %>',
-          googleApiKey: '<%= ENV['GOOGLE_SHORTENER_API_KEY'] %>',
+          googleApiKey: '<%= ENV['GOOGLE_API_KEY'] %>',
           googleAppId: '<%= ENV['GOOGLE_APP_ID'] %>',
           publishingConfigUrl: '<%= settings.publishing_config_url %>',
           baseUrl: '<%= settings.base_url%>',

@@ -13,15 +13,23 @@ MM.main = function (config) {
 			}
 			return {
 				fake: true,
-				getItem: function (key) { return this[key]; },
-				setItem: function (key, val) { this[key] = val; },
-				removeItem: function (key) { delete this[key]; }
+				getItem: function (key) {
+					return this[key];
+				},
+				setItem: function (key, val) {
+					this[key] = val;
+				},
+				removeItem: function (key) {
+					delete this[key];
+				}
 			};
 		},
 		browserStorage = config.storage || getStorage(),
 		mapModelAnalytics = false,
 		setupTracking = function (activityLog, mapModel) {
-			activityLog.addEventListener('log', function () { _gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3))); });
+			activityLog.addEventListener('log', function () {
+				_gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3)));
+			});
 			activityLog.addEventListener('timer', function (category, action, time) {
 				_gaq.push(['_trackEvent', category,  action, '', time]);
 			});
@@ -80,7 +88,6 @@ MM.main = function (config) {
 			splittableController = new MM.SplittableController(jQuery('body'), mapModel, browserStorage, 'splittableController', 'measuresSheet'),
 			customStyleController = new MM.CustomStyleController(activeContentListener, mapModel),
 			storyboardController = new MM.StoryboardController(storyboardModel),
-			urlShortenerController =  config.urlShortener || new MM.GoogleUrlShortenerController(config.googleApiKey, activityLog, mapController, config.baseUrl + 'map/'),
 			collaborationModel = new MM.CollaborationModel(mapModel),
 			extensions = new MM.Extensions(browserStorage, 'active-extensions', config, {
 				'googleDriveAdapter': googleDriveAdapter,
@@ -128,7 +135,6 @@ MM.main = function (config) {
 
 				jQuery('[data-mm-role=share]').shareWidget();
 				jQuery('[data-mm-role=share-google]').googleShareWidget(mapController, googleDriveAdapter);
-				jQuery('[data-mm-role=share]').add('[data-mm-role=short-url]').urlShortenerWidget(urlShortenerController);
 				jQuery('#modalImport').importWidget(activityLog, mapController);
 				jQuery('[data-mm-role=save]').saveWidget(mapController);
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
@@ -142,17 +148,22 @@ MM.main = function (config) {
 					.searchWidget('Meta+F Ctrl+F', mapModel);
 				jQuery('#modalAttachmentEditor').attachmentEditorWidget(mapModel, isTouch);
 				jQuery('#modalAutoSave').autoSaveWidget(autoSave);
-				jQuery('#modalEmbedMap').embedMapWidget(mapController);
 				jQuery('#linkEditWidget').linkEditWidget(mapModel);
 				jQuery('#modalExtensions').extensionsWidget(extensions, mapController, alert);
 				jQuery('#nodeContextMenu').contextMenuWidget(mapModel).mapToolbarWidget(mapModel);
-				jQuery('.dropdown-submenu>a').click(function () { return false; });
+				jQuery('.dropdown-submenu>a').click(function () {
+					return false;
+				});
 				jQuery('[data-category]').trackingWidget(activityLog);
 				jQuery('#modalKeyActions').keyActionsWidget();
 				jQuery('#topbar .updateStyle').attr('data-mm-align', 'top').colorPicker();
 				jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 				jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
-				jQuery('.colorPicker-picker').parent('a,button').click(function (e) { if (e.target === this) {jQuery(this).find('.colorPicker-picker').click(); } });
+				jQuery('.colorPicker-picker').parent('a,button').click(function (e) {
+					if (e.target === this) {
+						jQuery(this).find('.colorPicker-picker').click();
+					}
+				});
 				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 				jQuery('#measuresSheet').measuresSheetWidget(measuresModel);
@@ -169,7 +180,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role=optional-content]').optionalContentWidget(mapModel, splittableController);
 
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
-        jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
+				jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator', 'mm-collaborator-followed');
 				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'mm-has-collaborators');
 				jQuery('.modal').modalLauncherWidget(mapModel);
@@ -207,7 +218,11 @@ MM.main = function (config) {
 			window.mmtimestamp.log('mm initialized');
 		}
 
-		_.each(jQuery('a'), function (l) { if (/^mailto:/.test(l.href)) { l.target = 'mailtoIframe'; }});
+		_.each(jQuery('a'), function (l) {
+			if (/^mailto:/.test(l.href)) {
+				l.target = 'mailtoIframe';
+			}
+		});
 
 		extensions.load(navigation.initialMapId()).then(function () {
 			if (window.mmtimestamp) {

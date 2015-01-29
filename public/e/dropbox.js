@@ -252,7 +252,6 @@ MM.Extensions.Dropbox = {
 				$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 				$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 				$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
-				$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
 				dom.find('#modalDropboxOpen').detach().appendTo('body').dropboxOpenWidget(mapController, fileSystem);
 				mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 			};

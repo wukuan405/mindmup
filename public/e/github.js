@@ -720,7 +720,6 @@ MM.Extensions.GitHub = function () {
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
-			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));

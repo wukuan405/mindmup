@@ -193,6 +193,9 @@ div.colorPicker-picker { display: inline; float: left; background: none }
 	background-position:left center;
 	background-image: url('//static.mindmup.com/img/logo_16.png');
 }
+.non-repo {
+	padding-left: 5px !important;
+}
 .repo-a {
 	background-image: url('//static.mindmup.com/img/logo_16.png');
 }
@@ -505,12 +508,6 @@ input.noglow {
 }
 #modalKeyActions div.item>a {
   text-decoration: underline;
-}
-#modalEmbedMap .modal-body textarea {
-	width: 97%;
-	height: 120px;
-	cursor: pointer;
-
 }
 .social {
   display: inline-block !important;
