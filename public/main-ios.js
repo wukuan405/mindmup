@@ -67,7 +67,7 @@ MM.main = function (config) {
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
-			windowProxy = new MM.IOS.WindowProxy(mapModel),
+			windowProxy = new MM.IOS.WindowProxy(mapModel, mmProxy, resourceCompressor),
 			commandHandlers = [mapModelProxy, confimationProxy, windowProxy],
 			mapModelAnalytics = false;
 
@@ -154,28 +154,6 @@ MM.main = function (config) {
 			jQuery('body').addClass('ios-keyboardShown');
 		} else if (command.type === 'keyboardHidden') {
 			jQuery('body').removeClass('ios-keyboardShown');
-		} else if (command.type === 'prepareForSave') {
-			var saveScreenOnly = command.args && command.args[0] && command.args[0] === 'save-screen-only';
-			mapModel.resetView();
-			jQuery('[data-mm-role="ios-menu"]').hide();
-			jQuery('[data-mm-role="ios-toolbar"]').hide();
-			jQuery('[data-mm-role="ios-context-menu"]').trigger(jQuery.Event('hidePopover'));
-			jQuery('[data-mm-role="ios-link-editor"]').trigger(jQuery.Event('hidePopover'));
-
-			window.setTimeout(function () {
-				mapModel.scaleDown();
-				window.setTimeout(function () {
-					var idea = mapModel.getIdea(),
-							title = idea.title || 'Mindmup map';
-					if (saveScreenOnly) {
-						mmProxy.sendMessage({type: 'save-screen'});
-					} else {
-						resourceCompressor.compress(idea);
-						mmProxy.sendMessage({type: 'save-content', args: {'title': title, 'idea': JSON.stringify(idea)}});
-					}
-				}, 100);
-			}, 100);
-
 		} else if (command.type === 'mapModel' && command.args && command.args.length > 0) {
 			mapModel[command.args[0]].apply(mapModel, command.args.slice(1));
 		}

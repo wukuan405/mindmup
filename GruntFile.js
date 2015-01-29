@@ -154,8 +154,10 @@ module.exports = function (grunt) {
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);
+
 		if (target.indexOf('_full') > 0) {
 			options.options.display = 'full';
+			options.options.summary = false;
 		}
 
 		if (target.indexOf('specs') === 0) {
