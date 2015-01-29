@@ -37,4 +37,19 @@ MM.IOSStageAPI = function (mapModel) {
 		}
 		return false;
 	};
+	self.handlesCommand = function (command) {
+		if (command.type && command.type.substr && command.type.substr(0, 9) === 'iosStage:') {
+			return true;
+		}
+		return false;
+	};
+	self.handleCommand = function (command) {
+		if (!self.handlesCommand(command)) {
+			return;
+		}
+		var stageCommand = command.type.split(':')[1];
+		if (stageCommand && self[stageCommand]) {
+			self[stageCommand].apply(self, command.args);
+		}
+	};
 };

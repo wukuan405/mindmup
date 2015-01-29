@@ -68,7 +68,7 @@ MM.main = function (config) {
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
 			windowProxy = new MM.IOS.WindowProxy(mapModel, mmProxy, resourceCompressor),
-			commandHandlers = [mapModelProxy, confimationProxy, windowProxy],
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage],
 			mapModelAnalytics = false;
 
 
@@ -106,11 +106,6 @@ MM.main = function (config) {
 			return completed;
 		} else if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
-		} else if (command.type && command.type.substr && command.type.substr(0, 9) === 'iosStage:') {
-			var stageCommand = command.type.split(':')[1];
-			if (iosStage[stageCommand]) {
-				iosStage[stageCommand].apply(iosStage, command.args);
-			}
 		} else if (command.type === 'loadMap') {
 			var newIdea = command.args[0],
 					readonly = command.args[1],
