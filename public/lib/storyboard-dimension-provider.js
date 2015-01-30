@@ -12,7 +12,7 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 			var result = {fontSize: height * 0.5 },
 				multiplier = 0.9;
 			do {
-				result.fontSize = Math.round(result.fontSize * multiplier);
+				result.fontSize = Math.floor(result.fontSize * multiplier);
 				result.lineHeight = Math.floor(result.fontSize * 1.3);
 				fakeDIV.css('font-size', result.fontSize + 'px');
 				fakeDIV.css('line-height', result.lineHeight + 'px');
