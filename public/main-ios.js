@@ -68,7 +68,8 @@ MM.main = function (config) {
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
 			windowProxy = new MM.IOS.WindowProxy(mapModel, mmProxy, resourceCompressor),
-			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage],
+			maploadHandler = new MM.IOS.MapLoadHandler(iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController),
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler],
 			mapModelAnalytics = false;
 
 
@@ -106,43 +107,6 @@ MM.main = function (config) {
 			return completed;
 		} else if (command.type === 'ping') {
 			mmProxy.sendMessage(command);
-		} else if (command.type === 'loadMap') {
-			var newIdea = command.args[0],
-					readonly = command.args[1],
-					quickEdit = command.args[2],
-					content = MAPJS.content(newIdea),
-					mapId = command.args[3] || 'ios-no-autosave',
-					touchEnabled = true,
-					dragContainer = jQuery('#splittable');
-
-			if (mapId === 'ios-no-autosave') {
-				iosAutoSave.off();
-			} else {
-				iosAutoSave.on();
-			}
-			mapOptions.inlineEditingDisabled = quickEdit;
-			mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'not-required'}});
-			content.addEventListener('changed', function () {
-				mmProxy.sendMessage({type: 'map-save-option', args: {'dialog': 'show'}});
-			});
-			iosMapSource.setIdea(content);
-			container.domMapWidget(activityLog, mapModel, touchEnabled,  imageInsertController, dragContainer, activeContentResourceManager.getResource, true, mapOptions);
-			mapController.loadMap(mapId);
-
-			if (readonly) {
-				jQuery('[data-mm-role="ios-menu"]').remove();
-				mapModel.setEditingEnabled(false);
-			} else {
-				mapModel.setEditingEnabled(true);
-			}
-			if (quickEdit) {
-
-				jQuery('body').addClass('ios-quick-edit-on');
-				jQuery('body').removeClass('ios-quick-edit-off');
-			} else {
-				jQuery('body').removeClass('ios-quick-edit-on');
-				jQuery('body').addClass('ios-quick-edit-off');
-			}
 		} else if (command.type === 'contentSaved') {
 			autoSave.discardUnsavedChanges();
 		} else if (command.type === 'keyboardShown') {

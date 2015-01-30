@@ -93,14 +93,14 @@ module.exports = function (grunt) {
 			}
 		},
 		jscs: {
-			src: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main.js'],
+			src: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js'],
 			options: {
 				config: '.jscsrc',
 				reporter: 'inline'
 			}
 		},
 		jshint: {
-			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main.js']
+			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js']
 		},
 		jasmine: {
 			all: {
