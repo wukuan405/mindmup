@@ -11,7 +11,7 @@ describe('LayoutExportWidget', function () {
 								'	<div id="d-done" class="visible done">done</div> ' +
 								'	<div id="d-error" class="visible error">error</div> ' +
 								'	<button id="b1" data-mm-role="set-state" data-mm-state="secondary" />' +
-								'	<button id="bexport" data-mm-role="export" />' +
+								'	<button id="bexport" data-mm-role="start-export" />' +
 								'	<input data-mm-role="format-selector" value="format-from-input" />' +
 								'	<div id="d-done-a" data-mm-role="key-status key-status-a">done</div> ' +
 								'	<div id="d-done-b" data-mm-role="key-status key-status-b">done</div> ' +

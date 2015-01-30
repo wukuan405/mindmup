@@ -146,7 +146,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 					return self.data('mm-format');
 				}
 			},
-			confirmElement = self.find('[data-mm-role=export]'),
+			confirmElement = self.find('[data-mm-role~=start-export]'),
 			setState = function (state) {
 				self.find('.visible').hide();
 				self.find('.visible' + '.' + state).show();
