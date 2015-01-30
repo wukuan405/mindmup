@@ -38,8 +38,13 @@
       <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
     </div>
     <div class="visible done">
-      <div class="alert alert-success alert-block">
+
+      <div data-mm-role="publish-status initial" class="alert alert-success alert-block">
         <h4>Your map was published</h4>
+      </div>
+
+      <div data-mm-role="publish-status republished" class="alert alert-warning alert-block">
+        <h4>Your map was re-published. Please allow up to 30mins for this to become available.</h4>
       </div>
 
 

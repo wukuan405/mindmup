@@ -159,6 +159,12 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 							element.attr('href', value);
 						} else if (element.prop('tagName') === 'INPUT' || element.prop('tagName') === 'TEXTAREA') {
 							element.val(value).attr('data-mm-val', value);
+						} else if (element.prop('tagName') === 'DIV') {
+							if (_.contains(element.attr('data-mm-role').split(' '), value)) {
+								element.show();
+							} else {
+								element.hide();
+							}
 						}
 					});
 				});

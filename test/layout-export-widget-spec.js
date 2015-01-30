@@ -13,6 +13,8 @@ describe('LayoutExportWidget', function () {
 								'	<button id="b1" data-mm-role="set-state" data-mm-state="secondary" />' +
 								'	<button id="bexport" data-mm-role="export" />' +
 								'	<input data-mm-role="format-selector" value="format-from-input" />' +
+								'	<div id="d-done-a" data-mm-role="key-status key-status-a">done</div> ' +
+								'	<div id="d-done-b" data-mm-role="key-status key-status-b">done</div> ' +
 								'</div>';
 	beforeEach(function () {
 		layoutExportController = jasmine.createSpyObj('layoutExportController', ['startExport']);
@@ -238,6 +240,25 @@ describe('LayoutExportWidget', function () {
 						expect(name.val()).toEqual('Jim Jom');
 						expect(name.attr('data-mm-val')).toEqual('Jim Jom');
 						expect(link.attr('href')).toEqual('http://iron');
+					});
+					it('shows div elements where the role includes the key and the value', function () {
+						jQuery('#d-done-b').hide();
+						exportDeferred.resolve({name: 'Jim Jom', link: 'http://iron', 'key-status': 'key-status-b'});
+						expect(jQuery('#d-done-b').css('display')).not.toBe('none');
+					});
+					it('hides div elements where the role includes the key but not the value', function () {
+						exportDeferred.resolve({name: 'Jim Jom', link: 'http://iron', 'key-status': 'key-status-b'});
+						expect(jQuery('#d-done-a').css('display')).toBe('none');
+					});
+					it('ignores div elements where the role includes a substring of the key', function () {
+						//<div id="d-done-b" data-mm-role="key-status key-status-b">done</div>
+						exportDeferred.resolve({name: 'Jim Jom', link: 'http://iron', 'y-st': 'key-status-b'});
+						expect(jQuery('#d-done-b').css('display')).not.toBe('none');
+					});
+					it('hides div elements where the role includes as substring of the the value', function () {
+						//<div id="d-done-b" data-mm-role="key-status key-status-b">done</div>
+						exportDeferred.resolve({name: 'Jim Jom', link: 'http://iron', 'key-status': 'status-b'});
+						expect(jQuery('#d-done-b').css('display')).toBe('none');
 					});
 				});
 			});
