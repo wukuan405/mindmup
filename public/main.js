@@ -137,6 +137,7 @@ MM.main = function (config) {
 				};
 				jQuery('#toolbarEdit').mapToolbarWidget(mapModel);
 				jQuery('#floating-toolbar').floatingToolbarWidget();
+				jQuery('#floating-collaborators').floatingToolbarWidget();
 				jQuery('#listBookmarks').bookmarkWidget(mapBookmarks, alert, mapController);
 				jQuery(document).titleUpdateWidget(mapController);
 
@@ -188,7 +189,7 @@ MM.main = function (config) {
 				jQuery('#customStyleModal').customStyleWidget(customStyleController);
 				jQuery('[data-mm-role~=new-map]').newMapWidget(mapController);
 				jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
-				jQuery('#modalCollaboratorList').collaboratorListWidget(collaborationModel, 'mm-has-collaborators');
+				jQuery('#floating-collaborators').collaboratorListWidget(collaborationModel, 'mm-has-collaborators');
 				jQuery('.modal').modalLauncherWidget(mapModel);
 				jQuery('input[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
 				jQuery('textarea[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();

@@ -3,7 +3,7 @@ html, body {
   overflow: hidden;
 }
 
-#container, #topbar, #floating-toolbar, .dropdown-menu {
+#container, #topbar, #floating-toolbar, .dropdown-menu, .floating {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -87,7 +87,17 @@ body {
 @media screen {
   #topbar  .nav > li > a { font-weight:bold; }
 }
-#floating-toolbar { position:absolute; top:100px; right:10px;z-index:999; border:1px solid #0088cc; border-radius:9px; }
+#floating-toolbar {
+	position:absolute;
+	top:100px;
+	right:10px;
+	z-index:999;
+	border:1px
+	solid #0088cc;
+	border-radius:9px;
+}
+
+
 .ios .visible-touch, .android .visible-touch {
   display: block !important;
 }
@@ -221,6 +231,7 @@ span.repo-g, span.repo-a, span.repo-b, span.repo-p {
 .collapsed-toolbar .hidden-collapsed-toolbar {
 	display: none !important;
 }
+
 
 .visible-row-split {
   display: none;
@@ -925,14 +936,34 @@ body .modal.huge {
 	min-width: 30px;
 }
 
-.visible-following {
-	display: none;
-}
 img.collab-photo {
 	width:20px;
 	height:20px;
 	float:left;
 	padding-right:10px;
+}
+
+#floating-collaborators {
+	position:absolute;
+	top:100px;
+	left:10px;
+	z-index:999;
+	border:1px
+	solid #0088cc;
+	border-radius:9px;
+}
+
+.visible-collaboration-toolbar {
+	display: none;
+}
+
+.collaboration-toolbar .visible-collaboration-toolbar {
+	display: initial !important;
+}
+
+
+.collaboration-toolbar .hidden-collaboration-toolbar {
+	display: none !important;
 }
 
 .visible-has-collaborators {
