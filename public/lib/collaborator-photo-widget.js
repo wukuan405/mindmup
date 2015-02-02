@@ -1,4 +1,4 @@
-/*global jQuery, MM*/
+/*global jQuery, MM, Image*/
 MM.deferredImageLoader = function (url) {
 	'use strict';
 	var result = jQuery.Deferred(),
@@ -39,6 +39,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 					imageLoader(collaborator.photoUrl).then(function (jQueryImg) {
 						if (imageForCollaborator(collaborator.sessionId).length === 0) {
 							jQueryImg.addClass(imgClass).attr('data-mm-collaborator-id', collaborator.sessionId).on('tap', onPhotoTap);
+							jQueryImg.tooltip({title: collaborator.name, placement:'bottom', container: 'body'});
 							showPictureInNode(collaborator.focusNodeId, jQueryImg);
 						}
 					});

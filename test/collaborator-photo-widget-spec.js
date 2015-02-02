@@ -29,6 +29,13 @@ describe('Collaborator Photo Widget', function () {
 				expect(firstImage.css('bottom')).toBe('-30px');
 				expect(firstImage.css('right')).toBe('-40px');
 			});
+			it('adds a tooltip showing the name of the collaborator', function () {
+				spyOn(jQuery.fn, 'tooltip');
+				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', name: 'foobar', sessionId: 123, focusNodeId: '124'});
+				loaderDeferred.resolve(firstImage);
+				expect(jQuery.fn.tooltip).toHaveBeenCalledOnJQueryObject(firstImage);
+				expect(jQuery.fn.tooltip).toHaveBeenCalledWith({title: 'foobar', placement: 'bottom', container: 'body'});
+			});
 			it('loads but does not position if the node does not exist', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '129'});
 				loaderDeferred.resolve(firstImage);
