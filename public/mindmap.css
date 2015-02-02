@@ -957,7 +957,7 @@ img.collab-photo {
 	display: none;
 }
 
-.collaboration-toolbar .visible-collaboration-toolbar {
+.map-source-c.collaboration-toolbar .visible-collaboration-toolbar {
 	display: initial !important;
 }
 
