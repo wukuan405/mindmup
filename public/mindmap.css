@@ -919,10 +919,9 @@ body .modal.huge {
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	opacity: 0.6;
+	border: 3px solid transparent;
 	border-radius: 20px;
-	border-width: 3px;
-  transform: translate(5px, 5px);
+  	transform: translate(5px, 5px);
 	min-width: 30px;
 }
 
