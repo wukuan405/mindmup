@@ -54,6 +54,7 @@
           <li class="active"><a href="#publish-tab-social" data-toggle="tab">Share on social networks</a></li>
           <li><a href="#publish-tab-send-links" data-toggle="tab">Send links</a></li>
           <li><a href="#publish-tab-embed" data-toggle="tab">Embed code</a></li>
+          <li><a href="#publish-tab-get-archive" data-toggle="tab">Get archive</a></li>
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="publish-tab-social">
@@ -105,6 +106,21 @@
 							<textarea data-mm-role="embed-markup selectable-read-only" class="span5"></textarea>
           </div>
 
+          <div class="tab-pane" id="publish-tab-get-archive">
+            <p class="text-center">
+              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-archive-zip" rel="tooltip" data-title="Email a link" data-event-type="Email Link" data-category="Atlas" ><i class="icon-envelope"></i></a>
+              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-archive-zip" rel="tooltip" data-title="Gmail a link" data-event-type="Gmail Link" data-category="Atlas" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+            </p>
+						<form class="form">
+							<div class="control-group">
+								<label>Zip Archive:</label>
+								<div class="input-append">
+									<input data-mm-role="archive-zip selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="archive-zip" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+						</form>
+          </div>
 				</div>
 			</div>
     </div>
