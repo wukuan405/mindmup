@@ -2,7 +2,6 @@
 MM.CollaborationModel = function (mapModel) {
 	'use strict';
 	var self = observable(this),
-			followedSessionId,
 			running = false,
 			onSelectionChanged = function (id, isSelected) {
 				if (running && isSelected) {
@@ -12,9 +11,6 @@ MM.CollaborationModel = function (mapModel) {
 	self.collaboratorFocusChanged = function (collaborator) {
 		if (running) {
 			self.dispatchEvent('collaboratorFocusChanged', collaborator);
-			if (collaborator.sessionId === followedSessionId) {
-				mapModel.selectNode(collaborator.focusNodeId, true);
-			}
 		}
 	};
 	self.collaboratorPresenceChanged = function (collaborator, isOnline) {
@@ -25,10 +21,15 @@ MM.CollaborationModel = function (mapModel) {
 	};
 	self.start = function (collaborators) {
 		running = true;
-		followedSessionId = undefined;
 		if (_.size(collaborators) > 0) {
 			_.each(collaborators, self.collaboratorFocusChanged);
 		}
+
+	};
+	self.showCollaborator = function (collaborator) {
+		// option 1: cache state from collaboratorFocusChanged
+		// option 3: throw event with callback for google to handle
+		self.dispatchEvent('sessionFocusRequested', collaborator.sessionId, mapModel.centerOnNode);
 
 	};
 	self.stop = function () {

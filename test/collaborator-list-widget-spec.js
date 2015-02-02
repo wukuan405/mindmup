@@ -1,4 +1,4 @@
-/*global describe, beforeEach, observable, jQuery, afterEach, it, expect, MM */
+/*global describe, beforeEach, observable, jQuery, afterEach, it, expect, MM, spyOn */
 describe('Collaborator List Widget', function () {
 	'use strict';
 	var underTest, collaborationModel,
@@ -23,9 +23,9 @@ describe('Collaborator List Widget', function () {
 		session1 = 'sess123';
 		session2 = 'sess456';
 		session3 = 'sess777';
-		firstCollaborator = { photoUrl: 'http://first-image', sessionId: session1, name:'First name' };
-		secondCollaborator = { photoUrl: 'http://second-image', sessionId: session2, name:'Second name' };
-		thirdCollaborator = { photoUrl: 'http://second-image', sessionId: session3, name:'Second name' };
+		firstCollaborator = { photoUrl: 'http://first-image', sessionId: session1, name:'First name', color: '#666' };
+		secondCollaborator = { photoUrl: 'http://second-image', sessionId: session2, name:'Second name', color: '#555' };
+		thirdCollaborator = { photoUrl: 'http://second-image', sessionId: session3, name:'Second name', color: '#444' };
 		list = underTest.find('ul');
 	});
 	afterEach(function () {
@@ -145,6 +145,7 @@ describe('Collaborator List Widget', function () {
 	});
 	describe('item templating', function () {
 		beforeEach(function () {
+			spyOn(jQuery.fn, 'css').and.callThrough();
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, true);
 		});
 		it('fills in the collaborator name into data-mm-role=collaborator-name"', function () {
@@ -152,6 +153,15 @@ describe('Collaborator List Widget', function () {
 		});
 		it('fills in the collaborator picture url into the src of data-mm-role=collaborator-photo"', function () {
 			expect(list.children().first().find('[data-mm-role=collaborator-photo]').attr('src')).toBe('http://first-image');
+		});
+		it('sets to border color of the collaborator image to the color of the collaborator', function () {
+			var photo = list.children().first().find('[data-mm-role=collaborator-photo]');
+			expect(jQuery.fn.css).toHaveBeenCalledOnJQueryObject(photo);
+			expect(jQuery.fn.css).toHaveBeenCalledWith('border-color', '#666');
+
+		});
+		it('adds an onclick handler that focuses the map on the collaborators node', function () {
+
 		});
 	});
 });

@@ -925,7 +925,14 @@ body .modal.huge {
 
 }
 
+.collaborator-list-container {
+	max-height: 200px;
+	overflow-y: scroll;
+}
 
+.collaborator-list-container td {
+	cursor: pointer;
+}
 .mm-collaborator {
 	position: absolute;
 	width: 32px;
@@ -935,12 +942,16 @@ body .modal.huge {
   	transform: translate(5px, 5px);
 	min-width: 30px;
 }
-
+span.collab-name {
+	line-height: 30px;
+}
 img.collab-photo {
-	width:20px;
-	height:20px;
+	width:30px;
+	height:30px;
 	float:left;
-	padding-right:10px;
+	margin-right:10px;
+	border: 2px solid transparent;
+	border-radius: 20px;
 }
 
 #floating-collaborators {

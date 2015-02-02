@@ -170,6 +170,11 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 			events,
 			me,
 			self = this,
+			getGoogleCollaboratorByUserId = function (userIdKey) {
+				return _.find(doc.getCollaborators(), function (x) {
+					return String(x.userId) === String(userIdKey);
+				}) || {};
+			},
 			getGoogleCollaboratorBySession = function (sessionKey) {
 				return _.find(doc.getCollaborators(), function (x) {
 					return String(x.sessionId) === String(sessionKey);
@@ -213,6 +218,13 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				var googleCollaborator = getGoogleCollaboratorBySession(event.sessionId);
 				collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
 			},
+			handleFocusRequest = function (userId, focusProcessor) {
+				var googleCollaborator = getGoogleCollaboratorByUserId(userId),
+					focusNode = googleCollaborator && focusNodes.get(googleCollaborator.sessionId);
+				if (focusNode) {
+					focusProcessor(focusNode);
+				}
+			},
 			closeDocOnUnload = function () {
 				doc.close();
 			},
@@ -222,6 +234,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 				collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
+				collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 				mapController.addEventListener('mapLoaded mapSaved', trackMapId);
 				unloadNotifier.bind('beforeunload', closeDocOnUnload);
 				collaborationModel.start(getCollaborators());
@@ -237,6 +250,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 		focusNodes.removeEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, triggerFocusForEvent);
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
+		collaborationModel.removeEventListener('sessionFocusRequested', handleFocusRequest);
 		collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
 		mapController.removeEventListener('mapSaved mapLoaded', trackMapId);
 		unloadNotifier.unbind('beforeunload', closeDocOnUnload);
