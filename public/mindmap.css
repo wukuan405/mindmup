@@ -920,20 +920,14 @@ body .modal.huge {
 	width: 32px;
 	height: 32px;
 	opacity: 0.6;
-	border-radius: 15px;
+	border-radius: 20px;
+	border-width: 3px;
   transform: translate(5px, 5px);
 	min-width: 30px;
-}
-.mm-collaborator.mm-collaborator-followed {
-	opacity: 1;
-	border: 1px solid #22AAE0;
 }
 
 .visible-following {
 	display: none;
-}
-.mm-collaborator-followed .visible-following {
-	display: inline-block;
 }
 img.collab-photo {
 	width:20px;

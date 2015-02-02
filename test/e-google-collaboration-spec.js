@@ -47,7 +47,7 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 		mapController = observable({});
 		googleDoc = new MM.FakeGoogleRealtime();
 		sessions = {'remote session 1': 'node.1234', 'old remote session': 'node.111'};
-		remoteGoogleCollaborator = { userId: 'someone remote', sessionId: 'remote session 1', photoUrl: 'photo2', displayName: 'Someone else'};
+		remoteGoogleCollaborator = { userId: 'someone remote', sessionId: 'remote session 1', photoUrl: 'photo2', displayName: 'Someone else', color: '#777'};
 		var remoteGoogleCollaboratorGhost = { userId: 'someone remote', sessionId: 'old remote session', photoUrl: 'photo2', displayName: 'Someone else'};
 		myGoogleCollaborator = { userId: 'it is me', isMe: true, sessionId: 'my session id', photoUrl: 'photo1', displayName: 'Me'};
 		googleDoc.collaborators = [
@@ -61,7 +61,7 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 			},
 			set: jasmine.createSpy('set')
 		});
-		remoteCollaborator = {photoUrl: 'photo2', focusNodeId: 'node.1234', sessionId: 'someone remote', name: 'Someone else'};
+		remoteCollaborator = {photoUrl: 'photo2', focusNodeId: 'node.1234', sessionId: 'someone remote', name: 'Someone else', color: '#777'};
 	});
 	afterEach(function () {
 		window.gapi = undefined;
@@ -84,30 +84,20 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 			it('changes collaborator focus after an event is added to the events queue', function () {
 				sessions['remote session 1'] = 'node.444';
 				googleDoc.model.events.dispatchEvent(gapi.drive.realtime.EventType.VALUES_ADDED, { sessionId: 'remote session 1' });
-				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith({photoUrl: 'photo2', focusNodeId: 'node.444', sessionId: 'someone remote', name: 'Someone else'});
+				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith({photoUrl: 'photo2', focusNodeId: 'node.444', sessionId: 'someone remote', name: 'Someone else', color: '#777'});
 			});
 			it('changes collaborator focus if the focusnodes map changes', function () {
 				sessions['remote session 1'] = 'node.444';
 				googleDoc.model.focusNodes.dispatchEvent(gapi.drive.realtime.EventType.VALUE_CHANGED, { sessionId: 'remote session 1' });
-				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith({photoUrl: 'photo2', focusNodeId: 'node.444', sessionId: 'someone remote', name: 'Someone else'});
+				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith({photoUrl: 'photo2', focusNodeId: 'node.444', sessionId: 'someone remote', name: 'Someone else', color: '#777'});
 			});
 			it('changes collaborator presence when a remote collaborator joins', function () {
-				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, {collaborator: { displayName: 'Zorro', photoUrl: 'http://zorro', userId: 'zorro user', sessionId: 'zorro session' }});
-				expect(collaborationModel.collaboratorPresenceChanged).toHaveBeenCalledWith({focusNodeId: undefined, name: 'Zorro', photoUrl: 'http://zorro', sessionId: 'zorro user' }, true);
+				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, {collaborator: { displayName: 'Zorro', photoUrl: 'http://zorro', userId: 'zorro user', sessionId: 'zorro session', color: '#aaa'}});
+				expect(collaborationModel.collaboratorPresenceChanged).toHaveBeenCalledWith({focusNodeId: undefined, name: 'Zorro', photoUrl: 'http://zorro', sessionId: 'zorro user', color: '#aaa'}, true);
 			});
 			it('changes collaborator presence when a remote collaborator leaves', function () {
 				googleDoc.dispatchEvent(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, {collaborator: remoteGoogleCollaborator});
 				expect(collaborationModel.collaboratorPresenceChanged).toHaveBeenCalledWith(remoteCollaborator, false);
-			});
-			it('forces a focus event when a remote session is followed', function () {
-				collaborationModel.dispatchEvent('followedCollaboratorChanged', remoteCollaborator.sessionId);
-				expect(collaborationModel.collaboratorFocusChanged).toHaveBeenCalledWith(remoteCollaborator);
-			});
-			it('does not force a focus event after a remote session is no longer followed', function () {
-				collaborationModel.dispatchEvent('followedCollaboratorChanged', remoteCollaborator.sessionId);
-				collaborationModel.collaboratorFocusChanged.calls.reset();
-				collaborationModel.dispatchEvent('followedCollaboratorChanged', false);
-				expect(collaborationModel.collaboratorFocusChanged).not.toHaveBeenCalled();
 			});
 		});
 		describe('ignores local drive realtime notifications', function () {
@@ -147,7 +137,6 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_LEFT)).toEqual([]);
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_JOINED)).toEqual([]);
 				expect(collaborationModel.listeners('myFocusChanged')).toEqual([]);
-				expect(collaborationModel.listeners('followedCollaboratorChanged')).toEqual([]);
 				expect(mapController.listeners('mapLoaded')).toEqual([]);
 				expect(mapController.listeners('mapSaved')).toEqual([]);
 			});

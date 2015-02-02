@@ -35,16 +35,6 @@ MM.CollaborationModel = function (mapModel) {
 		self.dispatchEvent('stopped');
 		running = false;
 	};
-	self.toggleFollow = function (sessionId) {
-		/*jshint eqeqeq:false*/
-		if (followedSessionId == sessionId) {
-			followedSessionId = undefined;
-			self.dispatchEvent('followedCollaboratorChanged', undefined);
-		} else {
-			followedSessionId = sessionId;
-			self.dispatchEvent('followedCollaboratorChanged', sessionId);
-		}
-	};
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
 };
 MM.CollaboratorAlerts = function (alert, collaborationModel) {

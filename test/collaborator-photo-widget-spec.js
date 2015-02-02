@@ -12,7 +12,7 @@ describe('Collaborator Photo Widget', function () {
 		});
 		collaborationModel = new MM.CollaborationModel(observable({}));
 		collaborationModel.start();
-		underTest = jQuery(template).appendTo('body').collaboratorPhotoWidget(collaborationModel, imageLoader, 'mm-collaborator', 'mm-collaborator-followed');
+		underTest = jQuery(template).appendTo('body').collaboratorPhotoWidget(collaborationModel, imageLoader, 'mm-collaborator');
 	});
 	describe('collaboratorFocusChanged event handling', function () {
 
@@ -43,20 +43,18 @@ describe('Collaborator Photo Widget', function () {
 				expect(imageLoader).toHaveBeenCalledWith('http://x.y');
 				expect(firstImage.parent().length).toBe(0);
 			});
-//		it('positions the image if the node does not exist but appears later', function () { });
-			it('sets up a tap event on the image to toggle following by session id', function () {
-				spyOn(collaborationModel, 'toggleFollow');
-				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
-				loaderDeferred.resolve(firstImage);
-				firstImage.trigger('tap');
-
-				expect(collaborationModel.toggleFollow).toHaveBeenCalledWith('123');
-			});
 			it('adds the image class', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
 				loaderDeferred.resolve(firstImage);
 
 				expect(firstImage.hasClass('mm-collaborator')).toBeTruthy();
+			});
+			it('sets the border color', function () {
+				spyOn(jQuery.fn, 'css').and.callThrough();
+				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124', color: '#666'});
+				loaderDeferred.resolve(firstImage);
+				expect(jQuery.fn.css).toHaveBeenCalledOnJQueryObject(firstImage);
+				expect(jQuery.fn.css).toHaveBeenCalledWith('border-color', '#666');
 			});
 			it('does not add adds the followed class by default', function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});
@@ -122,34 +120,6 @@ describe('Collaborator Photo Widget', function () {
 					expect(firstImage.css('right')).toBe('-40px');
 				});
 			});
-		});
-	});
-	describe('followedCollaboratorChanged event handling', function () {
-		var session1, session2;
-		beforeEach(function () {
-			session1 = 555;
-			session2 = 777;
-			collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: session1, focusNodeId: '124'});
-			loaderDeferred.resolve(firstImage);
-
-			collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.f', sessionId: session2, focusNodeId: '125'});
-			loaderDeferred.resolve(secondImage);
-
-			secondImage.addClass('mm-collaborator-followed');
-		});
-		it('assigns the followed css class to the new followed collaborator', function () {
-			collaborationModel.toggleFollow(session1);
-			expect(firstImage.hasClass('mm-collaborator-followed')).toBeTruthy();
-		});
-		it('removes the followed collaborator css class from any previous cached images', function () {
-			collaborationModel.toggleFollow(session1);
-			expect(secondImage.hasClass('mm-collaborator-followed')).toBeFalsy();
-		});
-		it('removes the followed css class from all collaborators if the argument is undefined', function () {
-			collaborationModel.toggleFollow(session1);
-			collaborationModel.toggleFollow(session1);
-			expect(firstImage.hasClass('mm-collaborator-followed')).toBeFalsy();
-			expect(secondImage.hasClass('mm-collaborator-followed')).toBeFalsy();
 		});
 	});
 	it('drops all cached images when model is stopped', function () {

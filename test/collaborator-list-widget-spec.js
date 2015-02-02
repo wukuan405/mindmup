@@ -1,4 +1,4 @@
-/*global describe, beforeEach, observable, jQuery, afterEach, it, expect, MM, spyOn */
+/*global describe, beforeEach, observable, jQuery, afterEach, it, expect, MM */
 describe('Collaborator List Widget', function () {
 	'use strict';
 	var underTest, collaborationModel,
@@ -19,7 +19,7 @@ describe('Collaborator List Widget', function () {
 	beforeEach(function () {
 		collaborationModel = new MM.CollaborationModel(observable({}));
 		collaborationModel.start();
-		underTest = jQuery(template).appendTo('body').collaboratorListWidget(collaborationModel, 'mm-collaborator-followed', 'has-collaborators');
+		underTest = jQuery(template).appendTo('body').collaboratorListWidget(collaborationModel, 'has-collaborators');
 		session1 = 'sess123';
 		session2 = 'sess456';
 		session3 = 'sess777';
@@ -143,37 +143,9 @@ describe('Collaborator List Widget', function () {
 			});
 		});
 	});
-	describe('followedCollaboratorChanged event handling', function () {
-		beforeEach(function () {
-			collaborationModel.start([firstCollaborator, secondCollaborator]);
-			list.children().first().addClass('mm-collaborator-followed');
-		});
-		it('adds the followed collaborator class to the item matching the session id', function () {
-			collaborationModel.toggleFollow(session2);
-
-			expect(list.children().last().hasClass('mm-collaborator-followed')).toBeTruthy();
-		});
-		it('removes the followed collaborator class from all the other items', function () {
-			collaborationModel.toggleFollow(session2);
-
-			expect(list.children().first().hasClass('mm-collaborator-followed')).toBeFalsy();
-		});
-		it('removes the followed collaborator class from all the items if no longer following', function () {
-			collaborationModel.toggleFollow(session2);
-			collaborationModel.toggleFollow(session2);
-
-			expect(list.children().first().hasClass('mm-collaborator-followed')).toBeFalsy();
-			expect(list.children().last().hasClass('mm-collaborator-followed')).toBeFalsy();
-		});
-	});
 	describe('item templating', function () {
 		beforeEach(function () {
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, true);
-		});
-		it('adds a click/tap call toggleFollow with the session ID on data-mm-role=collaborator-select', function () {
-			spyOn(collaborationModel, 'toggleFollow');
-			list.children().first().find('[data-mm-role=collaborator-follow]').click();
-			expect(collaborationModel.toggleFollow).toHaveBeenCalledWith(session1);
 		});
 		it('fills in the collaborator name into data-mm-role=collaborator-name"', function () {
 			expect(list.children().first().find('[data-mm-role=collaborator-name]').text()).toBe('First name');

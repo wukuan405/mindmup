@@ -9,7 +9,7 @@ MM.deferredImageLoader = function (url) {
 	domImg.src = url;
 	return result.promise();
 };
-jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, imgClass, followedCollaboratorClass) {
+jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, imgClass) {
 	'use strict';
 	var self = jQuery(this),
 			showPictureInNode = function (nodeId, jQueryImg) {
@@ -21,13 +21,6 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 					});
 				}
 			},
-			onPhotoTap = function (e) {
-				e.stopPropagation();
-				if (e.gesture) {
-					e.gesture.stopPropagation();
-				}
-				collaborationModel.toggleFollow(jQuery(this).attr('data-mm-collaborator-id'));
-			},
 			imageForCollaborator = function (sessionId) {
 				return self.find('.' + imgClass + '[data-mm-collaborator-id=' + sessionId + ']');
 			},
@@ -38,8 +31,10 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 				} else {
 					imageLoader(collaborator.photoUrl).then(function (jQueryImg) {
 						if (imageForCollaborator(collaborator.sessionId).length === 0) {
-							jQueryImg.addClass(imgClass).attr('data-mm-collaborator-id', collaborator.sessionId).on('tap', onPhotoTap);
-							jQueryImg.tooltip({title: collaborator.name, placement:'bottom', container: 'body'});
+							jQueryImg
+								.addClass(imgClass).attr('data-mm-collaborator-id', collaborator.sessionId)
+								.css('border-color', collaborator.color)
+								.tooltip({title: collaborator.name, placement:'bottom', container: 'body'});
 							showPictureInNode(collaborator.focusNodeId, jQueryImg);
 						}
 					});
@@ -47,17 +42,12 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 			},
 			removePictureForCollaborator = function (collaborator) {
 				imageForCollaborator(collaborator.sessionId).remove();
-			},
-			changeFollowedCollaborator = function (sessionId) {
-				self.find('.' + followedCollaboratorClass).removeClass(followedCollaboratorClass);
-				imageForCollaborator(sessionId).addClass(followedCollaboratorClass);
 			};
 	collaborationModel.addEventListener('stopped', function () {
 		self.find('.' + imgClass).remove();
 	});
 	collaborationModel.addEventListener('collaboratorFocusChanged collaboratorJoined', showPictureForCollaborator);
 	collaborationModel.addEventListener('collaboratorLeft', removePictureForCollaborator);
-	collaborationModel.addEventListener('followedCollaboratorChanged', changeFollowedCollaborator);
 
 	return self;
 };
