@@ -100,7 +100,10 @@ module.exports = function (grunt) {
 			}
 		},
 		jshint: {
-			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js']
+			all: ['public/lib*/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js'],
+			options: {
+				jshintrc: true
+			}
 		},
 		jasmine: {
 			all: {
