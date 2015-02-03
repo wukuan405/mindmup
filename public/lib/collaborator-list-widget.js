@@ -3,8 +3,8 @@ jQuery.fn.collaboratorListWidget = function (collaborationModel, markerClass) {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this),
-				list = element.find('[data-mm-role=collab-list]'),
-				template = list.find('[data-mm-role=template]').detach(),
+				list = element.find('[data-mm-role~=collab-list]'),
+				template = list.find('[data-mm-role~=template]').detach(),
 				itemForSession = function (sessionId) {
 					return list.find('[mm-session-id=' + sessionId + ']');
 				},
@@ -15,7 +15,7 @@ jQuery.fn.collaboratorListWidget = function (collaborationModel, markerClass) {
 					var newItem = template.clone().appendTo(list).attr('mm-session-id', collaborator.sessionId);
 					newItem.find('[data-mm-role~=collaborator-name]').text(collaborator.name);
 					newItem.find('[data-mm-role~=collaborator-photo]').attr('src', collaborator.photoUrl).css('border-color', collaborator.color);
-					newItem.find('[data-mm-role~="collaborator-info"]').click(function () {
+					newItem.find('[data-mm-role~="collaborator-selector"]').click(function () {
 						collaborationModel.showCollaborator(collaborator);
 					});
 					element.addClass(markerClass);

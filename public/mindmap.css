@@ -928,10 +928,15 @@ body .modal.huge {
 .collaborator-list-container {
 	max-height: 200px;
 	overflow-y: scroll;
+	padding-top: 10px;
 }
 
 .collaborator-list-container td {
 	cursor: pointer;
+}
+
+.collaborator-list-container table {
+	margin-bottom: 0;
 }
 .mm-collaborator {
 	position: absolute;
@@ -942,10 +947,21 @@ body .modal.huge {
   	transform: translate(5px, 5px);
 	min-width: 30px;
 }
-span.collab-name {
+
+.collab-name {
+	overflow-x: hidden;
+	max-width: 50px;
+	white-space: nowrap;
+}
+
+.collab-name a {
 	line-height: 30px;
 }
-img.collab-photo {
+
+.collab-photo {
+	width:30px;
+}
+.collab-photo img {
 	width:30px;
 	height:30px;
 	float:left;

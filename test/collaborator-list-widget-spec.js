@@ -7,7 +7,7 @@ describe('Collaborator List Widget', function () {
 				'    <ul data-mm-role="collab-list">' +
 				'      <li data-mm-role="template">' +
 				'        <a data-mm-role="collaborator-follow">' +
-				'          <img data-mm-role="collaborator-photo" class="collab-photo" />' +
+				'          <img data-mm-role="collaborator-photo collaborator-selector" class="collab-photo" />' +
 				'          <span data-mm-role="collaborator-name" ></span>&nbsp;' +
 				'         </a>' +
 				'       </li>' +
@@ -149,19 +149,21 @@ describe('Collaborator List Widget', function () {
 			collaborationModel.collaboratorPresenceChanged(firstCollaborator, true);
 		});
 		it('fills in the collaborator name into data-mm-role=collaborator-name"', function () {
-			expect(list.children().first().find('[data-mm-role=collaborator-name]').text()).toBe('First name');
+			expect(list.children().first().find('[data-mm-role~=collaborator-name]').text()).toBe('First name');
 		});
 		it('fills in the collaborator picture url into the src of data-mm-role=collaborator-photo"', function () {
-			expect(list.children().first().find('[data-mm-role=collaborator-photo]').attr('src')).toBe('http://first-image');
+			expect(list.children().first().find('[data-mm-role~=collaborator-photo]').attr('src')).toBe('http://first-image');
 		});
 		it('sets to border color of the collaborator image to the color of the collaborator', function () {
-			var photo = list.children().first().find('[data-mm-role=collaborator-photo]');
+			var photo = list.children().first().find('[data-mm-role~=collaborator-photo]');
 			expect(jQuery.fn.css).toHaveBeenCalledOnJQueryObject(photo);
 			expect(jQuery.fn.css).toHaveBeenCalledWith('border-color', '#666');
 
 		});
 		it('adds an onclick handler that focuses the map on the collaborators node', function () {
-
+			spyOn(collaborationModel, 'showCollaborator').and.callThrough();
+			underTest.find('[data-mm-role~="collaborator-selector"]').click();
+			expect(collaborationModel.showCollaborator).toHaveBeenCalledWith(firstCollaborator);
 		});
 	});
 });
