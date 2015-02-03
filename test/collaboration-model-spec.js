@@ -67,6 +67,24 @@ describe('Collaboration Model', function () {
 
 		});
 	});
+	describe('collaboratorDidEdit', function () {
+		var collaboratorDidEditListener;
+		beforeEach(function () {
+			collaboratorDidEditListener = jasmine.createSpy('collaboratorDidEditListener');
+			underTest.addEventListener('collaboratorDidEdit', collaboratorDidEditListener);
+		});
+		it('dispatches a collaboratorDidEdit event if it is running', function () {
+			underTest.start();
+			underTest.collaboratorDidEdit();
+			expect(collaboratorDidEditListener).toHaveBeenCalled();
+		});
+		it('does nothing if it is not running', function () {
+			underTest.stop();
+			underTest.collaboratorDidEdit();
+			expect(collaboratorDidEditListener).not.toHaveBeenCalled();
+
+		});
+	});
 	describe('focus change notifications', function () {
 		describe('before the model is started', function () {
 			it('does not send notifications or blow up', function () {

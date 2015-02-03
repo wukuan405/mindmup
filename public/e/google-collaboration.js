@@ -218,6 +218,18 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				var googleCollaborator = getGoogleCollaboratorBySession(event.sessionId);
 				collaborationModel.collaboratorFocusChanged(mmCollaborator(googleCollaborator));
 			},
+			onCollaboratorRequestedForContentSession = function (contentSessionId, callBack) {
+				if (!callBack) {
+					return;
+				}
+				if (!contentSessionId) {
+					callBack();
+				}
+				var googleSessionId = contentSessionId.substr(2),
+					googleCollaborator = googleSessionId && getGoogleCollaboratorBySession(googleSessionId),
+					collaborator = googleCollaborator && mmCollaborator(googleCollaborator);
+				callBack(collaborator);
+			},
 			handleFocusRequest = function (userId, focusProcessor) {
 				var googleCollaborator = getGoogleCollaboratorByUserId(userId),
 					focusNode = googleCollaborator && focusNodes.get(googleCollaborator.sessionId);
@@ -234,6 +246,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 				doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 				collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
+				collaborationModel.addEventListener('collaboratorRequestedForContentSession', onCollaboratorRequestedForContentSession);
 				collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 				mapController.addEventListener('mapLoaded mapSaved', trackMapId);
 				unloadNotifier.bind('beforeunload', closeDocOnUnload);
@@ -251,6 +264,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, onCollaboratorLeft);
 		doc.removeEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, onCollaboratorJoined);
 		collaborationModel.removeEventListener('sessionFocusRequested', handleFocusRequest);
+		collaborationModel.removeEventListener('collaboratorRequestedForContentSession', onCollaboratorRequestedForContentSession);
 		collaborationModel.removeEventListener('myFocusChanged', onMyFocusChanged);
 		mapController.removeEventListener('mapSaved mapLoaded', trackMapId);
 		unloadNotifier.unbind('beforeunload', closeDocOnUnload);

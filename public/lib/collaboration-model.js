@@ -7,10 +7,26 @@ MM.CollaborationModel = function (mapModel) {
 				if (running && isSelected) {
 					self.dispatchEvent('myFocusChanged', id);
 				}
+			},
+			onNodeTitleChanged = function (updatedNode, contentSessionId) {
+				if (!contentSessionId) {
+					return;
+				}
+				var collaboratorDidEdit = function (collaborator) {
+					if (collaborator && running) {
+						self.dispatchEvent('collaboratorDidEdit', 'titleChanged', collaborator, updatedNode);
+					}
+				};
+				self.dispatchEvent('collaboratorRequestedForContentSession', contentSessionId, collaboratorDidEdit);
 			};
 	self.collaboratorFocusChanged = function (collaborator) {
 		if (running) {
 			self.dispatchEvent('collaboratorFocusChanged', collaborator);
+		}
+	};
+	self.collaboratorDidEdit = function (collaborator, nodeId) {
+		if (running) {
+			self.dispatchEvent('collaboratorDidEdit', collaborator, nodeId);
 		}
 	};
 	self.collaboratorPresenceChanged = function (collaborator, isOnline) {
@@ -30,13 +46,13 @@ MM.CollaborationModel = function (mapModel) {
 		// option 1: cache state from collaboratorFocusChanged
 		// option 3: throw event with callback for google to handle
 		self.dispatchEvent('sessionFocusRequested', collaborator.sessionId, mapModel.centerOnNode);
-
 	};
 	self.stop = function () {
 		self.dispatchEvent('stopped');
 		running = false;
 	};
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
+	mapModel.addEventListener('nodeTitleChanged', onNodeTitleChanged);
 };
 MM.CollaboratorAlerts = function (alert, collaborationModel) {
 	'use strict';
