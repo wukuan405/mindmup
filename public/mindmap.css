@@ -1003,6 +1003,18 @@ body .modal.huge {
 	display: block;
 }
 
+
+
+.visible-collaboration-mute-speech {
+	display: none;
+}
+.collaboration-mute-speech .visible-collaboration-mute-speech {
+	display: initial !important;
+}
+.collaboration-mute-speech .hidden-collaboration-mute-speech {
+	display: none !important;
+}
+
 .btn-share {
 	margin-left: 10px;
 	margin-right: 10px;
@@ -1012,4 +1024,26 @@ body .modal.huge {
 	padding: 15px 9px;
 	background-position: center center;
 	background-repeat: no-repeat;
+}
+#collaboratorSpeechBubble {
+	position:absolute;
+	z-index: 2;
+	top: 100px;
+	left: 20px;
+}
+#collaboratorSpeechBubble img {
+	width: 60px;
+	height: 60px;
+	border-radius: 60px;
+	border: 2px solid transparent;
+	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+	cursor: pointer;
+}
+#collaboratorSpeechBubble img:hover {
+	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+.speech-bubble-inner {
+	max-width: 300px;
+	max-height: 100px;
+	overflow: hidden;
 }

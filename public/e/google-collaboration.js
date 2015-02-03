@@ -181,6 +181,9 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				}) || {};
 			},
 			mmCollaborator = function (googleCollaborator) {
+				if (googleCollaborator.userId === me.userId) {
+					return false;
+				}
 				return {
 					photoUrl: googleCollaborator.photoUrl,
 					focusNodeId: focusNodes.get(googleCollaborator.sessionId),
@@ -228,7 +231,9 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				var googleSessionId = contentSessionId.substr(2),
 					googleCollaborator = googleSessionId && getGoogleCollaboratorBySession(googleSessionId),
 					collaborator = googleCollaborator && mmCollaborator(googleCollaborator);
-				callBack(collaborator);
+				if (collaborator) {
+					callBack(collaborator);
+				}
 			},
 			handleFocusRequest = function (userId, focusProcessor) {
 				var googleCollaborator = getGoogleCollaboratorByUserId(userId),

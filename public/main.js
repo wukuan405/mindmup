@@ -193,6 +193,8 @@ MM.main = function (config) {
 				jQuery('.modal').modalLauncherWidget(mapModel);
 				jQuery('input[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
 				jQuery('textarea[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
+
+				jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 				MM.CollaboratorAlerts(alert, collaborationModel);
 			};
 		config.activeContentConfiguration = {
