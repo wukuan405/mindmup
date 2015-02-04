@@ -325,6 +325,8 @@ MM.Extensions.googleCollaboration = function () {
 				sessionNameField.parent().removeClass('error');
 				modal.modal('show');
 			});
+			menu.find('[data-mm-role=c-toggle-class]').toggleClassWidget();
+			menu.find('[data-mm-role~=c-google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController,  MM.Extensions.components.modalConfirm,  MM.Extensions.components.activityLog);
 			modal.on('shown', function () {
 				sessionNameField.focus();
 			});

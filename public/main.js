@@ -107,7 +107,8 @@ MM.main = function (config) {
 				'measuresModel' : measuresModel,
 				'activeContentListener': activeContentListener,
 				'navigation': navigation,
-				'collaborationModel': collaborationModel
+				'collaborationModel': collaborationModel,
+				'modalConfirm': modalConfirm
 			}),
 			loadWidgets = function () {
 				var isTouch = jQuery('body').hasClass('ios') || jQuery('body').hasClass('android');
