@@ -195,7 +195,6 @@ MM.main = function (config) {
 				jQuery('textarea[data-mm-role~=selectable-read-only]').selectableReadOnlyInputWidget();
 
 				jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
-				MM.CollaboratorAlerts(alert, collaborationModel);
 			};
 		config.activeContentConfiguration = {
 			nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']

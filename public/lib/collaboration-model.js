@@ -9,11 +9,11 @@ MM.CollaborationModel = function (mapModel) {
 				}
 			},
 			onNodeChanged = function (updatedNode, contentSessionId) {
-				if (!contentSessionId) {
+				if (!contentSessionId || !running) {
 					return;
 				}
 				var collaboratorDidEdit = function (collaborator) {
-					if (collaborator && running) {
+					if (collaborator) {
 						self.dispatchEvent('collaboratorDidEdit', collaborator, updatedNode);
 					}
 				};
@@ -35,7 +35,6 @@ MM.CollaborationModel = function (mapModel) {
 		if (_.size(collaborators) > 0) {
 			_.each(collaborators, self.collaboratorFocusChanged);
 		}
-
 	};
 	self.showCollaborator = function (collaborator) {
 		self.dispatchEvent('sessionFocusRequested', collaborator.sessionId, mapModel.centerOnNode);
@@ -47,20 +46,3 @@ MM.CollaborationModel = function (mapModel) {
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
 	mapModel.addEventListener('nodeTitleChanged', onNodeChanged);
 };
-MM.CollaboratorAlerts = function (alert, collaborationModel) {
-	'use strict';
-	var	prevAlert,
-			showUpdate = function (caption, text) {
-				if (prevAlert) {
-					alert.hide(prevAlert);
-				}
-				prevAlert = alert.show(caption, text, 'flash');
-			};
-	collaborationModel.addEventListener('collaboratorJoined', function (collaborator) {
-		showUpdate('Collaborator joined:', collaborator.name + ' joined this session');
-	});
-	collaborationModel.addEventListener('collaboratorLeft', function (collaborator) {
-		showUpdate('Collaborator left:', collaborator.name + ' left this session');
-	});
-};
-

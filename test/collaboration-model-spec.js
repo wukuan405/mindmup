@@ -1,11 +1,13 @@
 /*global jasmine, describe, it, expect, beforeEach, MM, observable*/
 describe('Collaboration Model', function () {
 	'use strict';
-	var underTest, mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener;
+	var underTest, mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener, collaboratorDidEditListener, collaboratorRequestedForContentSessionListener;
 	beforeEach(function () {
 		collaboratorFocusChangedListener = jasmine.createSpy('collaboratorFocusChanged');
 		collaboratorJoinedListener = jasmine.createSpy('collaboratorJoined');
 		collaboratorLeftListener = jasmine.createSpy('collaboratorLeft');
+		collaboratorDidEditListener = jasmine.createSpy('collaboratorDidEdit');
+		collaboratorRequestedForContentSessionListener = jasmine.createSpy('collaboratorRequestedForContentSession');
 		myFocusChangedListener = jasmine.createSpy('myFocusChanged');
 		mapModel = observable(jasmine.createSpyObj('mapModel', ['selectNode']));
 		underTest = new MM.CollaborationModel(mapModel);
@@ -13,6 +15,8 @@ describe('Collaboration Model', function () {
 		underTest.addEventListener('collaboratorJoined', collaboratorJoinedListener);
 		underTest.addEventListener('collaboratorLeft', collaboratorLeftListener);
 		underTest.addEventListener('myFocusChanged', myFocusChangedListener);
+		underTest.addEventListener('collaboratorDidEdit', collaboratorDidEditListener);
+		underTest.addEventListener('collaboratorRequestedForContentSession', collaboratorRequestedForContentSessionListener);
 	});
 	describe('collaboratorPresenceChanged', function () {
 		beforeEach(function () {
@@ -90,6 +94,52 @@ describe('Collaboration Model', function () {
 				underTest.stop();
 				mapModel.dispatchEvent('nodeSelectionChanged', 242, true);
 				expect(myFocusChangedListener).not.toHaveBeenCalled();
+			});
+		});
+	});
+	describe('node change notifications', function () {
+		var node, contentSessionId, collaborator;
+		beforeEach(function () {
+			node = {node: 'yes'};
+			collaborator = {french: 'yes'};
+			contentSessionId = '12355';
+
+		});
+		describe('before the model is started', function () {
+			it('does not send notifications or blow up', function () {
+				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
+				expect(collaboratorDidEditListener).not.toHaveBeenCalled();
+				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
+			});
+		});
+		describe('after the model is started', function () {
+			beforeEach(function () {
+				underTest.start();
+			});
+			it('does not dispatch collaboratorRequestedForContentSession if not running', function () {
+				underTest.stop();
+				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
+				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
+			});
+			it('requests a collaborator for state for content session', function () {
+				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
+				expect(collaboratorRequestedForContentSessionListener).toHaveBeenCalledWith(contentSessionId, jasmine.any(Function));
+			});
+			it('does not dispatch collaboratorDidEdit if the state callback never resolves', function () {
+				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
+				expect(collaboratorDidEditListener).not.toHaveBeenCalled();
+			});
+
+			it('dispatches collaboratorDidEdit with collaborator when the state callback resolves', function () {
+				collaboratorRequestedForContentSessionListener.and.callFake(function (sessionId, callback) {
+					callback(collaborator);
+				});
+				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
+				expect(collaboratorDidEditListener).toHaveBeenCalledWith(collaborator, node);
+			});
+			it('does nothing if not in a collaborative map', function () {
+				mapModel.dispatchEvent('nodeTitleChanged', node, '');
+				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
 			});
 		});
 	});
