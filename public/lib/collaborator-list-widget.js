@@ -15,7 +15,7 @@ jQuery.fn.collaboratorListWidget = function (collaborationModel, markerClass) {
 					var newItem = template.clone().appendTo(list).attr('mm-session-id', collaborator.sessionId);
 					newItem.find('[data-mm-role~=collaborator-name]').text(collaborator.name);
 					newItem.find('[data-mm-role~=collaborator-photo]').attr('src', collaborator.photoUrl).css('border-color', collaborator.color);
-					newItem.find('[data-mm-role~="collaborator-selector"]').click(function () {
+					newItem.find('[data-mm-role~="collaborator-selector"]').on('tap', function () {
 						collaborationModel.showCollaborator(collaborator);
 					});
 					element.addClass(markerClass);

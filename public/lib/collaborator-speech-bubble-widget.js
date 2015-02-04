@@ -1,7 +1,7 @@
 /*global jQuery, setTimeout, _ */
-jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel) {
+jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel, timeoutArg) {
 	'use strict';
-	var timeout = 3000;
+	var timeout = timeoutArg || 3000;
 	return this.each(function () {
 		var element = jQuery(this),
 			currentCollaborator,
@@ -45,7 +45,7 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel) {
 					img.popover('show');
 				}, timeout + 700, {trailing: false}),
 			onEdit = function (collaborator, node) {
-				var trimmedTitle = node.title && node.title.trim(),
+				var trimmedTitle = node && node.title && node.title.trim(),
 						style = trimmedTitle ? '' : 'muted',
 						nodeTitle = trimmedTitle || 'removed node content';
 				showSpeechBubble(collaborator, nodeTitle, style);
@@ -56,7 +56,7 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel) {
 			onLeave = function (collaborator) {
 				showSpeechBubble(collaborator, 'left the session', 'muted');
 			};
-		img.click(showCollaborator);
+		img.on('tap', showCollaborator);
 		collaborationModel.addEventListener('collaboratorDidEdit', onEdit);
 		collaborationModel.addEventListener('collaboratorJoined', onJoin);
 		collaborationModel.addEventListener('collaboratorLeft', onLeave);

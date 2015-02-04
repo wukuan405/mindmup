@@ -158,11 +158,10 @@ describe('Collaborator List Widget', function () {
 			var photo = list.children().first().find('[data-mm-role~=collaborator-photo]');
 			expect(jQuery.fn.css).toHaveBeenCalledOnJQueryObject(photo);
 			expect(jQuery.fn.css).toHaveBeenCalledWith('border-color', '#666');
-
 		});
 		it('adds an onclick handler that focuses the map on the collaborators node', function () {
 			spyOn(collaborationModel, 'showCollaborator').and.callThrough();
-			underTest.find('[data-mm-role~="collaborator-selector"]').click();
+			underTest.find('[data-mm-role~="collaborator-selector"]').trigger('tap');
 			expect(collaborationModel.showCollaborator).toHaveBeenCalledWith(firstCollaborator);
 		});
 	});
