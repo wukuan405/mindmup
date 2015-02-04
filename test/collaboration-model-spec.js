@@ -1,7 +1,7 @@
 /*global jasmine, describe, it, expect, beforeEach, MM, observable*/
 describe('Collaboration Model', function () {
 	'use strict';
-	var underTest, mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener, collaboratorDidEditListener, collaboratorRequestedForContentSessionListener;
+	var underTest, mapModel, collaboratorFocusChangedListener, collaboratorJoinedListener, collaboratorLeftListener, myFocusChangedListener, collaboratorDidEditListener, collaboratorRequestedForContentSessionListener, sessionFocusRequestedListener;
 	beforeEach(function () {
 		collaboratorFocusChangedListener = jasmine.createSpy('collaboratorFocusChanged');
 		collaboratorJoinedListener = jasmine.createSpy('collaboratorJoined');
@@ -9,7 +9,8 @@ describe('Collaboration Model', function () {
 		collaboratorDidEditListener = jasmine.createSpy('collaboratorDidEdit');
 		collaboratorRequestedForContentSessionListener = jasmine.createSpy('collaboratorRequestedForContentSession');
 		myFocusChangedListener = jasmine.createSpy('myFocusChanged');
-		mapModel = observable(jasmine.createSpyObj('mapModel', ['selectNode']));
+		sessionFocusRequestedListener = jasmine.createSpy('sessionFocusRequested');
+		mapModel = observable(jasmine.createSpyObj('mapModel', ['selectNode', 'centerOnNode']));
 		underTest = new MM.CollaborationModel(mapModel);
 		underTest.addEventListener('collaboratorFocusChanged', collaboratorFocusChangedListener);
 		underTest.addEventListener('collaboratorJoined', collaboratorJoinedListener);
@@ -17,6 +18,7 @@ describe('Collaboration Model', function () {
 		underTest.addEventListener('myFocusChanged', myFocusChangedListener);
 		underTest.addEventListener('collaboratorDidEdit', collaboratorDidEditListener);
 		underTest.addEventListener('collaboratorRequestedForContentSession', collaboratorRequestedForContentSessionListener);
+		underTest.addEventListener('sessionFocusRequested', sessionFocusRequestedListener);
 	});
 	describe('collaboratorPresenceChanged', function () {
 		beforeEach(function () {
@@ -141,6 +143,12 @@ describe('Collaboration Model', function () {
 				mapModel.dispatchEvent('nodeTitleChanged', node, '');
 				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
 			});
+		});
+	});
+	describe('showCollaborator', function () {
+		it('dispatches a sessionFocusRequested with mapModel.centerOnNode', function () {
+			underTest.showCollaborator({sessionId: 'sess123'});
+			expect(sessionFocusRequestedListener).toHaveBeenCalledWith('sess123', mapModel.centerOnNode);
 		});
 	});
 	describe('stop', function () {
