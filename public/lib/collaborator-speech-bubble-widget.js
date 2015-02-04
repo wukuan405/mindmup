@@ -9,10 +9,15 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel) {
 				collaborationModel.showCollaborator(currentCollaborator);
 			},
 			img = element.find('[data-mm-role=collaborator-photo]'),
-			template = element.find('[data-mm-role=template]').detach(),
+			contentTemplate = element.find('[data-mm-role=popover-content-template]').detach(),
+			titleTemplate = element.find('[data-mm-role=popover-title-template]').detach(),
 			popoverContent = function (nodeTitle) {
-				template.find('[data-mm-role=text]').text(nodeTitle);
-				return template.html();
+				contentTemplate.find('[data-mm-role=popover-content]').text(nodeTitle);
+				return contentTemplate.html();
+			},
+			popoverTitle = function (nodeTitle) {
+				titleTemplate.find('[data-mm-role=popover-title]').text(nodeTitle);
+				return titleTemplate.html();
 			},
 			onEdit = function (collaborator, node) {
 				currentCollaborator = collaborator;
@@ -20,7 +25,7 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel) {
 				img.attr('src', collaborator.photoUrl);
 				img.css('border-color', collaborator.color);
 				img.popover({
-					title: collaborator.name + ':',
+					title: popoverTitle(collaborator.name),
 					content: popoverContent(node.title),
 					placement: 'right',
 					trigger: 'manual',

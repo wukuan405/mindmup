@@ -1045,5 +1045,15 @@ body .modal.huge {
 .speech-bubble-inner {
 	max-width: 300px;
 	max-height: 100px;
+  min-width: 150px;
 	overflow: hidden;
+}
+.speech-bubble-title {
+	max-width: 300px;
+  white-space: nowrap;
+	overflow: hidden;
+}
+.icon-volume-off {
+  margin-left: 3px;
+  margin-right: 5px;
 }
