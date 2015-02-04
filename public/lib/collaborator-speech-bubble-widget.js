@@ -56,7 +56,7 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel, timeout
 			onLeave = function (collaborator) {
 				showSpeechBubble(collaborator, 'left the session', 'muted');
 			};
-		img.on('tap', showCollaborator);
+		img.on('click tap', showCollaborator);
 		collaborationModel.addEventListener('collaboratorDidEdit', onEdit);
 		collaborationModel.addEventListener('collaboratorJoined', onJoin);
 		collaborationModel.addEventListener('collaboratorLeft', onLeave);
