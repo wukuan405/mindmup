@@ -75,6 +75,54 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 			expect(collaborationModel.start).toHaveBeenCalledWith([remoteCollaborator]);
 		});
 	});
+	describe('state callback requests', function () {
+		var spy;
+		beforeEach(function () {
+			spy = jasmine.createSpy('callback');
+			underTest = new MM.RealtimeGoogleDocumentMediator(googleDoc, collaborationModel, mindmupMapId, mapController, unloadNotifier);
+		});
+		describe('collaboratorRequestedForContentSession', function () {
+			it('calls the callback passing in the mm collaborator for the content session (="gd" + google session id)', function () {
+				collaborationModel.dispatchEvent('collaboratorRequestedForContentSession', 'gd' + remoteGoogleCollaborator.sessionId, spy);
+				expect(spy).toHaveBeenCalledWith(remoteCollaborator);
+			});
+			it('does not explode if the user cannot be found', function () {
+				collaborationModel.dispatchEvent('collaboratorRequestedForContentSession', 'non existent', spy);
+				expect(spy).not.toHaveBeenCalled();
+			});
+			it('does not call the callback if invoked for the current user session', function () {
+				collaborationModel.dispatchEvent('collaboratorRequestedForContentSession', 'gd' + myGoogleCollaborator.sessionId, spy);
+				expect(spy).not.toHaveBeenCalled();
+			});
+			it('does not explode if callback is not defined', function () {
+				collaborationModel.dispatchEvent('collaboratorRequestedForContentSession', 'gd' + remoteGoogleCollaborator.sessionId);
+			});
+		});
+		describe('sessionFocusRequested', function () {
+			it('calls the callback passing in the focus node ID for the collaboration model session (=google user id)', function () {
+				collaborationModel.dispatchEvent('sessionFocusRequested', remoteGoogleCollaborator.userId, spy);
+				expect(spy).toHaveBeenCalledWith('node.1234');
+			});
+			it('does not explode if the focus node is not defined for the session', function () {
+				sessions[remoteGoogleCollaborator.sessionId] = undefined;
+				collaborationModel.dispatchEvent('sessionFocusRequested', remoteGoogleCollaborator.userId, spy);
+				expect(spy).not.toHaveBeenCalled();
+			});
+			it('does not explode if the user ID cannot be found', function () {
+				collaborationModel.dispatchEvent('sessionFocusRequested', 'non existent', spy);
+				expect(spy).not.toHaveBeenCalled();
+			});
+			it('does not call the callback if invoked for the current user session', function () {
+				sessions[myGoogleCollaborator.sessionId] = 'node.87777';
+				collaborationModel.dispatchEvent('sessionFocusRequested', myGoogleCollaborator.userId, spy);
+				expect(spy).not.toHaveBeenCalled();
+			});
+			it('does not explode if callback is not defined', function () {
+				collaborationModel.dispatchEvent('sessionFocusRequested', remoteGoogleCollaborator.userId);
+			});
+		});
+
+	});
 	describe('event processing after init', function () {
 		beforeEach(function () {
 			underTest = new MM.RealtimeGoogleDocumentMediator(googleDoc, collaborationModel, mindmupMapId, mapController, unloadNotifier);
@@ -137,6 +185,8 @@ describe('MM.RealtimeGoogleDocumentMediator', function () {
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_LEFT)).toEqual([]);
 				expect(googleDoc.listeners(gapi.drive.realtime.EventType.COLLABORATOR_JOINED)).toEqual([]);
 				expect(collaborationModel.listeners('myFocusChanged')).toEqual([]);
+				expect(collaborationModel.listeners('collaboratorRequestedForContentSession')).toEqual([]);
+				expect(collaborationModel.listeners('sessionFocusRequested')).toEqual([]);
 				expect(mapController.listeners('mapLoaded')).toEqual([]);
 				expect(mapController.listeners('mapSaved')).toEqual([]);
 			});
