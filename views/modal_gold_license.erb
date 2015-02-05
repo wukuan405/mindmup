@@ -76,7 +76,7 @@
     <!-- active, delinquent, not-purchased, required -->
 
 
-    <!------------ ----->
+
 		<div data-mm-section="license-not-purchased" data-mm-poll-for-subscription="true">
 			<p class="alert alert-error alert-block">A subscription has not been purchased for this license. If you have paid using PayPal in the last 15 minutes, please wait for your payment to be processed.</p>
 			<form class="form-horizontal">
@@ -102,14 +102,14 @@
 		</div>
 
     <div data-mm-section="view-license">
-      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong></p> 
+      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong></p>
     </div>
 		<div data-mm-section="license-active-stripe license-active-paypal">
-      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong> with a 
+      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong> with a
         <strong><span data-mm-role="license-period"></span>ly</strong> billing cycle.</p>
-      <p>Your next payment of <strong><span data-mm-role="renewal-price"></span></strong> 
+      <p>Your next payment of <strong><span data-mm-role="renewal-price"></span></strong>
       will be automatically taken on <strong><span data-mm-role="expiry-date"></span></strong>
-      using 
+      using
       <span data-mm-section="license-active-paypal">
         your PayPal pre-approved payment
       </span>
@@ -119,27 +119,27 @@
       <strong data-mm-role="license-method"></strong>.
       </p>
       <div data-mm-section="license-active-paypal">
-        To cancel or amend your subscription details, please go directly to your PayPal account pre-approved payments. 
+        To cancel or amend your subscription details, please go directly to your PayPal account pre-approved payments.
       </div>
 		</div>
 
     <div data-mm-section="license-active">
-      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. <br/> 
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. <br/>
       Your
       license is valid until <strong><span data-mm-role="expiry-date"></span></strong>, and will not be automatically renewed.
      </p>
-     <p>If you would like to extend the license, please contact <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p> 
+     <p>If you would like to extend the license, please contact <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
     </div>
 
     <div data-mm-section="license-delinquent-stripe license-delinquent-paypal">
       <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. <br/>
       Your
       license <span class="text-error">expired on <span data-mm-role="expiry-date"></span></span>, and we could not
-      automatically renew it using 
+      automatically renew it using
       <span data-mm-section="license-delinquent-paypal">
         your PayPal pre-approved payment <br/>
       </span>
-      <strong><span data-mm-role="license-method"></span></strong>. 
+      <strong><span data-mm-role="license-method"></span></strong>.
      </p>
      <p data-mm-section="license-delinquent-paypal">Please set up a new payment type directly on PayPal or ensure you have enough funds in the account for the
      payment to be processed.</p>
@@ -148,7 +148,7 @@
     </div>
 
     <div data-mm-section="license-expired">
-      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>.<br/> 
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>.<br/>
       Your
       license <span class="text-error">expired on <span data-mm-role="expiry-date"></span></span>.</p>
       <p>Click on <strong>Log Out</strong> to log on using a different account, or select a billing cycle and payment method to
@@ -263,7 +263,7 @@
 	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license license-active license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal license-expired license-not-purchased cancelled-subscription invalid-license unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
 	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="action-CancelSubscription">Cancel Subscription</button>
   <a href="https://www.paypal.com/cgi-bin/customerprofileweb?cmd=_manage-paylist" target="_blank" class="btn pull-left" tabstop="4" data-mm-section="x" data-event-type="Manage Paypal Subscription" data-mm-role="action-PaypalAdmin">Manage Paypal Subscription</a>
- 
+
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
 	<button data-category="Gold Click" data-event-type="Change Card" data-mm-section="view-license" class="btn" tabstop="4" data-mm-role="form-submit action-ChangePaymentMethod" data-mm-form="#change-card-form" data-dismiss="modal">Change Card</button>

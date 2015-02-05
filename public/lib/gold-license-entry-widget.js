@@ -34,6 +34,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	},
 	displaySubscription = function (subscription) {
 		var expiryTs = subscription && subscription.expiry,
+			price = (subscription && subscription.price) || '',
 			expiryDate = new Date(expiryTs * 1000),
 			renewalDescription = (expiryDate && expiryDate.toDateString()) || '',
 			license = licenseManager.getLicense(),
@@ -42,6 +43,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		showSection('license-' + subscription.status + provider);
 		self.find('[data-mm-role~=account-name]').val(accountName).text(accountName);
 		self.find('[data-mm-role~=expiry-date]').val(renewalDescription).text(renewalDescription);
+		self.find('[data-mm-role~=renewal-price]').val(price).text(price);
 
 		_.each(subscription, function (val, key) {
 			self.find('[data-mm-role~=license-' + key + ']').text(val);
