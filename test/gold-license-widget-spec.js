@@ -174,7 +174,7 @@ describe('Gold License Widget', function () {
 	});
 	describe('when invoked by menu directly', function () {
 		beforeEach(function () {
-			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha', status: 'active'});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', price: '1 million dollars mwahahaha', status: 'active'});
 		});
 		it('shows only the no-license section if the license manager does not contain a license', function () {
 			licenseManager.getLicense.and.returnValue(undefined);
@@ -202,7 +202,7 @@ describe('Gold License Widget', function () {
 	});
 	describe('button actions', function () {
 		beforeEach(function () {
-			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+			subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', price: '1 million dollars mwahahaha'});
 		});
 		it('removes the license and shows no-license when remove is clicked', function () {
 			underTest.modal('show');
@@ -387,11 +387,16 @@ describe('Gold License Widget', function () {
 			});
 		});
 		it('fills in any fields matching license-* roles', function () {
-			subscriptionDeferred.resolve({status: 'active', expiry: futureTs, period: 'eternal', provider: 'a-real-bank', method: 'firstborn child', renewalPrice: '1 million dollars mwahahaha'});
+			subscriptionDeferred.resolve({status: 'active', expiry: futureTs, period: 'eternal', provider: 'a-real-bank', method: 'firstborn child', price: '1 million dollars mwahahaha'});
 			underTest.modal('show');
 			expect(underTest.find('span[data-mm-role~=license-method]').text()).toEqual('firstborn child');
 			expect(underTest.find('span[data-mm-role~=license-provider]').text()).toEqual('a-real-bank');
 			expect(underTest.find('span[data-mm-role~=license-period]').text()).toEqual('eternal');
+		});
+		it('fills in the renewal price', function () {
+			subscriptionDeferred.resolve({status: 'active', expiry: futureTs, period: 'eternal', provider: 'a-real-bank', method: 'firstborn child', price: '1 million dollars mwahahaha'});
+			underTest.modal('show');
+			expect(underTest.find('span[data-mm-role~=renewal-price]').text()).toEqual('1 million dollars mwahahaha');
 		});
 
 	});
