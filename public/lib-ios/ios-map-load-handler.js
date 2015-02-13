@@ -21,7 +21,7 @@ MM.IOS.MapLoadHandler = function (iosAutoSave, mapOptions, mmProxy, iosMapSource
 				touchEnabled = true,
 				dragContainer = jQuery('#splittable');
 
-		if (mapId === 'ios-no-autosave') {
+		if (mapId === 'ios-no-autosave' || readonly) {
 			iosAutoSave.off();
 		} else {
 			iosAutoSave.on();
