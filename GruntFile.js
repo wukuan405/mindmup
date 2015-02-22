@@ -10,14 +10,7 @@ install grunt cli:
 	npm install -g grunt-cli
 
 - per project
-npm install grunt-contrib-jasmine --save-dev
-npm install grunt-notify --save-dev
-npm install grunt-contrib-watch --save-dev
-npm install grunt-contrib-concat --save-dev
-npm install grunt-contrib-uglify --save-dev
-npm install grunt-contrib-cssmin --save-dev
-npm install grunt-jscs --save-dev
-npm install grunt-contrib-jshint --save-dev
+npm install
 */
 module.exports = function (grunt) {
 	'use strict';
