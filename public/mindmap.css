@@ -405,6 +405,9 @@ body.offline-enabled .offline-disabled-hidden {
 	text-decoration: underline;
 	cursor: pointer;
 }
+.alert a.btn {
+	text-decoration: none;
+}
 input.noglow {
   outline: none;
   border:none !important;

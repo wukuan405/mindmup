@@ -30,7 +30,7 @@ jQuery.fn.alertWidget = function (alert) {
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
 					'</div>')
 				.addClass('alert-' + type + ' alert-no-' + id)
-				.prepend(message).appendTo(element);
+				.append(message).appendTo(element);
 		});
 		alert.addEventListener('hidden', function (id) {
 			element.find('.alert-no-' + id).remove();
