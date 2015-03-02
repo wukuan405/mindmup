@@ -81,6 +81,10 @@ describe('MM.LocalStorageClipboard', function () {
 				storage.getItem.and.returnValue([{title:'xx', attr:{icon:{url:'external/1'}}, ideas: {2: {title:'xy', attr:{icon:{url:'external/2'}}}}}]);
 				expect(underTest.get()).toEqual([{title:'xx', attr:{icon:{url:'int:external/1'}}, ideas: {2: {title:'xy', attr:{icon:{url:'int:external/2'}}}}}]);
 			});
+			it('skips translation if called with true', function () {
+				storage.getItem.and.returnValue([{title:'xx', attr:{icon:{url:'external/1'}}, ideas: {2: {title:'xy', attr:{icon:{url:'external/2'}}}}}]);
+				expect(underTest.get(true)).toEqual([{title:'xx', attr:{icon:{url:'external/1'}}, ideas: {2: {title:'xy', attr:{icon:{url:'external/2'}}}}}]);
+			});
 		});
 	});
 });

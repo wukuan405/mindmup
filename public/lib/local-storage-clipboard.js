@@ -27,7 +27,10 @@ MM.LocalStorageClipboard = function (storage, key, alertController, resourceMana
 				}
 				return result;
 			};
-	self.get = function () {
+	self.get = function (skipResourceTranslation) {
+		if (skipResourceTranslation) {
+			return storage.getItem(key);
+		}
 		return processResources(storage.getItem(key), resourceManager.storeResource);
 	};
 	self.put = function (c) {
@@ -38,11 +41,11 @@ MM.LocalStorageClipboard = function (storage, key, alertController, resourceMana
 		}
 	};
 };
-jQuery.fn.newFromClipboardWidget = function (clipboard, mapController) {
+jQuery.fn.newFromClipboardWidget = function (clipboard, mapController, resourceCompressor) {
 	'use strict';
 	var elements = jQuery(this);
 	elements.click(function () {
-		var map = clipboard.get(),
+		var map = clipboard.get(true),
 			content;
 		if (!map) {
 			return;
@@ -59,6 +62,7 @@ jQuery.fn.newFromClipboardWidget = function (clipboard, mapController) {
 			}
 			content = MAPJS.content(map);
 		}
+		resourceCompressor.compress(content);
 		mapController.setMap(content);
 	});
 	return elements;

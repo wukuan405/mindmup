@@ -177,7 +177,7 @@ MM.main = function (config) {
 				jQuery('#measuresSheet').measuresSheetWidget(measuresModel);
 				jQuery('[data-mm-role=measures-display-control]').measuresDisplayControlWidget(measuresModel, mapModel);
 				jQuery('.modal.huge').scalableModalWidget();
-				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController);
+				jQuery('[data-mm-role=new-from-clipboard]').newFromClipboardWidget(objectClipboard, mapController, resourceCompressor);
 				MM.setImageAlertWidget(stageImageInsertController, alert);
 				jQuery('#anon-alert-template').anonSaveAlertWidget(alert, mapController, s3FileSystem, browserStorage, 'anon-alert-disabled');
 				jQuery('body').splitFlipWidget(splittableController, '[data-mm-role=split-flip]', mapModel, 'Alt+o');
