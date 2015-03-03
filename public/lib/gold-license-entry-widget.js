@@ -53,30 +53,6 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				self.find('[data-mm-role~=action-' + key + ']').show();
 			});
 		}
-
-/*
-			if (subscription.paymentType) {
-				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-type-block]').show();
-				self.find('[data-mm-role~=payment-type]').text(subscription.paymentType);
-				if (subscription.paymentType === 'PayPal') {
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').show();
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
-				} else {
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').show();
-				}
-				if (subscription.canChangeCard) {
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').show();
-				} else {
-					self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
-				}
-			} else {
-				self.find('[data-mm-role~=payment-type-block]').hide();
-				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=payment-card-change]').hide();
-				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-paypal]').hide();
-				self.find('[data-mm-section~=' + sectionName + '][data-mm-role~=' + sectionName + '-stripe]').hide();
-			}
-*/
 	},
 		fillInFields = function () {
 			var license = licenseManager.getLicense(),
@@ -287,21 +263,8 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		}
 	});
 	self.find('button[data-mm-role=kickoff-sign-up]').click(function () {
-		var entered = self.find('[data-mm-role=gold-account-identifier]').val(),
-			isEmail = _.include(entered, '@');
-		if (isEmail) {
-			self.find('#gold-register-account-name').val('');
-			self.find('#gold-register-email').val(entered);
-		} else {
-			self.find('#gold-register-account-name').val(entered);
-			self.find('#gold-register-email').val('');
-		}
 		showSection('register');
-		if (isEmail) {
-			self.find('#gold-register-account-name').focus();
-		} else {
-			self.find('#gold-register-email').focus();
-		}
+		self.find('#gold-register-account-name').focus();
 	});
 	self.find('[data-mm-role=kickoff-restore-license]').click(function () {
 		var identiferField = self.find('[data-mm-role=gold-account-identifier]'),

@@ -9,16 +9,19 @@
 			<p class="alert alert-block alert-warning">This operation requires a valid MindMup Gold License.</p>
 		</div>
 		<div data-mm-section="no-license license-required">
-			<p><i>Export, save and embed larger maps using MindMup Gold. </i></p>
+			<p>To export, save, publish and embed larger maps using MindMup Gold, please log in or sign up for a Gold account.</p>
+    </div>
+    <div data-mm-section="login-using-email">
+      <p>Enter your e-mail or account name and we'll send you a one-time password.</p>
 			<form class="form-horizontal">
 			<div class="control-group">
-				<label class="control-label" for="gold-account-identifer">Log in or sign up:</label>
+				<label class="control-label" for="gold-account-identifer">Log in:</label>
 				<div class="controls">
 					<input type="text" data-mm-role="gold-account-identifier" id="gold-account-identifier" placeholder="Account name or e-mail"/>
 				</div>
 			</div>
 			</form>
-		</div>
+    </div>
 		<div data-mm-section="code-sent">
 			<p>We have sent a temporary access code to your e-mail.</p>
 			<form class="form-horizontal">
@@ -36,7 +39,7 @@
 		<div data-mm-section="sending-code-failed">
 			<p class="alert alert-block alert-error">We could not find that email or username.</p>
 
-			<p> If you are a new user select <strong>I want to sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
+			<p> If you are a new user select <strong>Sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="sending-code">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, sending the access code to your e-mail</p>
@@ -253,10 +256,11 @@
 		</div>
 	</div>
     <div class="modal-footer">
-	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent login-using-email" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="login-using-email"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 	<button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn pull-left" tabstop="7"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	<a target="_blank" href="http://discover.mindmup.com/mindmup-gold" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+	<a target="_blank" href="http://discover.mindmup.com/mindmup-gold" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;Help</a>
 	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license license-active license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal license-expired license-not-purchased cancelled-subscription invalid-license unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
 	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="action-CancelSubscription">Cancel Subscription</button>
   <a href="https://www.paypal.com/cgi-bin/customerprofileweb?cmd=_manage-paylist" target="_blank" class="btn pull-left" tabstop="4" data-mm-section="x" data-event-type="Manage Paypal Subscription" data-mm-role="action-PaypalAdmin">Manage Paypal Subscription</a>
@@ -264,10 +268,15 @@
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
 	<button data-category="Gold Click" data-event-type="Change Card" data-mm-section="view-license" class="btn" tabstop="4" data-mm-role="form-submit action-ChangePaymentMethod" data-mm-form="#change-card-form" data-dismiss="modal">Change Card</button>
-	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">I have a Gold account</button>
+
+  <button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="login-using-email" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">Next&nbsp;<i class="icon-chevron-right"></i></button>
+
+	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="show-section" data-mm-target-section="login-using-email" class="btn"  tabstop="1">Log in using e-mail</button>
+
+	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-google" class="btn"  tabstop="2">Use my Google Account</button>
 
 	<button data-category="Gold Click" data-event-type="Log In" data-mm-section="code-sent" data-mm-role="restore-license-with-code" class="btn btn-primary" tabstop="1">Log In</button>
-	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
+	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign up</button>
 
 
 	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="registration-success" class="btn btn-success" tabstop="4" data-mm-role="form-submit action-BuySubscription" data-mm-form="#license-purchase-form-paypal">Pay with PayPal</button>
@@ -314,8 +323,8 @@
 
 
 
-	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
-	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="login-using-email loading-subscription unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
     </div>
   </div>
 
