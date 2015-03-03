@@ -1,25 +1,7 @@
 /*global _, jQuery, MM, window, gapi, google */
-MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis, defaultContentType) {
+MM.GoogleAuthenticator = function (clientId, apiKey) {
 	'use strict';
-	var properties = {},
-		driveLoaded,
-		gapiAuthToken = function () {
-			return window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token;
-		},
-		isAuthorised = function () {
-			return !!(gapiAuthToken());
-		},
-		recognises = function (mapId) {
-			return mapId && mapId[0] === 'g';
-		},
-		toGoogleFileId = function (mapId) {
-			if (recognises(mapId)) {
-				return mapId.substr(2);
-			}
-		},
-		mindMupId = function (googleId) {
-			return 'g1' + (googleId || '');
-		},
+	var self = this,
 		checkAuth = function (showDialog) {
 			var deferred = jQuery.Deferred();
 			deferred.notify('Authenticating with Google');
@@ -38,6 +20,50 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 				}
 			);
 			return deferred.promise();
+		},
+		loadApi = function (onComplete) {
+			if (window.gapi && window.gapi.client) {
+				onComplete();
+			} else {
+				window.googleClientLoaded = function () {
+					gapi.client.setApiKey(apiKey);
+					onComplete();
+				};
+				jQuery('<script src="https://apis.google.com/js/client.js?onload=googleClientLoaded"></script>').appendTo('body');
+			}
+		};
+	self.gapiAuthToken = function () {
+		return window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token;
+	};
+	self.isAuthorised = function () {
+		return !!(self.gapiAuthToken());
+	};
+	self.authenticate = function (showAuthenticationDialogs) {
+		var deferred = jQuery.Deferred(),
+			failureReason = showAuthenticationDialogs ? 'failed-authentication' : 'not-authenticated';
+		loadApi(function () {
+			checkAuth(showAuthenticationDialogs).then(deferred.resolve, function () {
+				deferred.reject(failureReason);
+			},
+			deferred.notify);
+		});
+		return deferred.promise();
+	};
+};
+MM.GoogleDriveAdapter = function (authenticator, appId, networkTimeoutMillis, defaultContentType) {
+	'use strict';
+	var properties = {},
+		driveLoaded,
+		recognises = function (mapId) {
+			return mapId && mapId[0] === 'g';
+		},
+		toGoogleFileId = function (mapId) {
+			if (recognises(mapId)) {
+				return mapId.substr(2);
+			}
+		},
+		mindMupId = function (googleId) {
+			return 'g1' + (googleId || '');
 		},
 		saveFile = function (contentToSave, mapId, fileName, paramContentType) {
 			var	googleId =  toGoogleFileId(mapId),
@@ -80,8 +106,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 								deferred.reject('no-access-allowed');
 							}
 						} else if (resp.error.code === 401) {
-
-							checkAuth(false).then(
+							authenticator.authenticate(false).then(
 								function () {
 									saveFile(contentToSave, mapId, fileName).then(deferred.resolve, deferred.reject, deferred.notify);
 								},
@@ -152,50 +177,30 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 			});
 			return deferred.promise();
 		},
-		authenticate = function (showAuthenticationDialogs) {
-			var deferred = jQuery.Deferred(),
-				failureReason = showAuthenticationDialogs ? 'failed-authentication' : 'not-authenticated';
-			checkAuth(showAuthenticationDialogs).then(deferred.resolve, function () {
-				deferred.reject(failureReason);
-			}).progress(deferred.notify);
-			return deferred.promise();
-		},
-		loadApi = function (onComplete) {
-			if (window.gapi && window.gapi.client) {
-				onComplete();
-			} else {
-				window.googleClientLoaded = onComplete;
-				jQuery('<script src="https://apis.google.com/js/client.js?onload=googleClientLoaded"></script>').appendTo('body');
-			}
-		},
 		makeReady = function (showAuthenticationDialogs) {
 			var deferred = jQuery.Deferred();
-			if (driveLoaded) {
-				authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
-			} else {
-				deferred.notify('Loading Google APIs');
-				loadApi(function () {
+			authenticator.authenticate(showAuthenticationDialogs).then(function () {
+				if (driveLoaded) {
+					deferred.resolve();
+				} else {
 					deferred.notify('Loading Google Drive APIs');
-					gapi.client.setApiKey(apiKey);
 					gapi.client.load('drive', 'v2', function () {
 						driveLoaded = true;
-						authenticate(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
+						deferred.resolve();
 					});
-				});
-			}
+				}
+			}, deferred.reject, deferred.notify);
 			return deferred.promise();
 		};
 	this.description = 'Google';
 	this.saveFile = saveFile;
 	this.toGoogleFileId = toGoogleFileId;
 	this.ready = function (showAuthenticationDialogs) {
-		var deferred = jQuery.Deferred();
-		if (driveLoaded && isAuthorised()) {
-			deferred.resolve();
+		if (driveLoaded && authenticator.isAuthorised()) {
+			return jQuery.Deferred().resolve();
 		} else {
-			makeReady(showAuthenticationDialogs).then(deferred.resolve, deferred.reject, deferred.notify);
+			return makeReady(showAuthenticationDialogs);
 		}
-		return deferred.promise();
 	};
 
 	this.recognises = recognises;
@@ -262,7 +267,7 @@ MM.GoogleDriveAdapter = function (appId, clientId, apiKey, networkTimeoutMillis,
 					})
 					.setTitle(title)
 					.setSelectableMimeTypes(contentTypes)
-					.setOAuthToken(gapiAuthToken())
+					.setOAuthToken(authenticator.gapiAuthToken())
 					.build()
 					.setVisible(true);
 			};

@@ -226,18 +226,6 @@ describe('Gold License Widget', function () {
 				underTest.find('[data-mm-role=kickoff-sign-up]').click();
 				checkSectionShown('register');
 			});
-			it('populates the email field of the register section if the enetered value was an email', function () {
-				underTest.find('[data-mm-role=gold-account-identifier]').val('hello@there');
-				underTest.find('[data-mm-role=kickoff-sign-up]').click();
-				expect(underTest.find('#gold-register-email').val()).toEqual('hello@there');
-				expect(underTest.find('#gold-register-account-name').val()).toEqual('');
-			});
-			it('populates the usename field of the registration section if the entered value is not an email', function () {
-				underTest.find('[data-mm-role=gold-account-identifier]').val('hellothere');
-				underTest.find('[data-mm-role=kickoff-sign-up]').click();
-				expect(underTest.find('#gold-register-account-name').val()).toEqual('hellothere');
-				expect(underTest.find('#gold-register-email').val()).toEqual('');
-			});
 			it('leaves both fields blank if nothing is supplied', function () {
 				underTest.find('[data-mm-role=gold-account-identifier]').val('');
 				underTest.find('[data-mm-role=kickoff-sign-up]').click();
