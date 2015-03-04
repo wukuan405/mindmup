@@ -67,6 +67,11 @@ describe('MM.GoldApi', function () {
 			expect(rejected).toHaveBeenCalledWith('network-error');
 			expect(endSpy).toHaveBeenCalled();
 		});
+		it('rejects with not-connected if error starts with not-connected', function () {
+			ajaxDeferred.reject({responseText: 'not-connected foo@bar.com'});
+			expect(rejected).toHaveBeenCalledWith('not-connected foo@bar.com');
+			expect(endSpy).toHaveBeenCalled();
+		});
 		it('starts the timer when request starts', function () {
 			expect(activityLog.timer).toHaveBeenCalledWith('GoldApi', 'entity/action');
 			expect(endSpy).not.toHaveBeenCalled();

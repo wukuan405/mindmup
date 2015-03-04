@@ -149,7 +149,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			showSection('registration-fail');
 		},
 		register = function () {
-			var registrationForm = self.find('[data-mm-section=register] form'),
+			var registrationForm = self.find('[data-mm-section=' + currentSection + '] form'),
 				emailField = registrationForm.find('input[name=email]'),
 				accountNameField = registrationForm.find('input[name=account-name]'),
 				termsField = registrationForm.find('input[name=terms]');
@@ -318,8 +318,14 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		var authWorked = function (authToken) {
 				goldApi.restoreLicenseWithGoogle(authToken).then(
 					completeSubscriptionWorkflow,
-					function () {
-						showSection('google-auth-not-connected');
+					function (responseCode) {
+						if (responseCode && responseCode.indexOf('not-connected ') === 0) {
+							var email = responseCode.substring('not-connected '.length);
+							self.find('input[name=email]').val(email);
+							showSection('google-auth-not-connected');
+						} else {
+							showSection('google-auth-failed');
+						}
 					}
 				);
 			},

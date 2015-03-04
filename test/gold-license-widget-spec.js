@@ -22,7 +22,19 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="license-active"></span>' +
 					'<span data-mm-section="google-auth-failed"></span>' +
 					'<span data-mm-section="google-auth-progress"></span>' +
-					'<span data-mm-section="google-auth-not-connected"></span>' +
+					'<div data-mm-section="google-auth-not-connected">' +
+					'<form>' +
+					'<div class="control-group">' +
+					'<input type="text" name="account-name">' +
+					'</div>' +
+					'<div class="control-group">' +
+					'<input type="text" placeholder="" name="email">' +
+					'</div>' +
+					'<div class="control-group">' +
+					'<input type="checkbox" name="terms" id="gold-register-terms"/>' +
+					'</div>' +
+					'</form>' +
+					'</div>' +
 					'<span data-mm-section="cancelling-subscription"></span>' +
 					'<span data-mm-role="expiry-date"></span>' +
 					'<span data-mm-role="subscription-name"></span>' +
@@ -377,10 +389,21 @@ describe('Gold License Widget', function () {
 				dialogAuthenticateDeferred.reject();
 				checkSectionShown('google-auth-failed');
 			});
-			it('shows google-auth-not-connected section if restoring license via google fails', function () {
+			it('shows google-auth-not-connected and prepoulates email field if restoring license via google fails with not-connected', function () {
 				authenticateDeferred.resolve('token1');
-				googleRestoreDeferred.reject();
+				googleRestoreDeferred.reject('not-connected foo@bar.com');
 				checkSectionShown('google-auth-not-connected');
+				expect(underTest.find('[data-mm-section=google-auth-not-connected] input[name=email]').val()).toEqual('foo@bar.com');
+			});
+			it('shows google-auth-failed if restoring fails with not-connected but no email', function () {
+				authenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject('not-connected');
+				checkSectionShown('google-auth-failed');
+			});
+			it('shows google-auth-failed if restoring license via google fails otherwise', function () {
+				authenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject('invalid-args');
+				checkSectionShown('google-auth-failed');
 			});
 			describe('completing subscription workflow', function () {
 				beforeEach(function () {
@@ -556,6 +579,7 @@ describe('Gold License Widget', function () {
 	});
 	describe('registration workflow', function () {
 		beforeEach(function () {
+			underTest.find('[data-mm-role=kickoff-sign-up]').click();
 			underTest.find('[data-mm-section=register] input[name=account-name]').val('greg');
 			underTest.find('[data-mm-section=register] input[name=email]').val('the@baker.com');
 			underTest.find('[data-mm-section=register] input[name=terms]').prop('checked', true);

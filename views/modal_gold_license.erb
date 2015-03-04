@@ -228,17 +228,59 @@
 			</form>
 		</div>
 
-		<div data-mm-section="google-auth-worked">
-      <p>Google authentication worked.</p>
-    </div>
 		<div data-mm-section="google-auth-progress">
-      <p>Google authentication in progress.</p>
+			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, authenticating using your Google account</p>
     </div>
 		<div data-mm-section="google-auth-failed">
-      <p>Google authentication failed.</p>
+      <p>Due to a network error it was not possible to complete the authentication. Please try again later or log in using your e-mail.</p>
     </div>
     <div data-mm-section="google-auth-not-connected">
-      <p>Google account not connected to gold</p>
+
+      <p>Your Google ID is not currently connected to a MindMup Gold subscription. 
+        To start a subscription, please select your desired account name and subscription type.
+        </p>
+        <p>
+        Your account name<span class="hidden-phone"> will be shown in the URL of your maps, and</span> must be 4-20 characters, start with a
+        letter and contain only lowercase<span class="hidden-phone"> (latin)</span> letters and numbers.
+			</p>
+			<form class="form-horizontal">
+
+        <div class="control-group">
+				<label class="control-label hidden-phone-portrait" for="gold-register-email">E-mail</label>
+				<div class="controls">
+				  <input type="text" readonly placeholder="youremail@server.com" name="email"/>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<label class="control-label hidden-phone-portrait" for="gold-register-account-name">Account name</label>
+				<div class="controls">
+				  <input type="text" placeholder="Account name" name="account-name"/>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<label class="control-label hidden-phone-portrait">Subscription</label>
+				<div class="controls">
+					<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
+						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+					</select>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<div class="controls">
+					<label class="checkbox">
+						<input type="checkbox" id="gold-register-terms" name="terms"/>
+						I agree to the <a  data-category="Gold Click" data-event-type="agree gold terms" href="http://gold.mindmup.com/terms" target="_blank">MindMup Gold Terms of Service</a>.
+					</label>
+				</div>
+			  </div>
+			</form>
+
+
+
     </div>
 		<div data-mm-section="registration-fail">
 			<div class="alert alert-error alert-block">
@@ -268,11 +310,13 @@
 		</div>
 	</div>
     <div class="modal-footer">
-	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent login-using-email" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="google-auth-not-connected register code-sent login-using-email google-auth-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="login-using-email"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 	<button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn pull-left" tabstop="7"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
 	<a target="_blank" href="http://discover.mindmup.com/mindmup-gold" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;Help</a>
+  <a target="_blank" href="http://discover.mindmup.com/mindmup-gold#multiple-google" data-category="Gold Click" data-event-type="Different Google ID"  data-mm-section="google-auth-not-connected" class="btn pull-left hidden-phone-portrait"><i class="icon-question-sign"></i>&nbsp;Use a different Google ID</a>
+  
 	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license license-active license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal license-expired license-not-purchased cancelled-subscription invalid-license unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
 	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="action-CancelSubscription">Cancel Subscription</button>
   <a href="https://www.paypal.com/cgi-bin/customerprofileweb?cmd=_manage-paylist" target="_blank" class="btn pull-left" tabstop="4" data-mm-section="x" data-event-type="Manage Paypal Subscription" data-mm-role="action-PaypalAdmin">Manage Paypal Subscription</a>
@@ -283,7 +327,7 @@
 
   <button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="login-using-email" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">Next&nbsp;<i class="icon-chevron-right"></i></button>
 
-	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="show-section" data-mm-target-section="login-using-email" class="btn"  tabstop="1">Log in using e-mail</button>
+	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required google-auth-failed" data-mm-role="show-section" data-mm-target-section="login-using-email" class="btn"  tabstop="1">Log in using e-mail</button>
 
 	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-google" class="btn"  tabstop="2">Use my Google Account</button>
 
@@ -297,8 +341,9 @@
 
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="waiting-for-payment" data-mm-role="go-back" class="btn pull-left" tabstop="6"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+	<button data-category="Gold Click" data-event-type="Register" data-mm-section="google-auth-not-connected register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
 	<button data-category="Gold Click" data-event-type="Register" data-mm-section="unauthorised-license" data-mm-role="view-subscription" tabstop="6" class="btn">View Subscription</button>
+
 
 
 
@@ -335,8 +380,8 @@
 
 
 
-	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="login-using-email loading-subscription unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
-	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="google-auth-progress login-using-email loading-subscription unauthorised-license registration-fail registration-progress google-auth-not-connected register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="google-auth-failed license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
     </div>
   </div>
 

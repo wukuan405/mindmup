@@ -69,6 +69,9 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			if (_.contains(recognisedErrors, serverResult)) {
 				return serverResult;
 			}
+			if (serverResult && serverResult.indexOf('not-connected ') === 0) {
+				return serverResult;
+			}
 			return 'network-error';
 		},
 		licenseExec = function (apiProc, showLicenseDialog, args, expectedAccount) {
