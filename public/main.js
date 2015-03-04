@@ -173,7 +173,7 @@ MM.main = function (config) {
 						jQuery(this).find('.colorPicker-picker').click();
 					}
 				});
-				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog);
+				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog, window, googleAuthenticator);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 				jQuery('#measuresSheet').measuresSheetWidget(measuresModel);
 				jQuery('[data-mm-role=measures-display-control]').measuresDisplayControlWidget(measuresModel, mapModel);

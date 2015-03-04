@@ -1,4 +1,4 @@
-/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach, _*/
+/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach, _, spyOn*/
 describe('Gold License Widget', function () {
 	'use strict';
 	var template = '<div class="modal">' +
@@ -20,6 +20,9 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="cancelled-subscription"></span>' +
 					'<span data-mm-section="payment-complete"></span>' +
 					'<span data-mm-section="license-active"></span>' +
+					'<span data-mm-section="google-auth-failed"></span>' +
+					'<span data-mm-section="google-auth-progress"></span>' +
+					'<span data-mm-section="google-auth-not-connected"></span>' +
 					'<span data-mm-section="cancelling-subscription"></span>' +
 					'<span data-mm-role="expiry-date"></span>' +
 					'<span data-mm-role="subscription-name"></span>' +
@@ -48,6 +51,7 @@ describe('Gold License Widget', function () {
 					'<button data-mm-role="restore-license-with-code"/>' +
 					'<button data-mm-role="action-CancelSubscription"/>' +
 					'<button data-mm-role="register">Register</button>' +
+					'<button data-mm-role="kickoff-google">Google</button>' +
 					'<button data-mm-role="action-Fart" data-mm-section="x">Fart</button>' +
 					'<button data-mm-role="action-Burp" data-mm-section="x">Burp</button>' +
 					'<button data-mm-role="action-Curse" data-mm-section="x">Curse</button>' +
@@ -91,6 +95,10 @@ describe('Gold License Widget', function () {
 		activityLog,
 		requestCodeDeferred,
 		goldApi,
+		googleAuthenticator,
+		dialogAuthenticateDeferred,
+		authenticateDeferred,
+		googleRestoreDeferred,
 		registerDeferred,
 		subscriptionDeferred,
 		cancelSubscriptionDeferred,
@@ -116,15 +124,31 @@ describe('Gold License Widget', function () {
 		cancelSubscriptionDeferred = jQuery.Deferred();
 		requestCodeDeferred = jQuery.Deferred();
 		restoreLicenseWithCodeDeferred = jQuery.Deferred();
+		dialogAuthenticateDeferred = jQuery.Deferred();
+		authenticateDeferred = jQuery.Deferred();
+		googleRestoreDeferred = jQuery.Deferred();
 		goldApi = {
 			register: jasmine.createSpy('register').and.returnValue(registerDeferred.promise()),
-			getSubscription: jasmine.createSpy('getSubscription').and.returnValue(subscriptionDeferred.promise()),
+			getSubscription: jasmine.createSpy('getSubscription').and.callFake(/* so we can override later */ function () {
+				return subscriptionDeferred.promise();
+			}),
 			cancelSubscription: jasmine.createSpy('cancelSubscription').and.returnValue(cancelSubscriptionDeferred.promise()),
 			requestCode: jasmine.createSpy('requestCode').and.returnValue(requestCodeDeferred.promise()),
-			restoreLicenseWithCode: jasmine.createSpy('restoreLicenseWithCode').and.returnValue(restoreLicenseWithCodeDeferred.promise())
+			restoreLicenseWithCode: jasmine.createSpy('restoreLicenseWithCode').and.returnValue(restoreLicenseWithCodeDeferred.promise()),
+			restoreLicenseWithGoogle: jasmine.createSpy('restoreLicenseWithGoogle').and.returnValue(googleRestoreDeferred.promise())
 		};
+		googleAuthenticator = {
+			authenticate: function (dialogs) {
+				if (dialogs) {
+					return dialogAuthenticateDeferred.promise();
+				} else {
+					return authenticateDeferred.promise();
+				}
+			}
+		};
+		spyOn(googleAuthenticator, 'authenticate').and.callThrough();
 		activityLog = { log: jasmine.createSpy('log') };
-		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog, mockWindow);
+		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog, mockWindow, googleAuthenticator);
 		fakeBootstrapModal(underTest);
 	});
 	afterEach(function () {
@@ -314,8 +338,71 @@ describe('Gold License Widget', function () {
 					restoreLicenseWithCodeDeferred.reject();
 					checkSectionShown('restore-code-failed');
 				});
+				/* todo: add docs for subscription request and license entry completion */
 			});
-
+		});
+		describe('when kickoff-google button is clicked', function () {
+			beforeEach(function () {
+				underTest.modal('show');
+				underTest.find('[data-mm-role=kickoff-google]').click();
+			});
+			it('shows google-auth-progress section', function () {
+				checkSectionShown('google-auth-progress');
+			});
+			it('calls the google authenticator to authorise without dialogs and allow e-mail access', function () {
+				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(false, true);
+				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
+			});
+			it('attempts to restore license via google if immediate authentication succeeds', function () {
+				authenticateDeferred.resolve('token1');
+				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token1');
+				checkSectionShown('google-auth-progress');
+			});
+			it('calls the authenticator with dialogs if immediate authentication fails', function () {
+				googleAuthenticator.authenticate.calls.reset();
+				authenticateDeferred.reject();
+				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(true, true);
+				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
+				checkSectionShown('google-auth-progress');
+			});
+			it('attempts to restore license via google if dialog authentication succeeds', function () {
+				authenticateDeferred.reject();
+				dialogAuthenticateDeferred.resolve('token2');
+				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token2');
+				checkSectionShown('google-auth-progress');
+			});
+			it('shows google-auth-failed section if dialog authentication fails', function () {
+				googleAuthenticator.authenticate.calls.reset();
+				authenticateDeferred.reject();
+				dialogAuthenticateDeferred.reject();
+				checkSectionShown('google-auth-failed');
+			});
+			it('shows google-auth-not-connected section if restoring license via google fails', function () {
+				authenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject();
+				checkSectionShown('google-auth-not-connected');
+			});
+			describe('completing subscription workflow', function () {
+				beforeEach(function () {
+					subscriptionDeferred = jQuery.Deferred();
+					authenticateDeferred.resolve('token1');
+					googleRestoreDeferred.resolve();
+				});
+				it('shows section view-license', function () {
+					checkSectionShown('view-license');
+				});
+				it('retrieves subscription using goldApi', function () {
+					expect(goldApi.getSubscription).toHaveBeenCalled();
+				});
+				it('completes license entry when a payment is triggered and the license is valid', function () {
+					subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha', status: 'active'});
+					expect(licenseManager.completeLicenseEntry).toHaveBeenCalled();
+				});
+				it('does not complete license entry if license is expired', function () {
+					subscriptionDeferred.resolve({status: 'borked', subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+					expect(licenseManager.completeLicenseEntry).not.toHaveBeenCalled();
+				});
+			});
 		});
 		describe('when cancel-subscription button clicked', function () {
 			beforeEach(function () {

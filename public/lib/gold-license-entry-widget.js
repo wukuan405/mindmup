@@ -12,7 +12,7 @@ jQuery.fn.mmUpdateInputField = function () {
 	});
 };
 
-jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget) {
+jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget, googleAuthenticator) {
 	'use strict';
 	messageTarget = messageTarget || window;
 	var self = this,
@@ -186,6 +186,18 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				audit('license-message', windowMessageEvt.data.goldApi);
 				goldApi.getSubscription().then(checkForPurchasedSubscription);
 			}
+		},
+		completeSubscriptionWorkflow = function () {
+			goldApi.getSubscription().then(function (subscription) {
+				var expiryTs = subscription && subscription.expiry;
+				if (expiryTs > Date.now() / 1000) {
+					licenseManager.completeLicenseEntry();
+				}
+			}
+			/*TODO: come back to this!*/
+			);
+			showSection('view-license');
+			fillInFields();
 		};
 	self.find('form').submit(function () {
 		return this.action;
@@ -290,17 +302,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		if (code && code.trim()) {
 			showSection('sending-restore-license-code');
 			goldApi.restoreLicenseWithCode(code.trim()).then(
-				function () {
-					goldApi.getSubscription().then(function (subscription) {
-						var expiryTs = subscription && subscription.expiry;
-						if (expiryTs > Date.now() / 1000) {
-							licenseManager.completeLicenseEntry();
-						}
-					});
-
-					showSection('view-license');
-					fillInFields();
-				},
+				completeSubscriptionWorkflow,
 				function () {
 					showSection('restore-code-failed');
 				});
@@ -311,6 +313,28 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	licenseManager.addEventListener('license-entry-required', function () {
 		openFromLicenseManager = true;
 		self.modal('show');
+	});
+	self.find('[data-mm-role=kickoff-google]').click(function () {
+		var authWorked = function (authToken) {
+				goldApi.restoreLicenseWithGoogle(authToken).then(
+					completeSubscriptionWorkflow,
+					function () {
+						showSection('google-auth-not-connected');
+					}
+				);
+			},
+			authFailed = function () {
+				showSection('google-auth-failed');
+			};
+		showSection('google-auth-progress');
+		googleAuthenticator.authenticate(false, true).then(
+			authWorked,
+			function () {
+				googleAuthenticator.authenticate(true, true).then(
+					authWorked,
+					authFailed
+				);
+			});
 	});
 	self.modal({keyboard: true, show: false});
 	/*jshint camelcase: false*/

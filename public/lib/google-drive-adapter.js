@@ -2,18 +2,19 @@
 MM.GoogleAuthenticator = function (clientId, apiKey) {
 	'use strict';
 	var self = this,
-		checkAuth = function (showDialog) {
-			var deferred = jQuery.Deferred();
+		checkAuth = function (showDialog, requireEmail) {
+			var deferred = jQuery.Deferred(),
+					basicScopes = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.install https://www.googleapis.com/auth/userinfo.profile';
 			deferred.notify('Authenticating with Google');
 			gapi.auth.authorize(
 				{
 					'client_id': clientId,
-					'scope': 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.install https://www.googleapis.com/auth/userinfo.profile',
+					'scope': requireEmail ? basicScopes + ' https://www.googleapis.com/auth/userinfo.email' : basicScopes,
 					'immediate': !showDialog
 				},
 				function (authResult) {
 					if (authResult && !authResult.error) {
-						deferred.resolve();
+						deferred.resolve(authResult.access_token);
 					} else {
 						deferred.reject('not-authenticated');
 					}
@@ -38,11 +39,11 @@ MM.GoogleAuthenticator = function (clientId, apiKey) {
 	self.isAuthorised = function () {
 		return !!(self.gapiAuthToken());
 	};
-	self.authenticate = function (showAuthenticationDialogs) {
+	self.authenticate = function (showAuthenticationDialogs, requireEmail) {
 		var deferred = jQuery.Deferred(),
 			failureReason = showAuthenticationDialogs ? 'failed-authentication' : 'not-authenticated';
 		loadApi(function () {
-			checkAuth(showAuthenticationDialogs).then(deferred.resolve, function () {
+			checkAuth(showAuthenticationDialogs, requireEmail).then(deferred.resolve, function () {
 				deferred.reject(failureReason);
 			},
 			deferred.notify);
