@@ -97,7 +97,15 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 			},
 			timer  = activityLog.timer(LOG_CATEGORY, apiProc),
 			formData = new FormData(),
-			dataTypes = { 'license/register': 'json', 'file/export_config': 'json', 'file/upload_config': 'json', 'file/echo_config': 'json', 'license/subscription': 'json', 'license/request_license_using_code': 'json'};
+			dataTypes = {
+				'license/register': 'json',
+				'file/export_config': 'json',
+				'file/upload_config': 'json',
+				'file/echo_config': 'json',
+				'license/subscription': 'json',
+				'license/request_license_using_code': 'json',
+				'license/request_license_using_google': 'json'
+			};
 		formData.append('api_version', '3');
 		if (args) {
 			_.each(args, function (value, key) {
@@ -186,6 +194,16 @@ MM.GoldApi = function (goldLicenseManager, goldApiUrl, activityLog, goldBucketNa
 		} else {
 			deferred.reject('no-code-requested');
 		}
+		return deferred.promise();
+	};
+	self.restoreLicenseWithGoogle = function (oauthToken) {
+		var deferred = jQuery.Deferred();
+		self.exec('license/request_license_using_google', {'token': oauthToken}).then(
+			function (license) {
+				goldLicenseManager.storeLicense(license);
+				deferred.resolve();
+			},
+			deferred.reject);
 		return deferred.promise();
 	};
 	self.listFiles = function (showLicenseDialog) {

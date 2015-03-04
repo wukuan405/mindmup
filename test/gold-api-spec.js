@@ -252,6 +252,31 @@ describe('MM.GoldApi', function () {
 				expect(rejectWasCalled).toBeTruthy();
 			});
 		});
+		describe('restoreLicenseWithGoogle', function () {
+			it('posts an AJAX request to the API url', function () {
+				underTest.restoreLicenseWithGoogle('OauthToken');
+
+				expect(jQuery.ajax).toHaveBeenCalled();
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				expect(ajaxPost.url).toEqual('API_URL/license/request_license_using_google');
+				expect(ajaxPost.dataType).toEqual('json');
+				expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'token': 'OauthToken'}));
+			});
+			it('sets the license with the license manager if successful', function () {
+				var result = underTest.restoreLicenseWithGoogle('OauthToken');
+				ajaxDeferred.resolve({'somekey': 'someval'});
+
+				expect(result.state()).toBe('resolved');
+				expect(goldLicenseManager.storeLicense).toHaveBeenCalledWith({'somekey': 'someval'});
+			});
+			it('does not store license if rejected', function () {
+				var result = underTest.restoreLicenseWithGoogle('OauthToken');
+				ajaxDeferred.reject('ohdear');
+
+				expect(result.state()).toBe('rejected');
+				expect(goldLicenseManager.storeLicense).not.toHaveBeenCalled();
+			});
+		});
 	});
 	describe('fileUrl', function () {
 		it('should return unsigned url immediately', function () {
