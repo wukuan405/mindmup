@@ -333,10 +333,14 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				showSection('google-auth-failed');
 			};
 		showSection('google-auth-progress');
-		googleAuthenticator.authenticate(true, true).then(
+		googleAuthenticator.authenticate(false, true).then(
 			authWorked,
-			authFailed
-		);
+			function () {
+				googleAuthenticator.authenticate(true, true).then(
+					authWorked,
+					authFailed
+				);
+			});
 	});
 	self.modal({keyboard: true, show: false});
 	/*jshint camelcase: false*/
