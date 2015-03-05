@@ -1,4 +1,4 @@
-/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach, _, spyOn*/
+/*global beforeEach, fakeBootstrapModal, describe, jasmine, it, jQuery, observable, expect, afterEach, _*/
 describe('Gold License Widget', function () {
 	'use strict';
 	var template = '<div class="modal">' +
@@ -108,7 +108,6 @@ describe('Gold License Widget', function () {
 		requestCodeDeferred,
 		goldApi,
 		googleAuthenticator,
-		dialogAuthenticateDeferred,
 		authenticateDeferred,
 		googleRestoreDeferred,
 		registerDeferred,
@@ -136,7 +135,6 @@ describe('Gold License Widget', function () {
 		cancelSubscriptionDeferred = jQuery.Deferred();
 		requestCodeDeferred = jQuery.Deferred();
 		restoreLicenseWithCodeDeferred = jQuery.Deferred();
-		dialogAuthenticateDeferred = jQuery.Deferred();
 		authenticateDeferred = jQuery.Deferred();
 		googleRestoreDeferred = jQuery.Deferred();
 		goldApi = {
@@ -150,15 +148,8 @@ describe('Gold License Widget', function () {
 			restoreLicenseWithGoogle: jasmine.createSpy('restoreLicenseWithGoogle').and.returnValue(googleRestoreDeferred.promise())
 		};
 		googleAuthenticator = {
-			authenticate: function (dialogs) {
-				if (dialogs) {
-					return dialogAuthenticateDeferred.promise();
-				} else {
-					return authenticateDeferred.promise();
-				}
-			}
+			authenticate: jasmine.createSpy('authenticate').and.returnValue(authenticateDeferred.promise())
 		};
-		spyOn(googleAuthenticator, 'authenticate').and.callThrough();
 		activityLog = { log: jasmine.createSpy('log') };
 		underTest = jQuery(template).appendTo('body').goldLicenseEntryWidget(licenseManager, goldApi, activityLog, mockWindow, googleAuthenticator);
 		fakeBootstrapModal(underTest);
@@ -362,7 +353,7 @@ describe('Gold License Widget', function () {
 				checkSectionShown('google-auth-progress');
 			});
 			it('calls the google authenticator to authorise without dialogs and allow e-mail access', function () {
-				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(false, true);
+				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(true, true);
 				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
 			});
 			it('attempts to restore license via google if immediate authentication succeeds', function () {
@@ -370,23 +361,9 @@ describe('Gold License Widget', function () {
 				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token1');
 				checkSectionShown('google-auth-progress');
 			});
-			it('calls the authenticator with dialogs if immediate authentication fails', function () {
-				googleAuthenticator.authenticate.calls.reset();
-				authenticateDeferred.reject();
-				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(true, true);
-				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
-				checkSectionShown('google-auth-progress');
-			});
-			it('attempts to restore license via google if dialog authentication succeeds', function () {
-				authenticateDeferred.reject();
-				dialogAuthenticateDeferred.resolve('token2');
-				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token2');
-				checkSectionShown('google-auth-progress');
-			});
 			it('shows google-auth-failed section if dialog authentication fails', function () {
-				googleAuthenticator.authenticate.calls.reset();
 				authenticateDeferred.reject();
-				dialogAuthenticateDeferred.reject();
+				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
 				checkSectionShown('google-auth-failed');
 			});
 			it('shows google-auth-not-connected and prepoulates email field if restoring license via google fails with not-connected', function () {
