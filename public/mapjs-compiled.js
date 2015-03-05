@@ -1762,12 +1762,12 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	this.clickNode = function (id, event) {
 		var button = event && event.button && event.button !== -1;
 		if (event && event.altKey) {
-			self.addLink('mouse', id);
+			self.toggleLink('mouse', id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
 			self.toggleActivationOnNode('mouse', id);
 		} else if (isAddLinkMode && !button) {
-			this.addLink('mouse', id);
+			this.toggleLink('mouse', id);
 			this.toggleAddLinkMode();
 		} else {
 			this.selectNode(id);
@@ -2088,6 +2088,16 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		analytic('setAttachment', source);
 		var hasAttachment = !!(attachment && attachment.content);
 		idea.updateAttr(nodeId, 'attachment', hasAttachment && attachment);
+	};
+	this.toggleLink = function (source, nodeIdTo) {
+		var exists = _.find(idea.links, function (link) {
+			return (String(link.ideaIdFrom) === String(nodeIdTo) && String(link.ideaIdTo) === String(currentlySelectedIdeaId)) || (String(link.ideaIdTo) === String(nodeIdTo) && String(link.ideaIdFrom) === String(currentlySelectedIdeaId));
+		});
+		if (exists) {
+			self.removeLink(source, exists.ideaIdFrom, exists.ideaIdTo);
+		} else {
+			self.addLink(source, nodeIdTo);
+		}
 	};
 	this.addLink = function (source, nodeIdTo) {
 		if (!isEditingEnabled) {
@@ -3066,8 +3076,7 @@ jQuery.fn.updateStage = function () {
 
 MAPJS.DOMRender.curvedPath = function (parent, child) {
 	'use strict';
-	var horizontalConnector = function (parentX, parentY, parentWidth, parentHeight,
-				childX, childY, childWidth, childHeight) {
+	var horizontalConnector = function (parentX, parentY, parentWidth, parentHeight, childX, childY, childWidth, childHeight) {
 			var childHorizontalOffset = parentX < childX ? 0.1 : 0.9,
 				parentHorizontalOffset = 1 - childHorizontalOffset;
 			return {
