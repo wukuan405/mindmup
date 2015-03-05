@@ -22,6 +22,7 @@ describe('Gold License Widget', function () {
 					'<span data-mm-section="license-active"></span>' +
 					'<span data-mm-section="google-auth-failed"></span>' +
 					'<span data-mm-section="google-auth-progress"></span>' +
+					'<span data-mm-section="google-auth-with-dialogs"></span>' +
 					'<div data-mm-section="google-auth-not-connected">' +
 					'<form>' +
 					'<div class="control-group">' +
@@ -63,7 +64,8 @@ describe('Gold License Widget', function () {
 					'<button data-mm-role="restore-license-with-code"/>' +
 					'<button data-mm-role="action-CancelSubscription"/>' +
 					'<button data-mm-role="register">Register</button>' +
-					'<button data-mm-role="kickoff-google">Google</button>' +
+					'<button data-mm-role="kickoff-google" id="google-no-dialogs">Google</button>' +
+					'<button data-mm-role="kickoff-google" data-mm-showdialogs="true" id="google-with-dialogs">Google</button>' +
 					'<button data-mm-role="action-Fart" data-mm-section="x">Fart</button>' +
 					'<button data-mm-role="action-Burp" data-mm-section="x">Burp</button>' +
 					'<button data-mm-role="action-Curse" data-mm-section="x">Curse</button>' +
@@ -353,10 +355,10 @@ describe('Gold License Widget', function () {
 				/* todo: add docs for subscription request and license entry completion */
 			});
 		});
-		describe('when kickoff-google button is clicked', function () {
+		describe('when kickoff-google/no dialogs button is clicked', function () {
 			beforeEach(function () {
 				underTest.modal('show');
-				underTest.find('[data-mm-role=kickoff-google]').click();
+				underTest.find('#google-no-dialogs').click();
 			});
 			it('shows google-auth-progress section', function () {
 				checkSectionShown('google-auth-progress');
@@ -370,24 +372,11 @@ describe('Gold License Widget', function () {
 				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token1');
 				checkSectionShown('google-auth-progress');
 			});
-			it('calls the authenticator with dialogs if immediate authentication fails', function () {
+			it('shows the google-auth-with-dialogs if immediate authenticationf ails', function () {
 				googleAuthenticator.authenticate.calls.reset();
 				authenticateDeferred.reject();
-				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(true, true);
 				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
-				checkSectionShown('google-auth-progress');
-			});
-			it('attempts to restore license via google if dialog authentication succeeds', function () {
-				authenticateDeferred.reject();
-				dialogAuthenticateDeferred.resolve('token2');
-				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token2');
-				checkSectionShown('google-auth-progress');
-			});
-			it('shows google-auth-failed section if dialog authentication fails', function () {
-				googleAuthenticator.authenticate.calls.reset();
-				authenticateDeferred.reject();
-				dialogAuthenticateDeferred.reject();
-				checkSectionShown('google-auth-failed');
+				checkSectionShown('google-auth-with-dialogs');
 			});
 			it('shows google-auth-not-connected and prepoulates email field if restoring license via google fails with not-connected', function () {
 				authenticateDeferred.resolve('token1');
@@ -409,6 +398,66 @@ describe('Gold License Widget', function () {
 				beforeEach(function () {
 					subscriptionDeferred = jQuery.Deferred();
 					authenticateDeferred.resolve('token1');
+					googleRestoreDeferred.resolve();
+				});
+				it('shows section view-license', function () {
+					checkSectionShown('view-license');
+				});
+				it('retrieves subscription using goldApi', function () {
+					expect(goldApi.getSubscription).toHaveBeenCalled();
+				});
+				it('completes license entry when a payment is triggered and the license is valid', function () {
+					subscriptionDeferred.resolve({expiry: futureTs, subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha', status: 'active'});
+					expect(licenseManager.completeLicenseEntry).toHaveBeenCalled();
+				});
+				it('does not complete license entry if license is expired', function () {
+					subscriptionDeferred.resolve({status: 'borked', subscription: '1 Year', renewalPrice: '1 million dollars mwahahaha'});
+					expect(licenseManager.completeLicenseEntry).not.toHaveBeenCalled();
+				});
+			});
+		});
+		describe('when kickoff-google/with dialogs button is clicked', function () {
+			beforeEach(function () {
+				underTest.modal('show');
+				underTest.find('#google-with-dialogs').click();
+			});
+			it('shows google-auth-progress section', function () {
+				checkSectionShown('google-auth-progress');
+			});
+			it('calls the google authenticator to authorise with dialogs and allow e-mail access', function () {
+				expect(googleAuthenticator.authenticate).toHaveBeenCalledWith(true, true);
+				expect(goldApi.restoreLicenseWithGoogle).not.toHaveBeenCalled();
+			});
+			it('attempts to restore license via google if authentication succeeds', function () {
+				dialogAuthenticateDeferred.resolve('token1');
+				expect(goldApi.restoreLicenseWithGoogle).toHaveBeenCalledWith('token1');
+				checkSectionShown('google-auth-progress');
+			});
+			it('shows google-auth-failed section if dialog authentication fails', function () {
+				authenticateDeferred.reject();
+				dialogAuthenticateDeferred.reject();
+				checkSectionShown('google-auth-failed');
+			});
+			it('shows google-auth-not-connected and prepoulates email field if restoring license via google fails with not-connected', function () {
+				dialogAuthenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject('not-connected foo@bar.com');
+				checkSectionShown('google-auth-not-connected');
+				expect(underTest.find('[data-mm-section=google-auth-not-connected] input[name=email]').val()).toEqual('foo@bar.com');
+			});
+			it('shows google-auth-failed if restoring fails with not-connected but no email', function () {
+				dialogAuthenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject('not-connected');
+				checkSectionShown('google-auth-failed');
+			});
+			it('shows google-auth-failed if restoring license via google fails otherwise', function () {
+				dialogAuthenticateDeferred.resolve('token1');
+				googleRestoreDeferred.reject('invalid-args');
+				checkSectionShown('google-auth-failed');
+			});
+			describe('completing subscription workflow', function () {
+				beforeEach(function () {
+					subscriptionDeferred = jQuery.Deferred();
+					dialogAuthenticateDeferred.resolve('token1');
 					googleRestoreDeferred.resolve();
 				});
 				it('shows section view-license', function () {

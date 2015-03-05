@@ -314,8 +314,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		openFromLicenseManager = true;
 		self.modal('show');
 	});
+
 	self.find('[data-mm-role=kickoff-google]').click(function () {
-		var authWorked = function (authToken) {
+		var button = jQuery(this),
+				showDialogs = !!button.attr('data-mm-showdialogs'),
+				authWorked = function (authToken) {
 				goldApi.restoreLicenseWithGoogle(authToken).then(
 					completeSubscriptionWorkflow,
 					function (responseCode) {
@@ -333,13 +336,14 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				showSection('google-auth-failed');
 			};
 		showSection('google-auth-progress');
-		googleAuthenticator.authenticate(false, true).then(
+		googleAuthenticator.authenticate(showDialogs, true).then(
 			authWorked,
 			function () {
-				googleAuthenticator.authenticate(true, true).then(
-					authWorked,
-					authFailed
-				);
+				if (!showDialogs) {
+					showSection('google-auth-with-dialogs');
+				} else {
+					authFailed();
+				}
 			});
 	});
 	self.modal({keyboard: true, show: false});
