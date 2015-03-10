@@ -45,7 +45,7 @@ describe('MM.IOS.MapModelProxy', function () {
 		it('returns false if command.type does not start with mapModel:', function () {
 			expect(underTest.handlesCommand({type: 'foo:bar'})).toBeFalsy();
 		});
-		it('returns false if command.type does dfine a valid function of mapModel', function () {
+		it('returns false if command.type does define a valid function of mapModel', function () {
 			expect(underTest.handlesCommand({type: 'mapModel:notSomeMethod'})).toBeFalsy();
 		});
 	});
