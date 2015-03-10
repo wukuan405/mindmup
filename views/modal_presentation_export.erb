@@ -1,7 +1,7 @@
 <div id="modalPresentationExport" data-mm-role="layout-export" class="modal hide fade">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Export slideshow </h3>
+    <h3>Export storyboard</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
@@ -22,8 +22,22 @@
     <div class="visible inprogress alert alert-info alert-block">
       <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the storyboard...
     </div>
-    <div class="visible done alert alert-success alert-block">
-      <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
+    <div class="visible done">
+      <div class="alert alert-success alert-block">
+      <h4>Export complete:</h4> This link will remain available for 24 hours.
+      </div>
+						<form class="form">
+							<div class="control-group">
+								<div class="input-append">
+									<input data-mm-role="output-url selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="output-url" target="_blank" rel="tooltip" data-title="Open" data-event-type="Open Link" data-category="Storyboard export"><i class="icon-share"></i></a>
+								</div>
+							</div>
+						</form>
+            <p class="text-center">
+              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-output-url" rel="tooltip" data-title="Email URL" data-event-type="Email Link" data-category="Storyboard export" ><i class="icon-envelope"></i></a>
+              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-output-url" rel="tooltip" data-title="Gmail URL" data-event-type="Gmail Link" data-category="Storyboard export" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+            </p>
     </div>
     <div class="visible error alert alert-error alert-block">
       <h4>Unable to export Slideshow:</h4>

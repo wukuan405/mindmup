@@ -291,10 +291,12 @@ MM.layoutExportDecorators.gmailResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['gmail-index-html'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult.export.title + '\n\n') + encodeURIComponent(exportResult['index-html']);
 };
+
 MM.layoutExportDecorators.emailResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['email-index-html'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult.export.description + ':\r\n\r\n') + encodeURIComponent(exportResult['index-html']);
 };
+
 MM.layoutExportDecorators.gmailZipResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['gmail-archive-zip'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult.export.title + '\n\n') + encodeURIComponent(exportResult['archive-zip']);
@@ -303,7 +305,15 @@ MM.layoutExportDecorators.emailZipResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['email-archive-zip'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult.export.description + ':\r\n\r\n') + encodeURIComponent(exportResult['archive-zip']);
 };
-
+MM.sendExportDecorators = {};
+MM.sendExportDecorators.emailOutputUrlDecorator = function (exportResult) {
+	'use strict';
+	exportResult['email-output-url'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult['output-url']);
+};
+MM.sendExportDecorators.gmailOutputUrlResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['gmail-output-url'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult['output-url']);
+};
 MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 	'use strict';
 	return function (exportConfig) {
@@ -318,4 +328,3 @@ MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 		return deferred.promise();
 	};
 };
-

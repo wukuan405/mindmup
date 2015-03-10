@@ -81,12 +81,15 @@ MM.main = function (config) {
 			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
 			storyboardDimensionProvider = new MM.StoryboardDimensionProvider(activeContentResourceManager),
 			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
+			sendPostProcessing = MM.buildDecoratedResultProcessor(function (result) {
+					return jQuery.Deferred().resolve(result);
+				}, MM.sendExportDecorators),
 			layoutExportController = new MM.LayoutExportController({
 				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
-				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'storyboard.docx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
+				'presentation.pdf':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
+				'presentation.pptx': {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
+				'storyboard.docx':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
