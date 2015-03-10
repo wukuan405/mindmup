@@ -24,6 +24,7 @@
  *    * png - the map as a bitmap image (PNG)
  *    * presentation.pdf - the slideshow as a scalable vector PDF
  *    * presentation.pptx - the slideshow as a PowerPoint file
+ *    * storyboard.docx - the slideshow as a PowerPoint file
  *
  * In general, the exporters do not work on raw map files, but on layouts already positioned by the client browser. The pdf and png
  * export formats require a map layout to be uploaded to the server. The storyboard exporters require a JSON version of the storyboard.
