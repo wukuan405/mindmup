@@ -2,7 +2,7 @@
 
 MM.IOS = MM.IOS || {};
 
-MM.IOS.ServerConfig = function (storage) {
+MM.IOS.ServerConfig = function (storage, defaultConfig) {
 	'use strict';
 	var self = observable(this);
 	self.handlesCommand = function (command) {
@@ -20,11 +20,13 @@ MM.IOS.ServerConfig = function (storage) {
 		storage.setItem('ios-config', config);
 		self.dispatchEvent(command.type, config);
 	};
-	self.storedConfigValueForKey = function (key) {
+	self.valueForKey = function (key) {
 		var stored = storage.getItem('ios-config'),
 			val =  stored && stored[key];
 		if (val) {
 			return val;
+		} else if (defaultConfig) {
+			return defaultConfig[key];
 		}
 	};
 };

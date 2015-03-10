@@ -48,10 +48,12 @@ MM.main = function (config) {
 					mmProxy.sendMessage({'type': 'layoutChangeComplete', 'args': args});
 				});
 			},
+
 			container = jQuery('#container'),
 			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
 			mapController = new MM.MapController([iosMapSource]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
+			s3Api = new MM.S3Api(),
 			resourcePrefix = 'internal',
 			resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
@@ -64,15 +66,28 @@ MM.main = function (config) {
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapOptions = _.extend({}, config),
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, activeContentResourceManager, mapOptions),
+			serverConfig = new MM.IOS.ServerConfig(objectStorage, config),
+			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
+			goldApi = new MM.GoldApi(goldLicenseManager, serverConfig.valueForKey('goldApiUrl'), activityLog, serverConfig.valueForKey('goldBucketName')),
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
 			windowProxy = new MM.IOS.WindowProxy(mapModel, mmProxy, resourceCompressor),
 			maploadHandler = new MM.IOS.MapLoadHandler(iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController),
-			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler],
-			mapModelAnalytics = false;
+			licenseCommandHandler = new MM.IOS.LicenseCommandHandler(goldLicenseManager),
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler],
+			mapModelAnalytics = false,
+			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
+			exportHandlers = {
+				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
+			},
+			layoutExportController = new MM.LayoutExportController(exportHandlers, goldApi, s3Api, activityLog);
 
-
+	serverConfig.addEventListener('config:set', function (config) {
+		mmProxy.sendMessage({type: 'log', args: ['handled config:set', config]});
+		goldApi = new MM.GoldApi(goldLicenseManager, serverConfig.valueForKey('goldApiUrl'), activityLog, serverConfig.valueForKey('goldBucketName'));
+		layoutExportController = new MM.LayoutExportController(exportHandlers, goldApi, s3Api, activityLog);
+	});
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);

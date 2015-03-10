@@ -50,7 +50,6 @@ module.exports = function (grunt) {
 					'public/mapjs-compiled.js',
 					'public/mm.js',
 					'public/lib-ios/*.js',
-					'public/main-ios.js',
 					'public/lib/activity-log.js',
 					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
@@ -59,7 +58,13 @@ module.exports = function (grunt) {
 					'public/lib/map-controller.js',
 					'public/lib/auto-save.js',
 					'public/lib/json-storage.js',
-					'public/lib/local-storage-clipboard.js'
+					'public/lib/gold-api.js',
+					'public/lib/gold-license-manager.js',
+					'public/lib/layout-export.js',
+					'public/lib/s3-api.js',
+					'public/lib/local-storage-clipboard.js',
+					'public/lib/activity-log.js',
+					'public/main-ios.js'
 				],
 				dest: 'compiled/mm-ios-compiled.js'
 			}

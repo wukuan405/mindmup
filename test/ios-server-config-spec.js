@@ -17,7 +17,7 @@ describe('MM.IOS.ServerConfig', function () {
 		it('returns false if command type is undefined', function () {
 			expect(underTest.handlesCommand()).toBeFalsy();
 		});
-		it('returns false if command.type is not', function () {
+		it('returns false if command.type is not config:set', function () {
 			expect(underTest.handlesCommand({type: 'foo:bar'})).toBeFalsy();
 		});
 	});
@@ -82,18 +82,23 @@ describe('MM.IOS.ServerConfig', function () {
 
 		});
 	});
-	describe('storedConfigValueForKey', function () {
+	describe('valueForKey', function () {
 		it('should return the stored value for the key', function () {
 			storage.getItem.and.returnValue({goldApiUrl:'ccc'});
-			expect(underTest.storedConfigValueForKey('goldApiUrl')).toEqual('ccc');
+			expect(underTest.valueForKey('goldApiUrl')).toEqual('ccc');
 		});
 		it('should return nil for undefined key', function () {
 			storage.getItem.and.returnValue({goldApiUrl:'ccc'});
-			expect(underTest.storedConfigValueForKey('goldApiUrl1')).toBeFalsy();
+			expect(underTest.valueForKey('goldApiUrl1')).toBeFalsy();
 		});
 		it('should return nil when there is no stored config', function () {
 			storage.getItem.and.returnValue(undefined);
-			expect(underTest.storedConfigValueForKey('goldApiUrl')).toBeFalsy();
+			expect(underTest.valueForKey('goldApiUrl')).toBeFalsy();
+		});
+		it('should return the default value if there is no stored value for a key', function () {
+			underTest = new MM.IOS.ServerConfig(storage, {goldApiUrl: 'foo'});
+			storage.getItem.and.returnValue(undefined);
+			expect(underTest.valueForKey('goldApiUrl')).toEqual('foo');
 		});
 	});
 });

@@ -4,6 +4,9 @@
 <% else %>
       <script src="/mm.js" ></script>
       <script src="/mapjs-compiled.js" ></script>
+      <% development_lib('-ios').each do |script| %>
+          <script src="<%=script%>" ></script>
+      <% end %>
       <script src="/lib/activity-log.js" ></script>
       <script src="/lib/icon-editor-widget.js" ></script>
       <script src="/lib/active-content-resource-manager.js" ></script>
@@ -12,9 +15,11 @@
       <script src="/lib/map-controller.js" ></script>
       <script src="/lib/json-storage.js" ></script>
       <script src="/lib/auto-save.js" ></script>
+      <script src="/lib/gold-api.js" ></script>
+      <script src="/lib/gold-license-manager.js" ></script>
+      <script src="/lib/layout-export.js" ></script>
+      <script src="/lib/s3-api.js" ></script>
       <script src="/lib/local-storage-clipboard.js" ></script>
-      <% development_lib('-ios').each do |script| %>
-          <script src="<%=script%>" ></script>
-      <% end %>
+      <script src="/lib/activity-log.js" ></script>
       <script src="/main-ios.js" ></script>
 <% end%>

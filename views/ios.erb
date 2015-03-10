@@ -23,18 +23,24 @@
 <%= erb :scripts_ios %>
         <!--embedded-scripts-END-->
 
-        <script id="ios">
+<script id="ios">
         /*embedded-scripts-INSERT*/
-        </script>
-        <script id="main">
-            window.onload = function () {
-                MM.main({
-                    corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
-                    activeContentConfiguration: {
-                            nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
-                    }
-                });
-            };
-        </script>
+</script>
+<script id="main">
+    /*global window, MM*/
+    /*jscs: disable validateIndentation*/
+    window.onload = function () {
+        'use strict';
+        MM.main({
+            activeContentConfiguration: {
+                nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
+            },
+            goldApiUrl: '<%= ENV["GOLD_API_URL"] %>',
+            goldBucketName: '<%= ENV["GOLD_BUCKET_NAME"] %>',
+            corsProxyUrl: '<%= ENV["CORS_PROXY_URL"] %>'
+        });
+    };
+    /*jscs: enable validateIndentation*/
+</script>
     </body>
 </html>
