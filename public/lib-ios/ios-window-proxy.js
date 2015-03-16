@@ -1,6 +1,5 @@
 /*global MM, jQuery, window*/
 
-MM.IOS = MM.IOS || {};
 MM.IOS.WindowProxy = function (mapModel, mmProxy, resourceCompressor) {
 	'use strict';
 	var self = this,

@@ -1,5 +1,4 @@
 /*global MM */
-MM.IOS = MM.IOS || {};
 MM.IOS.Alert = function (mmProxy) {
 	'use strict';
 	var self = this,

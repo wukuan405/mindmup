@@ -1,7 +1,5 @@
 /*global MM, observable, _*/
 
-MM.IOS = MM.IOS || {};
-
 MM.IOS.ServerConfig = function (storage, defaultConfig) {
 	'use strict';
 	var self = observable(this);

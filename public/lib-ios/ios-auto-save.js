@@ -1,6 +1,5 @@
 /*global MM*/
 
-MM.IOS = MM.IOS || {};
 MM.IOS.AutoSave = function (autoSave, confimationProxy) {
 	'use strict';
 	var self = this,

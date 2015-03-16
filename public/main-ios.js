@@ -53,7 +53,6 @@ MM.main = function (config) {
 			iosMapSource = new MM.IOSMapSource(MAPJS.content(MM.IOS.defaultMap())),
 			mapController = new MM.MapController([iosMapSource]),
 			activeContentListener = new MM.ActiveContentListener(mapController),
-			s3Api = new MM.S3Api(),
 			resourcePrefix = 'internal',
 			resourceCompressor = new MM.ResourceCompressor(resourcePrefix),
 			activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, resourcePrefix),
@@ -68,26 +67,18 @@ MM.main = function (config) {
 			mapModelProxy = new MM.IOS.MapModelProxy(mapModel, mmProxy, activeContentResourceManager, mapOptions),
 			serverConfig = new MM.IOS.ServerConfig(objectStorage, config),
 			goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'licenseKey'),
-			goldApi = new MM.GoldApi(goldLicenseManager, serverConfig.valueForKey('goldApiUrl'), activityLog, serverConfig.valueForKey('goldBucketName')),
 			confimationProxy = new MM.IOS.ConfirmationProxy(mmProxy),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
 			iosAutoSave = new MM.IOS.AutoSave(autoSave, confimationProxy),
 			windowProxy = new MM.IOS.WindowProxy(mapModel, mmProxy, resourceCompressor),
 			maploadHandler = new MM.IOS.MapLoadHandler(iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController),
 			licenseCommandHandler = new MM.IOS.LicenseCommandHandler(goldLicenseManager),
-			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler],
-			mapModelAnalytics = false,
-			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
-			exportHandlers = {
-				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
-			},
-			layoutExportController = new MM.LayoutExportController(exportHandlers, goldApi, s3Api, activityLog);
+			serverConnector = new MM.IOS.ServerConnector(goldLicenseManager, serverConfig, activityLog),
+			exportRequestHandler = MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener),
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler, exportRequestHandler],
+			mapModelAnalytics = false;
 
-	serverConfig.addEventListener('config:set', function (config) {
-		mmProxy.sendMessage({type: 'log', args: ['handled config:set', config]});
-		goldApi = new MM.GoldApi(goldLicenseManager, serverConfig.valueForKey('goldApiUrl'), activityLog, serverConfig.valueForKey('goldBucketName'));
-		layoutExportController = new MM.LayoutExportController(exportHandlers, goldApi, s3Api, activityLog);
-	});
+
 	mapController.addEventListener('mapLoaded', function (mapId, idea) {
 		idea.setConfiguration(config.activeContentConfiguration);
 		mapModel.setIdea(idea);
@@ -112,6 +103,7 @@ MM.main = function (config) {
 			'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
+	jQuery('').iosModalExportWidget(exportRequestHandler);
 	MM.command = MM.command || function (command) {
 		var completed = {'completed': true, 'command': command.type},
 			commandHandler = _.find(commandHandlers, function (handler) {

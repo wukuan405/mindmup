@@ -1,6 +1,4 @@
 /*global MM*/
-
-MM.IOS = MM.IOS || {};
 MM.IOS.MapModelProxy = function (mapModel, mmProxy, activeContentResourceManager, mapOptions) {
 	'use strict';
 	var self = this;

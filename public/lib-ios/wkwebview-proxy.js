@@ -1,5 +1,4 @@
 /*global window, console, MM*/
-MM.IOS = MM.IOS || {};
 MM.IOS.defaultMap = function () {
 	'use strict';
 	return {

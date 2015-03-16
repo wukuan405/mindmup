@@ -1,7 +1,5 @@
 /*global MM*/
 
-MM.IOS = MM.IOS || {};
-
 MM.IOS.LicenseCommandHandler = function (licenseManager) {
 	'use strict';
 	var self = this;

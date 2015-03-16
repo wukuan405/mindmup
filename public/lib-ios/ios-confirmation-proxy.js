@@ -1,6 +1,5 @@
 /*global MM, _, jQuery*/
 
-MM.IOS = MM.IOS || {};
 MM.IOS.ConfirmationProxy = function (mmProxy) {
 	'use strict';
 	var self = this,

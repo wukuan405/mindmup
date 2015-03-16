@@ -45,11 +45,12 @@ module.exports = function (grunt) {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js'
 			},
-			libios: {
+			mmios: {
 				src: [
 					'public/mapjs-compiled.js',
 					'public/mm.js',
-					'public/lib-ios/*.js',
+					'public/mm-ios.js',
+					'public/mapjs-compiled.js',
 					'public/lib/activity-log.js',
 					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
@@ -63,7 +64,14 @@ module.exports = function (grunt) {
 					'public/lib/layout-export.js',
 					'public/lib/s3-api.js',
 					'public/lib/local-storage-clipboard.js',
-					'public/lib/activity-log.js',
+					'public/lib/activity-log.js'
+				],
+				dest: 'public/mm-compiled-ios.js'
+			},
+			libios: {
+				src: [
+					'public/mm-compiled-ios.js',
+					'public/lib-ios/*.js',
 					'public/main-ios.js'
 				],
 				dest: 'compiled/mm-ios-compiled.js'
@@ -132,6 +140,7 @@ module.exports = function (grunt) {
 						'test-lib/jasmine-tagname-match.js',
 						'test-lib/jquery-extension-matchers.js',
 						'public/mm.js',
+						'public/mm-ios.js',
 						'public/mapjs-compiled.js'
 					]
 				}
@@ -140,7 +149,9 @@ module.exports = function (grunt) {
 	});
 	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
 	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
+
 	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile-ios', ['concat:mmios', 'compile']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');

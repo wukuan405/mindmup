@@ -1,5 +1,4 @@
 /*global MM, MAPJS, jQuery*/
-MM.IOS = MM.IOS || {};
 MM.IOS.MapLoadHandler = function (iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController) {
 	'use strict';
 	var self = this;
