@@ -308,11 +308,11 @@ MM.layoutExportDecorators.emailZipResultDecorator = function (exportResult) {
 MM.sendExportDecorators = {};
 MM.sendExportDecorators.emailOutputUrlDecorator = function (exportResult) {
 	'use strict';
-	exportResult['email-output-url'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult['output-url']);
+	exportResult['email-output-url'] = 'mailto:?&body=' + encodeURIComponent(exportResult['output-url'] + '\n\nThe link will be valid for 24 hours');
 };
 MM.sendExportDecorators.gmailOutputUrlResultDecorator = function (exportResult) {
 	'use strict';
-	exportResult['gmail-output-url'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult['output-url']);
+	exportResult['gmail-output-url'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult['output-url'] + '\n\n the link will be valid for 24 hours');
 };
 MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 	'use strict';
