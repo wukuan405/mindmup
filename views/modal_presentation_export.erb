@@ -62,6 +62,12 @@
       <br/>
       <span data-mm-role="send-to-drive-status"/>
     </div>
+    <div class="visible send-to-drive-unauthorised">
+      <h4>Authorisation required</h4>
+      <br/>
+      <p>Saving a file to Google Drive requires requires your authorisation using a Google account, and we could not automatically log you in. Please
+      click the <b>Log In</b> button below to open a new window and log on to your Google account.</p>
+    </div>
     <div class="visible send-to-drive-done alert alert-success alert-block">
         <h4>File was saved to Google Drive</h4> Click the <b>Open</b> button below to open it in another window, or <b>Share</b> to send it directly to collaborators 
     </div>
@@ -71,7 +77,7 @@
 
       <span data-mm-role="error-message"></span>
       <span data-mm-role="generation-error">
-        This storyboard contains a feature not currently supported by slideshow export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+        This storyboard contains a feature not currently supported by storyboard export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
       </span>
       <span data-mm-role="file-too-large">
          <p>
@@ -94,12 +100,13 @@
     </div>
   </div>
   <div class="modal-footer">
-    <a tabstop="1" href="#" class="btn visible google-upload pull-left send-to-drive-done send-to-drive-error" data-mm-role="set-state" data-mm-state="done"><i class="icon-chevron-left"></i>&nbsp;Back</a>
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus="true" data-mm-role="start-export">Export</a>
-    <a tabstop="1" href="#" class="btn btn-primary visible google-upload" data-mm-role="send-to-drive-kickoff">Upload</a>
+    <a tabstop="1" href="#" class="btn visible google-upload pull-left send-to-drive-done send-to-drive-error send-to-drive-unauthorised" data-mm-role="set-state" data-mm-state="done"><i class="icon-chevron-left"></i>&nbsp;Back</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus="true" data-mm-role="start-export" data-mm-show-focus>Export</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible google-upload" data-mm-role="send-to-drive-kickoff" data-mm-show-focus>Upload</a>
     <a tabstop="1" href="#" class="btn visible send-to-drive-done" data-mm-role="send-to-drive-share">Share</a>
-    <a tabstop="2" href="#" target="_blank" class="btn btn-primary visible send-to-drive-done" data-mm-role="send-to-drive-result-link">Open</a>
-    <a tabstop="3" href="#" class="btn visible initial google-upload inprogress send-to-drive-progress" data-dismiss="modal">Cancel</a>
+    <a tabstop="2" href="#" target="_blank" class="btn btn-primary visible send-to-drive-done" data-mm-role="send-to-drive-result-link" data-mm-show-focus>Open</a>
+    <a tabstop="2" data-mm-role="send-to-drive-kickoff" data-mm-showdialogs class="btn btn-primary visible send-to-drive-unauthorised data-mm-show-focus">Log in</a>
+    <a tabstop="3" href="#" class="btn visible initial google-upload inprogress send-to-drive-progress send-to-drive-unauthorised" data-dismiss="modal">Cancel</a>
     <a tabstop="3" href="#" class="btn visible done error send-to-drive-done" data-dismiss="modal">Close</a>
   </div>
 </div>

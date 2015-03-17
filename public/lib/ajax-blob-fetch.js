@@ -20,7 +20,7 @@ MM.ajaxBlobFetch = function (url) {
 	});
 	http.addEventListener('progress', function (oEvent) {
 		if (oEvent.lengthComputable) {
-			result.notify(Math.round(oEvent.loaded / oEvent.total, 2) + '%');
+			result.notify(Math.round((oEvent.loaded * 100) / oEvent.total, 2) + '%');
 		} else {
 			result.notify();
 		}

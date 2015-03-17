@@ -214,12 +214,37 @@ MM.GoogleDriveAdapter = function (authenticator, appId, networkTimeoutMillis, de
 						result.reject('server-error', response);
 					}
 				},
-				handleError = function (errorCode) {
-					result.reject(errorCode);
+				handleError = function (response) {
+					/* {
+ "error": {
+     "errors": [ { "domain": "global", "reason": "authError", "message": "Invalid Credentials", "locationType": "header", "location": "Authorization" }],
+     "code": 401,
+     "message": "Invalid Credentials"
+  }
+}*/
+					var fileStatus;
+					try {
+						if (_.isString(response)) {
+							fileStatus = JSON.parse(response);
+						} else {
+							fileStatus = response;
+							if (!fileStatus.error) {
+								result.reject('server-error', response);
+							} else if (fileStatus.error.code === 401) {
+								result.reject('not-authenticated');
+							} else if (fileStatus.error.code === 403) {
+								result.reject('no-access-allowed');
+							} else {
+								result.reject('network-error', fileStatus.message);
+							}
+						}
+					} catch (e) {
+						result.reject('server-error', response);
+					}
 				},
 				handleProgress = function (oEvent) {
 					if (oEvent.lengthComputable) {
-						result.notify(Math.round(oEvent.loaded / oEvent.total, 2) + '%', oEvent);
+						result.notify(Math.round((oEvent.loaded * 100) / oEvent.total, 2) + '%', oEvent);
 					} else {
 						result.notify(false, oEvent);
 					}
