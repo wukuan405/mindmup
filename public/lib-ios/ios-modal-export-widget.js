@@ -14,9 +14,8 @@ jQuery.fn.iosModalExportWidget = function (exportRequestHandler) {
 				widget.appendTo(parent);
 				widgetSetupFunction(widget);
 
-				widget.trigger('show');
-				widget.show();
-				widget.on('hide', function () {
+				widget.showModal();
+				widget.on('hidden', function () {
 					widget.remove();
 				});
 			};

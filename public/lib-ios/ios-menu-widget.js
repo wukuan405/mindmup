@@ -62,11 +62,21 @@ jQuery.fn.iosMenuWidget = function (mapModel, messageSender) {
 				mapModel[action].apply(mapModel, args);
 			}
 		});
+		element.find('[data-mm-menu-role~="showModal"]').click(function () {
+			var clickElement = jQuery(this),
+					widgetRole = clickElement.data('mm-widget-role'),
+					widget = jQuery('[data-mm-role~="' + widgetRole + '"]');
+			widget.data('mm-model-args', clickElement.data('mm-model-args'));
+
+			widget.showModal();
+		});
+
 		element.find('[data-mm-menu-role~="showWidget"]').click(function () {
 			var clickElement = jQuery(this),
 					widgetRole = clickElement.data('mm-widget-role'),
 					widget = jQuery('[data-mm-role~="' + widgetRole + '"]');
 			widget.data('mm-model-args', clickElement.data('mm-model-args'));
+
 			widget.show();
 		});
 		element.find('[data-mm-menu-role~="sendMessage"]').click(function () {

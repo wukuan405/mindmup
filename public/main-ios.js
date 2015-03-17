@@ -74,7 +74,7 @@ MM.main = function (config) {
 			maploadHandler = new MM.IOS.MapLoadHandler(iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController),
 			licenseCommandHandler = new MM.IOS.LicenseCommandHandler(goldLicenseManager),
 			serverConnector = new MM.IOS.ServerConnector(goldLicenseManager, serverConfig, activityLog),
-			exportRequestHandler = new MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener),
+			exportRequestHandler = new MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener, mmProxy),
 			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler, exportRequestHandler],
 			mapModelAnalytics = false;
 
@@ -91,7 +91,7 @@ MM.main = function (config) {
 	});
 	setupTracking(activityLog, mapModel, mapModelAnalytics);
 	MM.MapController.activityTracking(mapController, activityLog);
-	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget();
+	jQuery('[data-mm-role~="ios-modal"]').iosModalWidget(mmProxy);
 	jQuery('[data-mm-role~="ios-menu"]').iosMenuWidget(mapModel, mmProxy);
 	jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel, iosStage).iosContextMenuWidget(mapModel, jQuery('[data-mm-menu-role~="context-menu"]'));
 	jQuery('[data-mm-role="ios-link-editor"]').iosPopoverMenuWidget().iosMenuWidget(mapModel, mmProxy).iosLinkEditWidget(mapModel);

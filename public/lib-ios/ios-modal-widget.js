@@ -1,5 +1,5 @@
 /*global jQuery*/
-jQuery.fn.iosModalWidget = function () {
+jQuery.fn.iosModalWidget = function (mmProxy) {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this);
@@ -7,7 +7,15 @@ jQuery.fn.iosModalWidget = function () {
 		element.find('[data-mm-role~="dismiss-modal"]').click(function () {
 			element.hideModal();
 		});
+
+		element.on('shown', function () {
+			mmProxy.sendMessage({type: 'modal', args:['shown']});
+		});
+		element.on('hidden', function () {
+			mmProxy.sendMessage({type: 'modal', args:['hidden']});
+		});
 	});
+
 };
 
 jQuery.fn.showModal = function () {

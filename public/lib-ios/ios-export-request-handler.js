@@ -1,6 +1,6 @@
 /*global MM, observable*/
 
-MM.IOS.ExportRequestHandler = function (serverConnector, activityLog, activeContentListener) {
+MM.IOS.ExportRequestHandler = function (serverConnector, activityLog, activeContentListener, mmProxy) {
 	'use strict';
 	var self = observable(this),
 		sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
@@ -18,7 +18,7 @@ MM.IOS.ExportRequestHandler = function (serverConnector, activityLog, activeCont
 		var format = command && command.args && command.args[0];
 		if (format) {
 			self.dispatchEvent('exportRequest', format, function (widgetElement) {
-				widgetElement.iosModalWidget();
+				widgetElement.iosModalWidget(mmProxy);
 				widgetElement.layoutExportWidget(layoutExportController);
 				widgetElement.atlasPrepopulationWidget(activeContentListener, 40, 150);
 			});
