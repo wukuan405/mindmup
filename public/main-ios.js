@@ -74,7 +74,7 @@ MM.main = function (config) {
 			maploadHandler = new MM.IOS.MapLoadHandler(iosAutoSave, mapOptions, mmProxy, iosMapSource, container, activityLog, mapModel, imageInsertController, activeContentResourceManager, mapController),
 			licenseCommandHandler = new MM.IOS.LicenseCommandHandler(goldLicenseManager),
 			serverConnector = new MM.IOS.ServerConnector(goldLicenseManager, serverConfig, activityLog),
-			exportRequestHandler = MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener),
+			exportRequestHandler = new MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener),
 			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler, exportRequestHandler],
 			mapModelAnalytics = false;
 
@@ -103,7 +103,7 @@ MM.main = function (config) {
 			'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
 			'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 		]);
-	jQuery('').iosModalExportWidget(exportRequestHandler);
+	jQuery('[data-mm-role~="layout-export"]').iosModalExportWidget(exportRequestHandler);
 	MM.command = MM.command || function (command) {
 		var completed = {'completed': true, 'command': command.type},
 			commandHandler = _.find(commandHandlers, function (handler) {

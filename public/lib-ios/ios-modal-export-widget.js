@@ -14,13 +14,13 @@ jQuery.fn.iosModalExportWidget = function (exportRequestHandler) {
 				widget.appendTo(parent);
 				widgetSetupFunction(widget);
 
+				widget.trigger('show');
+				widget.show();
 				widget.on('hide', function () {
 					widget.remove();
 				});
-				widget.trigger('show');
-				widget.show();
 			};
-
+		element.detach();
 		exportRequestHandler.addEventListener('exportRequest', onExportRequest);
 	});
 };

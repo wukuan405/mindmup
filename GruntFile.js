@@ -55,6 +55,7 @@ module.exports = function (grunt) {
 					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
 					'public/lib/active-content-listener.js',
+					'public/lib/atlas-prepopulate-widget.js',
 					'public/lib/resource-compressor.js',
 					'public/lib/map-controller.js',
 					'public/lib/auto-save.js',

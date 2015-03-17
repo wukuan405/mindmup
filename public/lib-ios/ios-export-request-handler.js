@@ -18,6 +18,7 @@ MM.IOS.ExportRequestHandler = function (serverConnector, activityLog, activeCont
 		var format = command && command.args && command.args[0];
 		if (format) {
 			self.dispatchEvent('exportRequest', format, function (widgetElement) {
+				widgetElement.iosModalWidget();
 				widgetElement.layoutExportWidget(layoutExportController);
 				widgetElement.atlasPrepopulationWidget(activeContentListener, 40, 150);
 			});
