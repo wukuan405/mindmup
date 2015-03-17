@@ -1,4 +1,4 @@
-/*global _, jQuery, MM, window, gapi, google */
+/*global _, jQuery, MM, window, gapi, google, MediaUploader */
 MM.GoogleAuthenticator = function (clientId, apiKey) {
 	'use strict';
 	var self = this,
@@ -195,6 +195,49 @@ MM.GoogleDriveAdapter = function (authenticator, appId, networkTimeoutMillis, de
 		};
 	this.description = 'Google';
 	this.saveFile = saveFile;
+	this.binaryUpload = function (blob, fileName, contentType, convertToInternal) {
+		var result = jQuery.Deferred(),
+				handleComplete = function (response) {
+					var fileStatus;
+					try {
+						if (_.isString(response)) {
+							fileStatus = JSON.parse(response);
+						} else {
+							fileStatus = response;
+						}
+						if (fileStatus.id && fileStatus.alternateLink) {
+							result.resolve({'id': mindMupId(fileStatus.id), 'link': fileStatus.alternateLink});
+						} else {
+							result.reject('server-error', response);
+						}
+					} catch (e) {
+						result.reject('server-error', response);
+					}
+				},
+				handleError = function (errorCode) {
+					result.reject(errorCode);
+				},
+				handleProgress = function (oEvent) {
+					if (oEvent.lengthComputable) {
+						result.notify(Math.round(oEvent.loaded / oEvent.total, 2) + '%', oEvent);
+					} else {
+						result.notify(false, oEvent);
+					}
+				},
+				params = {
+					file: blob,
+					metadata: { title: fileName, mimeType: contentType},
+					token: authenticator.gapuAuthToken(),
+					onComplete: handleComplete,
+					onError: handleError,
+					onProgress: handleProgress
+				};
+		if (convertToInternal) {
+			params.params = {convert:true};
+		}
+		new MediaUploader(params).upload();
+		return result.promise();
+	};
 	this.toGoogleFileId = toGoogleFileId;
 	this.ready = function (showAuthenticationDialogs) {
 		if (driveLoaded && authenticator.isAuthorised()) {

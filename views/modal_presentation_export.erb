@@ -36,9 +36,34 @@
 						</form>
             <p class="text-center">
               <a class="btn btn-large btn-share" href="#" download data-mm-role="output-url" rel="tooltip" data-title="Download" data-event-type="Download" data-category="Storyboard export" ><i class="icon-cloud-download"></i></a>
+              <a class="btn btn-large btn-share" href="#" data-mm-role="set-state" data-mm-state="google-upload" rel="tooltip" data-title="Save to Drive" data-event-type="Save To Drive" data-category="Storyboard export" ><i class="mm-icon-gdrive"></i></a>
               <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-output-url" rel="tooltip" data-title="Email URL" data-event-type="Email Link" data-category="Storyboard export" ><i class="icon-envelope"></i></a>
               <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-output-url" rel="tooltip" data-title="Gmail URL" data-event-type="Gmail Link" data-category="Storyboard export" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
             </p>
+    </div>
+    <div class="visible google-upload">
+      <h4>Upload to Google Drive</h4>
+        <form class="form form-horizontal">
+          <div class="control-group">
+          <label class="control-label" for="slideshowFormatSelector">File name:</label>
+            <div class="controls">
+              <input data-mm-role="send-to-drive-file-name" class="span4" data-mm-show-focus placeholder="Google drive file name" />
+            </div>
+          </div>
+          <input type="hidden" data-mm-role="output-url send-to-drive-url"/>
+        </form>
+    </div>
+    <div class="visible send-to-drive-progress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, transferring file to Google Drive.<br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-error alert alert-error alert-block">
+      <h4>Unable to send file to Drive:</h4>
+      <br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-done alert alert-success alert-block">
+        <h4>File was saved to Google Drive</h4> Click the <b>Open</b> button below to open it in another window, or <b>Share</b> to send it directly to collaborators 
     </div>
     <div class="visible error alert alert-error alert-block">
       <h4>Unable to export Slideshow:</h4>
@@ -69,8 +94,12 @@
     </div>
   </div>
   <div class="modal-footer">
+    <a tabstop="1" href="#" class="btn visible google-upload pull-left send-to-drive-done send-to-drive-error" data-mm-role="set-state" data-mm-state="done"><i class="icon-chevron-left"></i>&nbsp;Back</a>
     <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus="true" data-mm-role="start-export">Export</a>
-    <a tabstop="2" href="#" class="btn visible initial inprogress" data-dismiss="modal">Cancel</a>
-    <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible google-upload" data-mm-role="send-to-drive-kickoff">Upload</a>
+    <a tabstop="1" href="#" class="btn visible send-to-drive-done" data-mm-role="send-to-drive-share">Share</a>
+    <a tabstop="2" href="#" target="_blank" class="btn btn-primary visible send-to-drive-done" data-mm-role="send-to-drive-result-link">Open</a>
+    <a tabstop="3" href="#" class="btn visible initial google-upload inprogress send-to-drive-progress" data-dismiss="modal">Cancel</a>
+    <a tabstop="3" href="#" class="btn visible done error send-to-drive-done" data-dismiss="modal">Close</a>
   </div>
 </div>

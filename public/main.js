@@ -153,6 +153,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role~=layout-export]').layoutExportWidget(layoutExportController);
+				jQuery('#modalPresentationExport').sendToGoogleDriveWidget(googleDriveAdapter);
 				jQuery('[data-mm-role~=atlas-publish]').atlasPrepopulationWidget(activeContentListener, 40, 150);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
