@@ -227,7 +227,7 @@ MM.GoogleDriveAdapter = function (authenticator, appId, networkTimeoutMillis, de
 				params = {
 					file: blob,
 					metadata: { title: fileName, mimeType: contentType},
-					token: authenticator.gapuAuthToken(),
+					token: authenticator.gapiAuthToken(),
 					onComplete: handleComplete,
 					onError: handleError,
 					onProgress: handleProgress
