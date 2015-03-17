@@ -8,6 +8,8 @@ describe('LayoutExportWidget', function () {
 								'	<div id="d3" class="visible done">done</div> ' +
 								'	<div id="d4" class="secondary">not touched by visible selection</div> ' +
 								'	<div id="d-inprogress" class="visible inprogress">inprogress</div> ' +
+								' <div class="visible focus-test"><input type="text" data-mm-show-focus id="focus-test-field"/></div>' +
+								' <div class="visible not-focus-test"><input type="text" data-mm-show-focus id="not-focus-test-field"/></div>' +
 								'	<div id="d-done" class="visible done">done</div> ' +
 								'	<div id="d-error" class="visible error">error</div> ' +
 								'	<button id="b1" data-mm-role="set-state" data-mm-state="secondary" />' +
@@ -82,6 +84,12 @@ describe('LayoutExportWidget', function () {
 					expect(underTest.find('#d-initial').css('display')).toBe('none');
 					expect(underTest.find('#d2').css('display')).not.toBe('none');
 					expect(underTest.find('#d3').css('display')).toBe('none');
+				});
+				it('sets the focus on any data-mm-show-focus elements inside the visible area', function () {
+					spyOn(jQuery.fn, 'focus');
+					underTest.find('#b1').attr('data-mm-state', 'focus-test').click();
+					expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(underTest.find('#focus-test-field'));
+					expect(jQuery.fn.focus).not.toHaveBeenCalledOnJQueryObject(underTest.find('#not-focus-test-field'));
 				});
 			});
 			describe('export', function () {

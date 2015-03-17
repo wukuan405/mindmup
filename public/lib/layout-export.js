@@ -150,7 +150,6 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			confirmElement = self.find('[data-mm-role~=start-export]'),
 			setState = function (state) {
 				self.find('.visible').hide();
-				self.find('.visible' + '.' + state).show();
 				self.find('.visible' + '.' + state).show().find('[data-mm-show-focus]').focus();
 			},
 			publishResult = function (result) {

@@ -20,7 +20,6 @@ jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
 			},
 			setState = function (state) {
 				self.find('.visible').hide();
-				self.find('.visible' + '.' + state).show();
 				self.find('.visible' + '.' + state).show().find('[data-mm-show-focus]').focus();
 			},
 			setStatusMessage = function (message, progress) {
