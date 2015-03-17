@@ -24,22 +24,17 @@
     </div>
     <div class="visible done">
       <div class="alert alert-success alert-block">
-      <h4>Export complete:</h4> This link will remain available for 24 hours.
+        <h4>Your storyboard is ready</h4> 
       </div>
-						<form class="form">
-							<div class="control-group">
-								<div class="input-append">
-									<input data-mm-role="output-url selectable-read-only" class="span6" style="outline:none" />
-									<a class="btn btn-small" href="#" data-mm-role="output-url" target="_blank" rel="tooltip" data-title="Open" data-event-type="Open Link" data-category="Storyboard export"><i class="icon-share"></i></a>
-								</div>
-							</div>
-						</form>
-            <p class="text-center">
-              <a class="btn btn-large btn-share" href="#" download data-mm-role="output-url" rel="tooltip" data-title="Download" data-event-type="Download" data-category="Storyboard export" ><i class="icon-cloud-download"></i></a>
-              <a class="btn btn-large btn-share" href="#" data-mm-role="set-state" data-mm-state="google-upload" rel="tooltip" data-title="Save to Drive" data-event-type="Save To Drive" data-category="Storyboard export" ><i class="mm-icon-gdrive"></i></a>
-              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-output-url" rel="tooltip" data-title="Email URL" data-event-type="Email Link" data-category="Storyboard export" ><i class="icon-envelope"></i></a>
-              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-output-url" rel="tooltip" data-title="Gmail URL" data-event-type="Gmail Link" data-category="Storyboard export" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
-            </p>
+        <p>The file is now available on our servers and you can use the buttons below
+        to retrieve it, upload it to Google Drive, or send the link to someone else. </p>
+        <p class="text-center">
+          <a class="btn btn-large btn-share" href="#" download data-mm-role="output-url" rel="tooltip" data-title="Download" data-event-type="Download" data-category="Storyboard export" ><i class="icon-cloud-download"></i></a>
+          <a class="btn btn-large btn-share" href="#" data-mm-role="set-state" data-mm-state="google-upload" rel="tooltip" data-title="Save to Drive" data-event-type="Save To Drive" data-category="Storyboard export" ><i class="mm-icon-gdrive"></i></a>
+          <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-output-url" rel="tooltip" data-title="Email URL" data-event-type="Email Link" data-category="Storyboard export" ><i class="icon-envelope"></i></a>
+          <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-output-url" rel="tooltip" data-title="Gmail URL" data-event-type="Gmail Link" data-category="Storyboard export" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+        </p>
+        <p>Please note that the file will be available on our servers for 24 hours.</p>
     </div>
     <div class="visible google-upload">
       <h4>Upload to Google Drive</h4>
@@ -47,7 +42,7 @@
           <div class="control-group">
           <label class="control-label" for="slideshowFormatSelector">File name:</label>
             <div class="controls">
-              <input data-mm-role="send-to-drive-file-name" class="span4" data-mm-show-focus placeholder="Google drive file name" />
+              <input data-mm-role="send-to-drive-file-name" data-mm-show-focus placeholder="Google drive file name" />
             </div>
           </div>
           <input type="hidden" data-mm-role="output-url send-to-drive-url"/>
