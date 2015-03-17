@@ -1,4 +1,4 @@
-/*global jQuery, MM*/
+/*global jQuery, MM, _*/
 jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
 	'use strict';
 	return this.each(function () {
@@ -7,6 +7,10 @@ jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
 			fileNameField = self.find('[data-mm-role~=send-to-drive-file-name]'),
 			formControlGroup = fileNameField.parents('div.control-group'),
 			urlField =  self.find('[data-mm-role~=send-to-drive-url]'),
+			convertibleTypes = [
+				'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+				'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+			],
 			fileName = function () {
 				var result = fileNameField.val();
 				if (result) {
@@ -25,7 +29,7 @@ jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
 			transferFile = function () {
 				MM.ajaxBlobFetch(urlField.val()).then(
 					function (blob) {
-						googleDriveAdapter.binaryUpload(blob, fileName(), blob.type, true).then(
+						googleDriveAdapter.binaryUpload(blob, fileName(), blob.type, _.contains(convertibleTypes, blob.type)).then(
 							function (result) {
 								self.find('[data-mm-role~=send-to-drive-result-link]').attr('href', result.link);
 								lastSavedId = result.id;
