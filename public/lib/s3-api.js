@@ -1,4 +1,4 @@
-/*global jQuery, MM, FormData, window, _*/
+/*global jQuery, MM, FormData, window, _, XMLHttpRequest*/
 /**
  *
  * Utility class that implements AWS S3 POST upload interface and
@@ -24,6 +24,13 @@ MM.S3Api = function () {
 		var formData = new FormData(),
 			savePolicy = options && options.isPrivate ? 'bucket-owner-read' : 'public-read',
 			deferred = jQuery.Deferred(),
+			progress = function (evt) {
+				if (evt.lengthComputable) {
+					deferred.notify(Math.round((evt.loaded * 100) / evt.total, 2) + '%');
+				} else {
+					deferred.notify();
+				}
+			},
 			saveFailed = function (evt) {
 				var errorReasonMap = { 'EntityTooLarge': 'file-too-large' },
 					errorDoc,
@@ -59,8 +66,13 @@ MM.S3Api = function () {
 			type: 'POST',
 			processData: false,
 			contentType: false,
-			data: formData
-		}).then(deferred.resolve, saveFailed);
+			data: formData,
+			xhr: function () {
+				var xhr = new XMLHttpRequest();
+				xhr.upload.addEventListener('progress', progress);
+				return xhr;
+			}
+		}).then(deferred.resolve, saveFailed, progress);
 		return deferred.promise();
 	};
 	self.pollerDefaults = {sleepPeriod: 1000, timeoutPeriod: 120000};

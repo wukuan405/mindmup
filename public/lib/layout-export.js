@@ -24,6 +24,7 @@
  *    * png - the map as a bitmap image (PNG)
  *    * presentation.pdf - the slideshow as a scalable vector PDF
  *    * presentation.pptx - the slideshow as a PowerPoint file
+ *    * storyboard.docx - the slideshow as a PowerPoint file
  *
  * In general, the exporters do not work on raw map files, but on layouts already positioned by the client browser. The pdf and png
  * export formats require a map layout to be uploaded to the server. The storyboard exporters require a JSON version of the storyboard.
@@ -90,12 +91,16 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
+			progress = function (progressEvent) {
+				deferred.notify('Uploading ' + (progressEvent || ''));
+			},
 			exported = getExportFunction(format)(),
 			layout = _.extend({}, exported, exportProperties);
 		if (_.isEmpty(exported)) {
 			return deferred.reject('empty').promise();
 		}
 		activityLog.log(category, eventType + ' started');
+		deferred.notify('Setting up the export');
 		configurationGenerator.generateExportConfiguration(format).then(
 			function (exportConfig) {
 				var fileId = exportConfig.s3UploadIdentifier;
@@ -113,6 +118,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 									reject(reason, fileId);
 								});
 							};
+						deferred.notify('Processing your export');
 						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 15000}).then(
 							function () {
 								pollErrorTimer.end();
@@ -125,7 +131,8 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 								reject(reason, fileId);
 							});
 					},
-					reject
+					reject,
+					progress
 				);
 			},
 			reject
@@ -149,7 +156,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			confirmElement = self.find('[data-mm-role~=start-export]'),
 			setState = function (state) {
 				self.find('.visible').hide();
-				self.find('.visible' + '.' + state).show();
+				self.find('.visible' + '.' + state).show().find('[data-mm-show-focus]').focus();
 			},
 			publishResult = function (result) {
 				_.each(result, function (value, key) {
@@ -169,6 +176,9 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 					});
 				});
 				setState('done');
+			},
+			publishProgress = function (progress) {
+				self.find('[data-mm-role=publish-progress-message]').text(progress);
 			},
 			getExportMetadata = function () {
 				var form = self.find('form[data-mm-role~=export-parameters]'),
@@ -197,7 +207,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			},
 			doExport = function () {
 				setState('inprogress');
-				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed);
+				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed, publishProgress);
 			};
 		self.find('form').submit(function () {
 			return false;
@@ -290,10 +300,12 @@ MM.layoutExportDecorators.gmailResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['gmail-index-html'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult.export.title + '\n\n') + encodeURIComponent(exportResult['index-html']);
 };
+
 MM.layoutExportDecorators.emailResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['email-index-html'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult.export.description + ':\r\n\r\n') + encodeURIComponent(exportResult['index-html']);
 };
+
 MM.layoutExportDecorators.gmailZipResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['gmail-archive-zip'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult.export.title + '\n\n') + encodeURIComponent(exportResult['archive-zip']);
@@ -302,7 +314,15 @@ MM.layoutExportDecorators.emailZipResultDecorator = function (exportResult) {
 	'use strict';
 	exportResult['email-archive-zip'] = 'mailto:?subject=' + encodeURIComponent(exportResult.export.title) + '&body=' + encodeURIComponent(exportResult.export.description + ':\r\n\r\n') + encodeURIComponent(exportResult['archive-zip']);
 };
-
+MM.sendExportDecorators = {};
+MM.sendExportDecorators.emailOutputUrlDecorator = function (exportResult) {
+	'use strict';
+	exportResult['email-output-url'] = 'mailto:?&body=' + encodeURIComponent(exportResult['output-url'] + '\n\nThe link will be valid for 24 hours');
+};
+MM.sendExportDecorators.gmailOutputUrlResultDecorator = function (exportResult) {
+	'use strict';
+	exportResult['gmail-output-url'] = 'https://mail.google.com/mail/u/0/?view=cm&ui=2&cmid=0&fs=1&tf=1&body=' + encodeURIComponent(exportResult['output-url'] + '\n\n the link will be valid for 24 hours');
+};
 MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 	'use strict';
 	return function (exportConfig) {
@@ -317,4 +337,3 @@ MM.buildDecoratedResultProcessor = function (resultProcessor, decorators) {
 		return deferred.promise();
 	};
 };
-

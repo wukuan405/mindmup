@@ -1,4 +1,4 @@
-/*global beforeEach, afterEach, describe, expect, it, MM, spyOn, jQuery, window, jasmine, sinon*/
+/*global beforeEach, afterEach, describe, expect, it, MM, spyOn, jQuery, window, jasmine, sinon, document*/
 describe('MM.S3Api', function () {
 	'use strict';
 	var underTest,
@@ -60,6 +60,18 @@ describe('MM.S3Api', function () {
 				underTest.save('to save', saveConfiguration, {isPrivate: true});
 				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
 				expect(ajaxPost.data.params.acl).toEqual('bucket-owner-read');
+			});
+			it('configures the XMLHttpRequest so send upload notifications', function () {
+				var spy = jasmine.createSpy('progressSpy'), ajaxPost, evt = document.createEvent('Event');
+				evt.initEvent('progress', true, true);
+				evt.lengthComputable = true;
+				evt.total = 400;
+				evt.loaded = 200;
+				underTest.save('to save', saveConfiguration, {isPrivate: true}).progress(spy);
+
+				ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				ajaxPost.xhr().upload.dispatchEvent(evt);
+				expect(spy).toHaveBeenCalledWith('50%');
 			});
 
 		});

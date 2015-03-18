@@ -81,11 +81,15 @@ MM.main = function (config) {
 			storyboardModel = new MM.StoryboardModel(activeContentListener, 'storyboards', 'storyboard-scenes'),
 			storyboardDimensionProvider = new MM.StoryboardDimensionProvider(activeContentResourceManager),
 			sharePostProcessing = MM.buildDecoratedResultProcessor(MM.ajaxResultProcessor, MM.layoutExportDecorators),
+			sendPostProcessing = MM.buildDecoratedResultProcessor(function (result) {
+					return jQuery.Deferred().resolve(result);
+				}, MM.sendExportDecorators),
 			layoutExportController = new MM.LayoutExportController({
 				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
-				'presentation.pdf':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
-				'presentation.pptx':  MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource),
+				'presentation.pdf':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
+				'presentation.pptx': {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
+				'storyboard.docx':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
 			}, goldApi, s3Api, activityLog),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
@@ -149,6 +153,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="toggle-class"]').toggleClassWidget();
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role~=layout-export]').layoutExportWidget(layoutExportController);
+				jQuery('#modalPresentationExport').sendToGoogleDriveWidget(googleDriveAdapter);
 				jQuery('[data-mm-role~=atlas-publish]').atlasPrepopulationWidget(activeContentListener, 40, 150);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);
