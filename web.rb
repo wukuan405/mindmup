@@ -20,7 +20,7 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20150316155124' 
+  static_ts = '20150316155124'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
   set :earliest_supported_ios_version, (ENV["EARLIEST_IOS_VERSION"] && ENV["EARLIEST_IOS_VERSION"].to_f) || 1
   set :static_host, "#{public_host}/#{static_ts}"
@@ -142,14 +142,18 @@ end
 
 get '/ios/map' do
   # used for ios version < 3.0
-  erb :ios_legacy
+  erb :"ios/3/ios_legacy"
 end
 
 get '/ios/editor/:my_app_version' do
   version = 1
   version = params[:my_app_version].to_f if params[:my_app_version]
   halt 404 if version < settings.earliest_supported_ios_version
-  erb :ios
+  if version < 4 then
+    erb :"ios/3/ios"
+  else
+    erb :"ios/4/ios"
+  end
 end
 
 get '/ios/config' do

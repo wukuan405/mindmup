@@ -67,15 +67,23 @@ module.exports = function (grunt) {
 					'public/lib/local-storage-clipboard.js',
 					'public/lib/activity-log.js'
 				],
-				dest: 'public/mm-compiled-ios.js'
+				dest: 'public/ios/4/mm-compiled-ios.js'
 			},
-			libios: {
+			libios3: {
 				src: [
-					'public/mm-compiled-ios.js',
-					'public/lib-ios/*.js',
-					'public/main-ios.js'
+					'public/ios/3/mm-compiled-ios.js',
+					'public/lib-ios/3/*.js',
+					'public/ios/3/main-ios.js'
 				],
-				dest: 'compiled/mm-ios-compiled.js'
+				dest: 'compiled/mm-ios-compiled-3.js'
+			},
+			libios4: {
+				src: [
+					'public/ios/4/mm-compiled-ios.js',
+					'public/lib-ios/4/*.js',
+					'public/ios/4/main-ios.js'
+				],
+				dest: 'compiled/mm-ios-compiled-4.js'
 			}
 		},
 		uglify: {
@@ -86,7 +94,8 @@ module.exports = function (grunt) {
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
-					'compiled/mm-ios-compiled.min.js': ['compiled/mm-ios-compiled.js']
+					'compiled/mm-ios-compiled-3.min.js': ['compiled/mm-ios-compiled-3.js'],
+					'compiled/mm-ios-compiled-4.min.js': ['compiled/mm-ios-compiled-4.js']
 				}
 			}
 		},
@@ -94,7 +103,8 @@ module.exports = function (grunt) {
 			combine: {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
-					'compiled/combined-ios.css': ['public/mindmap-ios.css', 'public/mapjs.css'],
+					'compiled/combined-ios-3.css': ['public/ios/3/mindmap-ios.css', 'public/ios/3/mapjs.css'],
+					'compiled/combined-ios-4.css': ['public/ios/4/mindmap-ios.css', 'public/ios/4/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
 				}
 			}
@@ -116,7 +126,7 @@ module.exports = function (grunt) {
 			all: {
 				src: [
 					'public/lib/*.js',
-					'public/lib-ios/*.js',
+					'public/lib-ios/4/*.js',
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
@@ -151,7 +161,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
 	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
 
-	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
 	grunt.registerTask('compile-ios', ['concat:mmios', 'compile']);
 
 	// Load local tasks.
