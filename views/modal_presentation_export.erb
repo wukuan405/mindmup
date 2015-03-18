@@ -20,7 +20,8 @@
       </form>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
-      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the storyboard...
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the storyboard:&nbsp; 
+			<span data-mm-role="publish-progress-message" />
     </div>
     <div class="visible done">
       <div class="alert alert-success alert-block">
@@ -74,6 +75,10 @@
       <span data-mm-role="generation-error">
         This storyboard contains a feature not currently supported by storyboard export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
       </span>
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
       <span data-mm-role="file-too-large">
          <p>
            The storyboard you are exporting is too large. The maximum size of storyboard that can be exported online is:

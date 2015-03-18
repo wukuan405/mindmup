@@ -91,12 +91,16 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
+			progress = function (progressEvent) {
+				deferred.notify('Uploading ' + (progressEvent || ''));
+			},
 			exported = getExportFunction(format)(),
 			layout = _.extend({}, exported, exportProperties);
 		if (_.isEmpty(exported)) {
 			return deferred.reject('empty').promise();
 		}
 		activityLog.log(category, eventType + ' started');
+		deferred.notify('Setting up the export');
 		configurationGenerator.generateExportConfiguration(format).then(
 			function (exportConfig) {
 				var fileId = exportConfig.s3UploadIdentifier;
@@ -114,6 +118,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 									reject(reason, fileId);
 								});
 							};
+						deferred.notify('Processing your export');
 						storageApi.poll(exportConfig.signedErrorListUrl, {stoppedSemaphore: isStopped, sleepPeriod: 15000}).then(
 							function () {
 								pollErrorTimer.end();
@@ -126,7 +131,10 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 								reject(reason, fileId);
 							});
 					},
-					reject
+					function () {
+						reject('upload-failed', fileId);
+					},
+					progress
 				);
 			},
 			reject
@@ -171,6 +179,9 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				});
 				setState('done');
 			},
+			publishProgress = function (progress) {
+				self.find('[data-mm-role=publish-progress-message]').text(progress);
+			},
 			getExportMetadata = function () {
 				var form = self.find('form[data-mm-role~=export-parameters]'),
 					meta = {};
@@ -198,7 +209,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			},
 			doExport = function () {
 				setState('inprogress');
-				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed);
+				layoutExportController.startExport(selectedFormat(), {'export': getExportMetadata()}).then(publishResult, exportFailed, publishProgress);
 			};
 		self.find('form').submit(function () {
 			return false;

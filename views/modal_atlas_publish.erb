@@ -35,7 +35,8 @@
       </form>
 		</div>
     <div class="visible inprogress alert alert-info alert-block">
-      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map:&nbsp;
+			<span data-mm-role="publish-progress-message" />
     </div>
     <div class="visible done">
 
@@ -143,6 +144,11 @@
 
          </p>
       </span>
+
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
       <span data-mm-role="polling-timeout">
         The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
       </span>

@@ -177,7 +177,7 @@ describe('LayoutExport', function () {
 			storageApi.deferred.outputlisturl.reject(reason);
 			expect(fail).toHaveBeenCalledWith(reason, requestId);
 		});
-		it('rejects promise if the file system rejects', function () {
+		it('rejects promise with upload-failed if the file system rejects', function () {
 			var fail = jasmine.createSpy('fail'),
 				reason = 'cos i said so';
 			storageApi.save.and.returnValue(jQuery.Deferred().reject(reason).promise());
@@ -185,7 +185,7 @@ describe('LayoutExport', function () {
 
 			underTest.startExport('pdf').fail(fail);
 
-			expect(fail).toHaveBeenCalledWith(reason, undefined);
+			expect(fail).toHaveBeenCalledWith('upload-failed', requestId);
 			expect(storageApi.poll).not.toHaveBeenCalled();
 		});
 	});
