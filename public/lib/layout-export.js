@@ -131,9 +131,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 								reject(reason, fileId);
 							});
 					},
-					function () {
-						reject('upload-failed', fileId);
-					},
+					reject,
 					progress
 				);
 			},
