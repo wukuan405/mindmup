@@ -1,6 +1,6 @@
 #!/bin/bash
 # run with --dryrun to see what will happen
-DISTRO=`grep PUBLIC_HOST .env | sed 's/^.*\///'`
+DISTRO=`grep ^PUBLIC_HOST .env | sed 's/^.*\///'`
 echo using distro $DISTRO
 rm -rf compiled
 mkdir compiled
@@ -9,6 +9,7 @@ mkdir compiled/e
 cp public/e/* compiled/e/
 grunt compile $2
 if [[ $1 != "--static" ]]; then
+  echo "skipping"
   for c in compiled/*.css; do gsed s/static.mindmup.com/$DISTRO/g $c -i; done
   for c in compiled/e/*.css; do gsed s/static.mindmup.com/$DISTRO/g $c -i; done
 else
