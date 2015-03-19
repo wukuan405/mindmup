@@ -1,6 +1,6 @@
 /*global describe, beforeEach, MM, jasmine, observable, it, expect, jQuery, afterEach, spyOn*/
 
-describe('iosModalExportWidget', function () {
+describe('MM.IOS.ExportRequestHandler', function () {
 	'use strict';
 	var underTest, serverConnector, activityLog, activeContentListener, goldApi, s3Api;
 	beforeEach(function () {

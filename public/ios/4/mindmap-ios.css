@@ -335,13 +335,6 @@ a:focus {
 	background-color: #FFFFFF;
 	background-color: rgba(255, 255, 255, 0.85);
 }
-.ios-modal-close {
-	position: absolute;
-	top: 20;
-	left: calc(100% - 45px);
-	height: 40px;
-	width: 40px;
-}
 .ios-modal-title {
 	position: absolute;
 	left: 45px;

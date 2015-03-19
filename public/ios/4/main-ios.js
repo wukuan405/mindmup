@@ -75,7 +75,8 @@ MM.main = function (config) {
 			licenseCommandHandler = new MM.IOS.LicenseCommandHandler(goldLicenseManager),
 			serverConnector = new MM.IOS.ServerConnector(goldLicenseManager, serverConfig, activityLog),
 			exportRequestHandler = new MM.IOS.ExportRequestHandler(serverConnector, activityLog, activeContentListener, mmProxy),
-			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler, exportRequestHandler],
+			modalRequestHandler = new MM.IOS.ModalRequestHandler('ios-modal'),
+			commandHandlers = [mapModelProxy, confimationProxy, windowProxy, iosStage, maploadHandler, serverConfig, licenseCommandHandler, exportRequestHandler, modalRequestHandler],
 			mapModelAnalytics = false;
 
 
