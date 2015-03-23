@@ -42,15 +42,22 @@ describe('LayoutExportWidget', function () {
 			fakeBootstrapModal(underTest);
 		});
 		describe('when shown as modal on the screen', function () {
+			var onStateChangedListener;
 			beforeEach(function () {
-
+				onStateChangedListener = jasmine.createSpy('onStateChangedListener');
+				underTest.on('stateChanged', onStateChangedListener);
 				underTest.find('#d2').show();
 				underTest.find('#d-initial').hide();
 			});
 			it('shows the initial state section, marked by visible and initial css classes', function () {
 				underTest.modal('show');
-
 				expect(underTest.find('#d-initial').css('display')).not.toBe('none');
+			});
+			it('calls the onStateChangedListener when the state is changed', function () {
+				underTest.modal('show');
+				expect(onStateChangedListener).toHaveBeenCalled();
+				var args = onStateChangedListener.calls.mostRecent().args[0];
+				expect(args.state).toEqual('initial');
 			});
 			it('hides all other state sections, marked by visible css class and not marked by initial', function () {
 				underTest.modal('show');
@@ -74,8 +81,11 @@ describe('LayoutExportWidget', function () {
 			});
 		});
 		describe('button roles', function () {
+			var onStateChangedListener;
 			beforeEach(function () {
+				onStateChangedListener = jasmine.createSpy('onStateChangedListener');
 				underTest.modal('show');
+				underTest.on('stateChanged', onStateChangedListener);
 			});
 			describe('set-state', function () {
 				it('sets the visible elements using the visible css class and data-mm-state attribute', function () {
@@ -90,6 +100,12 @@ describe('LayoutExportWidget', function () {
 					underTest.find('#b1').attr('data-mm-state', 'focus-test').click();
 					expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(underTest.find('#focus-test-field'));
 					expect(jQuery.fn.focus).not.toHaveBeenCalledOnJQueryObject(underTest.find('#not-focus-test-field'));
+				});
+				it('calls the onStateChangedListener when the state is changed', function () {
+					underTest.find('#b1').attr('data-mm-state', 'listener-test').click();
+					expect(onStateChangedListener).toHaveBeenCalled();
+					var args = onStateChangedListener.calls.mostRecent().args[0];
+					expect(args.state).toEqual('listener-test');
 				});
 			});
 			describe('export', function () {
