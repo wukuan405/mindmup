@@ -157,6 +157,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 			setState = function (state) {
 				self.find('.visible').hide();
 				self.find('.visible' + '.' + state).show().find('[data-mm-show-focus]').focus();
+				self.trigger(jQuery.Event('stateChanged', {'state': state}));
 			},
 			publishResult = function (result) {
 				_.each(result, function (value, key) {
