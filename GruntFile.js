@@ -104,7 +104,7 @@ module.exports = function (grunt) {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
 					'compiled/combined-ios-3.css': ['public/ios/3/mindmap-ios.css', 'public/ios/3/mapjs.css'],
-					'compiled/combined-ios-4.css': ['public/ios/4/mindmap-ios.css', 'public/ios/4/mapjs.css'],
+					'compiled/combined-ios-4.css': ['public/ios/4/*-ios.css', 'public/ios/4/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
 				}
 			}
