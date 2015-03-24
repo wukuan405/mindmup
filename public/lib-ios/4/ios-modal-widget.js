@@ -14,6 +14,18 @@ jQuery.fn.iosModalWidget = function (mmProxy) {
 		element.on('hidden', function () {
 			mmProxy.sendMessage({type: 'modal', args:['hidden']});
 		});
+		element.on('stateChanged', function (evt) {
+			var toolsContainer = element.find('[data-mm-role="ios-modal-tools"]'),
+				toolElements = toolsContainer.find('.visible' + '.' + evt.state),
+				args = ['stateChanged', evt.state];
+			toolElements.each(function (index, toolElement) {
+				var role = jQuery(toolElement).data('mm-ios-role');
+				if (role) {
+					args.push(role);
+				}
+			});
+			mmProxy.sendMessage({type: 'modal', args:args});
+		});
 	});
 
 };

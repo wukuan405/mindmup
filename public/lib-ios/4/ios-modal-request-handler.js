@@ -10,6 +10,8 @@ MM.IOS.ModalRequestHandler = function (modalRoleName) {
 				modals = jQuery('[data-mm-role~="' + modalRoleName + '"]');
 		if (action === 'hide') {
 			modals.hideModal();
+		} else {
+			jQuery('[data-mm-ios-role="' + action + '"]').click();
 		}
 
 	};

@@ -358,6 +358,9 @@ a.iosDisabled {
 	-webkit-filter: grayscale(100%);
 	opacity: 0.5;
 }
+.ios-hidden {
+	display: none;
+}
 .iosPopupToolContainer {
 	position: absolute;
 	z-index: 3020;

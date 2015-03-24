@@ -152,6 +152,11 @@ describe('ios-modal-widget', function () {
 				expect(mmProxy.sendMessage).toHaveBeenCalledWith({type:'modal', args:['hidden']});
 			});
 		});
-
+		describe('stateChanged event handling', function () {
+			it('should pass event to mmProxy', function () {
+				underTest.trigger(jQuery.Event('stateChanged', {'state': 'test-state'}));
+				expect(mmProxy.sendMessage).toHaveBeenCalledWith({ type : 'modal', args : ['stateChanged', 'test-state'] });
+			});
+		});
 	});
 });
