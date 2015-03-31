@@ -44,24 +44,12 @@
         <h4>Your map was re-published.</h4>
         <p>The updated content should be available in around 30 minutes.</p>
       </div>
-
-      <form class="form">
-        <div class="control-group">
-          <label>Web page:</label>
-          <div class="input-append">
-            <input data-mm-role="index-html selectable-read-only" class="span5" style="outline:none" />
-            <a class="btn btn-small" href="#" data-mm-role="index-html" target="_blank"><i class="icon-share"></i></a>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Thumbnail image:</label>
-          <div class="input-append">
-            <input data-mm-role="thumb-png selectable-read-only" class="span5" style="outline:none" />
-            <a class="btn btn-small" href="#" data-mm-role="thumb-png" target="_blank"><i class="icon-share"></i></a>
-          </div>
-        </div>
-      </form>
-
+      <input data-mm-role="ios-export-result" class="ios-hidden" />
+      <div class="control-group ios-centered">
+        <button data-mm-role="ios-send-export" data-mm-method="twitter">Tweet</button>
+        <button data-mm-role="ios-send-export" data-mm-method="email">Email</button>
+        <button data-mm-role="ios-send-export" data-mm-method="facebook">FBPost</button>
+      </div>
     </div>
 
     <div class="visible error alert alert-error alert-block ios-modal-section">

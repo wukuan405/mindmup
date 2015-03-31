@@ -463,7 +463,9 @@ a.iosDisabled {
 }
 
 
-
+.ios-centered {
+	text-align: center;
+}
 
 
 
