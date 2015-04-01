@@ -464,7 +464,7 @@ a.iosDisabled {
 
 
 .ios-centered {
-	text-align: center;
+	text-align: center !important;
 }
 
 
