@@ -5,13 +5,18 @@
 	MM.Hangouts = {};
 	MM.Hangouts.Collaboration = function () {
 		var self = this,
-				localSessionId = gapi.hangout.getLocalParticipantId(),
+				cleanSessionKey = function (string) {
+					return string.replace(/[^A-Za-z0-9_-]/g, '_');
+				},
+				localSessionId = cleanSessionKey(gapi.hangout.getLocalParticipantId()),
 				contentAggregate,
 				keyIndex = 0,
-				applyEvents = function (hangoutEvents) {
+				applyEvents = function (hangoutEvents, filterOutLocal) {
 					_.chain(hangoutEvents).sortBy('timestamp').each(function (hangoutMetadata) {
 						var event = JSON.parse(hangoutMetadata.value);
-						contentAggregate.execCommand(event.cmd, event.args, event.sessionId);
+						if (!filterOutLocal || event.sessionId !== localSessionId) {
+							contentAggregate.execCommand(event.cmd, event.args, event.sessionId);
+						}
 					});
 				},
 				nextKey = function () {
@@ -47,7 +52,7 @@
 					if (initialising) {
 						duringInitQueue = duringInitQueue.concat(stateMutation.addedKeys);
 					} else {
-						applyEvents(stateMutation.addedKeys);
+						applyEvents(stateMutation.addedKeys, true);
 					}
 				};
 		self.getContentAggregate = function () {
