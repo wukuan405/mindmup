@@ -25,7 +25,7 @@
 <script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
 <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
 <div id="container">
-  Not loaded yet...
+  Please wait, loading MindMup...
 </div>
 <script>
 function showParticipants() {
@@ -49,7 +49,7 @@ function showParticipants() {
   div.innerHTML = retVal;
 }
 function initMindMup() {
-  jQuery('container').empty();
+  jQuery('#container').empty();
   var isTouch = false, 
       mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
       fakeMapController = observable({}),
