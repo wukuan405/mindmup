@@ -18,7 +18,9 @@ MM.CalcModel = function (calc, activityLog) {
 			activityLog.log('CalcModel', 'Projection:' + activeProjectionName);
 		},
 		projectionByName = function (name) {
-			return _.find(calc.getProjectionsFor(activeContent), function (projection) { return projection.name === name; });
+			return _.find(calc.getProjectionsFor(activeContent), function (projection) {
+				return projection.name === name;
+			});
 		},
 		recalcAndPublish = function () {
 			if (activeProjectionName && self.listeners('dataUpdated').length > 0) {
@@ -51,7 +53,9 @@ MM.CalcModel = function (calc, activityLog) {
 	};
 	self.dataUpdated = function (content) {
 		activeContent = content;
-		var newProjectionNames =  _.map(calc.getProjectionsFor(activeContent), function (projection) { return projection.name; });
+		var newProjectionNames =  _.map(calc.getProjectionsFor(activeContent), function (projection) {
+			return projection.name;
+		});
 		if (!_.isEqual(newProjectionNames, projectionNames)) {
 			projectionNames = newProjectionNames;
 			self.dispatchEvent('projectionsChanged', projectionNames);
@@ -73,7 +77,9 @@ MM.CalcModel = function (calc, activityLog) {
 		}
 	};
 	self.getFilterPredicate = function () {
-		var data = _.map(currentData || aggregation(activeContent, activeFilter), function (item) { return item.id; });
+		var data = _.map(currentData || aggregation(activeContent, activeFilter), function (item) {
+			return item.id;
+		});
 		return function (idea) {
 			return _.include(data, idea.id);
 		};
@@ -84,12 +90,12 @@ $.fn.calcWidget = function (calcModel, measureModel) {
 	'use strict';
 	return this.each(function () {
 		var self = jQuery(this),
-		    table = self.find('[data-mm-role=calc-table]'),
-		    msgDiv = self.find('[data-mm-role=empty]'),
-		    totalElement = self.find('[data-mm-role=total]'),
-		    totalValueElement = totalElement.find('[data-mm-role=total-value]'),
-		    template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
-		    calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
+			table = self.find('[data-mm-role=calc-table]'),
+			msgDiv = self.find('[data-mm-role=empty]'),
+			totalElement = self.find('[data-mm-role=total]'),
+			totalValueElement = totalElement.find('[data-mm-role=total-value]'),
+			template = self.find('[data-mm-role=projection-template]').detach().data('mm-role', 'projection'),
+			calcRowTemplate = table.find('[data-mm-role=row-template]').detach().data('mm-role', 'data-row'),
 			cellTemplate = calcRowTemplate.find('[data-mm-role=cell]').detach(),
 			measurements = self.find('[data-mm-role=open-measurements]'),
 			repopulateTable = function (data) {
@@ -136,7 +142,9 @@ $.fn.calcWidget = function (calcModel, measureModel) {
 				projectionsContainer.find('li').remove(0);
 				_.each(projections, function (projection) {
 					var item = template.clone().appendTo(projectionsContainer);
-					item.find('[data-mm-role=projection-name]').text(projection).click(function () {calcModel.setActiveProjection(projection); });
+					item.find('[data-mm-role=projection-name]').text(projection).click(function () {
+						calcModel.setActiveProjection(projection);
+					});
 				});
 			},
 			showActiveProjection = function () {
@@ -145,7 +153,9 @@ $.fn.calcWidget = function (calcModel, measureModel) {
 			openInMeasurements = function () {
 				measureModel.editWithFilter(calcModel.getFilterPredicate());
 			};
-		if (table.length === 0) { throw ('Calc table not found, cannot initialise widget'); }
+		if (table.length === 0) {
+			throw ('Calc table not found, cannot initialise widget');
+		}
 		setWidgetVisible(false);
 		//setProjections();
 		calcModel.addEventListener('projectionsChanged', setProjections);
@@ -169,12 +179,16 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 		var projections = [],
 			statusConfig = getConfig(activeContent),
 			dataTotaliser = function () {
-				return _.reduce(this, function (val, row) {return val + row[1]; }, 0);
+				return _.reduce(this, function (val, row) {
+					return val + row[1];
+				}, 0);
 			},
 			buildPercentProjection = function (name, wrappedProjection) {
 				return {name: name, iterator: function (originalData, activeContent) {
 					var data = wrappedProjection(originalData, activeContent),
-						total = _.reduce(data, function (valueSoFar, item) {return valueSoFar + item[1]; }, 0);
+						total = _.reduce(data, function (valueSoFar, item) {
+							return valueSoFar + item[1];
+						}, 0);
 					if (total === 0) {
 						return [];
 					}
@@ -184,14 +198,14 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 					});
 				}};
 			},
-			buildSumByStatusProjection = function  (name, itemValue) {
+			buildSumByStatusProjection = function (name, itemValue) {
 				return {name: name, iterator: function (data) {
 					var rawCounts = function () {
 							var currentCounts = {};
 							_.each(data, function (element) {
 								var val = 1,
 									current = currentCounts[element.status] || 0;
-								if  (itemValue) {
+								if (itemValue) {
 									val = itemValue(element);
 								}
 								if (val) {
@@ -245,7 +259,9 @@ MM.Progress.Calc = function (statusAttributeName, statusConfigAttr, measurementA
 		activeContent.traverse(function (idea) {
 			var stat = idea.attr && idea.attr[statusAttributeName],
 				resultItem;
-			if (!filter.includeParents && _.find(idea.ideas, function (subidea) { return subidea.attr && subidea.attr[statusAttributeName] === stat; })) {
+			if (!filter.includeParents && _.find(idea.ideas, function (subidea) {
+				return subidea.attr && subidea.attr[statusAttributeName] === stat;
+			})) {
 				return;
 			}
 			if (stat && statusConfig[stat] && (!filter.statuses  || _.include(filter.statuses, stat))) {
@@ -281,7 +297,9 @@ MM.progressCalcChangeMediator = function (calcModel, activeContentListener, mapM
 };
 MM.sortProgressConfig = function (config) {
 	'use strict';
-	var	configWithKeys = _.map(config, function (val, idx) {return _.extend({key: idx}, val); }),
+	var	configWithKeys = _.map(config, function (val, idx) {
+			return _.extend({key: idx}, val);
+		}),
 		sortedAlpha = _.sortBy(configWithKeys, function (status) {
 			return status.description || status.key;
 		});
@@ -331,8 +349,10 @@ $.fn.progressFilterWidget = function (calcModel, contentStatusUpdater) {
 			},
 			changeFilter = function () {
 				var checkBoxes = statusList.find(statusCheckboxSelector),
-					filter = {};
-				var checkedStatuses = _.map(checkBoxes.filter(':checked'), function (domCheckbox) { return domCheckbox.value; });
+					filter = {},
+					checkedStatuses = _.map(checkBoxes.filter(':checked'), function (domCheckbox) {
+						return domCheckbox.value;
+					});
 				if (checkedStatuses.length < checkBoxes.length) {
 					filter.statuses = checkedStatuses;
 				}
@@ -385,8 +405,7 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			if (method && attrs && method === 'updateAttr' && attrs[0] == content.id) {
 				if (attrs[1] === statusConfigurationAttributeName) {
 					self.dispatchEvent('configChanged', attrs[2]);
-				}
-				else if (attrs[1] === measurementConfigurationAttributeName) {
+				} else if (attrs[1] === measurementConfigurationAttributeName) {
 					self.dispatchEvent('measurementsChanged', attrs[2]);
 				}
 			}
@@ -415,12 +434,12 @@ MM.ContentStatusUpdater = function (statusAttributeName, statusConfigurationAttr
 			_.each(idea.ideas, recursiveClear);
 		};
 	self.setStatusConfig = function (statusConfig) {
-		var content = activeContentListener.getActiveContent();
+		var content = activeContentListener.getActiveContent(),
+			validatedConfig = {};
 		if (!statusConfig) {
 			content.updateAttr(content.id, statusConfigurationAttributeName, false);
 			return;
 		}
-		var validatedConfig = {};
 		_.each(statusConfig, function (element, key) {
 			validatedConfig[key] = _.clone(element);
 			if (isNaN(validatedConfig[key].priority)) {
@@ -563,8 +582,12 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				var config = {},
 					statuses = element.find('[data-mm-role=status-list] [data-mm-role=progress]'),
 					existing = _.reject(
-						_.unique(_.map(statuses, function (x) { return parseInt(jQuery(x).attr('data-mm-progress-key'), 10); })),
-						function (x) {return isNaN(x); }
+						_.unique(_.map(statuses, function (x) {
+							return parseInt(jQuery(x).attr('data-mm-progress-key'), 10);
+						})),
+						function (x) {
+							return isNaN(x);
+						}
 					),
 					autoKey = 1;
 				if (existing.length > 0) {
@@ -573,7 +596,7 @@ jQuery.fn.progressStatusUpdateWidget = function (updater, mapModel, configuratio
 				statuses.each(function () {
 					var status = jQuery(this),
 						statusConfig = {
-							description: status.find('[data-mm-role=status-name]').text(),
+							description: status.find('[data-mm-role=status-name]').text()
 						},
 						backgroundColor = status.find('[data-mm-role=status-color]').val(),
 						icon = status.find('[data-mm-role=status-icon]').data('icon'),

@@ -12,7 +12,7 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 			var result = {fontSize: height * 0.5 },
 				multiplier = 0.9;
 			do {
-				result.fontSize = Math.round(result.fontSize * multiplier);
+				result.fontSize = Math.floor(result.fontSize * multiplier);
 				result.lineHeight = Math.floor(result.fontSize * 1.3);
 				fakeDIV.css('font-size', result.fontSize + 'px');
 				fakeDIV.css('line-height', result.lineHeight + 'px');
@@ -60,8 +60,7 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 				maxImageHeight = height / 2 - padding;
 				result.text['padding-' + scene.image.position] = height / 2;
 				result.text.height = height / 2 - padding;
-			}
-			else if (scene.image.position === 'left' || scene.image.position  === 'right') {
+			} else if (scene.image.position === 'left' || scene.image.position  === 'right') {
 				maxImageWidth = width / 2 - padding;
 				result.text['padding-' + scene.image.position] = width / 2;
 				result.text.width = width / 2 -  padding;
@@ -73,21 +72,18 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 			result.image = {
 				'url': scene.image.url,
 				'height': (imageScale * scene.image.height),
-				'width': (imageScale * scene.image.width),
+				'width': (imageScale * scene.image.width)
 			};
 			if (scene.image.position === 'top') {
 				result.image.top =  0.25 * height - result.image.height * 0.5;
 				result.image.left = (width - result.image.width) / 2;
-			}
-			else if (scene.image.position === 'bottom') {
+			} else if (scene.image.position === 'bottom') {
 				result.image.top =  0.75 * height - result.image.height * 0.5;
 				result.image.left = (width - result.image.width) / 2;
-			}
-			else if (scene.image.position === 'left') {
+			} else if (scene.image.position === 'left') {
 				result.image.top = (height - result.image.height) / 2;
 				result.image.left = (width / 2 - result.image.width) / 2;
-			}
-			else if (scene.image.position === 'right') {
+			} else if (scene.image.position === 'right') {
 				result.image.top = (height - result.image.height) / 2;
 				result.image.left = 0.75 * width - result.image.width * 0.5;
 			} else {
@@ -103,7 +99,7 @@ MM.StoryboardDimensionProvider = function (resourceManager) {
 				};
 			};
 		}
-		if (hasBullets(scene.title))  {
+		if (hasBullets(scene.title)) {
 			result.text['text-align'] = 'left';
 		}
 		textDims = findFontSize(scene.title, result.text.width, result.text.height);

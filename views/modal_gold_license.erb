@@ -9,16 +9,19 @@
 			<p class="alert alert-block alert-warning">This operation requires a valid MindMup Gold License.</p>
 		</div>
 		<div data-mm-section="no-license license-required">
-			<p><i>Export, save and embed larger maps using MindMup Gold. </i></p>
+			<p>To export, save, publish and embed larger maps using MindMup Gold, please log in or sign up for a Gold account.</p>
+    </div>
+    <div data-mm-section="login-using-email">
+      <p>Enter your e-mail or account name and we'll send you a one-time password.</p>
 			<form class="form-horizontal">
 			<div class="control-group">
-				<label class="control-label" for="gold-account-identifer">Log in or sign up:</label>
+				<label class="control-label" for="gold-account-identifer">Log in:</label>
 				<div class="controls">
 					<input type="text" data-mm-role="gold-account-identifier" id="gold-account-identifier" placeholder="Account name or e-mail"/>
 				</div>
 			</div>
 			</form>
-		</div>
+    </div>
 		<div data-mm-section="code-sent">
 			<p>We have sent a temporary access code to your e-mail.</p>
 			<form class="form-horizontal">
@@ -36,7 +39,7 @@
 		<div data-mm-section="sending-code-failed">
 			<p class="alert alert-block alert-error">We could not find that email or username.</p>
 
-			<p> If you are a new user select <strong>I want to sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
+			<p> If you are a new user select <strong>Sign up</strong>, or go <strong>Back</strong> to provide a different email. If you think this is an error, please email us at <a target="_blank" href="mailto:contact@mindmup.com?subject=Gold%20Login">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="sending-code">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, sending the access code to your e-mail</p>
@@ -50,7 +53,7 @@
 		  <p class="alert alert-block alert-error">This operation is not authorised under your current MindMup Gold License. The license might
 		  have expired, or the file you are trying to access might have been saved using a different license.</p>
 
-		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current subscription. </p>
+		<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>View Subscription</strong> to see your subscription details and renew it. </p>
 		<form class="form-horizontal">
 		  <div class="control-group">
 			<label class="control-label" for="gold-view-account-name">Account name</label>
@@ -71,7 +74,13 @@
 		<div data-mm-section="license-server-unavailable">
 			<p>This license server is unavailable at the moment. Please try again later. If the problem persists, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
-		<div data-mm-section="license-purchase-required" data-mm-poll-for-subscription="true">
+
+
+    <!-- active, delinquent, not-purchased, required -->
+
+
+
+		<div data-mm-section="license-not-purchased" data-mm-poll-for-subscription="true">
 			<p class="alert alert-error alert-block">A subscription has not been purchased for this license. If you have paid using PayPal in the last 15 minutes, please wait for your payment to be processed.</p>
 			<form class="form-horizontal">
 			  <div class="control-group">
@@ -95,19 +104,69 @@
 			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
 		</div>
 
-		<div data-mm-section="expired-license">
-			<p class="alert alert-error alert-block">This license has expired</p>
-			<p>Click on <strong>Log Out</strong> to change the active license in this browser or <strong>Renew</strong> to extend the current subscription. </p>
+    <div data-mm-section="view-license">
+      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong></p>
+    </div>
+		<div data-mm-section="license-active-stripe license-active-paypal">
+      <p>You are currently subscribed as <strong><span data-mm-role="account-name"></span></strong> with a
+        <strong><span data-mm-role="license-period"></span>ly</strong> billing cycle.</p>
+      <p>Your next payment of <strong><span data-mm-role="renewal-price"></span></strong>
+      will be automatically taken on <strong><span data-mm-role="expiry-date"></span></strong>
+      using
+      <span data-mm-section="license-active-paypal">
+        your PayPal pre-approved payment
+      </span>
+      <strong data-mm-role="license-method"></strong>.
+      </p>
+      <div data-mm-section="license-active-paypal">
+        To cancel or amend your subscription details, please go directly to your PayPal account pre-approved payments.
+      </div>
+		</div>
+
+    <div data-mm-section="license-active">
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. <br/>
+      Your
+      license is valid until <strong><span data-mm-role="expiry-date"></span></strong>, and will not be automatically renewed.
+     </p>
+     <p>If you would like to extend the license, please contact <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
+    </div>
+
+    <div data-mm-section="license-delinquent-stripe license-delinquent-paypal">
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>. <br/>
+      Your
+      license <span class="text-error">expired on <span data-mm-role="expiry-date"></span></span>, and we could not
+      automatically renew it using
+      <span data-mm-section="license-delinquent-paypal">
+        your PayPal pre-approved payment <br/>
+      </span>
+      <strong><span data-mm-role="license-method"></span></strong>.
+     </p>
+     <p data-mm-section="license-delinquent-paypal">Please set up a new payment type directly on PayPal or ensure you have enough funds in the account for the
+     payment to be processed.</p>
+     <p data-mm-section="license-delinquent-stripe">Please update your card details or confirm with your bank that the card is active.
+     We will try to re-process the payment automatically shortly.</p>
+    </div>
+
+    <div data-mm-section="license-expired">
+      <p>You are currently using MindMup Gold as <strong><span data-mm-role="account-name"></span></strong>.<br/>
+      Your
+      license <span class="text-error">expired on <span data-mm-role="expiry-date"></span></span>.</p>
+      <p>Click on <strong>Log Out</strong> to log on using a different account, or select a billing cycle and payment method to
+      re-activate your account:</p>
+
 			<form class="form-horizontal">
 			  <div class="control-group">
-				<label class="control-label" for="gold-view-account-name">Account name</label>
+				<label class="control-label">Subscription</label>
 				<div class="controls">
-				  <input type="text" data-mm-role="account-name" readonly="true" id="gold-view-account-name"/>
+					<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
+						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+					</select>
 				</div>
 			  </div>
 			 </form>
-			<p>If you think that this is an error, please send us an e-mail at <a target="_blank" href="mailto:contact@mindmup.com?subject=MindMup%20Gold">contact@mindmup.com</a></p>
-		</div>
+    </div>
+
 		<div data-mm-section="cancelling-subscription">
 			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, we are cancelling your subscription</p>
 		</div>
@@ -115,9 +174,9 @@
 			<p>You have cancelled automatic renewal for your subscription as <strong><span data-mm-role="account-name"></span></strong> </p>
 			<p>Your current subscription will expire on <strong><span data-mm-role="expiry-date"></span></strong><span data-mm-role="subscription-expiry"></span></p>
 		</div>
-		<div data-mm-section="view-license">
-			<p>You are currently subscribed  as <strong><span data-mm-role="account-name"></span></strong> with a <strong><span data-mm-role="subscription-name"></span></strong> billing cycle.</p>
-			<p>Your next payment of <strong><span data-mm-role="renewal-price"></span></strong> will be automatically taken on <strong><span data-mm-role="expiry-date"></span></strong><span data-mm-section="view-license" data-mm-role="payment-type-block"> using <strong data-mm-role="payment-type"></strong></span></p>
+		<div data-mm-section="cancellation-failed">
+			<p class="alert alert-block alert-error">Due to a network problem, it was not possible to cancel your subscription at this moment</p>
+      <p>Please try again later. If the problem persists, contact us at <a href="mailto:contact@mindmup.com">contact@mindmup.com</a></p>
 		</div>
 		<div data-mm-section="payment-complete">
 			<p class="alert alert-block alert-success">Your Mindmup Gold subscription was successful</p>
@@ -169,6 +228,65 @@
 			</form>
 		</div>
 
+		<div data-mm-section="google-auth-progress">
+			<p><i class="icon-spinner icon-spin"></i>&nbsp;Please wait, authenticating using your Google account</p>
+    </div>
+		<div data-mm-section="google-auth-with-dialogs">
+			<p>
+			We couldn't automatically log you in. To proceed, please click <b>Log in using Google</b> to open the Google authentication dialog. 
+			</p>
+    </div>
+		<div data-mm-section="google-auth-failed">
+      <p>Due to a network error it was not possible to complete the authentication. Please try again later or log in using your e-mail.</p>
+    </div>
+    <div data-mm-section="google-auth-not-connected">
+
+      <p>Your Google ID is not currently connected to a MindMup Gold subscription. 
+        To start a subscription, please select your desired account name and subscription type.
+        </p>
+        <p>
+        Your account name<span class="hidden-phone"> will be shown in the URL of your maps, and</span> must be 4-20 characters, start with a
+        letter and contain only lowercase<span class="hidden-phone"> (latin)</span> letters and numbers.
+			</p>
+			<form class="form-horizontal">
+
+        <div class="control-group">
+				<label class="control-label hidden-phone-portrait" for="gold-register-email">E-mail</label>
+				<div class="controls">
+				  <input type="text" readonly placeholder="youremail@server.com" name="email"/>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<label class="control-label hidden-phone-portrait" for="gold-register-account-name">Account name</label>
+				<div class="controls">
+				  <input type="text" placeholder="Account name" name="account-name"/>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<label class="control-label hidden-phone-portrait">Subscription</label>
+				<div class="controls">
+					<select data-mm-role="form-input-updater" data-mm-form="license-purchase-form" data-mm-form-field="subscription-code">
+						<option value="<%= ENV['STRIPE_PLAN_MONTH'] %>"><%= ENV['STRIPE_PRICE_MONTH']%> monthly</option>
+						<option value="<%= ENV['STRIPE_PLAN_YEAR'] %>"><%= ENV['STRIPE_PRICE_YEAR'] %> yearly</option>
+					</select>
+				</div>
+			  </div>
+
+			  <div class="control-group">
+				<div class="controls">
+					<label class="checkbox">
+						<input type="checkbox" id="gold-register-terms" name="terms"/>
+						I agree to the <a  data-category="Gold Click" data-event-type="agree gold terms" href="http://gold.mindmup.com/terms" target="_blank">MindMup Gold Terms of Service</a>.
+					</label>
+				</div>
+			  </div>
+			</form>
+
+
+
+    </div>
 		<div data-mm-section="registration-fail">
 			<div class="alert alert-error alert-block">
 				<h4>There was a problem with the registration</h4>
@@ -197,29 +315,44 @@
 		</div>
 	</div>
     <div class="modal-footer">
-	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="register code-sent sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="google-auth-with-dialogs google-auth-not-connected register code-sent login-using-email google-auth-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="no-license"><i class="icon-chevron-left"></i>&nbsp;Back</button>
+	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="sending-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="login-using-email"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 	<button data-category="Gold Click" data-event-type="Back" data-mm-section="registration-fail" data-mm-target-section="register" data-mm-role="show-section" class="btn pull-left" tabstop="7"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	<a target="_blank" href="http://discover.mindmup.com/mindmup-gold" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;More Info</a>
-	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license cancelled-subscription expired-license invalid-license license-purchase-required unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
-	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="cancel-subscription view-license-stripe">Cancel Subscription</button>
-	<a href="http://discover.mindmup.com/mindmup-gold#subscription-cancel" target="_blank" class="btn pull-left" tabstop="4" data-event-type="Cancel Subscription" data-mm-section="view-license" data-mm-role="view-license-paypal">Cancel Subscription</a>
+	<a target="_blank" href="http://discover.mindmup.com/mindmup-gold" data-category="Gold Click" data-event-type="More Info" data-mm-section="no-license license-required register" class="btn pull-left hidden-phone-portrait" tabstop="1"><i class="icon-question-sign"></i>&nbsp;Help</a>
+  <a target="_blank" href="http://discover.mindmup.com/mindmup-gold#multiple-google" data-category="Gold Click" data-event-type="Different Google ID"  data-mm-section="google-auth-not-connected" class="btn pull-left hidden-phone-portrait"><i class="icon-question-sign"></i>&nbsp;Use a different Google ID</a>
+  
+	<button data-category="Gold Click" data-event-type="Remove License" data-mm-role="remove" data-mm-section="view-license license-active license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal license-expired license-not-purchased cancelled-subscription invalid-license unauthorised-license" class="btn pull-left" tabstop="8">Log Out</button>
+	<button data-category="Gold Click" data-event-type="Cancel Subscription" data-mm-section="view-license" class="btn pull-left" tabstop="4" data-mm-role="action-CancelSubscription">Cancel Subscription</button>
+  <a href="https://www.paypal.com/cgi-bin/customerprofileweb?cmd=_manage-paylist" target="_blank" class="btn pull-left" tabstop="4" data-mm-section="x" data-event-type="Manage Paypal Subscription" data-mm-role="action-PaypalAdmin">Manage Paypal Subscription</a>
+
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="restore-code-failed" class="btn pull-left" tabstop="4" data-mm-role="show-section" data-mm-target-section="code-sent"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	<button data-category="Gold Click" data-event-type="Change Card" data-mm-section="view-license" class="btn" tabstop="4" data-mm-role="form-submit payment-card-change" data-mm-form="#change-card-form">Change Card</button>
-	<button data-category="Gold Click" data-event-type="I have a Gold account" data-mm-section="no-license license-required" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">I have a Gold account</button>
+	<button data-category="Gold Click" data-event-type="Change Card" data-mm-section="view-license" class="btn" tabstop="4" data-mm-role="form-submit action-ChangePaymentMethod" data-mm-form="#change-card-form" data-dismiss="modal">Change Card</button>
+
+  <button data-category="Gold Click" data-event-type="Log in using email" data-mm-section="login-using-email" data-mm-role="kickoff-restore-license" class="btn btn-primary"  tabstop="1">Next&nbsp;<i class="icon-chevron-right"></i></button>
+
+	<button data-category="Gold Click" data-event-type="Log in using email" data-mm-section="no-license license-required google-auth-failed" data-mm-role="show-section" data-mm-target-section="login-using-email" class="btn"  tabstop="1">Log in using e-mail</button>
+
+	<button data-category="Gold Click" data-event-type="Log in using Google" data-mm-section="no-license license-required" data-mm-role="kickoff-google" class="btn"  tabstop="2">Use my Google Account</button>
+
+	<button data-category="Gold Click" data-event-type="Log in using Google - Dialogs" data-mm-section="google-auth-with-dialogs" data-mm-role="kickoff-google" data-mm-showdialogs="true" class="btn btn-primary"  tabstop="2">Log in using Google</button>
 
 	<button data-category="Gold Click" data-event-type="Log In" data-mm-section="code-sent" data-mm-role="restore-license-with-code" class="btn btn-primary" tabstop="1">Log In</button>
-	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">I want to sign up</button>
+	<button data-category="Gold Click" data-event-type="Sign Up" data-mm-section="no-license license-required sending-code-failed" data-mm-role="kickoff-sign-up" class="btn btn-success" data-mm-target-section="register" tabstop="1">Sign up</button>
 
 
-	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required registration-success expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form-paypal">Pay with PayPal</button>
+	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="registration-success" class="btn btn-success" tabstop="4" data-mm-role="form-submit action-BuySubscription" data-mm-form="#license-purchase-form-paypal">Pay with PayPal</button>
 
-	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="license-purchase-required registration-success expired-license unauthorised-license" class="btn btn-success" tabstop="4" data-mm-role="form-submit" data-mm-form="#license-purchase-form">Pay with Credit/Debit Card</button>
+	<button data-category="Gold Click" data-event-type="Purchase Subscription" data-mm-section="registration-success" class="btn btn-success" tabstop="4" data-mm-role="form-submit action-BuySubscription" data-mm-form="#license-purchase-form">Pay with Credit/Debit Card</button>
 
 	<button data-category="Gold Click" data-event-type="Go Back" data-mm-section="waiting-for-payment" data-mm-role="go-back" class="btn pull-left" tabstop="6"><i class="icon-chevron-left"></i>&nbsp;Back</button>
 
-	<button data-category="Gold Click" data-event-type="Register" data-mm-section="register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+	<button data-category="Gold Click" data-event-type="Register" data-mm-section="google-auth-not-connected register" data-mm-role="register" class="btn btn-primary" tabstop="6">Register</button>
+	<button data-category="Gold Click" data-event-type="Register" data-mm-section="unauthorised-license" data-mm-role="view-subscription" tabstop="6" class="btn">View Subscription</button>
+
+
+
 
 	<form id="license-purchase-form" data-mm-role="license-purchase-form" data-mm-next-section="waiting-for-payment" class="hide" target="_blank"  method="post" action="<%= ENV['GOLD_API_URL'] %>/form/buy_subscription">
 		<input type="hidden" data-mm-role="license-text" name="license">
@@ -237,7 +370,7 @@
 		<input type="hidden" name="item_name" data-mm-role="subscription-description">
 		<input type="hidden" name="business" value="<%=settings.paypal_recipient%>">
 		<input type="hidden" name="currency_code" value="USD">
-		<input type="hidden" name="no_shipping" value="1">
+		<input type="hidden" name="no_shipping" value="2">
 		<input type="hidden" name="a3" data-mm-role="subscription-amount-dollars">
 		<input type="hidden" name="p3" value="1">
 		<input type="hidden" name="t3" data-mm-role="subscription-period">
@@ -254,8 +387,8 @@
 
 
 
-	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="loading-subscription license-required unauthorised-license registration-fail registration-progress register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
-	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="no-license payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
+	<button data-category="Gold Click" data-event-type="Cancel" data-dismiss="modal" data-mm-section="google-auth-progress google-auth-with-dialogs login-using-email loading-subscription unauthorised-license registration-fail registration-progress google-auth-not-connected register sending-code code-sent sending-code-failed restore-code-failed sending-restore-license-code expired-license" class="btn hidden-phone-portrait" tabstop="9">Cancel</button>
+	<button data-category="Gold Click" data-event-type="Close" data-dismiss="modal" data-mm-section="google-auth-failed license-not-purchased license-active license-expired license-active-paypal license-active-stripe license-delinquent-stripe license-delinquent-paypal cancellation-failed payment-complete view-license cancelled-subscription license-server-unavailable cancelling-subscription waiting-for-payment" class="btn hidden-phone-portrait" tabstop="10">Close</button>
     </div>
   </div>
 

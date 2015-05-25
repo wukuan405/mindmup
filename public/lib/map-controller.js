@@ -95,7 +95,7 @@ MM.MapController = function (initialMapSources) {
 			progressEvent
 		);
 	};
-	this.publishMap = function (mapSourceType) {
+	this.publishMap = function (mapSourceType, forceNew) {
 		var mapSaved = function (savedMapId, properties) {
 				var previousWasReloadOnSave = lastProperties && lastProperties.reloadOnSave;
 				properties = properties || {};
@@ -135,10 +135,11 @@ MM.MapController = function (initialMapSources) {
 				} else {
 					dispatchEvent('mapSavingFailed', reason, label);
 				}
-			};
+			},
+			saveAsId = forceNew ? '' : mapInfo.mapId;
 		activeMapSource = chooseMapSource(mapSourceType || mapInfo.mapId);
 		dispatchEvent('mapSaving', activeMapSource.description);
-		activeMapSource.saveMap(mapInfo.idea, mapInfo.mapId).then(
+		activeMapSource.saveMap(mapInfo.idea, saveAsId).then(
 			mapSaved,
 			mapSaveFailed,
 			progressEvent
@@ -148,8 +149,8 @@ MM.MapController = function (initialMapSources) {
 MM.MapController.activityTracking = function (mapController, activityLog) {
 	'use strict';
 	var startedFromNew = function (idea) {
-		return idea.id === 1;
-	},
+			return idea.id === 1;
+		},
 		isNodeRelevant = function (ideaNode) {
 			return ideaNode.title && ideaNode.title.search(/MindMup|Lancelot|cunning|brilliant|Press Space|famous|Luke|daddy/) === -1;
 		},
@@ -214,7 +215,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		};
 
 	mapController.addEventListener('mapLoadingConfirmationRequired', function (newMapId) {
-    var isNew = /^new/.test(newMapId);
+		var isNew = /^new/.test(newMapId);
 		showAlertWithCallBack(
 			'There are unsaved changes in the current map. Please confirm that you would like to ' + (isNew ? 'create a new map' : 'load a different map.'),
 			(isNew ? 'Create New' : 'Load anyway'),
@@ -251,7 +252,7 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		);
 	});
 	mapController.addEventListener('mapLoadingUnAuthorized', function () {
-		showErrorAlert('The map could not be loaded.', 'You do not have the right to view this map');
+		showErrorAlert('The map could not be loaded.', 'You do not have the right to view this map. <a target="_blank" href="http://blog.mindmup.com/p/how-to-resolve-common-networking.html">Click here for some common solutions</a>');
 	});
 	mapController.addEventListener('mapSavingUnAuthorized', function (callback) {
 		showAlertWithCallBack(

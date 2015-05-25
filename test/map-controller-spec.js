@@ -174,7 +174,9 @@ describe('Map Controller', function () {
 		});
 		it('should reload map with redirected id', function () {
 			var listener = jasmine.createSpy();
-			adapter1.recognises = function (mapId) {return mapId === 'foo'; };
+			adapter1.recognises = function (mapId) {
+				return mapId === 'foo';
+			};
 			spyOn(adapter1, 'loadMap').and.returnValue(jQuery.Deferred().reject('map-load-redirect', 'bar').promise());
 			spyOn(adapter2, 'loadMap').and.callThrough();
 			underTest.addEventListener('mapLoaded', listener);
@@ -219,7 +221,7 @@ describe('Map Controller', function () {
 			});
 		});
 	});
-	describe('saveMap', function () {
+	describe('publishMap', function () {
 		var map;
 		beforeEach(function () {
 			map = MAPJS.content({});
@@ -243,7 +245,9 @@ describe('Map Controller', function () {
 		});
 		it('should use the adapter which recognises the mapId', function () {
 			spyOn(adapter1, 'recognises').and.returnValue(false);
-			adapter2.recognises = function (id) {return (id === 'loadedMapId'); };
+			adapter2.recognises = function (id) {
+				return (id === 'loadedMapId');
+			};
 			spyOn(adapter1, 'saveMap').and.callThrough();
 			spyOn(adapter2, 'saveMap').and.callThrough();
 
@@ -254,7 +258,9 @@ describe('Map Controller', function () {
 		});
 		it('should use the adapter which recognises the adapterType', function () {
 			spyOn(adapter1, 'recognises').and.returnValue(false);
-			adapter2.recognises = function (id) { return id === 'foo'; };
+			adapter2.recognises = function (id) {
+				return id === 'foo';
+			};
 			spyOn(adapter1, 'saveMap').and.callThrough();
 			spyOn(adapter2, 'saveMap').and.callThrough();
 
@@ -262,6 +268,18 @@ describe('Map Controller', function () {
 
 			expect(adapter1.saveMap).not.toHaveBeenCalled();
 			expect(adapter2.saveMap).toHaveBeenCalled();
+		});
+		it('should pass the map content and current map id to the adapter', function () {
+			spyOn(adapter1, 'recognises').and.returnValue(true);
+			spyOn(adapter1, 'saveMap').and.callThrough();
+			underTest.publishMap('foo');
+			expect(adapter1.saveMap).toHaveBeenCalledWith(map, 'loadedMapId');
+		});
+		it('should not pass the current map id if forced as new', function () {
+			spyOn(adapter1, 'recognises').and.returnValue(true);
+			spyOn(adapter1, 'saveMap').and.callThrough();
+			underTest.publishMap('foo', true);
+			expect(adapter1.saveMap).toHaveBeenCalledWith(map, '');
 		});
 		it('should dispatch mapSaving Event before Saving starts', function () {
 			var listener = jasmine.createSpy();
@@ -305,8 +323,12 @@ describe('Map Controller', function () {
 		});
 		describe('reloadOnSave', function () {
 			beforeEach(function () {
-				adapter1.recognises = function (mapId) { return mapId === '1foo'; };
-				adapter2.recognises = function (mapId) { return mapId === '2foo'; };
+				adapter1.recognises = function (mapId) {
+					return mapId === '1foo';
+				};
+				adapter2.recognises = function (mapId) {
+					return mapId === '2foo';
+				};
 				spyOn(adapter1, 'saveMap').and.returnValue(jQuery.Deferred().resolve('1foo', {reloadOnSave: true}).promise());
 				spyOn(adapter1, 'loadMap').and.returnValue(jQuery.Deferred().resolve(map, '1foo', {reloadOnSave: true, editable: true}).promise());
 				spyOn(adapter2, 'saveMap').and.returnValue(jQuery.Deferred().resolve('2foo', {}).promise());

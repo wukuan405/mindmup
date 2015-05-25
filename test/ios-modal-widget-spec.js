@@ -4,9 +4,11 @@ describe('ios-modal-widget', function () {
 	var template = '<div id="modalWidget">' +
 									'<a id="testHideButton" data-mm-role="dismiss-modal"></a>' +
 									'</div>',
-			underTest;
+			underTest,
+			mmProxy;
 	beforeEach(function () {
-		underTest = jQuery(template).appendTo('body').iosModalWidget();
+		mmProxy = jasmine.createSpyObj('mmProxy', ['sendMessage']);
+		underTest = jQuery(template).appendTo('body').iosModalWidget(mmProxy);
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -65,6 +67,10 @@ describe('ios-modal-widget', function () {
 				underTest.showModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});
+			it('should send modal shown event to proxy', function () {
+				underTest.showModal();
+				expect(mmProxy.sendMessage).toHaveBeenCalledWith({type:'modal', args:['shown']});
+			});
 		});
 		describe('hideModal', function () {
 			it('should not trigger hide event', function () {
@@ -83,6 +89,11 @@ describe('ios-modal-widget', function () {
 				underTest.hideModal();
 				expect(underTest.is(':visible')).toBeFalsy();
 			});
+			it('should not send modal event to proxy', function () {
+				underTest.hideModal();
+				expect(mmProxy.sendMessage).not.toHaveBeenCalled();
+			});
+
 		});
 
 	});
@@ -107,6 +118,11 @@ describe('ios-modal-widget', function () {
 				underTest.showModal();
 				expect(underTest.is(':visible')).toBeTruthy();
 			});
+			it('should not send modal event to proxy', function () {
+				underTest.showModal();
+				expect(mmProxy.sendMessage).not.toHaveBeenCalled();
+			});
+
 		});
 		describe('hideModal', function () {
 			it('should make the modal hidden', function () {
@@ -131,7 +147,16 @@ describe('ios-modal-widget', function () {
 				underTest.hideModal();
 				expect(listenerSpy).toHaveBeenCalled();
 			});
+			it('should send modal hidden event to proxy', function () {
+				underTest.hideModal();
+				expect(mmProxy.sendMessage).toHaveBeenCalledWith({type:'modal', args:['hidden']});
+			});
 		});
-
+		describe('stateChanged event handling', function () {
+			it('should pass event to mmProxy', function () {
+				underTest.trigger(jQuery.Event('stateChanged', {'state': 'test-state'}));
+				expect(mmProxy.sendMessage).toHaveBeenCalledWith({ type : 'modal', args : ['stateChanged', 'test-state'] });
+			});
+		});
 	});
 });

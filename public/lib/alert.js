@@ -8,7 +8,9 @@ MM.Alert = function () {
 		lastId += 1;
 		self.dispatchEvent('shown', currentId, message, detail, type === 'flash' ? 'info' : type);
 		if (type === 'flash') {
-			setTimeout(function () { self.hide(currentId); }, 3000);
+			setTimeout(function () {
+				self.hide(currentId);
+			}, 3000);
 		}
 		return currentId;
 	};
@@ -28,7 +30,7 @@ jQuery.fn.alertWidget = function (alert) {
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
 					'</div>')
 				.addClass('alert-' + type + ' alert-no-' + id)
-				.prepend(message).appendTo(element);
+				.append(message).appendTo(element);
 		});
 		alert.addEventListener('hidden', function (id) {
 			element.find('.alert-no-' + id).remove();

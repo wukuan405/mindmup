@@ -5,10 +5,18 @@ describe('MM.exportIdeas', function () {
 	it('executes a begin callback, then each callback for for each idea, then end callback and then passes toString results to the callback', function () {
 		var aggregate = MAPJS.content({id: 1}),
 			calls = [],
-			begin = function () { calls.push('begin'); },
-			each = function () { calls.push('each'); },
-			end = function () { calls.push('end'); },
-			contents = function () { calls.push('contents'); return 'from contents'; },
+			begin = function () {
+				calls.push('begin');
+			},
+			each = function () {
+				calls.push('each');
+			},
+			end = function () {
+				calls.push('end');
+			},
+			contents = function () {
+				calls.push('contents'); return 'from contents';
+			},
 			result;
 		result = MM.exportIdeas(aggregate, {'each': each, 'begin': begin, 'end': end, 'contents': contents});
 		expect(calls).toEqual(['begin', 'each', 'end', 'contents']);
@@ -16,7 +24,9 @@ describe('MM.exportIdeas', function () {
 	it('executes a callback for each idea, reverse depth-order, from parent to children', function () {
 		var aggregate = MAPJS.content({id: 1, ideas: {1: {id: 2, ideas: {7: {id: 3}}}}}),
 			calls = [],
-			each = function (idea) { calls.push(idea); };
+			each = function (idea) {
+				calls.push(idea);
+			};
 		MM.exportIdeas(aggregate, {'each': each, 'contents': function () {} });
 		expect(calls[0].id).toBe(1);
 		expect(calls[1].id).toBe(2);
@@ -33,7 +43,9 @@ describe('MM.exportIdeas', function () {
 	it('sorts children by key, positive first then negative, by absolute value', function () {
 		var aggregate = MAPJS.content({id: 1, title: 'root', ideas: {'-100': {title: '-100'}, '-1': {title: '-1'}, '1': {title: '1'}, '100': {title: '100'}}}),
 			calls = [],
-			each = function (idea) { calls.push(idea.title); };
+			each = function (idea) {
+				calls.push(idea.title);
+			};
 		MM.exportIdeas(aggregate, {'each': each, 'contents': function () {} });
 		expect(calls).toEqual(['root', '1', '100', '-1', '-100']);
 	});
@@ -214,7 +226,7 @@ describe('MM.exportToHtmlDocument', function () {
 	});
 	it('exports HTML attachments', function (done) {
 		MM.exportToHtmlDocument(MAPJS.content({title: 'z', ideas: {
-			6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}},
+			6 : {title: 'z', attr: { attachment : { contentType: 'text/html', content: '<b>Bold</b>' }}}
 		}})).then(function (doc) {
 			result = $(doc).filter('ul').children().first().children('div').first();
 			expect(result.html()).toBe('<b>Bold</b>');
@@ -251,7 +263,7 @@ describe('MM.exportTableToTabText', function () {
 	it('replaces newlines and tabs with a single space', function () {
 		expect(MM.exportTableToText([
 				['Na\tme', 'Sp\t\teed', 'Effic\t\niency'],
-				['on\ne', 100, undefined],
+				['on\ne', 100, undefined]
 			]))
 			.toEqual(
 				'Na me\tSp  eed\tEffic  iency\n' +

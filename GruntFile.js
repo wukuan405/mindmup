@@ -10,19 +10,20 @@ install grunt cli:
 	npm install -g grunt-cli
 
 - per project
-npm install grunt-contrib-jasmine --save-dev
-npm install grunt-notify --save-dev
-npm install grunt-contrib-watch --save-dev
-npm install grunt-contrib-concat --save-dev
-npm install grunt-contrib-uglify --save-dev
-npm install grunt-contrib-cssmin --save-dev
-
+npm install
 */
 module.exports = function (grunt) {
 	'use strict';
 	grunt.initConfig({
 		watch: {
 			specs: {
+				files: ['test/*.js'],
+				tasks: ['jasmine'],
+				options: {
+					spawn: false
+				}
+			},
+			specs_full: {
 				files: ['test/*.js'],
 				tasks: ['jasmine'],
 				options: {
@@ -42,49 +43,94 @@ module.exports = function (grunt) {
 			},
 			lib: {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
-				dest: 'compiled/mm-compiled.js',
+				dest: 'compiled/mm-compiled.js'
 			},
-			libios: {
+			mmios: {
 				src: [
 					'public/mapjs-compiled.js',
 					'public/mm.js',
-					'public/lib-ios/*.js',
-					'public/main-ios.js',
+					'public/mm-ios.js',
+					'public/mapjs-compiled.js',
 					'public/lib/activity-log.js',
 					'public/lib/icon-editor-widget.js',
 					'public/lib/active-content-resource-manager.js',
 					'public/lib/active-content-listener.js',
-					'public/lib/map-controller.js'
+					'public/lib/atlas-prepopulate-widget.js',
+					'public/lib/resource-compressor.js',
+					'public/lib/map-controller.js',
+					'public/lib/auto-save.js',
+					'public/lib/json-storage.js',
+					'public/lib/gold-api.js',
+					'public/lib/gold-license-manager.js',
+					'public/lib/layout-export.js',
+					'public/lib/s3-api.js',
+					'public/lib/local-storage-clipboard.js',
+					'public/lib/activity-log.js'
 				],
-				dest: 'compiled/mm-ios-compiled.js',
+				dest: 'public/ios/4/mm-compiled-ios.js'
+			},
+			libios3: {
+				src: [
+					'public/ios/3/mm-compiled-ios.js',
+					'public/lib-ios/3/*.js',
+					'public/ios/3/main-ios.js'
+				],
+				dest: 'compiled/mm-ios-compiled-3.js'
+			},
+			libios4: {
+				src: [
+					'public/ios/4/mm-compiled-ios.js',
+					'public/lib-ios/4/*.js',
+					'public/ios/4/main-ios.js'
+				],
+				dest: 'compiled/mm-ios-compiled-4.js'
 			}
 		},
 		uglify: {
 			compiled: {
+				options: {
+					sourceMap: true
+				},
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
-					'compiled/mm-ios-compiled.min.js': ['compiled/mm-ios-compiled.js']
+					'compiled/mm-ios-compiled-3.min.js': ['compiled/mm-ios-compiled-3.js'],
+					'compiled/mm-ios-compiled-4.min.js': ['compiled/mm-ios-compiled-4.js']
 				}
-			},
+			}
 		},
 		cssmin: {
 			combine: {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
-					'compiled/combined-ios.css': ['public/mindmap-ios.css', 'public/mapjs.css'],
+					'compiled/combined-ios-3.css': ['public/ios/3/mindmap-ios.css', 'public/ios/3/mapjs.css'],
+					'compiled/combined-ios-4.css': ['public/ios/4/*-ios.css', 'public/ios/4/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
 				}
+			}
+		},
+		jscs: {
+			src: ['public/lib*/**/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js'],
+			options: {
+				config: '.jscsrc',
+				reporter: 'inline'
+			}
+		},
+		jshint: {
+			all: ['public/lib*/**/*.js', 'test/*.js', 'public/e/*.js', 'public/main*.js'],
+			options: {
+				jshintrc: true
 			}
 		},
 		jasmine: {
 			all: {
 				src: [
 					'public/lib/*.js',
-					'public/lib-ios/*.js',
+					'public/lib-ios/4/*.js',
 					'public/e/progress.js',
 					'public/e/github.js',
 					'public/e/dropbox.js',
+					'public/e/google-collaboration.js'
 				],
 				options: {
 					template: 'test-lib/grunt.tmpl',
@@ -93,10 +139,10 @@ module.exports = function (grunt) {
 					display: 'short',
 					keepRunner: true,
 					specs: [
-						'test/*.js',
+						'test/*.js'
 					],
 					vendor: [
-						grunt.option('external-scripts') || 'http://static.mindmup.com/20131204091534/external.js'
+						grunt.option('external-scripts') || 'http://d1g6a398qq2djm.cloudfront.net/20150106142106/external.js'
 					],
 					helpers: [
 						'test-lib/sinon-1.5.2.js',
@@ -105,13 +151,18 @@ module.exports = function (grunt) {
 						'test-lib/jasmine-tagname-match.js',
 						'test-lib/jquery-extension-matchers.js',
 						'public/mm.js',
-						'public/mapjs-compiled.js',
+						'public/mm-ios.js',
+						'public/mapjs-compiled.js'
 					]
 				}
 			}
 		}
 	});
-	grunt.registerTask('compile', ['jasmine', 'concat:lib', 'concat:libios', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
+	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
+
+	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile-ios', ['concat:mmios', 'compile']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
@@ -120,11 +171,19 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
+	grunt.loadNpmTasks('grunt-jscs');
+	grunt.loadNpmTasks('grunt-contrib-jshint');
 
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);
-		if (target === 'specs') {
+
+		if (target.indexOf('_full') > 0) {
+			options.options.display = 'full';
+			options.options.summary = false;
+		}
+
+		if (target.indexOf('specs') === 0) {
 			options.options.specs = [filepath];
 		} else {
 			options.options.specs = ['test/*.js'];

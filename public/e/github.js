@@ -1,4 +1,4 @@
-/*global $, _, jQuery,, MM, window*/
+/*global $, _, jQuery, MM, window, module*/
 
 
 
@@ -9,86 +9,86 @@
 // Base64 code from Tyler Akins -- http://rumkin.com
 
 var Base64 = (function () {
-    var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	'use strict';
+	var keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+		obj = {
+		/**
+		 * Encodes a string in base64
+		 * @param {String} input The string to encode in base64.
+		 */
+		encode: function (input) {
+			var output = '',
+				chr1, chr2, chr3,
+				enc1, enc2, enc3, enc4,
+				i = 0;
 
-    var obj = {
-        /**
-         * Encodes a string in base64
-         * @param {String} input The string to encode in base64.
-         */
-        encode: function (input) {
-            var output = "";
-            var chr1, chr2, chr3;
-            var enc1, enc2, enc3, enc4;
-            var i = 0;
+			do {
+				chr1 = input.charCodeAt(i++);
+				chr2 = input.charCodeAt(i++);
+				chr3 = input.charCodeAt(i++);
 
-            do {
-                chr1 = input.charCodeAt(i++);
-                chr2 = input.charCodeAt(i++);
-                chr3 = input.charCodeAt(i++);
+				enc1 = chr1 >> 2;
+				enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+				enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+				enc4 = chr3 & 63;
 
-                enc1 = chr1 >> 2;
-                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                enc4 = chr3 & 63;
+				if (isNaN(chr2)) {
+					enc3 = enc4 = 64;
+				} else if (isNaN(chr3)) {
+					enc4 = 64;
+				}
 
-                if (isNaN(chr2)) {
-                    enc3 = enc4 = 64;
-                } else if (isNaN(chr3)) {
-                    enc4 = 64;
-                }
+				output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+					keyStr.charAt(enc3) + keyStr.charAt(enc4);
+			} while (i < input.length);
 
-                output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                    keyStr.charAt(enc3) + keyStr.charAt(enc4);
-            } while (i < input.length);
+			return output;
+		},
 
-            return output;
-        },
+		/**
+		 * Decodes a base64 string.
+		 * @param {String} input The string to decode.
+		 */
+		decode: function (input) {
+			var output = '',
+				chr1, chr2, chr3,
+				enc1, enc2, enc3, enc4,
+				i = 0;
 
-        /**
-         * Decodes a base64 string.
-         * @param {String} input The string to decode.
-         */
-        decode: function (input) {
-            var output = "";
-            var chr1, chr2, chr3;
-            var enc1, enc2, enc3, enc4;
-            var i = 0;
+			// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
+			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
 
-            // remove all characters that are not A-Z, a-z, 0-9, +, /, or =
-            input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+			do {
+				enc1 = keyStr.indexOf(input.charAt(i++));
+				enc2 = keyStr.indexOf(input.charAt(i++));
+				enc3 = keyStr.indexOf(input.charAt(i++));
+				enc4 = keyStr.indexOf(input.charAt(i++));
 
-            do {
-                enc1 = keyStr.indexOf(input.charAt(i++));
-                enc2 = keyStr.indexOf(input.charAt(i++));
-                enc3 = keyStr.indexOf(input.charAt(i++));
-                enc4 = keyStr.indexOf(input.charAt(i++));
+				chr1 = (enc1 << 2) | (enc2 >> 4);
+				chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+				chr3 = ((enc3 & 3) << 6) | enc4;
 
-                chr1 = (enc1 << 2) | (enc2 >> 4);
-                chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                chr3 = ((enc3 & 3) << 6) | enc4;
+				output = output + String.fromCharCode(chr1);
 
-                output = output + String.fromCharCode(chr1);
+				if (enc3 != 64) {
+					output = output + String.fromCharCode(chr2);
+				}
+				if (enc4 != 64) {
+					output = output + String.fromCharCode(chr3);
+				}
+			} while (i < input.length);
 
-                if (enc3 != 64) {
-                    output = output + String.fromCharCode(chr2);
-                }
-                if (enc4 != 64) {
-                    output = output + String.fromCharCode(chr3);
-                }
-            } while (i < input.length);
+			return output;
+		}
+	};
 
-            return output;
-        }
-    };
-
-    return obj;
+	return obj;
 })();
 if (typeof exports !== 'undefined') {
-    // Github = exports;
-    module.exports = Base64;
+	// Github = exports;
+	module.exports = Base64;
 } else {
-    window.Base64 = Base64;
+	window.Base64 = Base64;
 }
 
 
@@ -97,8 +97,7 @@ if (typeof exports !== 'undefined') {
 MM.GitHub = { };
 MM.GitHub.popupWindowLoginLauncher = function () {
 	'use strict';
-	var context = {},
-		deferred = jQuery.Deferred(),
+	var deferred = jQuery.Deferred(),
 		popupFrame = window.open('/github/login', '_blank', 'height=400,width=700,location=no,menubar=no,resizable=yes,status=no,toolbar=no'),
 		onMessage = function (message) {
 			if (message && message.github_token) {
@@ -142,7 +141,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 				added = {};
 			while ((matchArr = regex.exec(githubLinkString)) !== null) {
 				if (!added[matchArr[1]]) {
-					result.push({name:matchArr[2], link:matchArr[1]})
+					result.push({name:matchArr[2], link:matchArr[1]});
 					added[matchArr[1]] = true;
 				}
 			}
@@ -152,7 +151,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 			var baseUrl = 'https://api.github.com',
 				result = jQuery.Deferred(),
 				request = {
-					url: /http:\/\/|https:\/\//.test(url)? url : baseUrl + url,
+					url: /http:\/\/|https:\/\//.test(url) ? url : baseUrl + url,
 					type: requestType || 'GET',
 					headers: {'Authorization': 'bearer ' + authToken()}
 				};
@@ -206,7 +205,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 				url = url + githubComponentPath.path;
 			}
 			if (githubComponentPath.branch) {
-				url = url + "?ref=" + githubComponentPath.branch;
+				url = url + '?ref=' + githubComponentPath.branch;
 			}
 			return url;
 		};
@@ -239,7 +238,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 					content: window.Base64.encode(contentToSave),
 					message: commitMessage,
 					sha: sha,
-					branch: githubComponentPath.branch,
+					branch: githubComponentPath.branch
 				}).then(
 					deferred.resolve,
 					deferred.reject,
@@ -308,7 +307,7 @@ MM.GitHub.GithubAPI = function (loginDialogLauncher, optionalSessionStorage) {
 		var deferred = jQuery.Deferred();
 		sendRequest(componentPathToUrl(componentPath)).then(
 			deferred.resolve,
-			function(reason) {
+			function (reason) {
 				if (reason === 'not-found') {
 					deferred.resolve([]);
 				} else {
@@ -402,7 +401,7 @@ MM.GitHub.GithubFileSystem = function (api, prompters) {
 	self.recognises = function (mapId) {
 		return mapId && mapId[0] === self.prefix;
 	};
-	self.description = "GitHub";
+	self.description = 'GitHub';
 };
 
 $.fn.githubOpenWidget = function (api, defaultAction) {
@@ -421,7 +420,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 		showAlert = function (message, type, detail, callback) {
 			type = type || 'error';
 			if (callback) {
-				detail = "<a>" + detail + "</a>";
+				detail = '<a>' + detail + '</a>';
 			}
 			statusDiv.html('<div class="alert fade-in alert-' + type + '">' +
 					'<button type="button" class="close" data-dismiss="alert">&#215;</button>' +
@@ -445,7 +444,9 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 					_.each(results, function (element) {
 						$('<option>').text(element).appendTo(options);
 					});
-					options.change(function () {deferred.resolve(options.val()); });
+					options.change(function () {
+						deferred.resolve(options.val());
+					});
 					ownerSearch.replaceWith(options);
 					options[0].dispatchEvent(evt.originalEvent);
 				};
@@ -459,7 +460,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 			var	filesLoaded = function (result, links) {
 					statusDiv.empty();
 					if (query.repo) {
-						currentLoc.text(query.repo + (query.branch ? '(' + query.branch + ')' : '') + "/" +  (query.path || ''));
+						currentLoc.text(query.repo + (query.branch ? '(' + query.branch + ')' : '') + '/' +  (query.path || ''));
 					} else {
 						currentLoc.text('Please select a repository');
 					}
@@ -586,7 +587,7 @@ $.fn.githubOpenWidget = function (api, defaultAction) {
 				appendUser = function (user) {
 					var userLink = $('<a>').data('mm-owner', user.name).data('mm-owner-type', user.type).text(user.name);
 					userLink.click(changeOwner);
-					$("<li>").append(userLink).appendTo(list);
+					$('<li>').append(userLink).appendTo(list);
 				},
 				appendOrgs = function (orgs) {
 					_.each(orgs, appendUser);
@@ -719,7 +720,6 @@ MM.Extensions.GitHub = function () {
 			$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 			$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 			$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
-			$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
 			mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 		};
 	mapController.addMapSource(new MM.RetriableMapSourceDecorator(new MM.FileSystemMapSource(fileSystem)));

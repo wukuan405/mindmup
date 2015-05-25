@@ -4,7 +4,12 @@ describe('MM.GoldLicenseManager', function () {
 	var storage, underTest, listener,
 		validFormat = '{"version":"2","accountType":"mindmup-gold","account":"dave.local","signature":"s","expiry":"1419429344"}';
 	beforeEach(function () {
-		storage = { getItem: function (s) { return storage[s]; }, setItem: jasmine.createSpy('setItem') };
+		storage = {
+			getItem: function (s) {
+				return storage[s];
+			},
+			setItem: jasmine.createSpy('setItem')
+		};
 		underTest = new MM.GoldLicenseManager(storage, 'license');
 		listener = jasmine.createSpy('listener');
 		underTest.addEventListener('license-entry-required', listener);

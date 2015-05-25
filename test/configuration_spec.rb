@@ -22,7 +22,7 @@ describe 'Configuration' do
     local_session={}
     current_day = Time.now.strftime("%Y%m%d")
     get "/",{}, {'rack.session'=>local_session}
-    last_response_config[:userCohort].should == current_day 
+    last_response_config[:userCohort].should == current_day
     local_session["cohort"].should == current_day
   end
   it "uses existing cohort if cohort was defined" do

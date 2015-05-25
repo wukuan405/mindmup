@@ -9,10 +9,10 @@ MM.StoryboardController = function (storyboardModel) {
 			result = {
 				'storyboards': attr
 			};
-            if (sceneType) {
-                result.type = sceneType;
-            }
-            return result;
+			if (sceneType) {
+				result.type = sceneType;
+			}
+			return result;
 		},
 		appendScene = function (storyboardName, nodeId, index, sceneType) {
 			var scenes = storyboardModel.getScenesForNodeId(nodeId),
@@ -55,13 +55,17 @@ MM.StoryboardController = function (storyboardModel) {
 		if (!scenes || !scenes.length) {
 			return false;
 		}
-		currentIndex = _.indexOf(scenes, _.find(scenes, function (scene) { return scene.ideaId === sceneToMove.ideaId && scene.index === sceneToMove.index; }));
+		currentIndex = _.indexOf(scenes, _.find(scenes, function (scene) {
+			return scene.ideaId === sceneToMove.ideaId && scene.index === sceneToMove.index;
+		}));
 		if (currentIndex === -1) {
 			return false;
 		}
 		if (afterScene) {
 			if (currentIndex > 0) {
-				afterSceneIndex = _.indexOf(scenes, _.find(scenes, function (scene) { return scene.ideaId === afterScene.ideaId && scene.index === afterScene.index; }));
+				afterSceneIndex = _.indexOf(scenes, _.find(scenes, function (scene) {
+					return scene.ideaId === afterScene.ideaId && scene.index === afterScene.index;
+				}));
 				if (currentIndex === (afterSceneIndex + 1)) {
 					return false;
 				}
@@ -103,7 +107,7 @@ MM.StoryboardController = function (storyboardModel) {
 			return false;
 		}
 		scenes = _.reject(scenes, function (scene) {
-			return  _.size(scene.storyboards) === 0;
+			return _.size(scene.storyboards) === 0;
 		});
 		storyboardModel.setScenesForNodeId(ideaId, scenes);
 		return true;
@@ -124,7 +128,7 @@ MM.StoryboardController = function (storyboardModel) {
 			}
 		});
 		scenes = _.reject(scenes, function (scene) {
-			return  _.size(scene.storyboards) === 0;
+			return _.size(scene.storyboards) === 0;
 		});
 		storyboardModel.setScenesForNodeId(sceneToRemove.ideaId, scenes);
 	};

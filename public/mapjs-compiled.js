@@ -1,8 +1,9 @@
 var MAPJS = MAPJS || {};
 /*global console*/
+/*jshint unused:false */
 var observable = function (base) {
 	'use strict';
-	var listeners = [];
+	var listeners = [], x;
 	base.addEventListener = function (types, listener, priority) {
 		types.split(' ').forEach(function (type) {
 			if (type) {
@@ -155,7 +156,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 					return [];
 				}
 				var result = [],
-					childKeys = _.groupBy(_.map(_.keys(contentIdea.ideas), parseFloat), function (key) { return key > 0; }),
+					childKeys = _.groupBy(_.map(_.keys(contentIdea.ideas), parseFloat), function (key) {
+						return key > 0;
+					}),
 					sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
 				_.each(sortedChildKeys, function (key) {
 					result.push(contentIdea.ideas[key]);
@@ -210,7 +213,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return contentAggregate.id == ideaId ? contentAggregate : contentAggregate.findSubIdeaById(ideaId);
 		},
 		sameSideSiblingRanks = function (parentIdea, ideaRank) {
-			return _(_.map(_.keys(parentIdea.ideas), parseFloat)).reject(function (k) {return k * ideaRank < 0; });
+			return _(_.map(_.keys(parentIdea.ideas), parseFloat)).reject(function (k) {
+				return k * ideaRank < 0;
+			});
 		},
 		sign = function (number) {
 			/* intentionally not returning 0 case, to help with split sorting into 2 groups */
@@ -306,9 +311,39 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		configuration = {},
 		uniqueResourcePostfix = '/xxxxxxxx-yxxx-yxxx-yxxx-xxxxxxxxxxxx/'.replace(/[xy]/g, function (c) {
 			/*jshint bitwise: false*/
+			// jscs:disable
 			var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r&0x3|0x8);
+			// jscs:enable
 			return v.toString(16);
-		}) + (sessionKey || '');
+		}) + (sessionKey || ''),
+		updateAttr = function (object, attrName, attrValue) {
+			var oldAttr;
+			if (!object) {
+				return false;
+			}
+			oldAttr = _.extend({}, object.attr);
+			object.attr = _.extend({}, object.attr);
+			if (!attrValue || attrValue === 'false' || (_.isObject(attrValue) && _.isEmpty(attrValue))) {
+				if (!object.attr[attrName]) {
+					return false;
+				}
+				delete object.attr[attrName];
+			} else {
+				if (_.isEqual(object.attr[attrName], attrValue)) {
+					return false;
+				}
+				object.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
+			}
+			if (_.size(object.attr) === 0) {
+				delete object.attr;
+			}
+			return function () {
+				object.attr = oldAttr;
+			};
+		};
+
+
+
 	contentAggregate.setConfiguration = function (config) {
 		configuration = config || {};
 	};
@@ -320,17 +355,25 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			currentRank,
 			candidateSiblingRanks,
 			siblingsAfter;
-		if (!parentIdea) { return false; }
+		if (!parentIdea) {
+			return false;
+		}
 		currentRank = parentIdea.findChildRankById(subIdeaId);
 		candidateSiblingRanks = sameSideSiblingRanks(parentIdea, currentRank);
-		siblingsAfter = _.reject(candidateSiblingRanks, function (k) { return Math.abs(k) <= Math.abs(currentRank); });
-		if (siblingsAfter.length === 0) { return false; }
+		siblingsAfter = _.reject(candidateSiblingRanks, function (k) {
+			return Math.abs(k) <= Math.abs(currentRank);
+		});
+		if (siblingsAfter.length === 0) {
+			return false;
+		}
 		return parentIdea.ideas[_.min(siblingsAfter, Math.abs)].id;
 	};
 	contentAggregate.sameSideSiblingIds = function (subIdeaId) {
 		var parentIdea = contentAggregate.findParent(subIdeaId),
 			currentRank = parentIdea.findChildRankById(subIdeaId);
-		return _.without(_.map(_.pick(parentIdea.ideas, sameSideSiblingRanks(parentIdea, currentRank)), function (i) { return i.id; }), subIdeaId);
+		return _.without(_.map(_.pick(parentIdea.ideas, sameSideSiblingRanks(parentIdea, currentRank)), function (i) {
+			return i.id;
+		}), subIdeaId);
 	};
 	contentAggregate.getAttrById = function (ideaId, attrName) {
 		var idea = findIdeaById(ideaId);
@@ -341,11 +384,17 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			currentRank,
 			candidateSiblingRanks,
 			siblingsBefore;
-		if (!parentIdea) { return false; }
+		if (!parentIdea) {
+			return false;
+		}
 		currentRank = parentIdea.findChildRankById(subIdeaId);
 		candidateSiblingRanks = sameSideSiblingRanks(parentIdea, currentRank);
-		siblingsBefore = _.reject(candidateSiblingRanks, function (k) { return Math.abs(k) >= Math.abs(currentRank); });
-		if (siblingsBefore.length === 0) { return false; }
+		siblingsBefore = _.reject(candidateSiblingRanks, function (k) {
+			return Math.abs(k) >= Math.abs(currentRank);
+		});
+		if (siblingsBefore.length === 0) {
+			return false;
+		}
 		return parentIdea.ideas[_.max(siblingsBefore, Math.abs)].id;
 	};
 	contentAggregate.clone = function (subIdeaId) {
@@ -423,8 +472,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				return [event.eventMethod].concat(event.eventArgs);
 			});
 			batchUndoFunctions = _.sortBy(
-				_.map(inBatch, function (event) { return event.undoFunction; }),
-				function (f, idx) { return -1 * idx; }
+				_.map(inBatch, function (event) {
+					return event.undoFunction;
+				}),
+				function (f, idx) {
+					return -1 * idx;
+				}
 			);
 			undo = function () {
 				_.each(batchUndoFunctions, function (eventUndo) {
@@ -483,7 +536,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 					delete result.attr;
 				}
 				if (json.ideas) {
-					childKeys = _.groupBy(_.map(_.keys(json.ideas), parseFloat), function (key) { return key > 0; });
+					childKeys = _.groupBy(_.map(_.keys(json.ideas), parseFloat), function (key) {
+						return key > 0;
+					});
 					sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
 					result.ideas = {};
 					_.each(sortedChildKeys, function (key) {
@@ -601,7 +656,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			oldIdea = parent.ideas[oldRank];
 			delete parent.ideas[oldRank];
 			oldLinks = contentAggregate.links;
-			contentAggregate.links = _.reject(contentAggregate.links, function (link) { return link.ideaIdFrom == subIdeaId || link.ideaIdTo == subIdeaId; });
+			contentAggregate.links = _.reject(contentAggregate.links, function (link) {
+				return link.ideaIdFrom == subIdeaId || link.ideaIdTo == subIdeaId;
+			});
 			logChange('removeSubIdea', [subIdeaId], function () {
 				parent.ideas[oldRank] = oldIdea;
 				contentAggregate.links = oldLinks;
@@ -688,31 +745,6 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}, originSession);
 		return true;
 	};
-	var updateAttr = function (object, attrName, attrValue) {
-		var oldAttr;
-		if (!object) {
-			return false;
-		}
-		oldAttr = _.extend({}, object.attr);
-		object.attr = _.extend({}, object.attr);
-		if (!attrValue || attrValue === 'false' || (_.isObject(attrValue) && _.isEmpty(attrValue))) {
-			if (!object.attr[attrName]) {
-				return false;
-			}
-			delete object.attr[attrName];
-		} else {
-			if (_.isEqual(object.attr[attrName], attrValue)) {
-				return false;
-			}
-			object.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
-		}
-		if (_.size(object.attr) === 0) {
-			delete object.attr;
-		}
-		return function () {
-			object.attr = oldAttr;
-		};
-	};
 	contentAggregate.mergeAttrProperty = function (ideaId, attrName, attrPropertyName, attrPropertyValue) {
 		var val = contentAggregate.getAttrById(ideaId, attrName) || {};
 		if (attrPropertyValue) {
@@ -720,7 +752,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		} else {
 			delete val[attrPropertyName];
 		}
-		if (_.isEmpty(val)) { val = false; }
+		if (_.isEmpty(val)) {
+			val = false;
+		}
 		return contentAggregate.updateAttr(ideaId, attrName, val);
 	};
 	contentAggregate.updateAttr = function (ideaId, attrName, attrValue) {
@@ -948,15 +982,8 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('storeResource', arguments);
 	};
 	commandProcessors.storeResource = function (originSession, resourceBody, optionalKey) {
-		if (!optionalKey && contentAggregate.resources) {
-			var existingId = _.find(_.keys(contentAggregate.resources), function (key) {
-				return contentAggregate.resources[key] === resourceBody;
-			});
-			if (existingId) {
-				return existingId;
-			}
-		}
-		var maxIdForSession = function () {
+		var existingId, id,
+			maxIdForSession = function () {
 				if (_.isEmpty(contentAggregate.resources)) {
 					return 0;
 				}
@@ -971,8 +998,17 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			nextResourceId = function () {
 				var intId = maxIdForSession() + 1;
 				return intId + uniqueResourcePostfix;
-			},
-			id = optionalKey || nextResourceId();
+			};
+
+		if (!optionalKey && contentAggregate.resources) {
+			existingId = _.find(_.keys(contentAggregate.resources), function (key) {
+				return contentAggregate.resources[key] === resourceBody;
+			});
+			if (existingId) {
+				return existingId;
+			}
+		}
+		id = optionalKey || nextResourceId();
 		contentAggregate.resources = contentAggregate.resources || {};
 		contentAggregate.resources[id] = resourceBody;
 		contentAggregate.dispatchEvent('resourceStored', resourceBody, id, originSession);
@@ -980,6 +1016,13 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	};
 	contentAggregate.getResource = function (id) {
 		return contentAggregate.resources && contentAggregate.resources[id];
+	};
+	contentAggregate.hasSiblings = function (id) {
+		if (id === contentAggregate.id) {
+			return false;
+		}
+		var parent = contentAggregate.findParent(id);
+		return parent && _.size(parent.ideas) > 1;
 	};
 	if (contentAggregate.formatVersion != 2) {
 		upgrade(contentAggregate);
@@ -1010,11 +1053,19 @@ MAPJS.calculateFrame = function (nodes, margin) {
 	'use strict';
 	margin = margin || 0;
 	var result = {
-		top: _.min(nodes, function (node) {return node.y; }).y - margin,
-		left: _.min(nodes, function (node) {return node.x; }).x - margin
+		top: _.min(nodes, function (node) {
+			return node.y;
+		}).y - margin,
+		left: _.min(nodes, function (node) {
+			return node.x;
+		}).x - margin
 	};
-	result.width = margin + _.max(_.map(nodes, function (node) { return node.x + node.width; })) - result.left;
-	result.height = margin + _.max(_.map(nodes, function (node) { return node.y + node.height; })) - result.top;
+	result.width = margin + _.max(_.map(nodes, function (node) {
+		return node.x + node.width;
+	})) - result.left;
+	result.height = margin + _.max(_.map(nodes, function (node) {
+		return node.y + node.height;
+	})) - result.top;
 	return result;
 };
 MAPJS.contrastForeground = function (background) {
@@ -1208,7 +1259,9 @@ MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParen
 				tree,
 				oldSpacing,
 				newSpacing,
-				oldPositions = _.map(treeArray, function (t) { return _.pick(t, 'deltaX', 'deltaY'); }),
+				oldPositions = _.map(treeArray, function (t) {
+					return _.pick(t, 'deltaX', 'deltaY');
+				}),
 				referenceTree,
 				alignment;
 			for (i = 0; i < treeArray.length; i += 1) {
@@ -1241,7 +1294,9 @@ MAPJS.calculateTree = function (content, dimensionProvider, margin, rankAndParen
 		},
 		includedSubIdeaKeys = function () {
 			var allRanks = _.map(_.keys(content.ideas), parseFloat),
-				includedRanks = rankAndParentPredicate ? _.filter(allRanks, function (rank) { return rankAndParentPredicate(rank, content.id); }) : allRanks;
+				includedRanks = rankAndParentPredicate ? _.filter(allRanks, function (rank) {
+					return rankAndParentPredicate(rank, content.id);
+				}) : allRanks;
 			return _.sortBy(includedRanks, Math.abs);
 		},
 		includedSubIdeas = function () {
@@ -1303,8 +1358,12 @@ MAPJS.calculateLayout = function (idea, dimensionProvider, margin) {
 				node.attr.style = _.extend({}, MAPJS.defaultStyles[(node.level === 1) ? 'root' : 'nonRoot'], node.attr.style);
 			});
 		},
-		positive = function (rank, parentId) { return parentId !== idea.id || rank > 0; },
-		negative = function (rank, parentId) { return parentId !== idea.id || rank < 0; };
+		positive = function (rank, parentId) {
+			return parentId !== idea.id || rank > 0;
+		},
+		negative = function (rank, parentId) {
+			return parentId !== idea.id || rank < 0;
+		};
 	margin = margin || 20;
 	positiveTree = MAPJS.calculateTree(idea, dimensionProvider, margin, positive);
 	negativeTree = MAPJS.calculateTree(idea, dimensionProvider, margin, negative);
@@ -1414,7 +1473,9 @@ MAPJS.MemoryClipboard = function () {
 						finalPosition: e.finalPosition
 					});
 					target.trigger(evt);
-				}).on('mm:drag', function (e) { target.trigger(e); });
+				}).on('mm:drag', function (e) {
+					target.trigger(e);
+				});
 				$(this).on('drag', drag);
 			}
 		}).on('dragend', function (e) {
@@ -1522,8 +1583,8 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				}
 			});
 		},
-		updateCurrentLayout = function (newLayout) {
-			self.dispatchEvent('layoutChangeStarting');
+		updateCurrentLayout = function (newLayout, sessionId) {
+			self.dispatchEvent('layoutChangeStarting', _.size(newLayout.nodes) - _.size(currentLayout.nodes));
 			applyLabels(newLayout);
 
 			_.each(currentLayout.connectors, function (oldConnector, connectorId) {
@@ -1546,47 +1607,49 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 					if (nodeId == currentlySelectedIdeaId) {
 						self.selectNode(idea.id);
 					}
-					newActive = _.reject(activatedNodes, function (e) { return e == nodeId; });
+					newActive = _.reject(activatedNodes, function (e) {
+						return e == nodeId;
+					});
 					if (newActive.length !== activatedNodes.length) {
 						setActiveNodes(newActive);
 					}
-					self.dispatchEvent('nodeRemoved', oldNode, nodeId);
+					self.dispatchEvent('nodeRemoved', oldNode, nodeId, sessionId);
 				}
 			});
 
 			_.each(newLayout.nodes, function (newNode, nodeId) {
 				var oldNode = currentLayout.nodes[nodeId];
 				if (!oldNode) {
-					self.dispatchEvent('nodeCreated', newNode);
+					self.dispatchEvent('nodeCreated', newNode, sessionId);
 				} else {
 					if (newNode.x !== oldNode.x || newNode.y !== oldNode.y) {
-						self.dispatchEvent('nodeMoved', newNode);
+						self.dispatchEvent('nodeMoved', newNode, sessionId);
 					}
 					if (newNode.title !== oldNode.title) {
-						self.dispatchEvent('nodeTitleChanged', newNode);
+						self.dispatchEvent('nodeTitleChanged', newNode, sessionId);
 					}
 					if (!_.isEqual(newNode.attr || {}, oldNode.attr || {})) {
-						self.dispatchEvent('nodeAttrChanged', newNode);
+						self.dispatchEvent('nodeAttrChanged', newNode, sessionId);
 					}
 					if (newNode.label !== oldNode.label) {
-						self.dispatchEvent('nodeLabelChanged', newNode);
+						self.dispatchEvent('nodeLabelChanged', newNode, sessionId);
 					}
 				}
 			});
 			_.each(newLayout.connectors, function (newConnector, connectorId) {
 				var oldConnector = currentLayout.connectors[connectorId];
 				if (!oldConnector || newConnector.from !== oldConnector.from || newConnector.to !== oldConnector.to) {
-					self.dispatchEvent('connectorCreated', newConnector);
+					self.dispatchEvent('connectorCreated', newConnector, sessionId);
 				}
 			});
 			_.each(newLayout.links, function (newLink, linkId) {
 				var oldLink = currentLayout.links && currentLayout.links[linkId];
 				if (oldLink) {
 					if (!_.isEqual(newLink.attr || {}, (oldLink && oldLink.attr) || {})) {
-						self.dispatchEvent('linkAttrChanged', newLink);
+						self.dispatchEvent('linkAttrChanged', newLink, sessionId);
 					}
 				} else {
-					self.dispatchEvent('linkCreated', newLink);
+					self.dispatchEvent('linkCreated', newLink, sessionId);
 				}
 			});
 			currentLayout = newLayout;
@@ -1596,23 +1659,26 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		},
 		revertSelectionForUndo,
 		revertActivatedForUndo,
-		editNewIdea = function (newIdeaId) {
+		selectNewIdea = function (newIdeaId) {
 			revertSelectionForUndo = currentlySelectedIdeaId;
 			revertActivatedForUndo = activatedNodes.slice(0);
 			self.selectNode(newIdeaId);
+		},
+		editNewIdea = function (newIdeaId) {
+			selectNewIdea(newIdeaId);
 			self.editNode(false, true, true);
 		},
 		getCurrentlySelectedIdeaId = function () {
 			return currentlySelectedIdeaId || idea.id;
 		},
 		paused = false,
-		onIdeaChanged = function () {
+		onIdeaChanged = function (action, args, sessionId) {
 			if (paused) {
 				return;
 			}
 			revertSelectionForUndo = false;
 			revertActivatedForUndo = false;
-			self.rebuildRequired();
+			self.rebuildRequired(sessionId);
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -1643,11 +1709,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	};
 	self.analytic = analytic;
 	self.getCurrentlySelectedIdeaId = getCurrentlySelectedIdeaId;
-	self.rebuildRequired = function () {
+	self.rebuildRequired = function (sessionId) {
 		if (!idea) {
 			return;
 		}
-		updateCurrentLayout(self.reactivate(layoutCalculator(idea)));
+		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};
 	this.setIdea = function (anIdea) {
 		if (idea) {
@@ -1696,12 +1762,12 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 	this.clickNode = function (id, event) {
 		var button = event && event.button && event.button !== -1;
 		if (event && event.altKey) {
-			self.addLink('mouse', id);
+			self.toggleLink('mouse', id);
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
 			self.toggleActivationOnNode('mouse', id);
 		} else if (isAddLinkMode && !button) {
-			this.addLink('mouse', id);
+			this.toggleLink('mouse', id);
 			this.toggleAddLinkMode();
 		} else {
 			this.selectNode(id);
@@ -1803,7 +1869,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			idea.updateLinkAttr(ideaIdFrom, ideaIdTo, 'style', merged);
 		}
 	};
-	this.addSubIdea = function (source, parentId) {
+	this.addSubIdea = function (source, parentId, initialTitle) {
 		if (!isEditingEnabled) {
 			return false;
 		}
@@ -1812,10 +1878,18 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		if (isInputEnabled) {
 			idea.batch(function () {
 				ensureNodeIsExpanded(source, target);
-				newId = idea.addSubIdea(target);
+				if (initialTitle) {
+					newId = idea.addSubIdea(target, initialTitle);
+				} else {
+					newId = idea.addSubIdea(target);
+				}
 			});
 			if (newId) {
-				editNewIdea(newId);
+				if (initialTitle) {
+					selectNewIdea(newId);
+				} else {
+					editNewIdea(newId);
+				}
 			}
 		}
 
@@ -1829,7 +1903,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 		var activeNodes = [], newId;
 		analytic('insertIntermediate', source);
-		self.applyToActivated(function (i) { activeNodes.push(i); });
+		self.applyToActivated(function (i) {
+			activeNodes.push(i);
+		});
 		newId = idea.insertIntermediateMultiple(activeNodes);
 		if (newId) {
 			editNewIdea(newId);
@@ -1877,20 +1953,25 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			editNewIdea(newId);
 		}
 	};
-	this.addSiblingIdea = function (source) {
-		var newId, nextId, parent, contextRank, newRank;
+	this.addSiblingIdea = function (source, optionalNodeId, optionalInitialText) {
+		var newId, nextId, parent, contextRank, newRank, currentId;
+		currentId = optionalNodeId || currentlySelectedIdeaId;
 		if (!isEditingEnabled) {
 			return false;
 		}
 		analytic('addSiblingIdea', source);
 		if (isInputEnabled) {
-			parent = idea.findParent(currentlySelectedIdeaId) || idea;
+			parent = idea.findParent(currentId) || idea;
 			idea.batch(function () {
 				ensureNodeIsExpanded(source, parent.id);
-				newId = idea.addSubIdea(parent.id);
-				if (newId && currentlySelectedIdeaId !== idea.id) {
-					nextId = idea.nextSiblingId(currentlySelectedIdeaId);
-					contextRank = parent.findChildRankById(currentlySelectedIdeaId);
+				if (optionalInitialText) {
+					newId = idea.addSubIdea(parent.id, optionalInitialText);
+				} else {
+					newId = idea.addSubIdea(parent.id);
+				}
+				if (newId && currentId !== idea.id) {
+					nextId = idea.nextSiblingId(currentId);
+					contextRank = parent.findChildRankById(currentId);
 					newRank = parent.findChildRankById(newId);
 					if (contextRank * newRank < 0) {
 						idea.flip(newId);
@@ -1901,7 +1982,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				}
 			});
 			if (newId) {
-				editNewIdea(newId);
+				if (optionalInitialText) {
+					selectNewIdea(newId);
+				} else {
+					editNewIdea(newId);
+				}
 			}
 		}
 	};
@@ -2003,6 +2088,16 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		analytic('setAttachment', source);
 		var hasAttachment = !!(attachment && attachment.content);
 		idea.updateAttr(nodeId, 'attachment', hasAttachment && attachment);
+	};
+	this.toggleLink = function (source, nodeIdTo) {
+		var exists = _.find(idea.links, function (link) {
+			return (String(link.ideaIdFrom) === String(nodeIdTo) && String(link.ideaIdTo) === String(currentlySelectedIdeaId)) || (String(link.ideaIdTo) === String(nodeIdTo) && String(link.ideaIdFrom) === String(currentlySelectedIdeaId));
+		});
+		if (exists) {
+			self.removeLink(source, exists.ideaIdFrom, exists.ideaIdTo);
+		} else {
+			self.addLink(source, nodeIdTo);
+		}
 	};
 	this.addLink = function (source, nodeIdTo) {
 		if (!isEditingEnabled) {
@@ -2106,6 +2201,16 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			self.selectNode(firstLiveParent || idea.id);
 		}
 	};
+	self.contextForNode = function (nodeId) {
+		var node = self.findIdeaById(nodeId),
+				hasChildren = node && node.ideas && _.size(node.ideas) > 0,
+				hasSiblings = idea.hasSiblings(nodeId),
+				canPaste = node && isEditingEnabled && clipboard && clipboard.get();
+		if (node) {
+			return {'hasChildren': !!hasChildren, 'hasSiblings': !!hasSiblings, 'canPaste': !!canPaste};
+		}
+
+	};
 	self.copy = function (source) {
 		var activeNodeIds = [];
 		if (!isEditingEnabled) {
@@ -2132,13 +2237,14 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 	};
 	self.pasteStyle = function (source) {
-		var clipContents = clipboard.get();
+		var clipContents = clipboard.get(),
+			pastingStyle;
 		if (!isEditingEnabled) {
 			return false;
 		}
 		analytic('pasteStyle', source);
 		if (isInputEnabled && clipContents && clipContents[0]) {
-			var pastingStyle = clipContents[0].attr && clipContents[0].attr.style;
+			pastingStyle = clipContents[0].attr && clipContents[0].attr.style;
 			self.applyToActivated(function (id) {
 				idea.updateAttr(id, 'style', pastingStyle);
 			});
@@ -2174,8 +2280,12 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			idea.removeSubIdea(nodeId);
 		}
 	};
-	self.moveUp = function (source) { self.moveRelative(source, -1); };
-	self.moveDown = function (source) { self.moveRelative(source, 1); };
+	self.moveUp = function (source) {
+		self.moveRelative(source, -1);
+	};
+	self.moveDown = function (source) {
+		self.moveRelative(source, 1);
+	};
 	self.getSelectedNodeId = function () {
 		return getCurrentlySelectedIdeaId();
 	};
@@ -2273,7 +2383,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				if (previousSibling) {
 					method.apply(self, [previousSibling]);
 				} else {
-					if (!currentNode) { return; }
+					if (!currentNode) {
+						return;
+					}
 					nodesAbove = _.reject(nodesWithIDs(), function (node) {
 						return node.y >= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
 					});
@@ -2298,7 +2410,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				if (nextSibling) {
 					method.apply(self, [nextSibling]);
 				} else {
-					if (!currentNode) { return; }
+					if (!currentNode) {
+						return;
+					}
 					nodesBelow = _.reject(nodesWithIDs(), function (node) {
 						return node.y <= currentNode.y || Math.abs(node.x - currentNode.x) > horizontalSelectionThreshold;
 					});
@@ -2322,7 +2436,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				if (!parent || !parent.ideas) {
 					return;
 				}
-				siblingIds = _.map(parent.ideas, function (child) { return child.id; });
+				siblingIds = _.map(parent.ideas, function (child) {
+					return child.id;
+				});
 				setActiveNodes(siblingIds);
 			};
 			self.activateNodeAndChildren = function (source) {
@@ -2371,10 +2487,14 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			};
 			self.isActivated = function (id) {
 				/*jslint eqeq:true*/
-				return _.find(activatedNodes, function (activeId) { return id == activeId; });
+				return _.find(activatedNodes, function (activeId) {
+					return id == activeId;
+				});
 			};
 			self.applyToActivated = function (toApply) {
-				idea.batch(function () {_.each(activatedNodes, toApply); });
+				idea.batch(function () {
+					_.each(activatedNodes, toApply);
+				});
 			};
 			self.everyActivatedIs = function (predicate) {
 				return _.every(activatedNodes, predicate);
@@ -2389,7 +2509,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 							return node.level == level;
 						}
 					),
-					function (node) {return node.id; }
+					function (node) {
+						return node.id;
+					}
 				);
 				if (!_.isEmpty(toActivate)) {
 					setActiveNodes(toActivate);
@@ -2464,7 +2586,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				xOffset = x - parentNode.x;
 			}
 			analytic('nodeManuallyPositioned');
-			maxSequence = _.max(_.map(parentIdea.ideas, function (i) { return (i.id !== nodeId && i.attr && i.attr.position && i.attr.position[2]) || 0; }));
+			maxSequence = _.max(_.map(parentIdea.ideas, function (i) {
+				return (i.id !== nodeId && i.attr && i.attr.position && i.attr.position[2]) || 0;
+			}));
 			result = idea.updateAttr(
 				nodeId,
 				'position',
@@ -2591,8 +2715,8 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 		parentIdea = idea.findParent(nodeId);
 		parentNode = currentLayout.nodes[parentIdea.id];
-		primaryEdge = isRightHalf(nodeId) ? 'left': 'right';
-		secondaryEdge = isRightHalf(nodeId) ? 'right': 'left';
+		primaryEdge = isRightHalf(nodeId) ? 'left' : 'right';
+		secondaryEdge = isRightHalf(nodeId) ? 'right' : 'left';
 		sameSide = _.map(idea.sameSideSiblingIds(nodeId), function (id) {
 			return currentLayout.nodes[id];
 		});
@@ -2609,10 +2733,17 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 		return boundaries;
 	};
-    self.focusAndSelect = function (nodeId) {
-       self.selectNode(nodeId);
-       self.dispatchEvent('nodeFocusRequested', nodeId);
-    };
+	self.focusAndSelect = function (nodeId) {
+		self.selectNode(nodeId);
+		self.dispatchEvent('nodeFocusRequested', nodeId);
+	};
+	self.requestContextMenu = function (eventPointX, eventPointY) {
+		if (isInputEnabled && isEditingEnabled) {
+			self.dispatchEvent('contextMenuRequested', currentlySelectedIdeaId, eventPointX, eventPointY);
+			return true;
+		}
+		return false;
+	};
 };
 /*global jQuery*/
 jQuery.fn.mapToolbarWidget = function (mapModel) {
@@ -2702,10 +2833,11 @@ MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 			if (isDataUri(img.src)) {
 				return img.src;
 			}
-			var canvas = document.createElement('canvas');
+			var canvas = document.createElement('canvas'),
+				ctx;
 			canvas.width = img.width;
 			canvas.height = img.height;
-			var ctx = canvas.getContext('2d');
+			ctx = canvas.getContext('2d');
 			ctx.drawImage(img, 0, 0);
 			return canvas.toDataURL('image/png');
 		},
@@ -2765,14 +2897,18 @@ MAPJS.ImageInsertController = function (corsProxyUrl, resourceConverter) {
 	self.insertFiles = function (files, evt) {
 		jQuery.each(files, function (idx, fileInfo) {
 			if (/^image\//.test(fileInfo.type)) {
-				jQuery.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
+				jQuery.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
+					self.insertDataUrl(dataUrl, evt);
+				});
 			}
 		});
 	};
 	self.insertHtmlContent = function (htmlContent, evt) {
 		var images = htmlContent.match(/img[^>]*src="([^"]*)"/);
 		if (images && images.length > 0) {
-			_.each(images.slice(1), function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
+			_.each(images.slice(1), function (dataUrl) {
+				self.insertDataUrl(dataUrl, evt);
+			});
 		}
 	};
 };
@@ -2880,16 +3016,16 @@ jQuery.fn.animateConnectorToPosition = function (animationOptions, tolerance) {
 			to: shapeTo && shapeTo.getBox()
 		};
 	tolerance = tolerance || 1;
-	if (fromBox && toBox && oldBox && oldBox.from.width	=== fromBox.width	&&
-		oldBox.to.width		=== toBox.width		&&
-		oldBox.from.height	=== fromBox.height		&&
-		oldBox.to.height	=== toBox.height		&&
+	if (fromBox && toBox && oldBox && oldBox.from.width === fromBox.width &&
+		oldBox.to.width   === toBox.width   &&
+		oldBox.from.height  === fromBox.height    &&
+		oldBox.to.height  === toBox.height    &&
 		Math.abs(oldBox.from.top - oldBox.to.top - (fromBox.top - toBox.top)) < tolerance &&
 		Math.abs(oldBox.from.left - oldBox.to.left - (fromBox.left - toBox.left)) < tolerance) {
 
 		element.animate({
 			left: Math.round(Math.min(fromBox.left, toBox.left)),
-			top: Math.round(Math.min(fromBox.top, toBox.top)),
+			top: Math.round(Math.min(fromBox.top, toBox.top))
 		}, animationOptions);
 		return true;
 	}
@@ -2914,7 +3050,9 @@ jQuery.fn.queueFadeIn = function (options) {
 		.css('opacity', 0)
 		.animate(
 			{'opacity': 1},
-			_.extend({ complete: function () { element.css('opacity', ''); }}, options)
+			_.extend({ complete: function () {
+				element.css('opacity', '');
+			}}, options)
 		);
 };
 
@@ -2938,8 +3076,7 @@ jQuery.fn.updateStage = function () {
 
 MAPJS.DOMRender.curvedPath = function (parent, child) {
 	'use strict';
-	var horizontalConnector = function (parentX, parentY, parentWidth, parentHeight,
-				childX, childY, childWidth, childHeight) {
+	var horizontalConnector = function (parentX, parentY, parentWidth, parentHeight, childX, childY, childWidth, childHeight) {
 			var childHorizontalOffset = parentX < childX ? 0.1 : 0.9,
 				parentHorizontalOffset = 1 - childHorizontalOffset;
 			return {
@@ -2977,7 +3114,7 @@ MAPJS.DOMRender.curvedPath = function (parent, child) {
 		},
 		position = {
 			left: Math.min(parent.left, child.left),
-			top: Math.min(parent.top, child.top),
+			top: Math.min(parent.top, child.top)
 		},
 		calculatedConnector, offset, maxOffset;
 	position.width = Math.max(parent.left + parent.width, child.left + child.width, position.left + 1) - position.left;
@@ -3051,15 +3188,14 @@ MAPJS.DOMRender.straightPath = function (parent, child) {
 	},
 	position = {
 		left: Math.min(parent.left, child.left),
-		top: Math.min(parent.top, child.top),
+		top: Math.min(parent.top, child.top)
 	},
 	conn = calculateConnector(parent, child);
 	position.width = Math.max(parent.left + parent.width, child.left + child.width, position.left + 1) - position.left;
 	position.height = Math.max(parent.top + parent.height, child.top + child.height, position.top + 1) - position.top;
 
 	return {
-		'd': 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) +
-				 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top),
+		'd': 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) + 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top),
 		'conn': conn,
 		'position': position
 	};
@@ -3071,7 +3207,7 @@ MAPJS.DOMRender.linkConnectorPath = MAPJS.DOMRender.straightPath;
 jQuery.fn.updateConnector = function (canUseData) {
 	'use strict';
 	return jQuery.each(this, function () {
-		var	element = jQuery(this),
+		var element = jQuery(this),
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
 			connection, pathElement, fromBox, toBox, changeCheck;
@@ -3108,7 +3244,7 @@ jQuery.fn.updateConnector = function (canUseData) {
 jQuery.fn.updateLink = function () {
 	'use strict';
 	return jQuery.each(this, function () {
-		var	element = jQuery(this),
+		var element = jQuery(this),
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
 			connection,
@@ -3121,7 +3257,8 @@ jQuery.fn.updateLink = function () {
 				solid: ''
 			},
 			attrs = _.pick(element.data(), 'lineStyle', 'arrow', 'color'),
-			fromBox, toBox, changeCheck;
+			fromBox, toBox, changeCheck,
+			a1x, a1y, a2x, a2y, len, iy, m, dx, dy;
 		if (!shapeFrom || !shapeTo || shapeFrom.length === 0 || shapeTo.length === 0) {
 			element.hide();
 			return;
@@ -3158,9 +3295,9 @@ jQuery.fn.updateLink = function () {
 			if (arrowElement.length === 0) {
 				arrowElement = MAPJS.createSVG('path').attr('class', 'mapjs-arrow').appendTo(element);
 			}
-			var a1x, a1y, a2x, a2y, len = 14, iy, m,
-				dx = connection.conn.to.x - connection.conn.from.x,
-				dy = connection.conn.to.y - connection.conn.from.y;
+			len = 14;
+			dx = connection.conn.to.x - connection.conn.from.x;
+			dy = connection.conn.to.y - connection.conn.from.y;
 			if (dx === 0) {
 				iy = dy < 0 ? -1 : 1;
 				a1x = connection.conn.to.x + len * Math.sin(n) * iy;
@@ -3249,16 +3386,16 @@ jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 					(title.length < MAX_URL_LENGTH ? title : (title.substring(0, MAX_URL_LENGTH) + '...')),
 					nodeTextPadding = MAPJS.DOMRender.nodeTextPadding || 11,
 					element = textSpan(),
-					domElement = element[0];
+					domElement = element[0],
+					height;
 
 			element.text(text.trim());
 			self.data('title', title);
 			element.css({'max-width': '', 'min-width': ''});
 			if ((domElement.scrollWidth - nodeTextPadding) > domElement.offsetWidth) {
 				element.css('max-width', domElement.scrollWidth + 'px');
-			}
-			else {
-				var height = domElement.offsetHeight;
+			} else {
+				height = domElement.offsetHeight;
 				element.css('min-width', element.css('max-width'));
 				if (domElement.offsetHeight === height) {
 					element.css('min-width', '');
@@ -3277,14 +3414,13 @@ jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 			var luminosity = Color(backgroundColor).mix(Color('#EEEEEE')).luminosity();
 			if (luminosity < 0.5) {
 				return 'mapjs-node-dark';
-			}
-			else if (luminosity < 0.9) {
+			} else if (luminosity < 0.9) {
 				return 'mapjs-node-light';
 			}
 			return 'mapjs-node-white';
 		},
 		setColors = function () {
-			var fromStyle =	nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.background;
+			var fromStyle = nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.background;
 			if (fromStyle === 'false' || fromStyle === 'transparent') {
 				fromStyle = false;
 			}
@@ -3340,8 +3476,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 					if (icon.width > maxTextWidth) {
 						textProps['margin-left'] =  (icon.width - maxTextWidth) / 2;
 					}
-				}
-				else if (icon.position === 'left' || icon.position === 'right') {
+				} else if (icon.position === 'left' || icon.position === 'right') {
 					if (icon.position === 'left') {
 						selfProps['background-position'] = padding + 'px center';
 					} else if (MAPJS.DOMRender.fixedLayout) {
@@ -3383,44 +3518,49 @@ jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator) {
 };
 jQuery.fn.placeCaretAtEnd = function () {
 	'use strict';
-	var el = this[0];
+	var el = this[0],
+		range, sel, textRange;
 	if (window.getSelection && document.createRange) {
-        var range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(el);
-        textRange.collapse(false);
-        textRange.select();
-    }
+		range = document.createRange();
+		range.selectNodeContents(el);
+		range.collapse(false);
+		sel = window.getSelection();
+		sel.removeAllRanges();
+		sel.addRange(range);
+	} else if (document.body.createTextRange) {
+		textRange = document.body.createTextRange();
+		textRange.moveToElementText(el);
+		textRange.collapse(false);
+		textRange.select();
+	}
 };
 jQuery.fn.selectAll = function () {
 	'use strict';
-	var el = this[0];
+	var el = this[0],
+		range, sel, textRange;
 	if (window.getSelection && document.createRange) {
-        var range = document.createRange();
-        range.selectNodeContents(el);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(el);
-        textRange.select();
-    }
+		range = document.createRange();
+		range.selectNodeContents(el);
+		sel = window.getSelection();
+		sel.removeAllRanges();
+		sel.addRange(range);
+	} else if (document.body.createTextRange) {
+		textRange = document.body.createTextRange();
+		textRange.moveToElementText(el);
+		textRange.select();
+	}
 };
 jQuery.fn.innerText = function () {
-  'use strict';
-  var htmlContent = this.html(),
-      containsBr = /<br\/?>/.test(htmlContent);
-  if (!containsBr) {
-    return this.text();
-  }
-  return htmlContent.replace(/<br\/?>/gi,'\n').replace(/(<([^>]+)>)/gi, '');
+	'use strict';
+	var htmlContent = this.html(),
+			containsBr = /<br\/?>/.test(htmlContent),
+			containsDiv = /<div>/.test(htmlContent);
+	if (containsDiv && this[0].innerText) { /* broken safari jquery text */
+		return this[0].innerText.trim();
+	} else if (containsBr) { /*broken firefox innerText */
+		return htmlContent.replace(/<br\/?>/gi, '\n').replace(/(<([^>]+)>)/gi, '');
+	}
+	return this.text();
 };
 jQuery.fn.editNode = function (shouldSelectAll) {
 	'use strict';
@@ -3436,7 +3576,7 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 			node.shadowDraggable();
 		},
 		finishEditing = function () {
-      var content = textBox.innerText();
+			var content = textBox.innerText();
 			if (content === unformattedText) {
 				return cancelEditing();
 			}
@@ -3456,17 +3596,16 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 				Z_KEY_CODE = 90;
 			if (e.shiftKey && e.which === ENTER_KEY_CODE) {
 				return; // allow shift+enter to break lines
-			}
-			else if (e.which === ENTER_KEY_CODE) {
+			} else if (e.which === ENTER_KEY_CODE) {
 				finishEditing();
 				e.stopPropagation();
 			} else if (e.which === ESC_KEY_CODE) {
 				cancelEditing();
 				e.stopPropagation();
-			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey))) {
+			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey)) {
 				finishEditing();
 				e.preventDefault(); /* stop focus on another object */
-			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey)) { /* undo node edit on ctrl+z if text was not changed */
+			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey) { /* undo node edit on ctrl+z if text was not changed */
 				if (textBox.text() === unformattedText) {
 					cancelEditing();
 				}
@@ -3486,8 +3625,7 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 	textBox.text(unformattedText).attr('contenteditable', true).focus();
 	if (shouldSelectAll) {
 		textBox.selectAll();
-	}
-	else if (unformattedText) {
+	} else if (unformattedText) {
 		textBox.placeCaretAtEnd();
 	}
 	node.shadowDraggable({disable: true});
@@ -3567,18 +3705,14 @@ jQuery.fn.updateReorderBounds = function (border, box) {
 	};
 })();
 
-MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator) {
+MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator, options) {
 	'use strict';
 	var viewPort = stageElement.parent(),
 		connectorsForAnimation = jQuery(),
 		linksForAnimation = jQuery(),
 		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' },
-		reorderBounds = jQuery('<div>');
-	if (mapModel.isEditingEnabled()) {
-		reorderBounds = stageElement.createReorderBounds();
-	}
-
-	var getViewPortDimensions = function () {
+		reorderBounds = mapModel.isEditingEnabled() ? stageElement.createReorderBounds() : jQuery('<div>'),
+		getViewPortDimensions = function () {
 			if (viewPortDimensions) {
 				return viewPortDimensions;
 			}
@@ -3593,7 +3727,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		stageToViewCoordinates = function (x, y) {
 			var stage = stageElement.data(),
 				scrollPosition = getViewPortDimensions();
-			return  {
+			return {
 				x: stage.scale * (x + stage.offsetX) - scrollPosition.left,
 				y: stage.scale * (y + stage.offsetY) - scrollPosition.top
 			};
@@ -3610,7 +3744,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			var element = jQuery(this);
 			element.css({
 				'left': element.data('x'),
-				'top' : element.data('y'),
+				'top' : element.data('y')
 			}).trigger('mapjs:move');
 		},
 		animateToPositionCoordinates = function () {
@@ -3623,7 +3757,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				complete: function () {
 					element.css('opacity', '');
 					element.each(updateScreenCoordinates);
-				},
+				}
 			}, nodeAnimOptions)).trigger('mapjs:animatemove');
 		},
 		ensureSpaceForPoint = function (x, y) {/* in stage coordinates */
@@ -3660,14 +3794,14 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				ensureSpaceForPoint(node.x + node.width + margin.right, node.y + node.height + margin.bottom);
 			});
 		},
-		centerViewOn = function (x, y, animate)/*in the stage coordinate system*/ {
+		centerViewOn = function (x, y, animate) { /*in the stage coordinate system*/
 			var stage = stageElement.data(),
 				viewPortCenter = {
 					x: viewPort.innerWidth() / 2,
 					y: viewPort.innerHeight() / 2
 				},
 				newLeftScroll, newTopScroll,
-        margin = MAPJS.DOMRender.stageVisibilityMargin || {top: 0, left: 0, bottom: 0, right: 0};
+				margin = MAPJS.DOMRender.stageVisibilityMargin || {top: 0, left: 0, bottom: 0, right: 0};
 			ensureSpaceForPoint(x - viewPortCenter.x / stage.scale, y - viewPortCenter.y / stage.scale);
 			ensureSpaceForPoint(x + viewPortCenter.x / stage.scale - margin.left, y + viewPortCenter.y / stage.scale - margin.top);
 
@@ -3763,11 +3897,15 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				};
 			return _.find(boundaries, closeTo);
 		};
-	viewPort.on('scroll', function () { viewPortDimensions = undefined; });
+
+
+	viewPort.on('scroll', function () {
+		viewPortDimensions = undefined;
+	});
 	if (imageInsertController) {
 		imageInsertController.addEventListener('imageInserted', function (dataUrl, imgWidth, imgHeight, evt) {
 			var point = stagePositionForPointEvent(evt);
-			mapModel.dropImage(dataUrl, imgWidth, imgHeight, point.x, point.y);
+			mapModel.dropImage(dataUrl, imgWidth, imgHeight, point && point.x, point && point.y);
 		});
 	}
 	mapModel.addEventListener('nodeCreated', function (node) {
@@ -3817,7 +3955,8 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				var dropCoords = stagePositionForPointEvent(evt),
 					currentPosition = evt.currentPosition && stagePositionForPointEvent({pageX: evt.currentPosition.left, pageY: evt.currentPosition.top}),
 					nodeId,
-					hasShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey;
+					hasShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey,
+					border;
 				if (!dropCoords) {
 					clearCurrentDroppable();
 					return;
@@ -3827,15 +3966,14 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				if (!hasShift && !nodeId && currentPosition) {
 					currentPosition.width = element.outerWidth();
 					currentPosition.height = element.outerHeight();
-					var border = withinReorderBoundary(currentReorderBoundary, currentPosition);
+					border = withinReorderBoundary(currentReorderBoundary, currentPosition);
 					reorderBounds.updateReorderBounds(border, currentPosition);
 				} else {
 					reorderBounds.hide();
 				}
 				if (!nodeId || nodeId === node.id) {
 					clearCurrentDroppable();
-				}
-				else if (nodeId !== currentDroppable) {
+				} else if (nodeId !== currentDroppable) {
 					clearCurrentDroppable();
 					if (nodeId) {
 						showDroppable(nodeId);
@@ -3843,18 +3981,18 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 				}
 			})
 			.on('contextmenu', function (event) {
-				// ugly ugly ugly!
 				mapModel.selectNode(node.id);
-				mapModel.dispatchEvent('contextMenuRequested', node.id, event.pageX, event.pageY);
-				event.preventDefault();
-				return false;
+				if (mapModel.requestContextMenu(event.pageX, event.pageY)) {
+					event.preventDefault();
+					return false;
+				}
 			})
 			.on('mm:stop-dragging', function (evt) {
 				element.removeClass('dragging');
 				reorderBounds.hide();
 				var isShift = evt && evt.gesture && evt.gesture.srcEvent && evt.gesture.srcEvent.shiftKey,
 					stageDropCoordinates = stagePositionForPointEvent(evt),
-					nodeAtDrop, finalPosition, dropResult, manualPosition;
+					nodeAtDrop, finalPosition, dropResult, manualPosition, vpCenter;
 				clearCurrentDroppable();
 				if (!stageDropCoordinates) {
 					return;
@@ -3869,7 +4007,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 					manualPosition = (!!isShift) || !withinReorderBoundary(currentReorderBoundary, finalPosition);
 					dropResult = mapModel.positionNodeAt(node.id, finalPosition.x, finalPosition.y, manualPosition);
 				} else if (node.level === 1 && evt.gesture) {
-					var vpCenter = stagePointAtViewportCenter();
+					vpCenter = stagePointAtViewportCenter();
 					vpCenter.x -= evt.gesture.deltaX || 0;
 					vpCenter.y -= evt.gesture.deltaY || 0;
 					centerViewOn(vpCenter.x, vpCenter.y, true);
@@ -3888,13 +4026,14 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			element.on('hold', function (evt) {
 				var realEvent = (evt.gesture && evt.gesture.srcEvent) || evt;
 				mapModel.clickNode(node.id, realEvent);
-				mapModel.dispatchEvent('contextMenuRequested', node.id, evt.gesture.center.pageX, evt.gesture.center.pageY);
-				evt.preventDefault();
-				if (evt.gesture) {
-					evt.gesture.preventDefault();
-					evt.gesture.stopPropagation();
+				if (mapModel.requestContextMenu(evt.gesture.center.pageX, evt.gesture.center.pageY)) {
+					evt.preventDefault();
+					if (evt.gesture) {
+						evt.gesture.preventDefault();
+						evt.gesture.stopPropagation();
+					}
+					return false;
 				}
-				return false;
 			});
 		}
 		element.css('min-width', element.css('width'));
@@ -3915,7 +4054,7 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		stageElement.nodeWithId(node.id).queueFadeOut(nodeAnimOptions);
 	});
 	mapModel.addEventListener('nodeMoved', function (node /*, reason*/) {
-		var	currentViewPortDimensions = getViewPortDimensions(),
+		var currentViewPortDimensions = getViewPortDimensions(),
 			nodeDom = stageElement.nodeWithId(node.id).data({
 				'x': Math.round(node.x),
 				'y': Math.round(node.y)
@@ -3934,9 +4073,15 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		var element = stageElement.createConnector(connector).queueFadeIn(nodeAnimOptions).updateConnector(true);
 		stageElement.nodeWithId(connector.from).add(stageElement.nodeWithId(connector.to))
-			.on('mapjs:move', function () { element.updateConnector(true); })
-			.on('mm:drag', function () { element.updateConnector(); })
-			.on('mapjs:animatemove', function () { connectorsForAnimation = connectorsForAnimation.add(element); });
+			.on('mapjs:move', function () {
+				element.updateConnector(true);
+			})
+			.on('mm:drag', function () {
+				element.updateConnector();
+			})
+			.on('mapjs:animatemove', function () {
+				connectorsForAnimation = connectorsForAnimation.add(element);
+			});
 	});
 	mapModel.addEventListener('connectorRemoved', function (connector) {
 		stageElement.findConnector(connector).queueFadeOut(nodeAnimOptions);
@@ -3949,8 +4094,12 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			event.gesture.stopPropagation();
 		});
 		stageElement.nodeWithId(l.ideaIdFrom).add(stageElement.nodeWithId(l.ideaIdTo))
-			.on('mapjs:move mm:drag', function () { link.updateLink(); })
-			.on('mapjs:animatemove', function () { linksForAnimation = linksForAnimation.add(link); });
+			.on('mapjs:move mm:drag', function () {
+				link.updateLink();
+			})
+			.on('mapjs:animatemove', function () {
+				linksForAnimation = linksForAnimation.add(link);
+			});
 
 	});
 	mapModel.addEventListener('linkRemoved', function (l) {
@@ -3966,7 +4115,16 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 		stageElement.data('scale', targetScale).updateStage();
 		centerViewOn(currentCenter.x, currentCenter.y);
 	});
-	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
+	mapModel.addEventListener('nodeVisibilityRequested', function (ideaId) {
+		var id = ideaId || mapModel.getCurrentlySelectedIdeaId(),
+				node = stageElement.nodeWithId(id);
+		if (node) {
+			ensureNodeVisible(node);
+			viewPort.finish();
+		}
+
+	});
+	mapModel.addEventListener('nodeFocusRequested', function (ideaId) {
 		var node = stageElement.nodeWithId(ideaId).data(),
 			nodeCenterX = node.x + node.width / 2,
 			nodeCenterY = node.y + node.height / 2;
@@ -4016,25 +4174,26 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 	});
 
 	/* editing */
+	if (!options || !options.inlineEditingDisabled) {
+		mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
+			var editingElement = stageElement.nodeWithId(nodeId);
+			mapModel.setInputEnabled(false);
+			viewPort.finish(); /* close any pending animations */
+			editingElement.editNode(shouldSelectAll).done(
+				function (newText) {
+					mapModel.setInputEnabled(true);
+					mapModel.updateTitle(nodeId, newText, editingNew);
+					editingElement.focus();
 
-	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
-		var editingElement = stageElement.nodeWithId(nodeId);
-		mapModel.setInputEnabled(false);
-		viewPort.finish(); /* close any pending animations */
-		editingElement.editNode(shouldSelectAll).done(
-			function (newText) {
-				mapModel.setInputEnabled(true);
-				mapModel.updateTitle(nodeId, newText, editingNew);
-				editingElement.focus();
-
-			}).fail(function () {
-				mapModel.setInputEnabled(true);
-				if (editingNew) {
-					mapModel.undo('internal');
-				}
-				editingElement.focus();
-			});
-	});
+				}).fail(function () {
+					mapModel.setInputEnabled(true);
+					if (editingNew) {
+						mapModel.undo('internal');
+					}
+					editingElement.focus();
+				});
+		});
+	}
 	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
 		if (isOn) {
 			stageElement.addClass('mapjs-add-link');
@@ -4083,7 +4242,7 @@ jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator, centerSelectedNodeOnOrientationChange, options) {
 	'use strict';
 	var hotkeyEventHandlers = {
 			'return': 'addSiblingIdea',
@@ -4133,8 +4292,6 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 		}
 	});
 
-
-
 	return this.each(function () {
 		var element = $(this),
 			stage = $('<div>').css({
@@ -4167,14 +4324,18 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			element.imageDropWidget(imageInsertController);
 		} else {
 			element.on('doubletap', function (event) {
-				mapModel.dispatchEvent('contextMenuRequested', mapModel.getCurrentlySelectedIdeaId(), event.gesture.center.pageX, event.gesture.center.pageY);
-				event.preventDefault();
-				event.gesture.preventDefault();
-				return false;
+				if (mapModel.requestContextMenu(event.gesture.center.pageX, event.gesture.center.pageY)) {
+					event.preventDefault();
+					event.gesture.preventDefault();
+					return false;
+				}
 			}).on('pinch', function (event) {
 				if (!event || !event.gesture || !event.gesture.scale) {
 					return;
 				}
+				event.preventDefault();
+				event.gesture.preventDefault();
+
 				var scale = event.gesture.scale;
 				if (previousPinchScale) {
 					scale = scale / previousPinchScale;
@@ -4193,7 +4354,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			});
 
 		}
-		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator);
+		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator, options);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
@@ -4210,7 +4371,12 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 		}
 
 		jQuery(window).on('orientationchange', function () {
-			mapModel.resetView();
+			if (centerSelectedNodeOnOrientationChange) {
+				mapModel.centerOnNode(mapModel.getSelectedNodeId());
+			} else {
+				mapModel.resetView();
+			}
+
 		});
 		jQuery(document).on('keydown', function (e) {
 			var functions = {

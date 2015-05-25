@@ -21,8 +21,9 @@ def cache_last_news
   end
 end
 configure do
-  static_ts = '20140912202404'
+  static_ts = '20150316155124'
   public_host = ENV['PUBLIC_HOST'] || 'http://static.mindmup.net'
+  set :earliest_supported_ios_version, (ENV["EARLIEST_IOS_VERSION"] && ENV["EARLIEST_IOS_VERSION"].to_f) || 1
   set :static_host, "#{public_host}/#{static_ts}"
   set :static_image_host, "#{public_host}/img"
   set :google_analytics_account, ENV["GOOGLE_ANALYTICS_ACCOUNT"]
@@ -46,6 +47,9 @@ configure do
   set :paypal_recipient, ENV['PAYPAL_ID']
   set :paypal_url, ENV['PAYPAL_URL']
   set :paypal_return_url, ENV['PAYPAL_RETURN_URL']
+  set :gold_api_url, ENV['GOLD_API_URL']
+  set :gold_bucket_name, ENV['GOLD_BUCKET_NAME']
+  set :discover_mindmup_host, ENV['DISCOVER_MINDMUP_HOST'] || 'http://discover.mindmup.com'
   AWS.config(:access_key_id=>settings.s3_key_id, :secret_access_key=>settings.s3_secret_key)
   s3=AWS::S3.new()
   set :s3_bucket, s3.buckets[settings.s3_bucket_name]
@@ -70,6 +74,9 @@ get '/' do
 end
 get '/legal/privacy' do
   erb :privacy
+end
+get '/legal/atlas' do
+  erb :atlas_terms
 end
 get '/gd' do
   begin
@@ -133,8 +140,21 @@ get '/cache_news' do
   "OK "+settings.last_news_id
 end
 
+
 get '/ios/map' do
-  erb :ios
+  # used for ios version < 3.0
+  erb :"ios/3/ios_legacy"
+end
+
+get '/ios/editor/:my_app_version' do
+  version = 1
+  version = params[:my_app_version].to_f if params[:my_app_version]
+  halt 404 if version < settings.earliest_supported_ios_version
+  if version < 4 then
+    erb :"ios/3/ios"
+  else
+    erb :"ios/4/ios"
+  end
 end
 
 get '/ios/config' do
@@ -144,17 +164,18 @@ get '/ios/config' do
     anonymousFolder: "http://#{settings.s3_website}/#{settings.s3_upload_folder}/",
     publishingConfigUrl: "#{settings.base_url}publishingConfig",
     sharingUrl: "#{settings.base_url}#m:",
-    goldApiUrl: "#{ENV['GOLD_API_URL']}/",
-    goldFileUrl: "https://#{ENV['GOLD_BUCKET_NAME']}.s3.amazonaws.com/"
+    goldApiUrl: "#{settings.gold_api_url}/",
+    goldFileUrl: "https://#{settings.gold_bucket_name}.s3.amazonaws.com/",
+    static_host: settings.static_host,
+    public_url: settings.public_url,
+    help_url: "#{settings.discover_mindmup_host}/guide_ios/APP_VERSION/CURRENT_HELP_VERSION"
   }
   halt 200, config.to_json
 end
 
+
 get '/trouble' do
   erb :trouble
-end
-get '/export_browser_maps' do
-  erb :export_browser_maps
 end
 
 include MindMup::GithubRoutes

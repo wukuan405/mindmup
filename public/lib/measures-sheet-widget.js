@@ -35,10 +35,10 @@ jQuery.fn.numericTotaliser = function () {
 				recalculateColumn(column);
 			}
 		};
-	element.on('change', function (evt, column) {
+	element.on('change', function (evt /*, newValue*/) {
 		var target = jQuery(evt.target);
-		if (column !== undefined) {
-			recalculateColumn(column);
+		if (evt.column !== undefined) {
+			recalculateColumn(evt.column);
 		} else if (target.is('td')) {
 			recalculateColumn(target.index());
 		} else {
@@ -53,9 +53,9 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			measurementActivationTemplate = element.find('[data-mm-role=measurement-activation-template]'),
-		    measurementActivationContainer = measurementActivationTemplate.parent(),
-		    hideLabels = element.find('[data-mm-role=hide-measure]'),
-		    onMeasureAdded = function (measureName /*, index */) {
+			measurementActivationContainer = measurementActivationTemplate.parent(),
+			hideLabels = element.find('[data-mm-role=hide-measure]'),
+			onMeasureAdded = function (measureName /*, index */) {
 				var measurementActivation = measurementActivationTemplate.clone().appendTo(measurementActivationContainer);
 				measurementActivation.attr('data-mm-measure', measureName).find('[data-mm-role=show-measure]').click(function () {
 					measuresModel.dispatchEvent('measureLabelShown', measureName);
@@ -66,7 +66,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 				element.show();
 			},
 			onMeasureRemoved = function (measureName) {
-				measurementActivationContainer.children('[data-mm-measure=' + measureName + ']').remove();
+				measurementActivationContainer.children('[data-mm-measure="' + measureName.replace('"', '\\"') + '"]').remove();
 				if (_.isEmpty(measuresModel.getMeasures())) {
 					element.hide();
 				}
@@ -81,7 +81,7 @@ jQuery.fn.measuresDisplayControlWidget = function (measuresModel, mapModel) {
 				}
 			},
 			onMeasureLabelShown = function (measureName) {
-				measurementActivationContainer.children().removeClass('mm-active').filter('[data-mm-measure=' + measureName + ']').addClass('mm-active');
+				measurementActivationContainer.children().removeClass('mm-active').filter('[data-mm-measure="' + measureName.replace('"', '\\"') + '"]').addClass('mm-active');
 				if (measureName) {
 					hideLabels.show();
 				} else {
@@ -104,15 +104,15 @@ jQuery.fn.measuresSheetWidget = function (measuresModel) {
 	'use strict';
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
-		    measurementsTable = element.find('[data-mm-role=measurements-table]'),
-		    noMeasuresDiv = element.find('[data-mm-role=no-measures]'),
+			measurementsTable = element.find('[data-mm-role=measurements-table]'),
+			noMeasuresDiv = element.find('[data-mm-role=no-measures]'),
 			measurementTemplate = element.find('[data-mm-role=measurement-template]'),
 			measurementContainer = measurementTemplate.parent(),
 			ideaTemplate = element.find('[data-mm-role=idea-template]'),
 			valueTemplate = ideaTemplate.find('[data-mm-role=value-template]').detach(),
 			ideaContainer = ideaTemplate.parent(),
 			addMeasureInput = element.find('[data-mm-role=measure-to-add]'),
-		    summaryTemplate = element.find('[data-mm-role=summary-template]'),
+			summaryTemplate = element.find('[data-mm-role=summary-template]'),
 			summaryContainer = summaryTemplate.parent(),
 			getRowForNodeId = function (nodeId) {
 				return element.find('[data-mm-nodeid="' + nodeId + '"]');
@@ -166,7 +166,7 @@ jQuery.fn.measuresSheetWidget = function (measuresModel) {
 					col = getColumnIndexForMeasure(measureChanged);
 				if (col >= 0) {
 					row.children().eq(col).text(newValue);
-					measurementsTable.trigger('change', col);
+					measurementsTable.trigger(jQuery.Event('change', {'column': col}));
 				}
 			},
 			onMeasureAdded = function (measureName, index) {

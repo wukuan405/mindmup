@@ -1,5 +1,5 @@
 /*global describe, beforeEach, afterEach, jQuery, it, expect, jasmine, _*/
-describe('splitFlipWidget', function  () {
+describe('splitFlipWidget', function () {
 	'use strict';
 	var underTest,
 		mapModel,

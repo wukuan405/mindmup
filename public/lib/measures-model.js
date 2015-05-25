@@ -97,11 +97,8 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, activeContentLi
 		}
 	};
 	self.addUpMeasurementForAllNodes = function (measurementName) {
-		var activeContent = activeContentListener.getActiveContent();
-		if (!activeContent || !measurementName) {
-			return {};
-		}
-		var result = {},
+		var activeContent = activeContentListener.getActiveContent(),
+			result = {},
 			addUpMeasure = function (idea) {
 				var measures = idea.getAttr(valueAttrName), sum = 0, hasValue = false;
 				if (measures && measures[measurementName]) {
@@ -120,6 +117,10 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, activeContentLi
 					result[idea.id] = sum;
 				}
 			};
+
+		if (!activeContent || !measurementName) {
+			return {};
+		}
 		activeContent.traverse(addUpMeasure, true);
 		return result;
 	};
@@ -156,7 +157,9 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, activeContentLi
 		}
 		measureName = measureName.trim();
 
-		if (_.find(measures, function (measure) { return measure.toUpperCase() === measureName.toUpperCase(); })) {
+		if (_.find(measures, function (measure) {
+			return measure.toUpperCase() === measureName.toUpperCase();
+		})) {
 			return false;
 		}
 		var activeContent = activeContentListener.getActiveContent();
@@ -166,11 +169,12 @@ MM.MeasuresModel = function (configAttributeName, valueAttrName, activeContentLi
 		if (!measureName || measureName.trim() === '') {
 			return false;
 		}
-		var updated = _.without(measures, measureName);
+		var updated = _.without(measures, measureName),
+			activeContent;
 		if (_.isEqual(updated, measures)) {
 			return;
 		}
-		var activeContent = activeContentListener.getActiveContent();
+		activeContent = activeContentListener.getActiveContent();
 		activeContent.startBatch();
 		activeContent.updateAttr(activeContent.id, configAttributeName, updated);
 		activeContent.traverse(function (idea) {

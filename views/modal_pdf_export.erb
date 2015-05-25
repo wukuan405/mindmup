@@ -1,11 +1,13 @@
-<div id="modalPDFExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="pdf">
+<div id="modalPDFExport" data-mm-role="layout-export" class="modal hide fade" data-mm-format="pdf" data-mm-launch-key-code="80">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Export to PDF</h3>
+    <h3>Create a Printable PDF</h3>
   </div>
   <div class="modal-body">
     <div class="visible initial">
-      <p>The map will be securely uploaded to our server for processing. The <a href="http://blog.mindmup.com/p/pdf-export.html" target="_blank" >PDF export documentation</a> page explains PDF file export in greater detail.</p>
+
+      <p>The map will be <a href="http://blog.mindmup.com/p/pdf-export.html" target="_blank" >securely uploaded</a> to our server for processing.
+      </p>
       <form class="form-horizontal" data-mm-role="export-parameters">
         <div class="control-group">
           <label class="control-label">Orientation:</label>
@@ -37,10 +39,20 @@
             </select>
           </div>
         </div>
+        <div class="control-group">
+          <label class="control-label">Text orientation:</label>
+          <div class="controls">
+            <select name="direction">
+              <option value="ltr">Left to right</option>
+              <option value="rtl">Right to left</option>
+            </select>
+          </div>
+        </div>
       </form>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
-      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map:&nbsp;
+			<span data-mm-role="publish-progress-message" />
     </div>
     <div class="visible done alert alert-success alert-block">
       <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
@@ -50,6 +62,10 @@
       <br/>
 
       <span data-mm-role="error-message"></span>
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
       <span data-mm-role="generation-error">
         This map contains a feature not currently supported by PDF export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
       </span>
@@ -73,7 +89,8 @@
     </div>
   </div>
   <div class="modal-footer">
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Export</a>
+    <a class="pull-left btn visible initial" href="http://blog.mindmup.com/p/how-to-print-large-maps.html" target="_blank"><i class="icon-question-sign"></i>&nbsp;How to print large maps</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="start-export">Create PDF</a>
     <a tabstop="2" href="#" class="btn visible initial inprogress" data-dismiss="modal">Cancel</a>
     <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
   </div>

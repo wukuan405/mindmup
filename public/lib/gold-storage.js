@@ -43,7 +43,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 			loadMap: self.loadMap
 		};
 	};
-
+	self.deleteMap = goldApi.deleteFile;
 	self.list = function (showLicenseDialog) {
 		var deferred = jQuery.Deferred(),
 			onFileListReturned = function (fileList, account) {
@@ -126,7 +126,7 @@ MM.GoldStorage = function (goldApi, s3Api, modalConfirmation, options) {
 							deferred.resolve(content, buildMapId(mapPrefix, account, fileNameKey), 'application/json', fileProperties);
 						},
 						function (reason) {
-							if (reason === 'map-not-found' && !privateMap && privatePrefix)  {
+							if (reason === 'map-not-found' && !privateMap && privatePrefix) {
 								loadMapInternal(privatePrefix, account, fileNameKey);
 							} else {
 								deferred.reject(reason);

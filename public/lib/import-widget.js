@@ -18,7 +18,9 @@ $.fn.importWidget = function (activityLog, mapController) {
 				expected;
 			if (type === 'mm') {
 				return MM.freemindImport(fileContent,
-					function (total) {  expected = total; },
+					function (total) {
+						expected = total;
+					},
 					function () {
 						var pct = (100 * counter / expected).toFixed(2) + '%';
 						if (counter % 1000 === 0) {
@@ -73,10 +75,10 @@ $.fn.importWidget = function (activityLog, mapController) {
 	element.on('shown', function () {
 		fileInput.css('opacity', 0).css('position', 'absolute').offset(selectButton.offset()).width(selectButton.outerWidth())
 			.height(selectButton.outerHeight());
-        selectButton.focus();
+		selectButton.focus();
 	});
-    selectButton.keydown('space return', function () {
-        fileInput.click();
-    });
+	selectButton.keydown('space return', function () {
+		fileInput.click();
+	});
 	return element;
 };

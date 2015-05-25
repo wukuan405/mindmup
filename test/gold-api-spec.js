@@ -5,7 +5,7 @@ describe('MM.GoldApi', function () {
 	beforeEach(function () {
 		ajaxDeferred = jQuery.Deferred();
 		spyOn(jQuery, 'ajax').and.returnValue(ajaxDeferred.promise());
-		commonPostArgs = {'api_version': '2'};
+		commonPostArgs = {'api_version': '3'};
 		license = {version: '2', accountType: 'mindmup-gold', account: 'test', signature: 'validsignature'};
 		goldLicenseManagerDeferred = jQuery.Deferred();
 		goldLicenseManager = {
@@ -65,6 +65,11 @@ describe('MM.GoldApi', function () {
 		it('rejects with network-error if not a known error', function () {
 			ajaxDeferred.reject({responseText: 'invalid-error'});
 			expect(rejected).toHaveBeenCalledWith('network-error');
+			expect(endSpy).toHaveBeenCalled();
+		});
+		it('rejects with not-connected if error starts with not-connected', function () {
+			ajaxDeferred.reject({responseText: 'not-connected foo@bar.com'});
+			expect(rejected).toHaveBeenCalledWith('not-connected foo@bar.com');
 			expect(endSpy).toHaveBeenCalled();
 		});
 		it('starts the timer when request starts', function () {
@@ -148,16 +153,20 @@ describe('MM.GoldApi', function () {
 			expect(resolveSpy).toHaveBeenCalledWith(expected, license.account);
 		});
 	});
-	describe('methods posting a license to the gold api ', function  () {
+	describe('methods posting a license to the gold api ', function () {
 		_.each([
 			['listFiles', 'API_URL/file/list', undefined],
 			['generateSaveConfig', 'API_URL/file/upload_config', 'json'],
-			['fileUrl', 'API_URL/file/url', undefined, function (showLicenseDialog) { return underTest.fileUrl(showLicenseDialog, 'test', 'filekey', true); }]
+			['fileUrl', 'API_URL/file/url', undefined, function (showLicenseDialog) {
+				return underTest.fileUrl(showLicenseDialog, 'test', 'filekey', true);
+			}]
 		], function (args) {
 			var methodName = args[0],
 				expectedUrl = args[1],
 				dataType = args[2],
-				call = args[3] || function (showLicenseDialog) { return underTest[methodName](showLicenseDialog); };
+				call = args[3] || function (showLicenseDialog) {
+					return underTest[methodName](showLicenseDialog);
+				};
 			describe(methodName, function () {
 				_.each([true, false], function (arg) {
 					it('when showLicenseDialog is ' + arg, function () {
@@ -248,8 +257,33 @@ describe('MM.GoldApi', function () {
 				expect(rejectWasCalled).toBeTruthy();
 			});
 		});
+		describe('restoreLicenseWithGoogle', function () {
+			it('posts an AJAX request to the API url', function () {
+				underTest.restoreLicenseWithGoogle('OauthToken');
+
+				expect(jQuery.ajax).toHaveBeenCalled();
+				var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+				expect(ajaxPost.url).toEqual('API_URL/license/request_license_using_google');
+				expect(ajaxPost.dataType).toEqual('json');
+				expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'token': 'OauthToken'}));
+			});
+			it('sets the license with the license manager if successful', function () {
+				var result = underTest.restoreLicenseWithGoogle('OauthToken');
+				ajaxDeferred.resolve({'somekey': 'someval'});
+
+				expect(result.state()).toBe('resolved');
+				expect(goldLicenseManager.storeLicense).toHaveBeenCalledWith({'somekey': 'someval'});
+			});
+			it('does not store license if rejected', function () {
+				var result = underTest.restoreLicenseWithGoogle('OauthToken');
+				ajaxDeferred.reject('ohdear');
+
+				expect(result.state()).toBe('rejected');
+				expect(goldLicenseManager.storeLicense).not.toHaveBeenCalled();
+			});
+		});
 	});
-	describe('fileUrl', function  () {
+	describe('fileUrl', function () {
 		it('should return unsigned url immediately', function () {
 			underTest.fileUrl(true, 'jimmy', 'foo ? mup.mup', false).then(resolveSpy);
 			expect(resolveSpy).toHaveBeenCalledWith('https://gold-bucket-name.s3.amazonaws.com/jimmy/foo%20%3F%20mup.mup');
@@ -276,7 +310,7 @@ describe('MM.GoldApi', function () {
 			});
 		});
 	});
-	describe('exists', function  () {
+	describe('exists', function () {
 		it('should reject as not-authenticated if the license is not set', function () {
 			goldLicenseManager.getLicense.and.returnValue(false);
 			underTest.exists('foo.mup').fail(rejectSpy);
@@ -302,4 +336,29 @@ describe('MM.GoldApi', function () {
 		});
 	});
 
+	describe('deleteFile', function () {
+		it('should reject as not-authenticated if the license is not set', function () {
+			goldLicenseManager.getLicense.and.returnValue(false);
+			underTest.deleteFile('foo.mup').fail(rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('not-authenticated');
+		});
+		it('should resolve if the file was deleted', function () {
+			ajaxDeferred.resolve('OK');
+			underTest.deleteFile('foo.mup').then(resolveSpy);
+			expect(resolveSpy).toHaveBeenCalledWith('OK');
+		});
+		it('should reject if the file was not deleted', function () {
+			ajaxDeferred.reject({responseText: 'invalid-args'});
+			underTest.deleteFile('foo.mup').then(resolveSpy, rejectSpy);
+			expect(rejectSpy).toHaveBeenCalledWith('invalid-args');
+		});
+		it('posts an AJAX request to the API url without encoding file names', function () {
+			underTest.deleteFile('foo ? mup.mup');
+			expect(jQuery.ajax).toHaveBeenCalled();
+			var ajaxPost = jQuery.ajax.calls.mostRecent().args[0];
+			expect(ajaxPost.url).toEqual('API_URL/file/delete');
+			expect(ajaxPost.dataType).toBeUndefined();
+			expect(ajaxPost.data.params).toEqual(_.extend({}, commonPostArgs, {'license' : JSON.stringify(license), 'file_key': 'foo ? mup.mup'}));
+		});
+	});
 });

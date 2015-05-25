@@ -29,6 +29,16 @@ describe('iosContextMenuWidget', function () {
 		expect(spy.calls.mostRecent().args[0].x).toBe(20);
 		expect(spy.calls.mostRecent().args[0].y).toBe(30);
 	});
+	it('should not trigger showPopover event when context menu is requested is editing is not enabled', function () {
+		mapModel.getEditingEnabled = function () {
+			return false;
+		};
+
+		var spy = jasmine.createSpy('showPopover');
+		underTest.on('showPopover', spy);
+		mapModel.dispatchEvent('contextMenuRequested', 1, 20, 30);
+		expect(spy).not.toHaveBeenCalled();
+	});
 	it('should clone tools to tool container', function () {
 		expect(underTest.find('[data-mm-role=tool]').length).toBe(2);
 		tools.remove();

@@ -24,7 +24,7 @@ downloads
 node_modules/
 SpecRunner.html
 .grunt
-
+*.log
 # YARD artifacts
 .yardoc
 _yardoc

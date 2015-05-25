@@ -18,7 +18,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 	return jQuery.each(this, function () {
 		var element = jQuery(this),
 			template = element.find('[data-mm-role=scene-template]'),
-		    noScenes = element.find('[data-mm-role=no-scenes]').detach(),
+			noScenes = element.find('[data-mm-role=no-scenes]').detach(),
 			templateParent = template.parent(),
 			removeSelectedScenes = function () {
 				_.each(templateParent.find('.activated-scene'), function (domScene) {
@@ -62,22 +62,22 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			potentialDropTargets = function (dropPosition, includeActivated) {
 				var scenes = includeActivated ? templateParent.find('[data-mm-role=scene]').not('.drag-shadow') : templateParent.find('[data-mm-role=scene]').not('.activated-scene').not('.drag-shadow'),
 					row = _.filter(scenes, function (sceneDOM) {
-						var scene = jQuery(sceneDOM);
-						var ypos = dropPosition.top - scene.offset().top,
+						var scene = jQuery(sceneDOM),
+							ypos = dropPosition.top - scene.offset().top,
 							sceneHeight =  scene.outerHeight(true),
 							withinRow = (ypos > 0 && ypos < sceneHeight);
 						return withinRow;
 					}),
 					potentialRight = _.filter(row, function (sceneDOM) {
-						var scene = jQuery(sceneDOM);
-						var xpos = dropPosition.left - scene.offset().left,
+						var scene = jQuery(sceneDOM),
+							xpos = dropPosition.left - scene.offset().left,
 							sceneWidth = scene.outerWidth(true),
 							leftMatch = (xpos > -40 && xpos < sceneWidth / 3);
 						return leftMatch;
 					}),
 					potentialLeft = _.filter(row, function (sceneDOM) {
-						var scene = jQuery(sceneDOM);
-						var xpos = dropPosition.left - scene.offset().left,
+						var scene = jQuery(sceneDOM),
+							xpos = dropPosition.left - scene.offset().left,
 							sceneWidth = scene.outerWidth(true),
 							rightMatch = (xpos > sceneWidth * 2 / 3 && xpos < sceneWidth + 40);
 						return rightMatch;
@@ -87,8 +87,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				if (potentialLeft.length === 0 && potentialRight.length === 0) {
 					if (lastInRow.length > 0 && dropPosition.left > lastInRow.offset().left + lastInRow.width()) {
 						potentialLeft = lastInRow;
-					}
-					else if (lastScene.length > 0 && dropPosition.top > lastScene.offset().top) {
+					} else if (lastScene.length > 0 && dropPosition.top > lastScene.offset().top) {
 						potentialLeft = lastScene;
 					}
 				}
@@ -98,7 +97,9 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				var scenes = storyboardModel.getScenes();
 				templateParent.empty();
 				if (scenes && scenes.length) {
-					_.each(scenes, function (scene) { addScene(scene, true); });
+					_.each(scenes, function (scene) {
+						addScene(scene, true);
+					});
 				} else {
 					noScenes.appendTo(templateParent).show();
 				}
@@ -121,8 +122,12 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.on('focus', function () {
 						templateParent.find('[data-mm-role=scene]').removeClass('activated-scene');
 						newScene.addClass('activated-scene');
-                        mapModel.focusAndSelect(scene.ideaId);
-					}).keydown('del backspace', function (event) {
+
+					})
+					.on('tap', function () {
+						mapModel.focusAndSelect(scene.ideaId);
+					})
+					.keydown('del backspace', function (event) {
 						storyboardController.removeScene(scene);
 						event.preventDefault();
 						event.stopPropagation();
@@ -142,10 +147,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 					.keydown('up', function () {
 						jQuery(this).gridUp().focus();
 					})
-                    .on('doubletap', function () {
-                        mapModel.focusAndSelect(scene.ideaId);
-                        mapModel.editNode(scene.ideaId);
-                    })
+					.on('doubletap', function () {
+						mapModel.focusAndSelect(scene.ideaId);
+						mapModel.editNode(scene.ideaId);
+					})
 					.keydown('down', function () {
 						jQuery(this).gridDown().focus();
 					}).shadowDraggable().on('mm:cancel-dragging', function () {
@@ -175,8 +180,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 							if (potentialDrops.left) {
 								actualLeft = jQuery(potentialDrops.left).not(active).not(active.prev());
 								actualRight = actualLeft.next();
-							}
-							else if (potentialDrops.right) {
+							} else if (potentialDrops.right) {
 								actualRight = jQuery(potentialDrops.right).not(active).not(active.next());
 								actualLeft = actualRight.prev();
 							}
@@ -220,16 +224,16 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 			removeScene = function (scene) {
 				var sceneJQ = findScene(scene),
 					hasFocus = sceneJQ.is(':focus'),
-					isActive = sceneJQ.hasClass('activated-scene');
+					isActive = sceneJQ.hasClass('activated-scene'),
+					sibling;
 				if (hasFocus || isActive) {
-					var sibling = sceneJQ.prev();
+					sibling = sceneJQ.prev();
 					if (sibling.length === 0) {
 						sibling = sceneJQ.next();
 					}
 					if (hasFocus) {
 						sibling.focus();
-					}
-					else if (isActive && jQuery(':focus').length === 0) {
+					} else if (isActive && jQuery(':focus').length === 0) {
 						sibling.focus();
 					}
 				}
@@ -274,12 +278,11 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 		element.on('show', showStoryboard).on('hide', hideStoryboard);
 
 		element.parents('[data-drag-role=container]').on('mm:drag', function (e) {
-			var target = jQuery(e.target);
 			if (!insideWidget(e)) {
 				templateParent.find('[data-mm-role=scene]').removeClass('potential-drop-left potential-drop-right');
 				return;
 			}
-			if (target.attr('data-mapjs-role') === 'node') {
+			if (jQuery(e.target).attr('data-mapjs-role') === 'node') {
 				var potentialDrops = potentialDropTargets({left: e.gesture.center.pageX, top: e.gesture.center.pageY}, true),
 					actualLeft,
 					actualRight,
@@ -288,8 +291,7 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				if (potentialDrops.left) {
 					actualLeft = jQuery(potentialDrops.left);
 					actualRight = actualLeft.next();
-				}
-				else if (potentialDrops.right) {
+				} else if (potentialDrops.right) {
 					actualRight = jQuery(potentialDrops.right);
 					actualLeft = actualRight.prev();
 				}
@@ -303,10 +305,10 @@ jQuery.fn.storyboardWidget = function (storyboardController, storyboardModel, di
 				}
 			}
 		}).on('mm:stop-dragging', function (e) {
-			var target = jQuery(e.target);
+			var target = jQuery(e.target), potentialRight;
 			if (target.attr('data-mapjs-role') === 'node') {
 				if (insideWidget(e)) {
-					var	potentialRight = templateParent.find('.potential-drop-right');
+					potentialRight = templateParent.find('.potential-drop-right');
 					storyboardController.addScene(target.data('nodeId'), potentialRight && potentialRight.data('scene'));
 				}
 			}
@@ -325,7 +327,9 @@ jQuery.fn.storyboardKeyHandlerWidget = function (storyboardController, storyboar
 		var unicode = evt.charCode || evt.keyCode,
 			actualkey = String.fromCharCode(unicode);
 		if (actualkey === addSceneHotkey && mapModel.getInputEnabled()) {
-			mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId); });
+			mapModel.applyToActivated(function (nodeId) {
+				storyboardController.addScene(nodeId);
+			});
 		}
 	};
 	storyboardModel.addEventListener('inputEnabled', function (isEnabled) {
@@ -349,10 +353,14 @@ jQuery.fn.storyboardMenuWidget = function (storyboardController, storyboardModel
 			}
 		};
 	elements.find('[data-mm-role=storyboard-add-scene]').click(function () {
-		mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId); });
+		mapModel.applyToActivated(function (nodeId) {
+			storyboardController.addScene(nodeId);
+		});
 	});
 	elements.find('[data-mm-role=storyboard-add-scene-children]').click(function () {
-		mapModel.applyToActivated(function (nodeId) {storyboardController.addScene(nodeId, false, 'with-children'); });
+		mapModel.applyToActivated(function (nodeId) {
+			storyboardController.addScene(nodeId, false, 'with-children');
+		});
 	});
 	elements.find('[data-mm-role=storyboard-remove-scenes-for-idea-id]').click(function () {
 		storyboardController.removeScenesForIdeaId(mapModel.getSelectedNodeId());

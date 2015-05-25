@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <meta name="viewport" content="user-scalable=no, minimum-scale=1, maximum-scale=1, width=device-width">
+        <!--embedded-styles-START-->
+        <%= erb :"ios/3/css_ios" %>
+        <!--embedded-styles-END-->
+        <style>
+        /*embedded-styles-INSERT*/
+        </style>
+
+    </head>
+    <body class="ios-wkwebview">
+        <div id="splittable" class="splittable-container">
+            <div class="splittable-primary" id="container" data-mm-role="default"></div>
+            <div class="splittable-optional" id="optionalPane" data-mm-role="optional"></div>
+        </div>
+<%= erb :"ios/3/ios_menu_widget" %>
+<%= erb :"ios/3/ios_context_menu_widget" %>
+<%= erb :"ios/3/ios_link_edit_widget" %>
+<%= erb :"ios/3/ios_color_widget" %>
+<%= erb :"ios/3/ios_mode_indicator_widget" %>
+        <!--embedded-scripts-START-->
+<%= erb :"ios/3/scripts_ios" %>
+        <!--embedded-scripts-END-->
+
+        <script id="ios">
+        /*embedded-scripts-INSERT*/
+        </script>
+        <script id="main">
+            window.onload = function () {
+                MM.main({
+                    corsProxyUrl: '<%= ENV['CORS_PROXY_URL'] %>',
+                    activeContentConfiguration: {
+                            nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
+                    }
+                });
+            };
+        </script>
+    </body>
+</html>

@@ -40,7 +40,7 @@ describe('MM.Storyboard.scene', function () {
 			base.ideaId = 13;
 			base.title = 'b';
 			base.index = 2;
-            base.type= 'zzz';
+			base.type = 'zzz';
 
 			expect(scene.ideaId).toBe(13);
 			expect(clone.ideaId).toBe(12);
@@ -48,8 +48,8 @@ describe('MM.Storyboard.scene', function () {
 			expect(clone.title).toBe('a');
 			expect(scene.index).toBe(2);
 			expect(clone.index).toBe(1);
-            expect(scene.type).toBe('zzz');
-            expect(clone.type).toBe('xxx');
+			expect(scene.type).toBe('zzz');
+			expect(clone.type).toBe('xxx');
 			expect(clone.clone).not.toBeUndefined();
 			expect(clone.matchesScene).not.toBeUndefined();
 		});
@@ -123,8 +123,8 @@ describe('Storyboards', function () {
 			},
 			ideas: {
 				1: {id: 11, title: 'not in any storyboards'},
-			    2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
-			    3: {id: 14, title: 'is in two scenes', attr: {'test-scenes': [{storyboards: {'ted talk': 9}}, {storyboards: {'ted talk': 10}}]}},
+				2: {id: 12, title: 'already in ted storyboard', attr: {'test-scenes': [{storyboards: {'ted talk': 1}}]}},
+				3: {id: 14, title: 'is in two scenes', attr: {'test-scenes': [{storyboards: {'ted talk': 9}}, {storyboards: {'ted talk': 10}}]}},
 				4: {id: 13, title: 'scene with icon', attr: {icon: {url: 'http://fakeurl', width: 100, height: 200, position: 'left'}, 'test-scenes': [{storyboards: {'ted talk': 2}}]}}
 			}
 		});
@@ -378,13 +378,13 @@ describe('Storyboards', function () {
 				activeContent.updateAttr(1, 'test-storyboards', undefined);
 				expect(underTest.getScenes()).toEqual([]);
 			});
-            it('generates a title using a list of children for with-children nodes', function () {
-                activeContent.addSubIdea(12, 'first child');
-                activeContent.addSubIdea(12, 'second child');
-                activeContent.addSubIdea(12, 'third child');
-                activeContent.updateAttr(12, 'test-scenes', [{storyboards: {'ted talk': 1}, type: 'with-children'}]);
-                expect(underTest.getScenes()[0].title).toEqual('already in ted storyboard\n- first child\n- second child\n- third child');
-            });
+			it('generates a title using a list of children for with-children nodes', function () {
+				activeContent.addSubIdea(12, 'first child');
+				activeContent.addSubIdea(12, 'second child');
+				activeContent.addSubIdea(12, 'third child');
+				activeContent.updateAttr(12, 'test-scenes', [{storyboards: {'ted talk': 1}, type: 'with-children'}]);
+				expect(underTest.getScenes()[0].title).toEqual('already in ted storyboard\n- first child\n- second child\n- third child');
+			});
 		});
 		describe('should dispatch events when the storyboard changes', function () {
 			var storyboardSceneAddedListener,

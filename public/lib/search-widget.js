@@ -32,7 +32,9 @@ $.fn.searchWidget = function (keyBinding, mapModel) {
 				.keyup('Esc', hide)
 				.typeahead({
 					source: function (query) {
-						return _.map(mapModel.search(query), function (i) { return i.id + ':' + i.title; });
+						return _.map(mapModel.search(query), function (i) {
+							return i.id + ':' + i.title;
+						});
 					},
 					updater: commit,
 

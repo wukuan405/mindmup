@@ -115,7 +115,9 @@ describe('MM.retry', function () {
 		var retryCount = 0,
 			rejected = jasmine.createSpy();
 
-		MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) { retryCount = r; }, rejected);
+		MM.retry(buildTaskToFailTimes(4), MM.retryTimes(4)).then(function (r) {
+			retryCount = r;
+		}, rejected);
 
 		expect(retryCount).toBe(4);
 		expect(rejected).not.toHaveBeenCalled();
@@ -133,8 +135,12 @@ describe('MM.retry', function () {
 		MM.retry(
 			buildTaskToFailTimes(1),
 			MM.retryTimes(1),
-			function () { return 1000; }
-		).then(function (r) { retryCount = r; });
+			function () {
+				return 1000;
+			}
+		).then(function (r) {
+			retryCount = r;
+		});
 
 		clock.tick(999);
 		expect(retryCount).toBe(0);

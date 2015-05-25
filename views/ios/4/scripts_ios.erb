@@ -1,0 +1,10 @@
+<script src="<%=settings.static_host%>/external-ios.js" ></script>
+<% if production? then %>
+    <script src="<%=settings.public_url%>/mm-ios-compiled-4.min.js" ></script>
+<% else %>
+      <script src="/ios/4/mm-compiled-ios.js" ></script>
+      <% development_lib('-ios/4').each do |script| %>
+          <script src="<%=script%>" ></script>
+      <% end %>
+      <script src="/ios/4/main-ios.js" ></script>
+<% end%>

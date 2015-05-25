@@ -12,7 +12,8 @@ describe('MM.GoldStorage', function () {
 			exists: jasmine.createSpy('exists').and.returnValue(goldExistsDeferred.promise()),
 			listFiles: jasmine.createSpy('listFiles').and.returnValue(goldApiListDeferred.promise()),
 			generateSaveConfig: jasmine.createSpy('generateSaveConfig').and.returnValue(goldSaveConfigDeferred.promise()),
-			fileUrl: jasmine.createSpy('fileUrl').and.returnValue(goldFileUrlDeferred.promise())
+			fileUrl: jasmine.createSpy('fileUrl').and.returnValue(goldFileUrlDeferred.promise()),
+			deleteFile: jasmine.createSpy('deleteFile')
 		};
 		s3SaveDeferred = jQuery.Deferred();
 		s3LoadUrlDeferred = jQuery.Deferred();
@@ -255,6 +256,20 @@ describe('MM.GoldStorage', function () {
 				expect(s3Api.loadUrl).toHaveBeenCalledWith(privateUrl);
 				expect(resolveSpy).toHaveBeenCalledWith(content, 'p/freddy/foo.mup', 'application/json', {editable: true});
 			});
+		});
+	});
+	describe('deleteMap', function () {
+		it('passes map name to delete to gold api', function () {
+			underTest.deleteMap('hello');
+			expect(goldApi.deleteFile).toHaveBeenCalledWith('hello');
+		});
+		it('returns the promise passed from the gold api', function () {
+			var deferred = jQuery.Deferred(),
+				promise = deferred.promise(),
+				result;
+			goldApi.deleteFile.and.returnValue(promise);
+			result = underTest.deleteMap('hello');
+			expect(result).toBe(promise);
 		});
 	});
 	describe('fileSystemFor', function () {

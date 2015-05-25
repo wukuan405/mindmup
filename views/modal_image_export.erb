@@ -8,7 +8,8 @@
       <p>Click the Export button to  securely upload the map  for conversion to PNG.</p>
     </div>
     <div class="visible inprogress alert alert-info alert-block">
-      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map...
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the map:&nbsp;
+			<span data-mm-role="publish-progress-message" />
     </div>
     <div class="visible done alert alert-success alert-block">
       <h4>Export complete:</h4> <a target="_blank" data-mm-role="output-url">Click here to open</a> (This link will remain available for 24 hours)
@@ -32,6 +33,12 @@
 
          </p>
       </span>
+			
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
+			
       <span data-mm-role="polling-timeout">
         The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
       </span>
@@ -41,7 +48,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="export">Export</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus="true" data-mm-role="start-export">Export</a>
     <a tabstop="2" href="#" class="btn visible initial inprogress" data-dismiss="modal">Cancel</a>
     <a tabstop="2" href="#" class="btn visible done error" data-dismiss="modal">Close</a>
   </div>

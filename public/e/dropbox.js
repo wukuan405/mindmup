@@ -70,7 +70,9 @@ $.fn.dropboxOpenWidget = function (mapController, dropboxFileSystem) {
 			parent.empty();
 			dropboxFileSystem.listFiles(interactive, path).then(loaded, loadError, loadNotify);
 		};
-	modal.on('show', function () { fileRetrieval(false, '/'); });
+	modal.on('show', function () {
+		fileRetrieval(false, '/');
+	});
 	return modal;
 };
 MM.Extensions.Dropbox = {
@@ -192,9 +194,9 @@ MM.Extensions.Dropbox = {
 		self.loadMap = function (mapId, interactive) {
 			var result = jQuery.Deferred(),
 				loadCallback = function (dropboxApiError, dropboxFileContent, dropboxFileStat) {
-                    if (typeof(dropboxFileStat) === 'string') {
-                        dropboxFileStat = JSON.parse(dropboxFileStat);
-                    }
+					if (typeof (dropboxFileStat) === 'string') {
+						dropboxFileStat = JSON.parse(dropboxFileStat);
+					}
 					if (dropboxApiError) {
 						var mmError = toMindMupError(dropboxApiError);
 						if (dropboxApiError.response && dropboxApiError.response.error) {
@@ -217,9 +219,9 @@ MM.Extensions.Dropbox = {
 		self.saveMap = function (contentToSave, mapId, fileName, interactive) {
 			var result = jQuery.Deferred(),
 				sendCallback = function (dropboxApiError, dropboxFileStat) {
-                    if (typeof(dropboxFileStat) === 'string') {
-                        dropboxFileStat = JSON.parse(dropboxFileStat);
-                    }
+					if (typeof (dropboxFileStat) === 'string') {
+						dropboxFileStat = JSON.parse(dropboxFileStat);
+					}
 					if (dropboxApiError) {
 						result.reject(toMindMupError(dropboxApiError));
 					} else if (dropboxFileStat && toMapId(dropboxFileStat)) {
@@ -250,7 +252,6 @@ MM.Extensions.Dropbox = {
 				$('ul[data-mm-role=save]').append(dom.find('[data-mm-role=save-link]').clone());
 				$('[data-mm-role=open-sources]').prepend(dom.find('[data-mm-role=open-link]'));
 				$('[data-mm-role=new-sources]').prepend(dom.find('[data-mm-role=new-link]'));
-				$('[data-mm-role=sharelinks]').prepend(dom.find('[data-mm-role=sharelinks]').children());
 				dom.find('#modalDropboxOpen').detach().appendTo('body').dropboxOpenWidget(mapController, fileSystem);
 				mapController.validMapSourcePrefixesForSaving += fileSystem.prefix;
 			};

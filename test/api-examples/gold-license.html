@@ -1,0 +1,85 @@
+<html>
+<script src="http://static.mindmup.com/20140912202404/external.js"></script>
+<link rel="stylesheet" href="http://static.mindmup.com/20140912202404/external.css"/>
+<script src="../../public/mapjs-compiled.js" ></script>
+<script src="../../public/mm.js" ></script>
+<script src="../../public/lib/json-storage.js"></script>
+<script src="../../public/lib/activity-log.js"></script>
+<script src="../../public/lib/gold-license-manager.js"></script>
+<script src="../../public/lib/gold-api.js"></script>
+<script>
+ 
+var goldApi,
+    goldLicenseManager,
+    activityLog = new MM.ActivityLog(200),
+    objectStorage = new MM.JsonStorage(window.localStorage),
+    init = function (apiUrl) {
+        goldLicenseManager = new MM.GoldLicenseManager(objectStorage, 'gold-license');
+        goldApi = new MM.GoldApi(goldLicenseManager, apiUrl, activityLog, '' /*goldBucketName is irrelevant for this example */);
+    },
+    doInit = function () {
+       init($('#api_url').val());
+       $('#init_section').hide();
+       $('#step_1').show();
+    },
+    doRequestCode = function () {
+      goldApi.requestCode($('#account_identifier').val()).then(
+          function () {
+            $('#step_1').hide();
+            $('#step_2').show();
+          }, 
+          function (error) {
+            console.log('Error requesting code:', arguments);
+            $('#status-text').text('Error: ' + error);
+            $('#status').show();
+          });
+    },
+    doRestoreLicense = function () {
+      goldApi.restoreLicenseWithCode($('#code').val()).then(
+          function() { 
+            $('#step_2').hide();
+            $('#status-text').text('License Loaded: ' + JSON.stringify(goldLicenseManager.getLicense()));
+            $('#status').show();
+          }, 
+          function (error) {
+            console.log('Error requesting license:', arguments);
+            $('#status-text').text('Error: ' + error);
+            $('#status').show();
+          });
+    };
+</script>
+<body>
+<div class="container">
+  <h1>MM Gold Authentication Workflow</h1>
+  <div id="init_section">
+    <h2>Step 1: Initialization</h2>
+    <form class="form-horizontal" onsubmit="return false;">
+      <input type="text" placeholder="Gold Api URL" id="api_url"/>
+      <button class="btn" onclick="doInit()">Set</button>
+    </form>
+  </div>
+  <div id="step_1" class="hide">
+    <h2>Step 1: Request Code</h2>
+    <form class="form-horizontal" onsubmit="return false;">
+      <button class="btn" onclick="$('#step_1').hide();$('#init_section').show();">&lt;</button>
+      <input type="text" placeholder="Account ID or e-mail" id="account_identifier"/>
+      <button class="btn" onclick="doRequestCode()">Request</button>
+    </form>
+  </div>
+  <div id="step_2" class="hide">
+    <h2>Step 2: Request license using code</h2>
+    <p>The e-mail with the one-time code was successfully sent. Please enter the code below:</p>
+    <form class="form-horizontal" onsubmit="return false;">
+      <button class="btn" onclick="$('#step_2').hide();$('#step_1').show();">&lt;</button>
+      <input type="text" placeholder="Access code received by e-mail" id="code"/>
+      <button class="btn" onclick="doRestoreLicense()">Retrieve License</button>
+    </form>
+  </div>
+  <div id="status" class="hide">
+    <h2>Status</h2>
+    <div id="status-text">
+    </div>
+  </div>
+</div>
+</body>
+</html>

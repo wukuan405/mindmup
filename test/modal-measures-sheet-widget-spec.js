@@ -7,10 +7,10 @@ describe('measuresDisplayControlWidget', function () {
 			'<li class="divider" data-mm-role="hide-measure"></li>' +
 			'<li data-mm-role="measurement-activation-template"><a data-category="Measurements" data-event-type="Show On Map" data-mm-role="show-measure"><span class="show-active"><i class="icon-check"></i>&nbsp;</span><span data-mm-role="measure-name"></span></a></li>' +
 			'</ul>' +
-                '</div>',
+				'</div>',
 		checkMeasureNames = function (measureNames) {
 			_.each(measureNames, function (measureName) {
-				expect(underTest.find('[data-mm-measure=' + measureName + ']  [data-mm-role=measure-name]').text()).toBe(measureName);
+				expect(underTest.find('[data-mm-measure="' + measureName.replace('"', '\\"') + '"]  [data-mm-role=measure-name]').text()).toBe(measureName);
 			});
 			expect(underTest.find('[data-mm-measure]').length).toBe(measureNames.length);
 		};
@@ -34,6 +34,26 @@ describe('measuresDisplayControlWidget', function () {
 	it('removes measures from the list', function () {
 		measuresModel.dispatchEvent('measureRemoved', 'Cost');
 		checkMeasureNames(['Expenses']);
+	});
+	describe('special chars in measure names', function () {
+		it('can add a measure with a space in the name', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Fun Run');
+			checkMeasureNames(['Cost', 'Expenses', 'Fun Run']);
+		});
+		it('can add a measure with a quote in the name', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Fun"Run');
+			checkMeasureNames(['Cost', 'Expenses', 'Fun"Run']);
+		});
+		it('can remove a measure with a space in the name', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Fun Run');
+			measuresModel.dispatchEvent('measureRemoved', 'Fun Run');
+			checkMeasureNames(['Cost', 'Expenses']);
+		});
+		it('can remove a measure with a quote in the name', function () {
+			measuresModel.dispatchEvent('measureAdded', 'Fun"Run');
+			measuresModel.dispatchEvent('measureRemoved', 'Fun"Run');
+			checkMeasureNames(['Cost', 'Expenses']);
+		});
 	});
 
 	it('shows a hide all option when a measure is being shown', function () {
@@ -128,11 +148,15 @@ describe('MM.measuresSheetWidget', function () {
 		},
 		tableColumnNames = function () {
 			var headerRow = underTest.find('thead tr');
-			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
+			return _.map(headerRow.children(), function (cell) {
+				return jQuery(cell).text();
+			});
 		},
 		tableFooterContent = function () {
 			var headerRow = underTest.find('tfoot tr');
-			return _.map(headerRow.children(), function (cell) { return jQuery(cell).text(); });
+			return _.map(headerRow.children(), function (cell) {
+				return jQuery(cell).text();
+			});
 		};
 	beforeEach(function () {
 		measuresModel = observable(jasmine.createSpyObj('measuresModel',
@@ -215,7 +239,9 @@ describe('MM.measuresSheetWidget', function () {
 		});
 		it('shows active idea titles in the first column, truncating if needed', function () {
 			var ideaNames = underTest.find('[data-mm-role=idea-title]');
-			expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'tom', 'mike...']);
+			expect(_.map(ideaNames, function (cell) {
+				return jQuery(cell).text();
+			})).toEqual(['ron', 'tom', 'mike...']);
 		});
 		describe('measureLabelShown event handling', function () {
 			it('if a label is shown assigns the active class to the label', function () {
@@ -324,12 +350,16 @@ describe('MM.measuresSheetWidget', function () {
 			});
 			it('clears out previous measures before adding new ones', function () {
 				var headerRow = underTest.find('thead tr');
-				expect(_.map(headerRow.children(), function (cell) { return jQuery(cell).text(); })).toEqual(['Name', 'Profit', 'Fun']);
+				expect(_.map(headerRow.children(), function (cell) {
+					return jQuery(cell).text();
+				})).toEqual(['Name', 'Profit', 'Fun']);
 				expect(tableFooterContent()).toEqual(['SUMMARY', '22', '100']);
 			});
 			it('clears out previous titles before adding new ones', function () {
 				var ideaNames = underTest.find('[data-mm-role=idea-title]');
-				expect(_.map(ideaNames, function (cell) { return jQuery(cell).text(); })).toEqual(['ron', 'non']);
+				expect(_.map(ideaNames, function (cell) {
+					return jQuery(cell).text();
+				})).toEqual(['ron', 'non']);
 			});
 			it('clears out previous values before adding new ones', function () {
 				expect(tableValues()).toEqual([

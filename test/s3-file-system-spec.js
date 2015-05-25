@@ -22,7 +22,7 @@ describe('MM.S3FileSystem', function () {
 
 		configGenerator  = {
 			generateDeferred: jQuery.Deferred(),
-			buildMapUrlDeferred: jQuery.Deferred(),
+			buildMapUrlDeferred: jQuery.Deferred()
 		};
 		configGenerator.generate = jasmine.createSpy('generate').and.returnValue(configGenerator.generateDeferred.promise());
 		configGenerator.buildMapUrl = jasmine.createSpy('buildMapUrl').and.returnValue(configGenerator.buildMapUrlDeferred.promise());

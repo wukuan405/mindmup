@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <meta name="viewport" content="user-scalable=no, minimum-scale=1, maximum-scale=1, width=device-width">
+        <!--embedded-styles-START-->
+        <%= erb :"ios/4/css_ios" %>
+        <!--embedded-styles-END-->
+        <style>
+        /*embedded-styles-INSERT*/
+        </style>
+
+    </head>
+    <body class="ios-wkwebview">
+        <div id="splittable" class="splittable-container">
+            <div class="splittable-primary" id="container" data-mm-role="default"></div>
+            <div class="splittable-optional" id="optionalPane" data-mm-role="optional"></div>
+        </div>
+<%= erb :"ios/4/ios_menu_widget" %>
+<%= erb :"ios/4/ios_context_menu_widget" %>
+<%= erb :"ios/4/ios_link_edit_widget" %>
+<%= erb :"ios/4/ios_color_widget" %>
+<%= erb :"ios/4/ios_mode_indicator_widget" %>
+<%= erb :"ios/4/ios_modal_atlas_publish" %>
+
+        <!--embedded-scripts-START-->
+<%= erb :"ios/4/scripts_ios" %>
+        <!--embedded-scripts-END-->
+
+<script id="ios">
+        /*embedded-scripts-INSERT*/
+</script>
+<script id="main">
+    /*global window, MM*/
+    /*jscs: disable validateIndentation*/
+    window.onload = function () {
+        'use strict';
+        MM.main({
+            activeContentConfiguration: {
+                nonClonedAttributes: ['storyboards', 'storyboard-scenes', 'measurements-config']
+            },
+            goldApiUrl: '<%= ENV["GOLD_API_URL"] %>',
+            goldBucketName: '<%= ENV["GOLD_BUCKET_NAME"] %>',
+            corsProxyUrl: '<%= ENV["CORS_PROXY_URL"] %>'
+        });
+    };
+    /*jscs: enable validateIndentation*/
+</script>
+    </body>
+</html>

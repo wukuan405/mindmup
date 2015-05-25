@@ -35,7 +35,9 @@ MM.Storyboard.sceneList = function (listOfScenes) {
 			return undefined;
 		}
 		MM.Storyboard.scene(sceneToFind);
-		return _.find(listOfScenes, function (sceneInList) { return sceneToFind.matchesScene(sceneInList); });
+		return _.find(listOfScenes, function (sceneInList) {
+			return sceneToFind.matchesScene(sceneInList);
+		});
 	};
 	listOfScenes.indexOfScene = function (sceneToIndex) {
 		if (!sceneToIndex) {
@@ -48,7 +50,9 @@ MM.Storyboard.sceneList = function (listOfScenes) {
 		return -1;
 	};
 	listOfScenes.nextSceneIndex = function () {
-		var maxScene = _.max(listOfScenes, function (scene) { return scene && scene.index; });
+		var maxScene = _.max(listOfScenes, function (scene) {
+			return scene && scene.index;
+		});
 		if (!maxScene || !maxScene.index) {
 			return 1;
 		}
@@ -66,15 +70,15 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		rebuildScenesForActiveStoryboard = function () {
 			var storyboardName = self.getActiveStoryboardName(),
 				result = [],
-                getTitle = function (idea, sceneType) {
-                  var result = idea.title;
-                  if (sceneType === 'with-children') {
-                   _.each(idea.sortedSubIdeas(), function (subIdea) {
-                     result = result + '\n- ' + subIdea.title;
-                   });
-                  }
-                  return result;
-                };
+				getTitle = function (idea, sceneType) {
+					var result = idea.title;
+					if (sceneType === 'with-children') {
+						_.each(idea.sortedSubIdeas(), function (subIdea) {
+							result = result + '\n- ' + subIdea.title;
+						});
+					}
+					return result;
+				};
 			if (!storyboardName) {
 				scenesForActiveStoryboard = MM.Storyboard.sceneList(result);
 				return;
@@ -124,8 +128,7 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 						var newScene = newScenes && newScenes.findScene(oldScene);
 						if (!newScene) {
 							result.removed.push(oldScene);
-						}
-						else if (newScene.title !== oldScene.title || ! _.isEqual(newScene.image, oldScene.image)) {
+						} else if (newScene.title !== oldScene.title || !_.isEqual(newScene.image, oldScene.image)) {
 							result.contentUpdated.push(newScene);
 						}
 					});
@@ -222,9 +225,11 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 				nextIndex = 1,
 				storyboard = self.getActiveStoryboardName();
 		_.each(scenesForActiveStoryboard, function (scene) {
-			var sceneOfInterest = _.find(scenesOfInterest, function (sceneOfInterest) { return self.scenesMatch(scene, sceneOfInterest); }),
-					indexOfInterest = sceneOfInterest !== undefined ? _.indexOf(scenesOfInterest, sceneOfInterest) : -1,
-					reIndexedScene = self.updateSceneIndex(scene, nextIndex, storyboard);
+			var sceneOfInterest = _.find(scenesOfInterest, function (sceneOfInterest) {
+					return self.scenesMatch(scene, sceneOfInterest);
+				}),
+				indexOfInterest = sceneOfInterest !== undefined ? _.indexOf(scenesOfInterest, sceneOfInterest) : -1,
+				reIndexedScene = self.updateSceneIndex(scene, nextIndex, storyboard);
 			nextIndex++;
 			if (indexOfInterest >= 0) {
 				scenesToReturn[indexOfInterest] = reIndexedScene;
@@ -261,7 +266,9 @@ MM.StoryboardModel = function (activeContentListener, storyboardAttrName, sceneA
 		if (!sceneToInsertAfter) {
 			return indexToInsertAtStart();
 		}
-		sceneToInsertAfterPosition = _.indexOf(scenesForActiveStoryboard, _.find(scenesForActiveStoryboard, function (scene) { return scene.ideaId === sceneToInsertAfter.ideaId && scene.index === sceneToInsertAfter.index; }));
+		sceneToInsertAfterPosition = _.indexOf(scenesForActiveStoryboard, _.find(scenesForActiveStoryboard, function (scene) {
+			return scene.ideaId === sceneToInsertAfter.ideaId && scene.index === sceneToInsertAfter.index;
+		}));
 		if (sceneToInsertAfterPosition < 0) {
 			return false;
 		}

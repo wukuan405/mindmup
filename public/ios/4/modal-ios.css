@@ -1,0 +1,219 @@
+.modal-footer {
+	position: absolute;
+	width: 100%;
+	height: 80px;
+	top: calc(100% - 80px);
+	box-shadow: 0 -1px 0 #22AAE0;
+}
+
+.ios-modal {
+	z-index: 1090;
+	position: absolute;
+	overflow: hidden;
+	left:0;
+	top: 0;
+	height:100%;
+	width:100%;
+	background-color: #FFFFFF;
+	background-color: rgba(255, 255, 255, 0.85);
+}
+.ios-modal-title {
+	position: absolute;
+	left: 45px;
+	top: 30px;
+	height: 40px;
+	width: calc(100% - 90px);
+	text-align: center;
+	font-family: Helvetica, "Arial Unicode MS", sans-serif;
+	font-size: 12pt;
+	color: #22AAE0;
+	font-weight: bold;
+	line-height: 1.2;
+}
+.ios-modal-content {
+	z-index: 1095;
+	text-align: center;
+	position: absolute;
+	top: 60px;
+	height: calc(100% - 65px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	background-color: #FFFFFF;
+	border: 1px solid #22AAE0;
+	border-radius: 10px;
+}
+.ios-modal-section {
+	font-family: Helvetica, "Arial Unicode MS", sans-serif;
+	font-weight: normal;
+	line-height: 1.2;
+	color: #6F6F6F;
+	margin: 5px 20px 0 20px;
+	text-align: left;
+}
+.ios-icon-button {
+	width: 50px;
+	height:50px;
+	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.8);
+	margin: 20px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+@media (max-height:270px)  {
+	.ios-keyboardShown .ios-modal-title {
+		display: none;
+	}
+
+	.ios-keyboardShown .ios-modal-content {
+		left:0;
+		top: 0;
+		height:100%;
+		width:100%;
+		border: 0;
+		border-radius: 0;
+	}
+}
+@media (max-width:470px) and (max-height:270px) {
+	.ios-keyboardShown .ios-modal-section {
+		margin-top: 20px;
+	}
+}
+
+/* device class */
+/*ipad*/
+@media (min-width: 768px) {
+	.ios-modal-section {
+		font-size: 16pt;
+		margin-top: 20px;
+	}
+	.ios-modal-content {
+		left: 50px;
+		width: calc(100% - 100px);
+	}
+	.ios-color-palette {
+		margin: 20px 50px 20px 50px;
+	}
+	.ios-color-selector {
+		margin: 15px;
+		height: 70px;
+		width: 70px;
+		border-radius: 35px;
+	}
+	.ios-modal-section .control-label {
+		display: inline-block;
+		width: 130px;
+	}
+	.ios-modal-section .input-xlarge {
+		display: inline-block;
+		width: calc(100% - 150px);
+		font-size: 13pt;
+	}
+	.ios-modal-section .control-group {
+		margin-top: 30px;
+	}
+}
+
+/*phablet*/
+@media (max-width:736px) and (max-height: 370px), (max-width:414px) and (max-height: 692px) {
+	.ios-modal-section {
+		font-size: 13pt;
+		margin-top: 20px;
+	}
+	.ios-modal-content {
+		left: 15px;
+		width: calc(100% - 30px);
+	}
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+	.ios-modal-section .control-label {
+		display: inline-block;
+		width: 100px;
+	}
+	.ios-modal-section .input-xlarge {
+		display: inline-block;
+		width: calc(100% - 120px);
+		font-size: 12pt;
+	}
+
+}
+
+/*phone*/
+@media (max-width:667px) and (max-height: 331px), (max-width:375px) and (max-height: 623px) {
+	.ios-modal-section {
+		font-size: 12pt;
+	}
+	.ios-modal-content {
+		left: 15px;
+		width: calc(100% - 30px);
+	}
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+	.ios-modal-section .control-label {
+		display: inline-block;
+		width: 90px;
+	}
+	.ios-modal-section .input-xlarge {
+		display: inline-block;
+		width: calc(100% - 100px);
+		font-size: 11pt;
+	}
+	.ios-keyboardShown .ios-modal-section .control-label {
+		display: none;
+	}
+	.ios-keyboardShown .ios-modal-section .input-xlarge {
+		font-size: 10pt;
+		width: calc(100% - 10px);
+	}
+}
+
+
+/*small phone*/
+@media (min-width:321px) and (max-width:480px) and (max-height: 276px), (max-width:320px) and (max-height: 436px) and (orientation: portrait), (max-width:320px) and (max-height: 183px)  {
+	.ios-modal-section {
+		font-size: 11pt;
+	}
+	.ios-modal-content {
+		left: 15px;
+		width: calc(100% - 30px);
+	}
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+	.ios-modal-section .control-label {
+		display: inline-block;
+		width: 80px;
+	}
+	.ios-modal-section .input-xlarge {
+		display: inline-block;
+		width: calc(100% - 90px);
+		font-size: 10pt;
+	}
+	.ios-keyboardShown .ios-modal-section .control-label {
+		display: none;
+	}
+	.ios-keyboardShown .ios-modal-section .input-xlarge {
+		font-size: 9pt;
+		width: calc(100% - 10px);
+	}
+
+}
+

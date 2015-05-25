@@ -1,0 +1,89 @@
+<div data-mm-role="atlas-publish layout-export ios-modal" data-mm-format="publish.json" class="ios-modal" style="display:none">
+  <div class="ios-modal-title">Publish to MindMup Atlas</div>
+  <div class="ios-modal-content" data-mm-role="ios-modal-content">
+
+    <div class="visible initial ios-modal-section">
+      <p>MindMup Atlas is a cloud mind map library that enables authors to publish interactive, read-only maps, optimised for posting to social networks and embedding in web sites.</p>
+      <ul>
+        <li>Anyone can publish maps up to 100 KByte. Published maps will be available for at least 6 months.</li>
+        <li>MindMup Gold users can publish maps up to 100 MByte for the duration of their subscription.</li>
+      </ul>
+      <p>By clicking on <b>Start</b>, you accept the Terms and Conditions for MindMup Atlas.</p>
+    </div>
+    <div class="visible terms ios-modal-section">
+      <%= erb :"ios/atlas_terms_content" %>
+    </div>
+    <div class="visible seo ios-modal-section">
+      <form class="form-horizontal" data-mm-role="export-parameters atlas-metadata">
+        <div class="control-group">
+          <label class="control-label">Title:</label>
+          <input name="title" placeholder="Descriptive title for your map" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Text that will show in the browser title bar. Keep it under 40 characters." data-placement="bottom"></i>
+        </div>
+        <div class="control-group">
+          <label class="control-label">URL slug:</label>
+          <input name="slug" placeholder="URL slug" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Descriptive text that will form part of the URL. Keep it short!"></i>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Description:</label>
+          <input name="description" placeholder="Description" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Page description for search engines. Keep it under 150 characters."></i>
+        </div>
+      </form>
+    </div>
+
+    <div class="visible inprogress alert alert-info alert-block ios-modal-section ios-centered">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map...
+    </div>
+
+    <div class="visible done ios-modal-section">
+
+      <div data-mm-role="publish-status initial" class="alert alert-success alert-block">
+        <h4>Your map was published</h4>
+      </div>
+
+      <div data-mm-role="publish-status republished" class="alert alert-warning alert-block">
+        <h4>Your map was re-published.</h4>
+        <p>The updated content should be available in around 30 minutes.</p>
+      </div>
+      <p>To share your map with others, use one or more of the options below</p>
+      <input data-mm-role="ios-export-result" class="ios-hidden" />
+      <div class="control-group ios-centered">
+        <img class="ios-icon-button" data-mm-role="ios-send-export" data-mm-method="twitter" src="<%=settings.static_image_host%>/ios_icon_twitter.svg"></img>
+        <img class="ios-icon-button" data-mm-role="ios-send-export" data-mm-method="email" src="<%=settings.static_image_host%>/ios_icon_email.svg"></img>
+        <img class="ios-icon-button" data-mm-role="ios-send-export" data-mm-method="facebook" src="<%=settings.static_image_host%>/FB-f-Logo__blue_50.png"></img>
+      </div>
+    </div>
+
+    <div class="visible error alert alert-error alert-block ios-modal-section">
+      <h4>Unable to publish your map:</h4>
+
+      <span data-mm-role="error-message"></span>
+      <span data-mm-role="generation-error">
+        This map contains a feature not currently supported by Atlas. Please contact us at contact@mindmup.com quoting the reference number: <b data-mm-role="file-id"></b>
+      </span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The map you are publishing is too large. The maximum size of maps that can be published online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kbyte </li>
+              <li>Mindmup Gold users: <%=settings.gold_pdf_max_size.to_i/(1024*1024)%> Mbyte</li>
+           </ul>
+           <p>For maps larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mbyte, Mindmup Gold Users should contact us at contact@mindmup.com to arrange an offline export.</p>
+         </p>
+      </span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at contact@mindmup.com
+      </span>
+      <span data-mm-role="network-error">
+        This operation requires a network connection and we can't reach MindMup servers at the moment. Please ensure that you are online and try again. If this error persists contact us at contact@mindmup.com
+      </span>
+    </div>
+    <div class="ios-hidden" data-mm-role="ios-modal-tools">
+      <a href="#" data-mm-ios-role="T+C" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="terms">terms</a>
+      <a href="#" data-mm-ios-role="Start" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="seo">Start</a>
+      <a href="#" data-mm-ios-role="Back" class="btn visible seo terms pull-left" data-mm-role="set-state" data-mm-state="initial">Back</a>
+      <a href="#" data-mm-ios-role="Publish" class="btn btn-primary visible seo" data-mm-role="start-export">Publish</a>
+    </div>
+    <br/>
+    <br/>
+  </div>
+</div>

@@ -3,23 +3,11 @@
 	background-repeat: no-repeat;
 	background-position:left center;
 }
-img.collab-photo {
-	width:20px;
-	height:20px;
-	float:left;
-	padding-right:10px;
-}
-
 .visible-map-source-c {
 	display: none;
 }
 
 .map-source-c .visible-map-source-c {
-	display: inherit;
+	display: initial;
 }
 
-.mm-collaborator {
-	position: absolute;
-	width: 32px;
-	height: 32px;
-}

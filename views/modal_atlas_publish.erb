@@ -1,0 +1,168 @@
+<div id="modalAtlasPublish" data-mm-role="atlas-publish layout-export" class="modal hide fade" data-mm-format="publish.json">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3><i class="icon-cloud-upload"></i>&nbsp;Publish to MindMup Atlas</h3>
+  </div>
+  <div class="modal-body">
+    <div class="visible initial">
+			<p>MindMup Atlas is a cloud mind map library that enables authors to publish interactive, read-only maps, optimised for posting to social networks and embedding in web sites.</p>
+			<ul>
+				<li>Anyone can publish maps up to 100 KByte. Published maps will be available for at least 6 months.</li>
+				<li><a target="_blank" href="http://discover.mindmup.com/mindmup-gold">MindMup Gold</a> users can publish maps up to 100 MByte for the duration of their subscription.</li>
+			</ul>
+			<p>By clicking on <b>Start</b>, you accept the <a href="/legal/atlas" target="#blank">Terms and Conditions</a> for MindMup Atlas.</p>
+    </div>
+		<div class="visible seo">
+      <form class="form-horizontal" data-mm-role="export-parameters atlas-metadata">
+        <div class="control-group">
+          <label class="control-label">Title:</label>
+          <div class="controls">
+            <input name="title" placeholder="Descriptive title for your map" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Text that will show in the browser title bar. Keep it under 40 characters." data-placement="bottom"></i>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">URL slug:</label>
+          <div class="controls">
+            <input name="slug" placeholder="URL slug" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Descriptive text that will form part of the URL. Keep it short!"></i>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Description:</label>
+          <div class="controls">
+            <input name="description" placeholder="Description" class="input-xlarge" />&nbsp;<i class="icon-question-sign" rel="tooltip" data-title="Page description for search engines. Keep it under 150 characters."></i>
+          </div>
+        </div>
+      </form>
+		</div>
+    <div class="visible inprogress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, publishing your map:&nbsp;
+			<span data-mm-role="publish-progress-message" />
+    </div>
+    <div class="visible done">
+
+      <div data-mm-role="publish-status initial" class="alert alert-success alert-block">
+        <h4>Your map was published</h4>
+      </div>
+
+      <div data-mm-role="publish-status republished" class="alert alert-warning alert-block">
+        <h4>Your map was re-published.</h4>
+        <p>The updated content should be available in around 30 minutes (<a href="http://blog.mindmup.com/p/republishing-atlas-maps.html" target="_blank">more info</a>).</p>
+      </div>
+
+
+      <div class="tabbable tabs-top">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#publish-tab-social" data-toggle="tab">Share on social networks</a></li>
+          <li><a href="#publish-tab-send-links" data-toggle="tab">Send links</a></li>
+          <li><a href="#publish-tab-embed" data-toggle="tab">Embed code</a></li>
+          <li><a href="#publish-tab-get-archive" data-toggle="tab">Get archive</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="publish-tab-social">
+						<p style="margin-bottom: 20px">Click on a button below to share quickly:</p>
+						<p class="text-center">
+							<a data-event-type="Post to Twitter"
+								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+								data-category="Atlas" data-event-type="Post to Twitter" class="btn btn-large btn-share icon-twitter" rel="tooltip" data-title="Twitter" data-mm-role="twitter-url" target="_blank"></a>
+							<a
+								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+								data-event-type="Post to Facebook" data-category="Atlas" class="btn btn-large btn-share icon-facebook" rel="tooltip" data-title="Facebook"  data-mm-role="facebook-url" target="_blank"></a>
+							<a
+								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+								data-event-type="Post to Google Plus" data-category="Atlas" class="btn btn-large btn-share icon-google-plus"  rel="tooltip" data-title="Google Plus"  data-mm-role="google-plus-url" target="_blank"></a>
+							<a
+								onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+								data-event-type="Post to LinkedIn" data-category="Atlas" class="btn btn-large btn-share icon-linkedin" rel="tooltip" data-title="LinkedIn" data-mm-role="linkedin-url" target="_blank"></a>
+							<a
+								data-event-type="Post to Tumblr" data-category="Atlas" class="btn btn-large btn-share icon-tumblr" rel="tooltip" data-title="Tumblr" data-mm-role="tumblr-url" target="_blank"></a>
+							<a
+								data-event-type="Post to Pinterest" data-category="Atlas" class="btn btn-large btn-share icon-pinterest" rel="tooltip" data-title="Pinterest" data-mm-role="pinterest-url" target="_blank"></a>
+						</p>
+          </div>
+          <div class="tab-pane" id="publish-tab-send-links">
+            <p class="text-center">
+              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-index-html" rel="tooltip" data-title="Email a link" data-event-type="Email Link" data-category="Atlas" ><i class="icon-envelope"></i></a>
+              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-index-html" rel="tooltip" data-title="Gmail a link" data-event-type="Gmail Link" data-category="Atlas" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+            </p>
+						<form class="form">
+							<div class="control-group">
+								<label>Web page:</label>
+								<div class="input-append">
+									<input data-mm-role="index-html selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="index-html" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+							<div class="control-group">
+								<label>Thumbnail image:</label>
+								<div class="input-append">
+									<input data-mm-role="thumb-png selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="thumb-png" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+						</form>
+          </div>
+
+          <div class="tab-pane" id="publish-tab-embed">
+						<p>Paste the code snippet below in your web site to embed the map. Don't forget to configure the width and height of the iFrame!</p>
+							<textarea data-mm-role="embed-markup selectable-read-only" class="span5"></textarea>
+          </div>
+
+          <div class="tab-pane" id="publish-tab-get-archive">
+            <p class="text-center">
+              <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-archive-zip" rel="tooltip" data-title="Email a link" data-event-type="Email Archive" data-category="Atlas" ><i class="icon-envelope"></i></a>
+              <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-archive-zip" rel="tooltip" data-title="Gmail a link" data-event-type="Gmail Archive" data-category="Atlas" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+            </p>
+						<form class="form">
+							<div class="control-group">
+								<label>Zip Archive:</label>
+								<div class="input-append">
+									<input data-mm-role="archive-zip selectable-read-only" class="span5" style="outline:none" />
+									<a class="btn btn-small" href="#" data-mm-role="archive-zip" target="_blank"><i class="icon-share"></i></a>
+								</div>
+							</div>
+						</form>
+          </div>
+				</div>
+			</div>
+    </div>
+    <div class="visible error alert alert-error alert-block">
+      <h4>Unable to publish your map:</h4>
+      <br/>
+
+      <span data-mm-role="error-message"></span>
+			<span data-mm-role="generation-error">
+        This map contains a feature not currently supported by Atlas. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+      </span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The map you are publishing is too large. The maximum size of maps that can be published online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kbyte </li>
+              <li><a href="http://discover.mindmup.com/mindmup-gold" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size.to_i/(1024*1024)%> Mbyte</li>
+           </ul>
+           <p>For maps larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mbyte, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20PDF%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+
+         </p>
+      </span>
+
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+      <span data-mm-role="network-error">
+        This operation requires a network connection and we can't reach MindMup servers at the moment. Please ensure that you are online and try again. If this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a class="pull-left btn visible initial done" href="http://discover.mindmup.com/atlas" target="_blank"><i class="icon-question-sign"></i>&nbsp;More Info</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus data-mm-role="set-state" data-mm-state="seo">Start &gt;</a>
+    <a tabstop="1" href="#" class="btn visible seo pull-left" data-mm-role="set-state" data-mm-state="initial">&lt; Back</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible seo" data-mm-role="start-export">Publish</a>
+    <a tabstop="2" href="#" class="btn visible initial inprogress author" data-dismiss="modal">Cancel</a>
+    <a tabstop="2" href="#" class="btn visible done error seo" data-dismiss="modal">Close</a>
+  </div>
+</div>

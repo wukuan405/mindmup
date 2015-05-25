@@ -2,6 +2,6 @@ language: ruby
 rvm:
     - "1.9.3"
 before_script:
-  - npm install  grunt-cli
-  - npm install  grunt-contrib-jasmine --save-dev
+  - npm install grunt-cli
+  - npm install 
 script: bundle exec rspec test &&  grunt jasmine

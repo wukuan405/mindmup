@@ -1,0 +1,65 @@
+.ios-color-selector {
+	display: inline-block;
+	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.7);
+}
+.ios-color-palette {
+	display: block;
+	text-align: center;
+}
+
+/* device class */
+/*ipad*/
+@media (min-width: 767px) and (orientation: portrait), (min-width: 1023px) and (orientation: landscape){
+	.ios-color-palette {
+		margin: 20px 50px 20px 50px;
+	}
+	.ios-color-selector {
+		margin: 15px;
+		height: 70px;
+		width: 70px;
+		border-radius: 35px;
+	}
+}
+
+/*phablet*/
+@media (max-width:766px) and (min-width:735px) and (orientation: landscape), (max-width:766px) and (min-width:413px) and (orientation: portrait) {
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+
+}
+
+/*phone*/
+@media (max-width: 412px) and (min-width: 375px) and (orientation: portrait), (max-width: 734px) and (min-width: 666px) and (orientation: landscape) {
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+
+}
+
+
+/*small phone*/
+@media (max-width:569px) and (max-height: 569px) {
+	.ios-color-palette {
+		margin: 10px 20px 10px 20px;
+	}
+	.ios-color-selector {
+		margin: 10px;
+		height: 40px;
+		width: 40px;
+		border-radius: 20px;
+	}
+}
+

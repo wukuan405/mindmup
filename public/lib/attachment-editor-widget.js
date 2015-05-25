@@ -73,9 +73,15 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 				fontTarget.append($('<li><a data-edit="fontName ' + fontName + '" style="font-family:' + fontName + '">' + fontName + '</a></li>'));
 			});
 			$('[data-role=editor-toolbar] .dropdown-menu input')
-				.click(function () {return false; })
-				.change(function () {$(this).parent('.dropdown-menu').siblings('.dropdown-toggle').dropdown('toggle'); })
-				.keydown('esc', function () { this.value = ''; $(this).change(); });
+				.click(function () {
+					return false;
+				})
+				.change(function () {
+					$(this).parent('.dropdown-menu').siblings('.dropdown-toggle').dropdown('toggle');
+				})
+				.keydown('esc', function () {
+					this.value = ''; $(this).change();
+				});
 			$('[data-role=editor-toolbar] a')
 				.attr('data-category', 'Attachment editor toolbar')
 				.attr('data-event-type', function () {
@@ -97,6 +103,9 @@ $.fn.attachmentEditorWidget = function (mapModel, isTouch) {
 			close();
 		}
 	}).keydown('ctrl+s meta+s', function (e) {
+		if (e.altKey) {
+			return;
+		}
 		if (element.is(':visible')) {
 			e.preventDefault();
 			save();
