@@ -23,6 +23,7 @@
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
 <script src="<%=settings.static_host%>/embedded_external.js"></script>
 <script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
+<script src="<%=settings.base_url%>e/hangouts_collaboration.js" ></script>
 <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
 <div id="container">
   Please wait, loading MindMup...
@@ -48,49 +49,12 @@ function showParticipants() {
 
   div.innerHTML = retVal;
 }
-function initMindMup() {
-  jQuery('#container').empty();
-  var isTouch = false, 
-      getStorage = function () {
-        try {
-          window.localStorage.setItem('testkey', 'testval');
-          if (window.localStorage.getItem('testkey') === 'testval') {
-            return window.localStorage;
-          }
-        } catch (e) {
-        }
-        return {
-          fake: true,
-          getItem: function (key) {
-            return this[key];
-          },
-          setItem: function (key, val) {
-            this[key] = val;
-          },
-          removeItem: function (key) {
-            delete this[key];
-          }
-        };
-      },
-      browserStorage = getStorage(),
-      fakeMapController = observable({}),
-			alert = new MM.Alert(),      
-			objectStorage = new MM.JsonStorage(browserStorage),      
-      activeContentListener = new MM.ActiveContentListener(fakeMapController),
-      activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),       
-			objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert, activeContentResourceManager),
-			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
-      activityLog = console;
-      jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), activeContentResourceManager.getResource),
-      idea = MAPJS.content(_.clone(MM.Maps.default));
-    mapModel.setIdea(idea);
-}
 function init() {
   // When API is ready...                                                         
   gapi.hangout.onApiReady.add(
       function(eventObj) {
         if (eventObj.isApiReady) {
-          initMindMup();
+          MM.Hangouts.initMindMup();
 //          document.getElementById('container').innerHTML = 'loaded';
         }
       });
