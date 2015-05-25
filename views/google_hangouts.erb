@@ -8,6 +8,22 @@
 	<Content type="html"><![CDATA[     
 <html>
 <style type="text/css">
+    html, body {
+        height: 100%;
+        overflow:hidden;
+        margin:0;
+        padding:0;
+      }
+      #container {
+				background-color: #FFFFFF;
+				height: 100%;
+				width: 100%;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        margin:0;
+        padding:0;
+			}
 </style>
 <body>
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
@@ -38,13 +54,24 @@ function showParticipants() {
 
   div.innerHTML = retVal;
 }
-
+function initMindMup() {
+  var isTouch = false, /* TODO - fix with touch event detection */
+      mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []),
+      fakeMapController = observable({}),
+      activeContentListener = new MM.ActiveContentListener(fakeMapController),
+      activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'), /* TODO: use a hangouts resource mgr */
+      activityLog = console, /* TODO: google analytics? */
+      jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), activeContentResourceManager.getResource),
+      idea = MAPJS.content({id:1, title:'Press space or double-click to edit'});
+  mapModel.setIdea(idea);
+}
 function init() {
   // When API is ready...                                                         
   gapi.hangout.onApiReady.add(
       function(eventObj) {
         if (eventObj.isApiReady) {
-          document.getElementById('container').innerHTML = 'loaded';
+          initMindMup();
+//          document.getElementById('container').innerHTML = 'loaded';
         }
       });
 }
