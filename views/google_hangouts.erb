@@ -57,7 +57,7 @@ function initMindMup() {
       activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'), 
       activityLog = console;
       jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), activeContentResourceManager.getResource),
-      idea = MAPJS.content({id:1, title:'Press space or double-click to edit'});
+      idea = MAPJS.content(_.clone(MM.Maps.default));
     mapModel.setIdea(idea);
 }
 function init() {
