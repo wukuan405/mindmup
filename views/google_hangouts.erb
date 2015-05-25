@@ -72,7 +72,7 @@ function initMindMup() {
           }
         };
       },
-      browserStorage = config.storage || getStorage(),
+      browserStorage = getStorage(),
       fakeMapController = observable({}),
 			alert = new MM.Alert(),      
 			objectStorage = new MM.JsonStorage(browserStorage),      
