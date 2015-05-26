@@ -117,9 +117,10 @@
 				},
 				onCollaboratorFocusMessageReceived = function (messageEvent) {
 					var ob = JSON.parse(messageEvent.message);
-					if (ob.sessionId) {
+					if (ob.sessionId && ob.sessionId !== localParticipant.id) {
 						focusNodes[ob.sessionId] = ob.nodeId;
 					}
+					collaborationModel.collaboratorFocusChanged(mmCollaborator(gapi.hangout.getParticipantById(ob.sessionId)));
 				},
 				getCollaborators = function () {
 					_.chain(gapi.hangout.getParticipants()).map(mmCollaborator).filter(_.identity).value();
