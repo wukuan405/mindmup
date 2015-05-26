@@ -44,5 +44,5 @@ MM.CollaborationModel = function (mapModel) {
 		running = false;
 	};
 	mapModel.addEventListener('nodeSelectionChanged', onSelectionChanged);
-	mapModel.addEventListener('nodeTitleChanged', onNodeChanged);
+	mapModel.addEventListener('nodeTitleChanged nodeCreated', onNodeChanged);
 };
