@@ -1,4 +1,4 @@
-/*global gapi, _, MAPJS, observable, jQuery, window, console, google */
+/*global gapi, _, MAPJS, observable, jQuery, window, console, google, Image */
 (function () {
 	'use strict';
 	var MM = (window.MM = (window.MM || {}));
@@ -149,11 +149,20 @@
 				objectStorage = new MM.JsonStorage(browserStorage),
 				objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert, hangoutsCollaboration),
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
+				imageInsertController = observable({}),
 				activityLog = console;
-		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), hangoutsCollaboration.getResource);
+		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
+
+		jQuery('#uploadImg').click(function () {
+			MM.Hangouts.showPicker (false, 'Select an image', 'https://plus.google.com').then(function (url) {
+				MM.Hangouts.getDimensions(url).then(function (dimensions) {
+					imageInsertController.dispatchEvent('imageInserted', url, dimensions.width, dimensions.height);
+				});
+			});
+		});
 	};
-	MM.Hangouts.showPicker = function (contentTypes, title, showDialogs) {
+	MM.Hangouts.showPicker = function (showDialogs, title, origin) {
 		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator('221074361098-elea7sel8v7777vflspj7lc3d0jdh7ut.apps.googleusercontent.com'),
 			deferred = jQuery.Deferred(),
 			showPicker = function () {
@@ -165,6 +174,7 @@
 					.addView(google.picker.ViewId.PHOTOS)
 					.addView(google.picker.ViewId.PHOTO_UPLOAD)
 					.setSelectableMimeTypes('application/vnd.google-apps.photo,image/png,image/jpg,image/gif,image/jpeg')
+					.setOrigin(origin || window.location.protocol + '//' + window.location.host)
 					.setCallback(function (choice) {
 						if (choice.action === 'picked') {
 							var item = choice.docs[0],
@@ -182,8 +192,8 @@
 					})
 					.setTitle(title)
 					.setOAuthToken(authenticator.gapiAuthToken())
-					.build()
-					.setVisible(true);
+					.build();
+				picker.setVisible(true);
 			};
 		if (window.google && window.google.picker) {
 			showPicker();
@@ -198,5 +208,18 @@
 		}
 		return deferred.promise();
 	};
+	MM.Hangouts.getDimensions = function (src) {
+		var domImg = new Image(),
+				deferred = jQuery.Deferred();
+		domImg.onload = function () {
+			deferred.resolve({width: domImg.width, height: domImg.height});
+		};
+		domImg.onerror = function () {
+			deferred.reject();
+		};
+		domImg.src = src;
+		return deferred.promise();
+	};
+
 
 })();

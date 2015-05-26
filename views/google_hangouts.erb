@@ -17,7 +17,13 @@
         -ms-user-select: none;
         margin:0;
         padding:0;
-			}
+      }
+      #uploadImg {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 100;
+      }
 </style>
 <body>
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
@@ -28,6 +34,7 @@
 <div id="container">
   Please wait, loading MindMup...
 </div>
+<button id="uploadImg">Image</button>
 <script>
 function showParticipants() {
   var participants = gapi.hangout.getParticipants();
