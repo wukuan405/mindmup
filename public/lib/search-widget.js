@@ -19,14 +19,8 @@ $.fn.searchWidget = function (keyBinding, mapModel) {
 					mapModel.centerOnNode(id);
 				};
 			mapModel.setInputEnabled(false);
-			input  = $('<input type="text" autocomplete="off" placeholder="Type a part of the node title">')
-				.css('position', 'absolute')
-				.css('z-index', '9999')
+			input  = $('<input type="text" autocomplete="off" placeholder="Type a part of the node title" class="commandline">')
 				.appendTo(element)
-				.css('top', '30%')
-				.css('left', '40%')
-				.css('width', '20%')
-				.css('border-width', '5px')
 				.focus()
 				.blur(hide)
 				.keyup('Esc', hide)

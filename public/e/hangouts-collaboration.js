@@ -228,18 +228,22 @@
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 				imageInsertController = observable({}),
 				activityLog = console,
-				collaborationModel = new MM.CollaborationModel(mapModel);
-		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
+				collaborationModel = new MM.CollaborationModel(mapModel),
+				initWidgets = function () {
+					jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
+					jQuery('body')
+						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
+						.searchWidget('Meta+F Ctrl+F', mapModel);
+					jQuery('#uploadImg').click(function () {
+						MM.Hangouts.showPicker(config).then(function (url) {
+							MM.Hangouts.getDimensions(url).then(function (dimensions) {
+								imageInsertController.dispatchEvent('imageInserted', url, dimensions.width, dimensions.height);
+							});
+						});
+					});
+				};
+		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
-
 		MM.Hangouts.PresenceMediator(collaborationModel);
-
-		jQuery('#uploadImg').click(function () {
-			MM.Hangouts.showPicker(config).then(function (url) {
-				MM.Hangouts.getDimensions(url).then(function (dimensions) {
-					imageInsertController.dispatchEvent('imageInserted', url, dimensions.width, dimensions.height);
-				});
-			});
-		});
 	};
 })();

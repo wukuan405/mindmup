@@ -71,3 +71,12 @@
 .hide {
 	display: none;
 }
+input.commandline {
+	position: absolute;
+	z-index: 9999;
+	top:30%;
+	left:30%;
+	width:30%;
+	border-width:5px;
+	font-size: 15px;
+}

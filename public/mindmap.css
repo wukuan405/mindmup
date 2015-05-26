@@ -1067,3 +1067,11 @@ body .modal.huge {
   margin-left: 3px;
   margin-right: 5px;
 }
+input.commandline {
+	position: absolute;
+	z-index: 9999;
+	top:30%;
+	left:40%;
+	width:20%;
+	border-width:5px;
+}

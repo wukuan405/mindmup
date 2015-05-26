@@ -192,14 +192,8 @@ $.fn.commandLineWidget = function (keyBinding, mapModel) {
 			event.stopPropagation();
 		}
 		mapModel.setInputEnabled(false);
-		input  = $('<input type="text" placeholder="Type a color name or hex…">')
-			.css('position', 'absolute')
-			.css('z-index', '9999')
+		input  = $('<input type="text" placeholder="Type a color name or hex…" class="commandline">')
 			.appendTo(element)
-			.css('top', '30%')
-			.css('left', '40%')
-			.css('width', '20%')
-			.css('border-width', '5px')
 			.focus()
 			.blur(hide)
 			.keyup('Esc', hide)
