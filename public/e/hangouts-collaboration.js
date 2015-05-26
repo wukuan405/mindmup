@@ -69,7 +69,7 @@
 					return {
 						photoUrl: hangoutParticipant.person.image.url,
 						focusNodeId: focusNodes[hangoutParticipant.id],
-						sessionId: hangoutParticipant.person.Id,
+						sessionId: hangoutParticipant.person.id,
 						name: hangoutParticipant.person.displayName,
 						color: colors[hangoutParticipant.displayIndex % colors.length]
 					};
