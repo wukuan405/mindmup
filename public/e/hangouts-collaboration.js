@@ -119,7 +119,66 @@
 		gapi.hangout.data.onStateChanged.add(onStateChange);
 		initContent();
 	};
-	MM.Hangouts.initMindMup = function () {
+
+	MM.Hangouts.showPicker = function (config) {
+		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator(config.clientId),
+			deferred = jQuery.Deferred(),
+			showPicker = function () {
+				var picker;
+				picker = new google.picker.PickerBuilder()
+					.enableFeature(google.picker.Feature.SIMPLE_UPLOAD_ENABLED)
+					.disableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+					.setAppId(config.appId)
+					.addView(google.picker.ViewId.PHOTOS)
+					.addView(google.picker.ViewId.PHOTO_UPLOAD)
+					.setSelectableMimeTypes('application/vnd.google-apps.photo,image/png,image/jpg,image/gif,image/jpeg')
+					.setOrigin(config.pickerOrigin || window.location.protocol + '//' + window.location.host)
+					.setCallback(function (choice) {
+						if (choice.action === 'picked') {
+							var item = choice.docs[0],
+									url = item.thumbnails && _.sortBy(item.thumbnails, 'height').pop().url;
+							if (url) {
+								deferred.resolve(url);
+							} else {
+								deferred.reject();
+							}
+							return;
+						}
+						if (choice.action === 'cancel') {
+							deferred.reject();
+						}
+					})
+					.setTitle('Choose an image')
+					.setOAuthToken(authenticator.gapiAuthToken())
+					.build();
+				picker.setVisible(true);
+			};
+		if (window.google && window.google.picker) {
+			showPicker();
+		} else {
+			authenticator.authenticate(false).then(
+				function () {
+					gapi.load('picker', showPicker);
+				},
+				deferred.reject,
+				deferred.notify
+			);
+		}
+		return deferred.promise();
+	};
+	MM.Hangouts.getDimensions = function (src) {
+		var domImg = new Image(),
+				deferred = jQuery.Deferred();
+		domImg.onload = function () {
+			deferred.resolve({width: domImg.width, height: domImg.height});
+		};
+		domImg.onerror = function () {
+			deferred.reject();
+		};
+		domImg.src = src;
+		return deferred.promise();
+	};
+	MM.Hangouts.initMindMup = function (config) {
 		jQuery('#container').empty();
 		var isTouch = false,
 				getStorage = function () {
@@ -155,71 +214,11 @@
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
 
 		jQuery('#uploadImg').click(function () {
-			MM.Hangouts.showPicker (false, 'Select an image', 'https://plus.google.com').then(function (url) {
+			MM.Hangouts.showPicker(config).then(function (url) {
 				MM.Hangouts.getDimensions(url).then(function (dimensions) {
 					imageInsertController.dispatchEvent('imageInserted', url, dimensions.width, dimensions.height);
 				});
 			});
 		});
 	};
-	MM.Hangouts.showPicker = function (showDialogs, title, origin) {
-		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator('221074361098-elea7sel8v7777vflspj7lc3d0jdh7ut.apps.googleusercontent.com'),
-			deferred = jQuery.Deferred(),
-			showPicker = function () {
-				var picker;
-				picker = new google.picker.PickerBuilder()
-					.enableFeature(google.picker.Feature.SIMPLE_UPLOAD_ENABLED)
-					.disableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-					.setAppId('AIzaSyCgHjOgLP5OhY5WPXT3WlItrL_aqgAMDCM')
-					.addView(google.picker.ViewId.PHOTOS)
-					.addView(google.picker.ViewId.PHOTO_UPLOAD)
-					.setSelectableMimeTypes('application/vnd.google-apps.photo,image/png,image/jpg,image/gif,image/jpeg')
-					.setOrigin(origin || window.location.protocol + '//' + window.location.host)
-					.setCallback(function (choice) {
-						if (choice.action === 'picked') {
-							var item = choice.docs[0],
-									url = item.thumbnails && _.sortBy(item.thumbnails, 'height').pop().url;
-							if (url) {
-								deferred.resolve(url);
-							} else {
-								deferred.reject();
-							}
-							return;
-						}
-						if (choice.action === 'cancel') {
-							deferred.reject();
-						}
-					})
-					.setTitle(title)
-					.setOAuthToken(authenticator.gapiAuthToken())
-					.build();
-				picker.setVisible(true);
-			};
-		if (window.google && window.google.picker) {
-			showPicker();
-		} else {
-			authenticator.authenticate(showDialogs).then(
-				function () {
-					gapi.load('picker', showPicker);
-				},
-				deferred.reject,
-				deferred.notify
-			);
-		}
-		return deferred.promise();
-	};
-	MM.Hangouts.getDimensions = function (src) {
-		var domImg = new Image(),
-				deferred = jQuery.Deferred();
-		domImg.onload = function () {
-			deferred.resolve({width: domImg.width, height: domImg.height});
-		};
-		domImg.onerror = function () {
-			deferred.reject();
-		};
-		domImg.src = src;
-		return deferred.promise();
-	};
-
-
 })();
