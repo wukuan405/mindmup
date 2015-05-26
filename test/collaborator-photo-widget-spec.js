@@ -63,6 +63,19 @@ describe('Collaborator Photo Widget', function () {
 				expect(firstImage.hasClass('mm-collaborator-collowed')).toBeFalsy();
 			});
 		});
+		describe('session key handling', function () {
+			it('handles session keys which are not necessarily clean strings', function () {
+
+				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: '123$1^2', focusNodeId: '124'});
+				loaderDeferred.resolve(firstImage);
+				imageLoader.calls.reset();
+				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: '123$1^2', focusNodeId: '125'});
+
+				expect(firstImage.parent()[0]).toBe(underTest.find('#node_125')[0]);
+				expect(firstImage.css('bottom')).toBe('-30px');
+				expect(firstImage.css('right')).toBe('-40px');
+			});
+		});
 		describe('after the collaborator image is loaded', function () {
 			beforeEach(function () {
 				collaborationModel.collaboratorFocusChanged({photoUrl: 'http://x.y', sessionId: 123, focusNodeId: '124'});

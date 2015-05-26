@@ -22,7 +22,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 				}
 			},
 			imageForCollaborator = function (sessionId) {
-				return self.find('.' + imgClass + '[data-mm-collaborator-id=' + sessionId + ']');
+				return self.find('.' + imgClass + '[data-mm-collaborator-id="' + sessionId + '"]');
 			},
 			showPictureForCollaborator = function (collaborator) {
 				var cached = imageForCollaborator(collaborator.sessionId);
