@@ -1,8 +1,60 @@
-/*global gapi, _, MAPJS, observable, jQuery, window, console */
+/*global gapi, _, MAPJS, observable, jQuery, window, console, google */
 (function () {
 	'use strict';
 	var MM = (window.MM = (window.MM || {}));
 	MM.Hangouts = {};
+	MM.Hangouts.HangoutGoogleAuthenticator = function (clientId) {
+		var self = this,
+			checkAuth = function (showDialog) {
+				var deferred = jQuery.Deferred(),
+						basicScopes = 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload';
+				deferred.notify('Authenticating with Google');
+				gapi.auth.authorize(
+					{
+						'client_id': clientId,
+						'scope': basicScopes,
+						'immediate': !showDialog
+					},
+					function (authResult) {
+						if (authResult && !authResult.error) {
+							deferred.resolve(authResult.access_token);
+						} else {
+							deferred.reject('not-authenticated');
+						}
+					}
+				);
+				return deferred.promise();
+			},
+			loadApi = function (onComplete) {
+				if (window.gapi && window.gapi.client && !_.isEmpty(gapi.client)) {
+					onComplete();
+				} else {
+					window.googleClientLoaded = function () {
+						onComplete();
+					};
+					jQuery('<script src="https://apis.google.com/js/client.js?onload=googleClientLoaded"></script>').appendTo('body');
+				}
+			};
+		self.gapiAuthToken = function () {
+			return window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token;
+		};
+		self.isAuthorised = function () {
+			return !!(self.gapiAuthToken());
+		};
+		self.authenticate = function (showAuthenticationDialogs, requireEmail) {
+			var deferred = jQuery.Deferred(),
+				failureReason = showAuthenticationDialogs ? 'failed-authentication' : 'not-authenticated';
+			loadApi(function () {
+				checkAuth(showAuthenticationDialogs, requireEmail).then(deferred.resolve, function () {
+					deferred.reject(failureReason);
+				},
+				deferred.notify);
+			});
+			return deferred.promise();
+		};
+	};
+
+
 	MM.Hangouts.Collaboration = function () {
 		var self = this,
 				cleanSessionKey = function (string) {
@@ -58,6 +110,12 @@
 		self.getContentAggregate = function () {
 			return contentAggregate;
 		};
+		self.storeResource = function (resourceUrl) {
+			return resourceUrl;
+		};
+		self.getResource = function (internalUrl) {
+			return internalUrl;
+		};
 		gapi.hangout.data.onStateChanged.add(onStateChange);
 		initContent();
 	};
@@ -87,15 +145,26 @@
 				},
 				hangoutsCollaboration = new MM.Hangouts.Collaboration(),
 				browserStorage = getStorage(),
-				fakeMapController = observable({}),
 				alert = new MM.Alert(),
 				objectStorage = new MM.JsonStorage(browserStorage),
-				activeContentListener = new MM.ActiveContentListener(fakeMapController),
-				activeContentResourceManager = new MM.ActiveContentResourceManager(activeContentListener, 'internal'),
-				objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert, activeContentResourceManager),
+				objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert, hangoutsCollaboration),
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 				activityLog = console;
-		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), activeContentResourceManager.getResource);
+		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), hangoutsCollaboration.getResource);
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
+	};
+	MM.Hangouts.initConsole = function () {
+		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator('221074361098-elea7sel8v7777vflspj7lc3d0jdh7ut.apps.googleusercontent.com');
+		authenticator.authenticate(true).then(function () {
+			gapi.load('picker');
+		});
+	};
+	MM.Hangouts.initPicker = function () {
+		var picker = new google.picker.PickerBuilder().
+      addView(google.picker.ViewId.PHOTOS).setOAuthToken(gapi.auth.getToken().auth_token).
+			setDeveloperKey('AIzaSyCgHjOgLP5OhY5WPXT3WlItrL_aqgAMDCM').setCallback(function () {
+				console.log (arguments);
+			}).build();
+		picker.setVisible(true);
 	};
 })();
