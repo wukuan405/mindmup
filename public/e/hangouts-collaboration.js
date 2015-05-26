@@ -3,64 +3,9 @@
 	'use strict';
 	var MM = (window.MM = (window.MM || {}));
 	MM.Hangouts = {};
-	MM.Hangouts.HangoutGoogleAuthenticator = function (clientId) {
-		var self = this,
-			checkAuth = function (showDialog) {
-				var deferred = jQuery.Deferred(),
-						basicScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload';
-				deferred.notify('Authenticating with Google');
-				gapi.auth.authorize(
-					{
-						'client_id': clientId,
-						'scope': basicScopes,
-						'immediate': !showDialog
-					},
-					function (authResult) {
-						if (authResult && !authResult.error) {
-							deferred.resolve(authResult.access_token);
-						} else {
-							deferred.reject('not-authenticated');
-						}
-					}
-				);
-				return deferred.promise();
-			},
-			loadApi = function (onComplete) {
-				if (window.gapi && window.gapi.client && !_.isEmpty(gapi.client)) {
-					onComplete();
-				} else {
-					window.googleClientLoaded = function () {
-						onComplete();
-					};
-					jQuery('<script src="https://apis.google.com/js/client.js?onload=googleClientLoaded"></script>').appendTo('body');
-				}
-			};
-		self.gapiAuthToken = function () {
-			return window.gapi && gapi.auth && gapi.auth.getToken() && gapi.auth.getToken().access_token;
-		};
-		self.isAuthorised = function () {
-			return !!(self.gapiAuthToken());
-		};
-		self.authenticate = function (showAuthenticationDialogs, requireEmail) {
-			var deferred = jQuery.Deferred(),
-				failureReason = showAuthenticationDialogs ? 'failed-authentication' : 'not-authenticated';
-			loadApi(function () {
-				checkAuth(showAuthenticationDialogs, requireEmail).then(deferred.resolve, function () {
-					deferred.reject(failureReason);
-				},
-				deferred.notify);
-			});
-			return deferred.promise();
-		};
-	};
-
-
 	MM.Hangouts.Collaboration = function () {
 		var self = this,
-				cleanSessionKey = function (string) {
-					return string.replace(/[^A-Za-z0-9_-]/g, '_');
-				},
-				localSessionId = cleanSessionKey(gapi.hangout.getLocalParticipantId()),
+				localSessionId = gapi.hangout.getLocalParticipantId(),
 				contentAggregate,
 				keyIndex = 0,
 				applyEvents = function (hangoutEvents, filterOutLocal) {
@@ -85,12 +30,6 @@
 					contentAggregate.addEventListener('changed', function (command, params, session) {
 						if (session === localSessionId) {
 							sendEvent(command, params);
-						}
-					});
-					contentAggregate.addEventListener('resourceStored', function (resourceBody, resourceId, session) {
-						if (session === localSessionId) {
-							/* TODO: fix this to not use local resource memory */
-							sendEvent({cmd: 'storeResource', args: [resourceBody, resourceId]});
 						}
 					});
 					applyEvents(_.values(gapi.hangout.data.getStateMetadata()));
@@ -119,9 +58,87 @@
 		gapi.hangout.data.onStateChanged.add(onStateChange);
 		initContent();
 	};
+	MM.Hangouts.PresenceMediator = function (collaborationModel) {
+		var localParticipant = gapi.hangout.getLocalParticipant(),
+				colors = 'aqua,black,blue,fuchsia,gray,green,lime,maroon,navy,olive,orange,purple,red,silver,teal,white,yellow'.split(','),
+				focusNodes = {},
+				mmCollaborator = function (hangoutParticipant) {
+					if (hangoutParticipant.person.id === localParticipant.person.id) {
+						return false;
+					}
+					return {
+						photoUrl: hangoutParticipant.person.image.url,
+						focusNodeId: focusNodes[hangoutParticipant.id],
+						sessionId: hangoutParticipant.person.userId,
+						name: hangoutParticipant.person.displayName,
+						color: colors[hangoutParticipant.displayIndex % colors.length]
+					};
+				},
+				onCollaboratorsJoined = function (participants) {
+					_.each(participants, function (participant) {
+						var collaborator = mmCollaborator(participant);
+						if (collaborator) {
+							collaborationModel.collaboratorPresenceChanged(collaborator, true);
+						}
+					});
+				},
+				onCollaboratorsLeft = function (participants) {
+					_.each(participants, function (participant) {
+						var collaborator = mmCollaborator(participant);
+						if (collaborator) {
+							collaborationModel.collaboratorPresenceChanged(collaborator, false);
+						}
+					});
+				},
+				onCollaboratorRequestedForContentSession = function (contentSessionId, callBack) {
+					if (!callBack) {
+						return;
+					}
+					var hangoutParticipant = contentSessionId && gapi.hangout.getParticipantById(contentSessionId),
+						collaborator = hangoutParticipant && mmCollaborator(hangoutParticipant);
+					if (collaborator && collaborator.sessionId) {
+						callBack(collaborator);
+					}
+				},
+				getHangoutParticipantByPersonId = function (personId) {
+					return _.find(gapi.hangout.getParticipants(), function (p) {
+						return p.person.id == personId;
+					});
+				},
+				handleFocusRequest = function (userId, focusProcessor) {
+					var participant = getHangoutParticipantByPersonId(userId),
+						focusNode = participant && focusNodes[participant.id];
+					if (focusProcessor && focusNode) {
+						focusProcessor(focusNode);
+					}
+				},
+				onMyFocusChanged = function (nodeId) {
+					gapi.hangout.data.sendMessage(JSON.stringify({sessionId: localParticipant.id, nodeId: nodeId}));
+				},
+				onCollaboratorFocusMessageReceived = function (messageEvent) {
+					var ob = JSON.parse(messageEvent.message);
+					if (ob.sessionId) {
+						focusNodes[ob.sessionId] = ob.nodeId;
+					}
+				},
+				getCollaborators = function () {
+					_.chain(gapi.hangout.getParticipants()).map(mmCollaborator).filter(_.identity).value();
+				};
+		gapi.hangout.onParticipantsRemoved.add(onCollaboratorsJoined);
+		gapi.hangout.onParticipantsRemoved.add(onCollaboratorsLeft);
+		gapi.hangout.data.onMessageReceived.add(onCollaboratorFocusMessageReceived);
+		collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
+		collaborationModel.addEventListener('collaboratorRequestedForContentSession', onCollaboratorRequestedForContentSession);
+		collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
+		collaborationModel.start(getCollaborators());
 
+		jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
+		jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
+
+	};
 	MM.Hangouts.showPicker = function (config) {
-		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator(config.clientId),
+		var gapiScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload',
+			authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
 			deferred = jQuery.Deferred(),
 			showPicker = function () {
 				var picker;
@@ -209,9 +226,12 @@
 				objectClipboard = new MM.LocalStorageClipboard(objectStorage, 'clipboard', alert, hangoutsCollaboration),
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, ['Press Space or double-click to edit'], objectClipboard),
 				imageInsertController = observable({}),
-				activityLog = console;
+				activityLog = console,
+				collaborationModel = new MM.CollaborationModel(mapModel);
 		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
+
+		MM.Hangouts.PresenceMediator(collaborationModel);
 
 		jQuery('#uploadImg').click(function () {
 			MM.Hangouts.showPicker(config).then(function (url) {

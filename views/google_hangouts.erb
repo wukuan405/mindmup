@@ -8,22 +8,7 @@
 	<Content type="html"><![CDATA[     
 <html>
 <style type="text/css">
-      #container {
-				background-color: #FFFFFF;
-				height: 100%;
-				width: 100%;
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-        margin:0;
-        padding:0;
-      }
-      #uploadImg {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 100;
-      }
+
 </style>
 <body>
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
@@ -31,10 +16,12 @@
 <script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
 <script src="<%=settings.base_url%>e/hangouts-collaboration.js" ></script>
 <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
+<link href="<%=settings.base_url%>e/hangouts-collaboration.css" rel="stylesheet" />
 <div id="container">
-  Please wait, loading MindMup...
+  Please wait, loading MindMup... if this message does not disappear in a few seconds, please contact us at contact@mindmup.com
 </div>
 <button id="uploadImg">Image</button>
+<%=erb :collaborator_speech_bubble %>
 <script>
 function init() {
   gapi.hangout.onApiReady.add(
@@ -49,7 +36,6 @@ function init() {
       }
     });
 }
-
 // Wait for gadget to load.                                                       
 gadgets.util.registerOnLoadHandler(init);
 </script>
