@@ -118,30 +118,34 @@ describe('Collaboration Model', function () {
 			beforeEach(function () {
 				underTest.start();
 			});
-			it('does not dispatch collaboratorRequestedForContentSession if not running', function () {
-				underTest.stop();
-				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
-				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
-			});
-			it('requests a collaborator for state for content session', function () {
-				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
-				expect(collaboratorRequestedForContentSessionListener).toHaveBeenCalledWith(contentSessionId, jasmine.any(Function));
-			});
-			it('does not dispatch collaboratorDidEdit if the state callback never resolves', function () {
-				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
-				expect(collaboratorDidEditListener).not.toHaveBeenCalled();
-			});
+			['nodeTitleChanged', 'nodeCreated'].forEach(function (eventName) {
+				describe('event dispatch ' + eventName, function () {
+					it('does not dispatch collaboratorRequestedForContentSession if not running', function () {
+						underTest.stop();
+						mapModel.dispatchEvent(eventName, node, contentSessionId);
+						expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
+					});
+					it('requests a collaborator for state for content session', function () {
+						mapModel.dispatchEvent(eventName, node, contentSessionId);
+						expect(collaboratorRequestedForContentSessionListener).toHaveBeenCalledWith(contentSessionId, jasmine.any(Function));
+					});
+					it('does not dispatch collaboratorDidEdit if the state callback never resolves', function () {
+						mapModel.dispatchEvent(eventName, node, contentSessionId);
+						expect(collaboratorDidEditListener).not.toHaveBeenCalled();
+					});
 
-			it('dispatches collaboratorDidEdit with collaborator when the state callback resolves', function () {
-				collaboratorRequestedForContentSessionListener.and.callFake(function (sessionId, callback) {
-					callback(collaborator);
+					it('dispatches collaboratorDidEdit with collaborator when the state callback resolves', function () {
+						collaboratorRequestedForContentSessionListener.and.callFake(function (sessionId, callback) {
+							callback(collaborator);
+						});
+						mapModel.dispatchEvent(eventName, node, contentSessionId);
+						expect(collaboratorDidEditListener).toHaveBeenCalledWith(collaborator, node);
+					});
+					it('does nothing if not in a collaborative map', function () {
+						mapModel.dispatchEvent(eventName, node, '');
+						expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
+					});
 				});
-				mapModel.dispatchEvent('nodeTitleChanged', node, contentSessionId);
-				expect(collaboratorDidEditListener).toHaveBeenCalledWith(collaborator, node);
-			});
-			it('does nothing if not in a collaborative map', function () {
-				mapModel.dispatchEvent('nodeTitleChanged', node, '');
-				expect(collaboratorRequestedForContentSessionListener).not.toHaveBeenCalled();
 			});
 		});
 	});

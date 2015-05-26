@@ -33,28 +33,28 @@ describe('collaboratorSpeechBubbleWidget', function () {
 	_.each(['collaboratorJoined', 'collaboratorLeft', 'collaboratorDidEdit'], function (eventName) {
 		describe('setup for ' + eventName, function () {
 			it('attaches a click handler to the collaborator photo to show the collaborator', function () {
-				collaborationModel.dispatchEvent(eventName, collaborator);
+				collaborationModel.dispatchEvent(eventName, collaborator, {title: 'x'});
 				photo.trigger('tap');
 				expect(collaborationModel.showCollaborator).toHaveBeenCalledWith(collaborator);
 			});
 			it('destroys the image popover, then redefines and shows it', function () {
-				collaborationModel.dispatchEvent(eventName, collaborator);
+				collaborationModel.dispatchEvent(eventName, collaborator, {title: 'x'});
 				expect(jQuery.fn.popover).toHaveBeenCalledOnJQueryObject(photo);
 				expect(jQuery.fn.popover.calls.argsFor(0)).toEqual(['destroy']);
 				expect(jQuery.fn.popover.calls.argsFor(2)).toEqual(['show']);
 			});
 			it('puts the collaborator photo and color on the image', function () {
-				collaborationModel.dispatchEvent(eventName, collaborator);
+				collaborationModel.dispatchEvent(eventName, collaborator, {title: 'x'});
 				expect(jQuery.fn.css).toHaveBeenCalledOnJQueryObject(photo);
 				expect(jQuery.fn.css).toHaveBeenCalledWith('border-color', collaborator.color);
 				expect(photo.attr('src')).toEqual(collaborator.photoUrl);
 			});
 			it('fades in the image', function () {
-				collaborationModel.dispatchEvent(eventName, collaborator);
+				collaborationModel.dispatchEvent(eventName, collaborator, {title: 'x'});
 				expect(jQuery.fn.fadeIn).toHaveBeenCalledOnJQueryObject(underTest);
 			});
 			it('schedule a timeout after fadein to destroy the popover and fade out the element', function () {
-				collaborationModel.dispatchEvent(eventName, collaborator);
+				collaborationModel.dispatchEvent(eventName, collaborator, {title: 'x'});
 				jQuery.fn.popover.calls.reset();
 				jasmine.clock().tick(timeout + 200);
 				expect(jQuery.fn.popover).toHaveBeenCalledOnJQueryObject(photo);
@@ -96,15 +96,8 @@ describe('collaboratorSpeechBubbleWidget', function () {
 			html: true
 		});
 	});
-	it('shows the removed title message when a collaborator edits a node and wipes out the title', function () {
+	it('does not show the message when a collaborator edits a node without a title (pending addition)', function () {
 		collaborationModel.dispatchEvent('collaboratorDidEdit', collaborator, {title: ''});
-		expect(jQuery.fn.popover).toHaveBeenCalledWith({
-			title:'<div class="speech-bubble-title"><span data-mm-role="popover-title">Michael Bubble</span></div>',
-			content: '<div class="speech-bubble-inner"><span data-mm-role="popover-content" class="muted">removed node content</span></div>',
-			placement: 'right',
-			trigger: 'manual',
-			animation: true,
-			html: true
-		});
+		expect(jQuery.fn.popover).not.toHaveBeenCalled();
 	});
 });

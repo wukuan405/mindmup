@@ -48,7 +48,9 @@ jQuery.fn.collaboratorSpeechBubbleWidget = function (collaborationModel, timeout
 				var trimmedTitle = node && node.title && node.title.trim(),
 						style = trimmedTitle ? '' : 'muted',
 						nodeTitle = trimmedTitle || 'removed node content';
-				showSpeechBubble(collaborator, nodeTitle, style);
+				if (trimmedTitle) {
+					showSpeechBubble(collaborator, nodeTitle, style);
+				}
 			},
 			onJoin = function (collaborator) {
 				showSpeechBubble(collaborator, 'joined the session', 'muted');
