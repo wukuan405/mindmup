@@ -7,7 +7,7 @@
 		var self = this,
 			checkAuth = function (showDialog) {
 				var deferred = jQuery.Deferred(),
-						basicScopes = 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload';
+						basicScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload';
 				deferred.notify('Authenticating with Google');
 				gapi.auth.authorize(
 					{
@@ -153,18 +153,50 @@
 		jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, observable({}), jQuery('#container'), hangoutsCollaboration.getResource);
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
 	};
-	MM.Hangouts.initConsole = function () {
-		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator('221074361098-elea7sel8v7777vflspj7lc3d0jdh7ut.apps.googleusercontent.com');
-		authenticator.authenticate(true).then(function () {
-			gapi.load('picker');
-		});
+	MM.Hangouts.showPicker = function (contentTypes, title, showDialogs) {
+		var authenticator = new MM.Hangouts.HangoutGoogleAuthenticator('221074361098-elea7sel8v7777vflspj7lc3d0jdh7ut.apps.googleusercontent.com'),
+			deferred = jQuery.Deferred(),
+			showPicker = function () {
+				var picker;
+				picker = new google.picker.PickerBuilder()
+					.enableFeature(google.picker.Feature.SIMPLE_UPLOAD_ENABLED)
+					.disableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+					.setAppId('AIzaSyCgHjOgLP5OhY5WPXT3WlItrL_aqgAMDCM')
+					.addView(google.picker.ViewId.PHOTOS)
+					.addView(google.picker.ViewId.PHOTO_UPLOAD)
+					.setSelectableMimeTypes('application/vnd.google-apps.photo,image/png,image/jpg,image/gif,image/jpeg')
+					.setCallback(function (choice) {
+						if (choice.action === 'picked') {
+							var item = choice.docs[0],
+									url = item.thumbnails && _.sortBy(item.thumbnails, 'height').pop().url;
+							if (url) {
+								deferred.resolve(url);
+							} else {
+								deferred.reject();
+							}
+							return;
+						}
+						if (choice.action === 'cancel') {
+							deferred.reject();
+						}
+					})
+					.setTitle(title)
+					.setOAuthToken(authenticator.gapiAuthToken())
+					.build()
+					.setVisible(true);
+			};
+		if (window.google && window.google.picker) {
+			showPicker();
+		} else {
+			authenticator.authenticate(showDialogs).then(
+				function () {
+					gapi.load('picker', showPicker);
+				},
+				deferred.reject,
+				deferred.notify
+			);
+		}
+		return deferred.promise();
 	};
-	MM.Hangouts.initPicker = function () {
-		var picker = new google.picker.PickerBuilder().
-      addView(google.picker.ViewId.PHOTOS).setOAuthToken(gapi.auth.getToken().auth_token).
-			setDeveloperKey('AIzaSyCgHjOgLP5OhY5WPXT3WlItrL_aqgAMDCM').setCallback(function () {
-				console.log (arguments);
-			}).build();
-		picker.setVisible(true);
-	};
+
 })();
