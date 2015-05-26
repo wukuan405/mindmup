@@ -46,7 +46,7 @@ jQuery.fn.collaboratorPhotoWidget = function (collaborationModel, imageLoader, i
 	collaborationModel.addEventListener('stopped', function () {
 		self.find('.' + imgClass).remove();
 	});
-	collaborationModel.addEventListener('collaboratorFocusChanged collaboratorJoined', showPictureForCollaborator);
+	collaborationModel.addEventListener('collaboratorFocusChanged collaboratorDidEdit collaboratorJoined', showPictureForCollaborator);
 	collaborationModel.addEventListener('collaboratorLeft', removePictureForCollaborator);
 
 	return self;
