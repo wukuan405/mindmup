@@ -1,10 +1,10 @@
 /*global _, jQuery, MM, window, gapi, google, MediaUploader */
-MM.GoogleAuthenticator = function (clientId, apiKey) {
+MM.GoogleAuthenticator = function (clientId, apiKey, scopes) {
 	'use strict';
 	var self = this,
 		checkAuth = function (showDialog, requireEmail) {
 			var deferred = jQuery.Deferred(),
-					basicScopes = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.install https://www.googleapis.com/auth/userinfo.profile';
+					basicScopes = scopes || 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.install https://www.googleapis.com/auth/userinfo.profile';
 			deferred.notify('Authenticating with Google');
 			gapi.auth.authorize(
 				{
@@ -23,7 +23,7 @@ MM.GoogleAuthenticator = function (clientId, apiKey) {
 			return deferred.promise();
 		},
 		loadApi = function (onComplete) {
-			if (window.gapi && window.gapi.client) {
+			if (window.gapi && window.gapi.client && !_.isEmpty(gapi.client)) {
 				onComplete();
 			} else {
 				window.googleClientLoaded = function () {
