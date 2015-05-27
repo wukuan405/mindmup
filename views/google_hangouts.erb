@@ -1,23 +1,28 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<% if production?%><?xml version="1.0" encoding="UTF-8" ?>
 <Module>
-	<ModulePrefs title="Hangout Starter">
+	<ModulePrefs title="MindMup">
 		<Require feature="rpc" />
 		<Require feature="views" />
 		<Require feature="locked-domain" />
 	</ModulePrefs>
-	<Content type="html"><![CDATA[     
+  <Content type="html"><![CDATA[     
+<% end %>
 <html>
-<style type="text/css">
-
-</style>
 <body>
+
+<%= erb :scripts %>
+<%if production? %>
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
-<script src="<%=settings.static_host%>/external.js"></script>
-<script src="<%=settings.public_url%>/mm-compiled.min.js" ></script>
-<script src="<%=settings.base_url%>e/hangouts-collaboration.js" ></script>
+<% else %>
+<script src="e/local_hangouts_mock_api.js"></script>
+<% end %>
+
 <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
 <link href="<%=settings.public_url%>/mapjs.css" rel="stylesheet" />
+<script src="<%=settings.base_url%>e/hangouts-collaboration.js" ></script>
 <link href="<%=settings.base_url%>e/hangouts-collaboration.css" rel="stylesheet" />
+
+
 <div id="container">
   Please wait, loading MindMup... if this message does not disappear in a few seconds, please contact us at contact@mindmup.com
 </div>
@@ -40,7 +45,12 @@ function init() {
 // Wait for gadget to load.                                                       
 gadgets.util.registerOnLoadHandler(init);
 </script>
+
 </body>
+</html>
+
+<% if production? %>
 ]]>
 </Content>
 </Module>
+<% end %>

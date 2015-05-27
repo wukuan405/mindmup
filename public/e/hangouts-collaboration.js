@@ -125,7 +125,7 @@
 				getCollaborators = function () {
 					_.chain(gapi.hangout.getParticipants()).map(mmCollaborator).filter(_.identity).value();
 				};
-		gapi.hangout.onParticipantsRemoved.add(onCollaboratorsJoined);
+		gapi.hangout.onParticipantsAdded.add(onCollaboratorsJoined);
 		gapi.hangout.onParticipantsRemoved.add(onCollaboratorsLeft);
 		gapi.hangout.data.onMessageReceived.add(onCollaboratorFocusMessageReceived);
 		collaborationModel.addEventListener('myFocusChanged', onMyFocusChanged);
