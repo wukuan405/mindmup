@@ -5,12 +5,12 @@ MM.iconEditor = function (mapModel, resourceManager) {
 	observable(this);
 	var currentDeferred,
 		self = this;
-	this.editIcon = function (icon) {
+	this.editIcon = function (icon, isFast) {
 		if (icon) {
 			icon.url = resourceManager.getResource(icon.url);
 		}
 		currentDeferred = jQuery.Deferred();
-		this.dispatchEvent('iconEditRequested', icon);
+		this.dispatchEvent('iconEditRequested', icon, isFast);
 		return currentDeferred.promise();
 	};
 	this.save = function (icon) {
@@ -30,7 +30,13 @@ MM.iconEditor = function (mapModel, resourceManager) {
 			}
 		});
 	});
-
+	this.addIconNode = function () {
+		self.editIcon(false, true).then(function (result) {
+			if (result) {
+				mapModel.dropImage(resourceManager.storeResource(result.url), result.width, result.height);
+			}
+		});
+	};
 };
 jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 	'use strict';

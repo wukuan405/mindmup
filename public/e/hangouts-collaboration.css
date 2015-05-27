@@ -15,69 +15,10 @@
 	z-index: 100;
 }
 
-.mm-collaborator {
-	position: absolute;
-	width: 32px;
-	height: 32px;
-	border: 3px solid transparent;
-	border-radius: 20px;
-  	transform: translate(5px, 5px);
-	min-width: 30px;
-}
-.mm-has-collaborators .hidden-has-collaborators {
-	display: none;
-}
-.mm-has-collaborators .visible-has-collaborators {
-	display: block;
-}
-
-#collaboratorSpeechBubble {
-	position:absolute;
-	z-index: 2;
-	top: 100px;
-	left: 20px;
-}
-#collaboratorSpeechBubble img {
-	width: 60px;
-	height: 60px;
-	border-radius: 60px;
-	border: 2px solid transparent;
-	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-	cursor: pointer;
-}
-#collaboratorSpeechBubble img:hover {
-	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-}
-.speech-bubble-inner {
-	max-width: 300px;
-	max-height: 100px;
-  min-width: 150px;
-	overflow: hidden;
-}
-.speech-bubble-title {
-	max-width: 300px;
-  white-space: nowrap;
-	overflow: hidden;
-}
-.visible-collaboration-mute-speech {
-	display: none;
-}
-.collaboration-mute-speech .visible-collaboration-mute-speech {
-	display: initial !important;
-}
-.collaboration-mute-speech .hidden-collaboration-mute-speech {
-	display: none !important;
-}
 .hide {
 	display: none;
 }
 input.commandline {
-	position: absolute;
-	z-index: 9999;
-	top:30%;
-	left:40%;
-	width:20%;
-	border-width:5px;
 	font-size: 15px;
 	height: 30px;
 }

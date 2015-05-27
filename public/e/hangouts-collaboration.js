@@ -1,4 +1,4 @@
-/*global gapi, _, MAPJS, observable, jQuery, window, console, google, Image */
+/*global gapi, _, MAPJS, observable, jQuery, window, console */
 (function () {
 	'use strict';
 	var MM = (window.MM = (window.MM || {}));
@@ -133,69 +133,15 @@
 		collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 		collaborationModel.start(getCollaborators());
 
+
 		jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 		jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 
 	};
-	MM.Hangouts.showPicker = function (config) {
-		var gapiScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload',
-			authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
-			deferred = jQuery.Deferred(),
-			showPicker = function () {
-				var picker;
-				picker = new google.picker.PickerBuilder()
-					.enableFeature(google.picker.Feature.SIMPLE_UPLOAD_ENABLED)
-					.disableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-					.setAppId(config.appId)
-					.addView(google.picker.ViewId.PHOTOS)
-					.addView(google.picker.ViewId.PHOTO_UPLOAD)
-					.setSelectableMimeTypes('application/vnd.google-apps.photo,image/png,image/jpg,image/gif,image/jpeg')
-					.setOrigin(config.pickerOrigin || window.location.protocol + '//' + window.location.host)
-					.setCallback(function (choice) {
-						if (choice.action === 'picked') {
-							var item = choice.docs[0],
-									url = item.thumbnails && _.sortBy(item.thumbnails, 'height').pop().url;
-							if (url) {
-								deferred.resolve(url);
-							} else {
-								deferred.reject();
-							}
-							return;
-						}
-						if (choice.action === 'cancel') {
-							deferred.reject();
-						}
-					})
-					.setTitle('Choose an image')
-					.setOAuthToken(authenticator.gapiAuthToken())
-					.build();
-				picker.setVisible(true);
-			};
-		if (window.google && window.google.picker) {
-			showPicker();
-		} else {
-			authenticator.authenticate(false).then(
-				function () {
-					gapi.load('picker', showPicker);
-				},
-				deferred.reject,
-				deferred.notify
-			);
-		}
-		return deferred.promise();
-	};
-	MM.Hangouts.getDimensions = function (src) {
-		var domImg = new Image(),
-				deferred = jQuery.Deferred();
-		domImg.onload = function () {
-			deferred.resolve({width: domImg.width, height: domImg.height});
-		};
-		domImg.onerror = function () {
-			deferred.reject();
-		};
-		domImg.src = src;
-		return deferred.promise();
-	};
+
+
+
+
 	MM.Hangouts.initMindMup = function (config) {
 		jQuery('#container').empty();
 		var isTouch = false,
@@ -229,18 +175,14 @@
 				imageInsertController = observable({}),
 				activityLog = console,
 				collaborationModel = new MM.CollaborationModel(mapModel),
+				iconEditor = new MM.iconEditor(mapModel, hangoutsCollaboration),
 				initWidgets = function () {
 					jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
-					jQuery('#uploadImg').click(function () {
-						MM.Hangouts.showPicker(config).then(function (url) {
-							MM.Hangouts.getDimensions(url).then(function (dimensions) {
-								imageInsertController.dispatchEvent('imageInserted', url, dimensions.width, dimensions.height);
-							});
-						});
-					});
+					jQuery('#uploadImg').click(iconEditor.addIconNode);
+					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, config);
 				};
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
