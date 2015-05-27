@@ -22,3 +22,7 @@ input.commandline {
 	font-size: 15px;
 	height: 30px;
 }
+
+#linkEditWidget button {
+	height: 30px
+}

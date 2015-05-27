@@ -134,8 +134,7 @@
 		collaborationModel.start(getCollaborators());
 
 
-		jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
-		jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
+
 
 	};
 
@@ -183,6 +182,17 @@
 						.searchWidget('Meta+F Ctrl+F', mapModel);
 					jQuery('#uploadImg').click(iconEditor.addIconNode);
 					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, config);
+
+					jQuery('.colorPicker-palette').addClass('topbar-color-picker');
+					jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
+					jQuery('.colorPicker-picker').parent('a,button').click(function (e) {
+						if (e.target === this) {
+							jQuery(this).find('.colorPicker-picker').click();
+						}
+					});
+					jQuery('#linkEditWidget').linkEditWidget(mapModel);
+					jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
+					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 				};
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
