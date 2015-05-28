@@ -193,6 +193,8 @@
 					jQuery('#linkEditWidget').linkEditWidget(mapModel);
 					jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
+					jQuery('#flexi-toolbar').flexiToolbarWidget(mapModel);
+					jQuery('[data-title]').tooltip({container: 'body'});
 				};
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());

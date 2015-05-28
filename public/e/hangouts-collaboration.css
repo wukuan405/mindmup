@@ -26,3 +26,136 @@ input.commandline {
 #linkEditWidget button {
 	height: 30px
 }
+
+/* Flexi toolbar */
+
+#flexi-toolbar {
+	width: 220px;
+	height: 220px;
+	position: fixed;
+	top: 0;
+	right: 0;
+	z-index: 999;
+}
+
+#flexi-toolbar .tool-container {
+	width: 100%;
+	position: absolute;
+	top: -22px;
+	transform-origin: 100% 0;
+
+}
+
+#flexi-toolbar .tool-container:nth-of-type(1) {
+	transform: rotate(-8deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(2) {
+	transform: rotate(-24deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(3) {
+	transform: rotate(-41deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(4) {
+	transform: rotate(-57deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(5) {
+	transform: rotate(-74deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(1) .tool-button {
+	transform: rotate(8deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(2) .tool-button {
+	transform: rotate(24deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(3) .tool-button {
+	transform: rotate(41deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(4) .tool-button {
+	transform: rotate(57deg);
+}
+#flexi-toolbar .tool-container:nth-of-type(5) .tool-button {
+	transform: rotate(74deg);
+}
+#flexi-toolbar .tool-button {
+	width: 44px;
+	height: 44px;
+	display: inline-block;
+	background-position:center center;
+	background-repeat:no-repeat;
+	background-size: 100% 100%;
+	transition: transform 0.7s;
+
+}
+#flexi-toolbar .tool-container:nth-of-type(1) .tool-button:hover {
+	transform: rotate(-8deg) scale(1.3);
+}
+#flexi-toolbar .tool-container:nth-of-type(2) .tool-button:hover {
+	transform: rotate(9deg) scale(1.3);
+}
+#flexi-toolbar .tool-container:nth-of-type(3) .tool-button:hover {
+	transform: rotate(26deg) scale(1.3);
+}
+#flexi-toolbar .tool-container:nth-of-type(4) .tool-button:hover {
+	transform: rotate(42deg) scale(1.3);
+}
+#flexi-toolbar .tool-container:nth-of-type(5) .tool-button:hover {
+	transform: rotate(59deg) scale(1.3);
+}
+
+#flexi-toolbar .section {
+	width: 100%;
+	height: 100%;
+	transform-origin: 100% 0;
+	transition: transform 1s;
+	transform: rotate(-90deg);
+	position: absolute;
+	top: 0;
+	opacity: 0;
+}
+#flexi-toolbar .section.rotateOut {
+	transform: rotate(90deg);
+	opacity: 1;
+}
+#flexi-toolbar .section.active {
+	transform: rotate(0deg);
+	opacity: 1;
+}
+#flexi-toolbar .tool-add {
+ background-image:url('//static.mindmup.com/img/ios_icon_add_node.svg');
+}
+#flexi-toolbar .tool-edit {
+ background-image:url('//static.mindmup.com/img/ios_icon_edit.svg');
+}
+#flexi-toolbar .tool-undo {
+ background-image:url('//static.mindmup.com/img/ios_icon_undo.svg');
+}
+#flexi-toolbar .tool-export {
+background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNTA5LjA4bW0iIGhlaWdodD0iNDQwLjk3bW0iIHZlcnNpb249IjEuMSIgc3R5bGU9InNoYXBlLXJlbmRlcmluZzpnZW9tZXRyaWNQcmVjaXNpb247IHRleHQtcmVuZGVyaW5nOmdlb21ldHJpY1ByZWNpc2lvbjsgaW1hZ2UtcmVuZGVyaW5nOm9wdGltaXplUXVhbGl0eTsgZmlsbC1ydWxlOmV2ZW5vZGQ7IGNsaXAtcnVsZTpldmVub2RkIg0Kdmlld0JveD0iMCAwIDEzMzE1NiAxMTUzNDEiDQogeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPg0KIDxkZWZzPg0KICA8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KICAgPCFbQ0RBVEFbDQogICAgLmZpbDIge2ZpbGw6IzExQTg2MX0NCiAgICAuZmlsMCB7ZmlsbDojMzc3N0UzfQ0KICAgIC5maWwxIHtmaWxsOiNGRkNGNjN9DQogICBdXT4NCiAgPC9zdHlsZT4NCiA8L2RlZnM+DQogPGcgaWQ9IkxpdmVsbG9feDAwMjBfMSI+DQogIDxtZXRhZGF0YSBpZD0iQ29yZWxDb3JwSURfMENvcmVsLUxheWVyIi8+DQogIDxwb2x5Z29uIGNsYXNzPSJmaWwwIiBwb2ludHM9IjIyMTk0LDExNTM0MSA0NDM4NSw3Njg5NCAxMzMxNTYsNzY4OTQgMTEwOTYzLDExNTM0MSAiLz4NCiAgPHBvbHlnb24gY2xhc3M9ImZpbDEiIHBvaW50cz0iODg3NzIsNzY4OTQgMTMzMTU2LDc2ODk0IDg4NzcyLDAgNDQzODUsMCAiLz4NCiAgPHBvbHlnb24gY2xhc3M9ImZpbDIiIHBvaW50cz0iMCw3Njg5NCAyMjE5NCwxMTUzNDEgNjY1NzgsMzg0NDcgNDQzODUsMCAiLz4NCiA8L2c+DQo8L3N2Zz4=);
+}
+#flexi-toolbar .tool-help {
+ background-image:url('//static.mindmup.com/img/ios_icon_exit.svg');
+}
+
+#flexi-toolbar .tool-add-child {
+ background-image:url('//static.mindmup.com/img/ios_icon_add_child.svg');
+ transform: rotate(45deg);
+}
+#flexi-toolbar .tool-add-sibling {
+ background-image:url('//static.mindmup.com/img/ios_icon_add_sibling.svg');
+}
+#flexi-toolbar .tool-add-parent {
+ background-image:url('//static.mindmup.com/img/ios_icon_add_parent.svg');
+}
+#flexi-toolbar .tool-add-photo-node {
+ background-image:url('//static.mindmup.com/img/ios_icon_node_image.svg');
+}
+#flexi-toolbar .tool-back {
+ background-image:url('//static.mindmup.com/img/ios_icon_exit.svg');
+}
+
+
+/* End flexi toolbar */
+
+#flexi-toolbar .tool-button.disabled {
+	opacity: 0.3
+}
