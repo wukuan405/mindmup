@@ -315,7 +315,7 @@ MM.GoogleDriveAdapter = function (authenticator, appId, networkTimeoutMillis, de
 	};
 	this.showPicker = function (contentTypes, title, showDialogs) {
 		var deferred = jQuery.Deferred(),
-			defaultContentTypes = 'application/octet-stream,application/vnd.mindmup.collab,application/vnd-freemind,application/json,application/vnd.google.drive.ext-type.mup,application/x-freemind,application/vnd.google.drive.ext-type.mm',
+			defaultContentTypes = 'application/octet-stream,application/vnd.mindmup.collab,application/vnd-freemind,application/json,application/vnd.mindmup,application/vnd.google.drive.ext-type.mup,application/x-freemind,application/vnd.google.drive.ext-type.mm',
 			showPicker = function () {
 				var picker, view;
 				view = new google.picker.DocsView(google.picker.ViewId.DOCS);

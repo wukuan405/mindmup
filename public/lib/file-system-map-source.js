@@ -29,7 +29,7 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem, postProcessCal
 		};
 	self.loadMap = function loadMap(mapId, showAuth) {
 		var deferred = jQuery.Deferred(),
-			editable = { 'application/json': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false };
+			editable = { 'application/json': true, 'application/vnd.mindmup': true, 'application/octet-stream': true, 'application/x-freemind': false, 'application/vnd-freemind': false };
 		fileSystem.loadMap(mapId, showAuth).then(
 			function fileLoaded(stringContent, fileId, mimeType, properties, optionalFileName) {
 				if (!mimeType && optionalFileName) {
