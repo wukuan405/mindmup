@@ -10,20 +10,27 @@
 <html>
 <body>
 
-<%= erb :scripts %>
-<%if production? %>
-<script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
-<% else %>
-<script src="e/local_hangouts_mock_api.js"></script>
-<% end %>
-
 
 <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
+<%if production? %>
+<script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
+<link href="<%=settings.public_url%>/hangouts.css" rel="stylesheet" />
+<script src="<%=settings.static_host%>/external.js" ></script>
+<script src="<%=settings.public_url%>/mm-hangouts.min.js" ></script>
+<% else %>
+<script src="e/local_hangouts_mock_api.js"></script>
+<%= erb :scripts %>
 <%=erb :css%>
+<link href="<%=settings.public_url%>/e/hangouts-collaboration.css" rel="stylesheet" />
 <link href="<%=settings.public_url%>/ios/4/mindmap-ios.css" rel="stylesheet" />
 <script src="<%=settings.public_url%>/e/hangouts-collaboration.js" ></script>
 <script src="<%=settings.public_url%>/lib-ios/4/ios-popover-menu-widget.js" ></script>
-<link href="<%=settings.public_url%>/e/hangouts-collaboration.css" rel="stylesheet" />
+<% end %>
+
+
+
+
+
 
 
 <div id="container">

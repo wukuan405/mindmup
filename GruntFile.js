@@ -45,6 +45,10 @@ module.exports = function (grunt) {
 				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/main.js'],
 				dest: 'compiled/mm-compiled.js'
 			},
+			hangouts: {
+				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/lib-ios/4/ios-popover-menu-widget.js', 'public/e/hangouts-collaboration.js'],
+				dest: 'compiled/mm-hangouts.js'
+			},
 			mmios: {
 				src: [
 					'public/mapjs-compiled.js',
@@ -94,6 +98,7 @@ module.exports = function (grunt) {
 				files: {
 					'compiled/mm-compiled.min.js': ['compiled/mm-compiled.js'],
 					'compiled/mm-embedded.min.js': ['compiled/mm-embedded.js'],
+					'compiled/mm-hangouts.min.js': ['compiled/mm-hangouts.js'],
 					'compiled/mm-ios-compiled-3.min.js': ['compiled/mm-ios-compiled-3.js'],
 					'compiled/mm-ios-compiled-4.min.js': ['compiled/mm-ios-compiled-4.js']
 				}
@@ -103,6 +108,7 @@ module.exports = function (grunt) {
 			combine: {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
+					'compiled/hangouts.css': ['public/mindmap.css', 'public/mapjs.css', 'public/ios/4/mindmap-ios.css', 'public/e/hangouts-collaboration.css'],
 					'compiled/combined-ios-3.css': ['public/ios/3/mindmap-ios.css', 'public/ios/3/mapjs.css'],
 					'compiled/combined-ios-4.css': ['public/ios/4/*-ios.css', 'public/ios/4/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']
@@ -161,7 +167,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
 	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
 
-	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile', ['precommit', 'concat:lib', 'concat:hangouts', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
 	grunt.registerTask('compile-ios', ['concat:mmios', 'compile']);
 
 	// Load local tasks.
