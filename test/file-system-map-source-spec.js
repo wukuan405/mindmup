@@ -28,6 +28,18 @@ describe('MM.FileSystemMapSource', function () {
 			});
 			expect(wasCalled).toBeTruthy();
 		});
+		it('converts application/vnd.mindmup content as non readonly', function () {
+			var map = {id: 1, title: 'X'},
+				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/vnd.mindmup')),
+				wasCalled = false;
+			underTest.loadMap('abc').done(function (content, mapId, properties) {
+				wasCalled = true;
+				expect(content).toEqual(jasmine.objectContaining(map));
+				expect(mapId).toBe('abc');
+				expect(properties.editable).toBeTruthy();
+			});
+			expect(wasCalled).toBeTruthy();
+		});
 		it('defaults to JSON on octet-stream', function () {
 			var map = {id: 1, title: 'X'},
 				underTest = new MM.FileSystemMapSource(fakeFS(JSON.stringify(map), 'application/octet-stream')),

@@ -3,9 +3,10 @@ MM.FileSystemMapSource = function FileSystemMapSource(fileSystem, postProcessCal
 	'use strict';
 	var self = this,
 		jsonMimeType = 'application/json',
+		vndMimeType = 'application/vnd.mindmup',
 		stringToContent = function (fileContent, mimeType) {
 			var json, result;
-			if (mimeType === jsonMimeType) {
+			if (mimeType === jsonMimeType || mimeType === vndMimeType) {
 				json = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
 			} else if (mimeType === 'application/octet-stream') {
 				json = JSON.parse(fileContent);
