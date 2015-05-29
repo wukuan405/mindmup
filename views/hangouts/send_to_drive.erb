@@ -1,0 +1,49 @@
+<div id="sendToDrive" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Send to Google Drive</h3>
+  </div>
+  <div class="modal-body">
+    <div class="visible initial">
+      <p>You can send a copy of your map to Google Drive, to continue working in another application, or
+      share with collaborators who cannot participate in this Hangout. </p>
+      <p><b>Note that the Google Drive file will
+        be a copy, not automatically synchronised with this hangout</b>.</p>
+        <form class="form form-horizontal">
+          <div class="control-group">
+          <label class="control-label">File name:</label>
+            <div class="controls">
+              <input data-mm-role="send-to-drive-file-name" data-mm-show-focus placeholder="Google drive file name" />
+            </div>
+          </div>
+        </form>
+    </div>
+    <div class="visible send-to-drive-progress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, transferring file to Google Drive.<br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-error alert alert-error alert-block">
+      <h4>Unable to send file to Drive:</h4>
+      <br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-unauthorised">
+      <h4>Authorisation required</h4>
+      <br/>
+      <p>Google Drive requires you to authorise access to save the file. Please
+      click the <b>Authorise</b> button below to open a new window and authorise this operation.</p>
+    </div>
+    <div class="visible send-to-drive-done alert alert-success alert-block">
+      <h4>Your map was saved to Google Drive</h4> Click the <b>Open</b> button below to open the Drive file in another window. 
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a tabstop="1" href="#" class="btn visible pull-left send-to-drive-error send-to-drive-unauthorised" data-mm-role="set-state" data-mm-state="done"><i class="icon-chevron-left"></i>&nbsp;Back</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-role="send-to-drive-kickoff" data-mm-show-focus>Upload</a>
+    <a tabstop="1" href="#" class="btn visible send-to-drive-done" data-mm-role="send-to-drive-share">Share</a>
+    <a tabstop="2" href="#" target="_blank" class="btn btn-primary visible send-to-drive-done" data-mm-role="send-to-drive-result-link" data-mm-show-focus>Open</a>
+    <a tabstop="2" data-mm-role="send-to-drive-kickoff" data-mm-showdialogs class="btn btn-primary visible send-to-drive-unauthorised data-mm-show-focus">Authorise</a>
+    <a tabstop="3" href="#" class="btn visible initial google-upload inprogress send-to-drive-progress send-to-drive-unauthorised" data-dismiss="modal">Cancel</a>
+    <a tabstop="3" href="#" class="btn visible done error send-to-drive-done" data-dismiss="modal">Close</a>
+  </div>
+</div>

@@ -41,6 +41,7 @@
 <%= erb :link_edit_widget %>
 <%= erb :'hangouts/flexi_toolbar' %>
 <%= erb :'hangouts/context_menu' %>
+<%= erb :'hangouts/send_to_drive' %>
 <script>
 function init() {
   gapi.hangout.onApiReady.add(
@@ -50,7 +51,8 @@ function init() {
           googleAnalyticsAccount: '<%= settings.google_analytics_account %>',
           clientId: '<%= ENV['HANGOUT_CLIENT_ID'] %>',
           appId: '<%= ENV['HANGOUT_APP_ID'] %>',
-          pickerOrigin: '<%= ENV['HANGOUT_PICKER_ORIGIN'] %>'
+          pickerOrigin: '<%= ENV['HANGOUT_PICKER_ORIGIN'] %>',
+          networkTimeoutMillis: <%= settings.network_timeout_millis %>
         });
       }
     });

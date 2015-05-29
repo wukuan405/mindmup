@@ -1,5 +1,5 @@
-/*global jQuery, Image, MM, google, _, gapi, window*/
-jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, config) {
+/*global jQuery, Image, google, _, gapi, window*/
+jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator, config) {
 	'use strict';
 	var self = this,
 		confirmElement = self.find('[data-mm-role~=confirm]'),
@@ -55,9 +55,7 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, config) {
 			return deferred.promise();
 		},
 		showPicker = function (config) {
-			var gapiScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photos.upload',
-				authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
-				deferred = jQuery.Deferred(),
+			var deferred = jQuery.Deferred(),
 				showPicker = function () {
 					var picker;
 					picker = new google.picker.PickerBuilder()

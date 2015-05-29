@@ -1,4 +1,4 @@
-/*global gapi, _, MAPJS, observable, jQuery, window, console */
+/*global gapi, _, MAPJS, observable, jQuery, window, Blob, console */
 (function () {
 	'use strict';
 	var MM = (window.MM = (window.MM || {}));
@@ -54,6 +54,12 @@
 		};
 		self.getResource = function (internalUrl) {
 			return internalUrl;
+		};
+		self.generateContentBlob = function () {
+			var result = jQuery.Deferred(),
+				fileParts = [JSON.stringify(contentAggregate)]; /* todo: images -> data URI */
+			result.resolve(new Blob(fileParts, {type : 'application/vnd.mindmup'}));
+			return result.promise();
 		};
 		gapi.hangout.data.onStateChanged.add(onStateChange);
 		initContent();
@@ -200,14 +206,17 @@
 				activityLog = console,
 				collaborationModel = new MM.CollaborationModel(mapModel),
 				iconEditor = new MM.iconEditor(mapModel, hangoutsCollaboration),
+				gapiScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly  https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/photos.upload',
+				googleAuthenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
+				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticator, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
+
 				initWidgets = function () {
 					jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
 					jQuery('#uploadImg');
-					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, config);
-
+					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config);
 					jQuery('.colorPicker-palette').addClass('topbar-color-picker');
 					jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
 					jQuery('.colorPicker-picker').parent('a,button').click(function (e) {
@@ -226,6 +235,10 @@
 						mapModel.editNode('flexi-toolbar', true);
 					});
 					jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel).contextMenuLauncher(mapModel);
+					jQuery('#sendToDrive').sectionedModalWidget().sendToGoogleDriveWidget(googleDriveAdapter, hangoutsCollaboration.generateContentBlob);
+					jQuery('#flexi-toolbar [data-mm-role=send-to-drive]').click(function () {
+						jQuery('#sendToDrive').modal('show');
+					});
 				};
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
