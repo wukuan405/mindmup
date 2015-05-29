@@ -1,4 +1,4 @@
-/*global jQuery, MM, describe, it, afterEach, beforeEach, _, spyOn, jasmine, expect*/
+/*global jQuery, describe, it, afterEach, beforeEach, _, jasmine, expect*/
 describe('jQuery.fn.sendToGoogleDriveWidget', function () {
 	'use strict';
 	var template =
@@ -36,16 +36,17 @@ describe('jQuery.fn.sendToGoogleDriveWidget', function () {
 			blobFetchDeferred,
 			readyDeferred,
 			uploadDeferred,
-			underTest;
+			underTest,
+			blobGenerator;
 	beforeEach(function () {
 		blobFetchDeferred = jQuery.Deferred();
 		readyDeferred = jQuery.Deferred();
 		uploadDeferred = jQuery.Deferred();
-		spyOn(MM, 'ajaxBlobFetch').and.returnValue(blobFetchDeferred.promise());
+		blobGenerator = jasmine.createSpy('blobGenerator').and.returnValue(blobFetchDeferred.promise());
 		googleDriveAdapter = jasmine.createSpyObj('googleDriveAdapter', ['ready', 'binaryUpload', 'showSharingSettings']);
 		googleDriveAdapter.ready.and.returnValue(readyDeferred);
 		googleDriveAdapter.binaryUpload.and.returnValue(uploadDeferred);
-		underTest = jQuery(template).appendTo('body').sendToGoogleDriveWidget(googleDriveAdapter);
+		underTest = jQuery(template).appendTo('body').sendToGoogleDriveWidget(googleDriveAdapter, blobGenerator);
 		underTest.find('.visible').hide();
 		underTest.find('.visible.google-upload').show();
 	});
@@ -103,7 +104,7 @@ describe('jQuery.fn.sendToGoogleDriveWidget', function () {
 			});
 			it('does not try to fetch the file before authorisation with google', function () {
 				underTest.find('#kickoff-dialogs').click();
-				expect(MM.ajaxBlobFetch).not.toHaveBeenCalled();
+				expect(blobGenerator).not.toHaveBeenCalled();
 			});
 		});
 		describe('blob fetch', function () {
@@ -114,7 +115,7 @@ describe('jQuery.fn.sendToGoogleDriveWidget', function () {
 				readyDeferred.resolve();
 			});
 			it('fetches the file when google authorisation succeeds', function () {
-				expect(MM.ajaxBlobFetch).toHaveBeenCalledWith('url-1');
+				expect(blobGenerator).toHaveBeenCalledWith('url-1');
 				expect(underTest.find('.visible.send-to-drive-progress').css('display')).not.toBe('none');
 			});
 			it('shows the error section without uploading to drive if the blob fetch fails', function () {

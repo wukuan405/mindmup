@@ -1,6 +1,7 @@
-/*global jQuery, MM, _*/
-jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
+/*global jQuery, _, MM*/
+jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter, blobGenerator) {
 	'use strict';
+	blobGenerator = blobGenerator || MM.ajaxBlobFetch;
 	return this.each(function () {
 		var self = jQuery(this),
 			lastSavedId = false,
@@ -25,27 +26,29 @@ jQuery.fn.sendToGoogleDriveWidget = function (googleDriveAdapter) {
 			setStatusMessage = function (message, progress) {
 				self.find('[data-mm-role~=send-to-drive-status]').text(message + ' ' + (progress || ''));
 			},
-			transferFile = function () {
-				MM.ajaxBlobFetch(urlField.val()).then(
-					function (blob) {
-						googleDriveAdapter.binaryUpload(blob, fileName(), blob.type, _.contains(convertibleTypes, blob.type)).then(
-							function (result) {
-								self.find('[data-mm-role~=send-to-drive-result-link]').attr('href', result.link);
-								lastSavedId = result.id;
-								setState('send-to-drive-done');
-							},
-							function (errorCode) {
-								if (errorCode === 'not-authenticated') {
-									setState('send-to-drive-unauthorised');
-								} else {
-									setStatusMessage ('File upload failed', errorCode);
-									setState('send-to-drive-error');
-								}
-							},
-							function (percentComplete) {
-								setStatusMessage ('Uploading content', percentComplete);
-							});
+			transferBlob = function (blob) {
+				googleDriveAdapter.binaryUpload(blob, fileName(), blob.type, _.contains(convertibleTypes, blob.type)).then(
+					function (result) {
+						self.find('[data-mm-role~=send-to-drive-result-link]').attr('href', result.link);
+						lastSavedId = result.id;
+						setState('send-to-drive-done');
 					},
+					function (errorCode) {
+						if (errorCode === 'not-authenticated') {
+							setState('send-to-drive-unauthorised');
+						} else {
+							setStatusMessage ('File upload failed', errorCode);
+							setState('send-to-drive-error');
+						}
+					},
+					function (percentComplete) {
+						setStatusMessage ('Uploading content', percentComplete);
+					}
+				);
+			},
+			transferFile = function () {
+				blobGenerator(urlField.val()).then(
+					transferBlob,
 					function (xhr, statusText) {
 						setStatusMessage ('File retrieval failed', statusText);
 						setState('send-to-drive-error');
