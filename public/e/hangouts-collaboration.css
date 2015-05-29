@@ -171,3 +171,10 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 .iosDisabled {
 	cursor: not-allowed;
 }
+#modalIconEdit .file-drop-zone {
+  position: initial;
+}
+/* hangouts UI overrides */
+a:visited {
+  color: black;
+}
