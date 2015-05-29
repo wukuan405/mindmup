@@ -9,14 +9,20 @@
 <% end %>
 <html>
 <body>
-
-
 <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
 <%if production? %>
 <script src="//plus.google.com/hangouts/_/api/v1/hangout.js"></script>
 <link href="<%=settings.public_url%>/hangouts.css" rel="stylesheet" />
 <script src="<%=settings.static_host%>/external.js" ></script>
 <script src="<%=settings.public_url%>/mm-hangouts.min.js" ></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', '<%= settings.google_analytics_account %>', 'auto');
+  ga('send', 'pageview');
+</script>
 <% else %>
 <%= erb :scripts %>
 <script src="e/local_hangouts_mock_api.js"></script>
@@ -26,12 +32,6 @@
 <link href="<%=settings.public_url%>/ios/4/mindmap-ios.css" rel="stylesheet" />
 <link href="<%=settings.public_url%>/e/hangouts-collaboration.css" rel="stylesheet" />
 <% end %>
-
-
-
-
-
-
 
 <div id="container">
   Please wait, loading MindMup... if this message does not disappear in a few seconds, please contact us at contact@mindmup.com
@@ -60,7 +60,6 @@ function init() {
 // Wait for gadget to load.                                                       
 gadgets.util.registerOnLoadHandler(init);
 </script>
-
 
 </body>
 </html>
