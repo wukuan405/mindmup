@@ -18,13 +18,13 @@
 <script src="<%=settings.static_host%>/external.js" ></script>
 <script src="<%=settings.public_url%>/mm-hangouts.min.js" ></script>
 <% else %>
-<script src="e/local_hangouts_mock_api.js"></script>
 <%= erb :scripts %>
+<script src="e/local_hangouts_mock_api.js"></script>
 <%=erb :css%>
-<link href="<%=settings.public_url%>/e/hangouts-collaboration.css" rel="stylesheet" />
-<link href="<%=settings.public_url%>/ios/4/mindmap-ios.css" rel="stylesheet" />
-<script src="<%=settings.public_url%>/e/hangouts-collaboration.js" ></script>
 <script src="<%=settings.public_url%>/lib-ios/4/ios-popover-menu-widget.js" ></script>
+<script src="<%=settings.public_url%>/e/hangouts-collaboration.js" ></script>
+<link href="<%=settings.public_url%>/ios/4/mindmap-ios.css" rel="stylesheet" />
+<link href="<%=settings.public_url%>/e/hangouts-collaboration.css" rel="stylesheet" />
 <% end %>
 
 

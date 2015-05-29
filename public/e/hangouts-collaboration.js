@@ -135,26 +135,17 @@
 	};
 	jQuery.fn.contextMenuLauncher = function (mapModel) {
 		return jQuery.each(this, function () {
-			var element = jQuery(this),
-					applyContext = function (context) {
-						element.find('.ios-toolbar-item.iosDisabled').removeClass('iosDisabled');
-						_.each(context, function (v, k) {
-							if (!v) {
-								element.find('.iosNodeContext-' + k).addClass('iosDisabled');
-							}
-						});
-					};
+			var element = jQuery(this);
 			mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
 				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
 					element.find('[data-mm-menu]').hide();
 					element.find('[data-mm-menu=main]').show();
-					applyContext(mapModel.contextForNode(nodeId || mapModel.getSelectedNodeId()));
 					element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
 				}
 			});
 			mapModel.addEventListener('nodeSelectionChanged', function (nodeId, isSelected) {
 				if (isSelected) {
-					element.fadeOut();
+					element.trigger('hidePopover');
 				}
 			});
 			element.find('[data-mm-menu-role~="showMenu"]').click(function () {
@@ -168,7 +159,7 @@
 						additionalArgs = clickElement.data('mm-model-args') || [],
 						args = [source].concat(additionalArgs);
 				if (action && mapModel && mapModel[action] && !clickElement.hasClass('iosDisabled')) {
-					element.fadeOut();
+					element.trigger('hidePopover');
 					mapModel[action].apply(mapModel, args);
 				}
 			});
