@@ -21,17 +21,19 @@ jQuery.fn.flexiToolbarWidget = function (mapModel) {
 		element.find('[data-mm-role=section]').click(showSection);
 		mapModel.addEventListener('nodeSelectionChanged', function (id, isSelected) {
 			if (isSelected) {
-				var isRoot = (id == mapModel.getIdea().id);
-				if (isRoot) {
-					element.find('[data-mm-requirement="no-root"]').addClass('disabled');
-				} else {
-					element.find('[data-mm-requirement="no-root"]').removeClass('disabled');
-				}
+				var context = mapModel.contextForNode(id);
+				element.find('[data-mm-requirement]').each(function () {
+					var jQElement = jQuery(this);
+					if (!context[this.getAttribute('data-mm-requirement')]) {
+						jQElement.addClass('disabled');
+					} else {
+						jQElement.removeClass('disabled');
+					}
+				});
 			}
 		});
 		element.find('[data-mm-map-model]').click(function () {
 			mapModel[this.getAttribute('data-mm-map-model')]('flexi-toolbar');
 		});
-
 	});
 };

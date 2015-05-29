@@ -148,8 +148,13 @@
 				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
 					element.find('[data-mm-menu]').hide();
 					element.find('[data-mm-menu=main]').show();
-					applyContext(mapModel.contextForNode(mapModel.getSelectedNodeId()));
+					applyContext(mapModel.contextForNode(nodeId || mapModel.getSelectedNodeId()));
 					element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
+				}
+			});
+			mapModel.addEventListener('nodeSelectionChanged', function (nodeId, isSelected) {
+				if (isSelected) {
+					element.fadeOut();
 				}
 			});
 			element.find('[data-mm-menu-role~="showMenu"]').click(function () {
@@ -225,7 +230,10 @@
 					jQuery('#flexi-toolbar').flexiToolbarWidget(mapModel);
 					jQuery('[data-title]').tooltip({container: 'body'});
 					jQuery('[data-mm-role=add-photo-node]').click(iconEditor.addIconNode);
-
+					jQuery('[data-mm-role=context-menu]').click(function () {
+						jQuery('[data-mapjs-role=stage]').trigger('forceContextMenu');
+						mapModel.editNode('flexi-toolbar', true);
+					});
 					jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel).contextMenuLauncher(mapModel);
 				};
 		initWidgets();
