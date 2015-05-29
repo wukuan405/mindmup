@@ -29,5 +29,9 @@ jQuery.fn.flexiToolbarWidget = function (mapModel) {
 				}
 			}
 		});
+		element.find('[data-mm-map-model]').click(function () {
+			mapModel[this.getAttribute('data-mm-map-model')]('flexi-toolbar');
+		});
+
 	});
 };

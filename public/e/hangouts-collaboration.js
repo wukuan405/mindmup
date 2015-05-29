@@ -132,15 +132,44 @@
 		collaborationModel.addEventListener('collaboratorRequestedForContentSession', onCollaboratorRequestedForContentSession);
 		collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 		collaborationModel.start(getCollaborators());
-
-
-
-
 	};
+	jQuery.fn.contextMenuLauncher = function (mapModel) {
+		return jQuery.each(this, function () {
+			var element = jQuery(this),
+					applyContext = function (context) {
+						element.find('.ios-toolbar-item.iosDisabled').removeClass('iosDisabled');
+						_.each(context, function (v, k) {
+							if (!v) {
+								element.find('.iosNodeContext-' + k).addClass('iosDisabled');
+							}
+						});
+					};
+			mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
+				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
+					element.find('[data-mm-menu]').hide();
+					element.find('[data-mm-menu=main]').show();
+					applyContext(mapModel.contextForNode(mapModel.getSelectedNodeId()));
+					element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
+				}
+			});
+			element.find('[data-mm-menu-role~="showMenu"]').click(function () {
+				var menu = jQuery(this).data('mm-action');
+				element.find('[data-mm-menu=' + menu + ']').fadeToggle();
+			});
+			element.find('[data-mm-menu-role~="modelAction"]').click(function () {
+				var clickElement = jQuery(this),
+						action = clickElement.data('mm-action'),
+						source = 'context-widget',
+						additionalArgs = clickElement.data('mm-model-args') || [],
+						args = [source].concat(additionalArgs);
+				if (action && mapModel && mapModel[action] && !clickElement.hasClass('iosDisabled')) {
+					element.fadeOut();
+					mapModel[action].apply(mapModel, args);
+				}
+			});
 
-
-
-
+		});
+	};
 	MM.Hangouts.initMindMup = function (config) {
 		jQuery('#container').empty();
 		var isTouch = false,
@@ -180,7 +209,7 @@
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
-					jQuery('#uploadImg').click(iconEditor.addIconNode);
+					jQuery('#uploadImg');
 					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, config);
 
 					jQuery('.colorPicker-palette').addClass('topbar-color-picker');
@@ -195,9 +224,13 @@
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 					jQuery('#flexi-toolbar').flexiToolbarWidget(mapModel);
 					jQuery('[data-title]').tooltip({container: 'body'});
+					jQuery('[data-mm-role=add-photo-node]').click(iconEditor.addIconNode);
+
+					jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel).contextMenuLauncher(mapModel);
 				};
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
+
 		MM.Hangouts.PresenceMediator(collaborationModel);
 	};
 })();

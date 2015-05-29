@@ -17,20 +17,23 @@
 <script src="e/local_hangouts_mock_api.js"></script>
 <% end %>
 
+
 <link href="<%=settings.static_host%>/external.css" rel="stylesheet" />
 <%=erb :css%>
+<link href="<%=settings.base_url%>ios/4/mindmap-ios.css" rel="stylesheet" />
 <script src="<%=settings.base_url%>e/hangouts-collaboration.js" ></script>
+<script src="<%=settings.base_url%>lib-ios/4/ios-popover-menu-widget.js" ></script>
 <link href="<%=settings.base_url%>e/hangouts-collaboration.css" rel="stylesheet" />
 
 
 <div id="container">
   Please wait, loading MindMup... if this message does not disappear in a few seconds, please contact us at contact@mindmup.com
 </div>
-<button id="uploadImg">Image</button>
 <%=erb :collaborator_speech_bubble %>
 <%= erb :icon_editor %>
 <%= erb :link_edit_widget %>
 <%= erb :flexi_toolbar %>
+<%= erb :'hangouts/context_menu' %>
 <script>
 function init() {
   gapi.hangout.onApiReady.add(
@@ -48,6 +51,7 @@ function init() {
 // Wait for gadget to load.                                                       
 gadgets.util.registerOnLoadHandler(init);
 </script>
+
 
 </body>
 </html>

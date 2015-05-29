@@ -945,6 +945,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		};
 	}());
 	/* undo/redo */
+	contentAggregate.canUndo = function () {
+		return !!(eventStacks[sessionKey] && eventStacks[sessionKey].length > 0);
+	};
+	contentAggregate.canRedo = function () {
+		return !!(redoStacks[sessionKey] && redoStacks[sessionKey].length > 0);
+	};
 	contentAggregate.undo = function () {
 		return contentAggregate.execCommand('undo', arguments);
 	};
@@ -2207,7 +2213,9 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				hasSiblings = idea.hasSiblings(nodeId),
 				canPaste = node && isEditingEnabled && clipboard && clipboard.get();
 		if (node) {
-			return {'hasChildren': !!hasChildren, 'hasSiblings': !!hasSiblings, 'canPaste': !!canPaste};
+			return {'hasChildren': !!hasChildren, 'hasSiblings': !!hasSiblings, 'canPaste': !!canPaste,
+				notRoot: idea.id != nodeId, canUndo: idea.canUndo(), canRedo: idea.canRedo()
+			};
 		}
 
 	};

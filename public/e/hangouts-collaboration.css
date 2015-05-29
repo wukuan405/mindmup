@@ -8,16 +8,6 @@
 	margin:0;
 	padding:0;
 }
-#uploadImg {
-	position: fixed;
-	top: 10px;
-	left: 10px;
-	z-index: 100;
-}
-
-.hide {
-	display: none;
-}
 input.commandline {
 	font-size: 15px;
 	height: 30px;
@@ -42,6 +32,7 @@ input.commandline {
 	width: 100%;
 	position: absolute;
 	top: -22px;
+	right: 0;
 	transform-origin: 100% 0;
 
 }
@@ -165,5 +156,18 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 /* End flexi toolbar */
 
 #flexi-toolbar .tool-button.disabled {
-	opacity: 0.3
+	opacity: 0.3;
+	cursor: not-allowed;
+}
+
+/* IOS overrides */
+.ios-toolbar {
+	left: 0;
+	width: 100%;
+}
+.ios-toolbar-item {
+	display: inline-block;
+}
+.iosDisabled {
+	cursor: not-allowed;
 }
