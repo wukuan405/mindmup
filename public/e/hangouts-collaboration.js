@@ -155,7 +155,7 @@
 					colorSelector.css({'background-image': 'url(' + tansparentImage + ')', 'background-size': '100% 100%'});
 				}
 				colorSelector.css('background-color', colorHash);
-				colorSelector.appendTo(palette).show().click(function () {
+				colorSelector.appendTo(palette).show().on('click', function () {
 					var args = element.data('mm-model-args') || ['background'],
 							modelMethod = element.data('mm-model-method') || 'updateStyle';
 					mapModel[modelMethod].apply(mapModel, [source].concat(args).concat(colorHash));
@@ -192,9 +192,7 @@
 							top: selectionPoint.y + 'px',
 							left: selectionPoint.x + 'px'
 						});
-						window.setTimeout(function () {
-							marker.removeClass('hide').popover('show'); /* otherwise stage.click gets caught immediately and removes it */
-						}, 100);
+						marker.removeClass('hide').popover('show'); /* otherwise stage.click gets caught immediately and removes it */
 					},
 					placement = function () {
 						if (marker.offset().top > stageContainer.innerHeight() - 260) {
@@ -245,7 +243,7 @@
 				}
 			});
 			mapModel.addEventListener('nodeSelectionChanged mapMoveRequested', hideMenu);
-			stageContainer.on('scroll click blur', hideMenu);
+			stageContainer.on('scroll tap blur', hideMenu);
 		});
 	};
 	MM.Hangouts.initMindMup = function (config) {

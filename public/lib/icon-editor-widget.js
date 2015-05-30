@@ -1,4 +1,4 @@
-/*global jQuery, MAPJS, MM, observable */
+/*global jQuery, MAPJS, MM, observable, document */
 
 MM.iconEditor = function (mapModel, resourceManager) {
 	'use strict';
@@ -53,6 +53,7 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		fileUpload = self.find('input[name=selectfile]'),
 		dropZone = self.find('[data-mm-role=drop-zone]'),
 		selectFile = self.find('[data-mm-role=select-file]'),
+		downloadFile = self.find('[data-mm-role=download]'),
 		doConfirm = function () {
 			iconEditor.save({
 				url: imgPreview.attr('src'),
@@ -70,9 +71,11 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 				self.find('[data-mm-role=attribs]').hide();
 				clearButton.hide();
 				confirmElement.hide();
+				downloadFile.hide();
 			} else {
 				imgPreview.show();
 				imgPreview.attr('src', icon.url);
+				downloadFile.attr('href', icon.url).show();
 				self.find('[data-mm-role=attribs]').show();
 				positionSelect.val(icon.position);
 				widthBox.val(icon.width);
@@ -85,11 +88,16 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		openFile = function () {
 			fileUpload.click();
 		},
-		insertController = new MAPJS.ImageInsertController(corsProxyUrl);
+		insertController = new MAPJS.ImageInsertController(corsProxyUrl),
+		isDownloadSupported = function () {
+			var a = document.createElement('a');
+			return typeof a.download != 'undefined';
+		};
 	selectFile.click(openFile).keydown('space enter', openFile);
 	insertController.addEventListener('imageInserted',
 		function (dataUrl, imgWidth, imgHeight) {
 			imgPreview.attr('src', dataUrl);
+			downloadFile.attr('href', dataUrl).show();
 			widthBox.val(imgWidth);
 			heightBox.val(imgHeight);
 			self.find('[data-mm-role=attribs]').show();
@@ -144,5 +152,10 @@ jQuery.fn.iconEditorWidget = function (iconEditor, corsProxyUrl) {
 		loadForm(icon);
 		self.modal('show');
 	});
+	if (isDownloadSupported()) {
+		downloadFile.attr('download', 'image');
+	} else {
+		downloadFile.attr('target', '_blank');
+	}
 	return this;
 };

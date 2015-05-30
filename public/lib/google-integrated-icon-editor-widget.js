@@ -1,4 +1,4 @@
-/*global jQuery, Image, google, _, gapi, window*/
+/*global jQuery, Image, google, _, gapi, window, document*/
 jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator, config) {
 	'use strict';
 	var self = this,
@@ -13,6 +13,7 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 		ratioBox = self.find('input[name=keepratio]'),
 		fileUpload = self.find('input[name=selectfile]'),
 		selectFile = self.find('[data-mm-role=select-file]'),
+		downloadFile = self.find('[data-mm-role=download]'),
 		doConfirm = function () {
 			iconEditor.save({
 				url: imgPreview.attr('src'),
@@ -30,9 +31,11 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 				self.find('[data-mm-role=attribs]').hide();
 				clearButton.hide();
 				confirmElement.hide();
+				downloadFile.hide();
 			} else {
 				imgPreview.show();
 				imgPreview.attr('src', icon.url);
+				downloadFile.attr('href', icon.url).show();
 				self.find('[data-mm-role=attribs]').show();
 				positionSelect.val(icon.position);
 				widthBox.val(icon.width);
@@ -111,6 +114,7 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 						});
 					} else {
 						imgPreview.attr('src', url);
+						downloadFile.attr('href', url).show();
 						widthBox.val(dimensions.width);
 						heightBox.val(dimensions.height);
 						self.find('[data-mm-role=attribs]').show();
@@ -121,8 +125,11 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 					}
 				});
 			});
+		},
+		isDownloadSupported = function () {
+			var a = document.createElement('a');
+			return typeof a.download != 'undefined';
 		};
-
 	selectFile.click(openPicker).keydown('space enter', openPicker);
 	widthBox.on('change', function () {
 		if (ratioBox[0].checked) {
@@ -165,6 +172,11 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 			openPicker(fast);
 		}
 	});
+	if (isDownloadSupported()) {
+		downloadFile.attr('download', 'image');
+	} else {
+		downloadFile.attr('target', '_blank');
+	}
 	return this;
 };
 
