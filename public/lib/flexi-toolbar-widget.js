@@ -86,7 +86,7 @@ jQuery.fn.contextMenuLauncher = function (mapModel, stageContainer) {
 			var menu = jQuery(this).data('mm-show-menu');
 			element.find('[data-mm-menu=' + menu + ']').fadeToggle();
 		});
-		element.find('a').click(function () {
+		element.find('a').not('[data-mm-show-menu]').click(function () {
 			var clickElement = jQuery(this);
 			if (!clickElement.hasClass('disabled')) {
 				hideMenu();
