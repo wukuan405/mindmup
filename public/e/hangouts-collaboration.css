@@ -210,4 +210,19 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	border-top-color: #22AAE0;
 }
 
+/***/
 
+#nodeColorPicker .color-palette {
+	display: block;
+  margin: 10px 20px 10px 20px;
+  text-align:center;
+}
+#nodeColorPicker .color-selector {
+	display: inline-block;
+	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.7);
+  margin: 10px;
+  height: 40px;
+  width: 40px;
+  border-radius: 20px;
+  cursor: pointer;
+}

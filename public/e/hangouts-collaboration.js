@@ -139,55 +139,29 @@
 		collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 		collaborationModel.start(getCollaborators());
 	};
-	jQuery.fn.contextMenuLauncher = function (mapModel, stageContainer) {
-		return jQuery.each(this, function () {
+	jQuery.fn.colorSelectorWidget = function (mapModel, colors, source) {
+		return jQuery(this).each(function () {
+
 			var element = jQuery(this),
-					currentContextMenu,
-					hideMenu = function () {
-						if (currentContextMenu)	{
-							currentContextMenu.popover('destroy');
-							currentContextMenu = undefined;
-						}
-					},
-					placement = function () {
-						if (currentContextMenu.offset().top > stageContainer.innerHeight() - 260) {
-							return 'top';
-						}
-						return 'bottom';
-					};
-			mapModel.addEventListener('contextMenuRequested', function (nodeId) {
-				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
-					var nodeElement = stageContainer.nodeWithId(nodeId);
-					if (nodeElement && nodeElement.length) {
-						currentContextMenu = nodeElement;
-						mapModel.dispatchEvent('nodeVisibilityRequested', nodeId);
-						element.find('[data-mm-menu]').hide();
-						currentContextMenu.popover({
-							html: true,
-							title: '',
-							placement: placement(),
-							trigger: 'manual',
-							container: 'body',
-							content: function () {
-								return element;
-							}
-						});
-						currentContextMenu.popover('show');
-					}
+					palette = element.find('[data-mm-role="color-palette"]'),
+					template = element.find('[data-mm-role="color-selector-template"]').detach(),
+					modelMethod = element.data('mm-model-method') || 'updateStyle';
+			element.modal({keyboard: true, show: false, backdrop: 'static'});
+			source = source || 'color-selector';
+			_.each(colors, function (color) {
+				var colorSelector = template.clone(),
+						colorHash = color === 'transparent' ? '' : '#' + color,
+						tansparentImage = element.find('[data-mm-role="transparent-color-image"]').attr('src');
+				if (color === 'transparent') {
+					colorSelector.css({'background-image': 'url(' + tansparentImage + ')', 'background-size': '100% 100%'});
 				}
+				colorSelector.css('background-color', colorHash);
+				colorSelector.appendTo(palette).show().click(function () {
+					var args = element.data('mm-model-args') || ['background'];
+					mapModel[modelMethod].apply(mapModel, [source].concat(args).concat(colorHash));
+					element.modal('hide');
+				});
 			});
-			mapModel.addEventListener('nodeSelectionChanged', hideMenu);
-			element.find('[data-mm-show-menu]').click(function () {
-				var menu = jQuery(this).data('mm-show-menu');
-				element.find('[data-mm-menu=' + menu + ']').fadeToggle();
-			});
-			element.find('[data-mm-map-model]').click(function () {
-				var clickElement = jQuery(this);
-				if (!clickElement.hasClass('disabled')) {
-					hideMenu();
-				}
-			});
-			stageContainer.on('scroll click blur', hideMenu);
 		});
 	};
 	MM.Hangouts.initMindMup = function (config) {
@@ -256,6 +230,16 @@
 					jQuery('#sendToDrive').sectionedModalWidget().sendToGoogleDriveWidget(googleDriveAdapter, hangoutsCollaboration.generateContentBlob);
 					jQuery('#flexi-toolbar [data-mm-role=send-to-drive]').click(function () {
 						jQuery('#sendToDrive').modal('show');
+					});
+					jQuery('#nodeColorPicker').colorSelectorWidget(mapModel, [
+						'000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
+						'808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
+						'99CC00', '339966', '33CCCC', '3366FF', '800080', '999999', 'FF00FF', 'FFCC00',
+						'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
+						'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
+					]);
+					jQuery('[data-mm-role=node-color-picker]').click(function () {
+						jQuery('#nodeColorPicker').modal('show');
 					});
 				};
 

@@ -43,3 +43,55 @@ jQuery.fn.nodeContextWidget = function (mapModel) {
 		});
 	});
 };
+jQuery.fn.contextMenuLauncher = function (mapModel, stageContainer) {
+	'use strict';
+	return jQuery.each(this, function () {
+		var element = jQuery(this),
+				currentContextMenu,
+				hideMenu = function () {
+					if (currentContextMenu)	{
+						currentContextMenu.popover('destroy');
+						currentContextMenu = undefined;
+					}
+				},
+				placement = function () {
+					if (currentContextMenu.offset().top > stageContainer.innerHeight() - 260) {
+						return 'top';
+					}
+					return 'bottom';
+				};
+		mapModel.addEventListener('contextMenuRequested', function (nodeId) {
+			if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
+				var nodeElement = stageContainer.nodeWithId(nodeId);
+				if (nodeElement && nodeElement.length) {
+					currentContextMenu = nodeElement;
+					mapModel.dispatchEvent('nodeVisibilityRequested', nodeId);
+					element.find('[data-mm-menu]').hide();
+					currentContextMenu.popover({
+						html: true,
+						title: '',
+						placement: placement(),
+						trigger: 'manual',
+						container: 'body',
+						content: function () {
+							return element;
+						}
+					});
+					currentContextMenu.popover('show');
+				}
+			}
+		});
+		mapModel.addEventListener('nodeSelectionChanged', hideMenu);
+		element.find('[data-mm-show-menu]').click(function () {
+			var menu = jQuery(this).data('mm-show-menu');
+			element.find('[data-mm-menu=' + menu + ']').fadeToggle();
+		});
+		element.find('a').click(function () {
+			var clickElement = jQuery(this);
+			if (!clickElement.hasClass('disabled')) {
+				hideMenu();
+			}
+		});
+		stageContainer.on('scroll click blur', hideMenu);
+	});
+};
