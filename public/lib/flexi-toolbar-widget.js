@@ -81,7 +81,7 @@ jQuery.fn.contextMenuLauncher = function (mapModel, stageContainer) {
 				}
 			}
 		});
-		mapModel.addEventListener('nodeSelectionChanged', hideMenu);
+		mapModel.addEventListener('nodeSelectionChanged mapMoveRequested', hideMenu);
 		element.find('[data-mm-show-menu]').click(function () {
 			var menu = jQuery(this).data('mm-show-menu');
 			element.find('[data-mm-menu=' + menu + ']').fadeToggle();

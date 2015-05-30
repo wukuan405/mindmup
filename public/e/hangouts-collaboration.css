@@ -155,7 +155,7 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 
 
 
-#context-toolbar {
+.popover-toolbar {
 	font-family: Helvetica, "Arial Unicode MS", sans-serif;
 	font-size: 8pt;
 	color: #22AAE0;
@@ -164,40 +164,44 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	color: #22AAE0;
 	vertical-align: top;
 }
-#context-toolbar a, #context-toolbar a:visited, #context-toolbar a:focus, #context-toolbar a:hover{
+.popover-toolbar a, .popover-toolbar a:visited, .popover-toolbar a:focus, .popover-toolbar a:hover{
 	color: #22AAE0;
   outline: none;
 	text-decoration: none;
 }
-#context-toolbar a:hover{
+.popover-toolbar a:hover{
 	transform: scale(1.1);
 	transition: transform 1.2s;
 }
-#context-toolbar a.disabled:hover{
+.popover-toolbar a.disabled:hover{
 	transform: scale(1);
 	transition: none; 
 }
 
-#context-toolbar .toolbar-item {
+.popover-toolbar .toolbar-item {
 	display: inline-block;
 	height: 75px;
 	width: 60px;
 	text-align: center;
 	vertical-align: top;
 }
-#context-toolbar .toolbar-label {
+.popover-toolbar .toolbar-label {
 	display: block;
 	width: 100%;
 	height: 22px;
 }
-#context-toolbar .toolbar-icon {
+.popover-toolbar .toolbar-icon {
 	display: block;
 	width: 100%;
 	height:40px;
 }
-#context-toolbar .toolbar-item.disabled, #flexi-toolbar .tool-button.disabled  {
+.popover-toolbar .toolbar-item.disabled, #flexi-toolbar .tool-button.disabled  {
 	opacity: 0.3;
 	cursor: not-allowed;
+}
+
+.popover-toolbar .toolbar-item.hide {
+  display: none;
 }
 
 .popover{
@@ -214,7 +218,13 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	border-top-color: #22AAE0;
 }
 
-/***/
+#link-selection-marker {
+  visibility: hidden;
+  width: 1px;
+  height: 1px;
+  display: block;
+  position: fixed;
+}
 
 #nodeColorPicker .color-palette {
 	display: block;
@@ -229,4 +239,7 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
   width: 40px;
   border-radius: 20px;
   cursor: pointer;
+}
+.link-popover .toolbar-item {
+  height: 60px;
 }

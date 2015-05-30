@@ -164,6 +164,86 @@
 			});
 		});
 	};
+	jQuery.fn.popoverLinkEditor = function (mapModel, stageContainer) {
+		return jQuery.each(this, function () {
+			var element = jQuery(this),
+					source = 'mouse',
+					currentLink,
+					marker = element.find('[data-mm-role=marker]'),
+					toolbar = element.find('[data-mm-role=toolbar]'),
+					hideMenu = function () {
+						if (!marker.hasClass('hide')) {
+							marker.popover('destroy');
+							marker.addClass('hide');
+						}
+					},
+					showMenu = function (selectionPoint) {
+						marker.popover({
+							html: true,
+							title: '',
+							placement: placement,
+							trigger: 'manual',
+							container: 'body',
+							content: function () {
+								return toolbar;
+							}
+						});
+						marker.css({
+							top: selectionPoint.y + 'px',
+							left: selectionPoint.x + 'px'
+						});
+						window.setTimeout(function () {
+							marker.removeClass('hide').popover('show'); /* otherwise stage.click gets caught immediately and removes it */
+						}, 100);
+					},
+					placement = function () {
+						if (marker.offset().top > stageContainer.innerHeight() - 260) {
+							return 'top';
+						}
+						return 'bottom';
+					};
+			marker.detach().appendTo('body');
+			toolbar.find('[data-mm-role~="link-no-arrow"]').click(function () {
+				mapModel.updateLinkStyle(source, currentLink.ideaIdFrom, currentLink.ideaIdTo, 'arrow', false);
+			});
+			toolbar.find('[data-mm-role~="link-arrow"]').click(function () {
+				mapModel.updateLinkStyle(source, currentLink.ideaIdFrom, currentLink.ideaIdTo, 'arrow', true);
+			});
+			toolbar.find('[data-mm-role~="link-solid"]').click(function () {
+				mapModel.updateLinkStyle(source, currentLink.ideaIdFrom, currentLink.ideaIdTo, 'lineStyle', 'solid');
+			});
+			toolbar.find('[data-mm-role~="link-dashed"]').click(function () {
+				mapModel.updateLinkStyle(source, currentLink.ideaIdFrom, currentLink.ideaIdTo, 'lineStyle', 'dashed');
+			});
+			toolbar.find('[data-mm-role~=link-removal]').click(function () {
+				mapModel.removeLink(source, currentLink.ideaIdFrom, currentLink.ideaIdTo);
+			});
+
+			mapModel.addEventListener('linkSelected', function (link, selectionPoint, linkStyle) {
+				currentLink = link;
+				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
+					//element.find('[data-mm-role~="link-color"]').data('mm-model-args', [link.ideaIdFrom, link.ideaIdTo, 'color']);
+					if (linkStyle && linkStyle.arrow) {
+						toolbar.find('[data-mm-role~="link-no-arrow"]').removeClass('hide');
+						toolbar.find('[data-mm-role~="link-arrow"]').addClass('hide');
+					} else {
+						toolbar.find('[data-mm-role~="link-no-arrow"]').addClass('hide');
+						toolbar.find('[data-mm-role~="link-arrow"]').removeClass('hide');
+					}
+					if (linkStyle && linkStyle.lineStyle && linkStyle.lineStyle === 'dashed') {
+						toolbar.find('[data-mm-role~="link-solid"]').removeClass('hide');
+						toolbar.find('[data-mm-role~="link-dashed"]').addClass('hide');
+					} else {
+						toolbar.find('[data-mm-role~="link-dashed"]').removeClass('hide');
+						toolbar.find('[data-mm-role~="link-solid"]').addClass('hide');
+					}
+					showMenu(selectionPoint);
+				}
+			});
+			mapModel.addEventListener('nodeSelectionChanged mapMoveRequested', hideMenu);
+			stageContainer.on('scroll click blur', hideMenu);
+		});
+	};
 	MM.Hangouts.initMindMup = function (config) {
 		jQuery('#container').empty();
 		var isTouch = false,
@@ -203,7 +283,8 @@
 				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticator, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
 
 				initWidgets = function () {
-					jQuery('#container').domMapWidget(activityLog, mapModel, isTouch, imageInsertController, jQuery('#container'), hangoutsCollaboration.getResource);
+					var container = jQuery('#container');
+					container.domMapWidget(activityLog, mapModel, isTouch, imageInsertController, container, hangoutsCollaboration.getResource);
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
@@ -216,8 +297,7 @@
 							jQuery(this).find('.colorPicker-picker').click();
 						}
 					});
-					jQuery('#linkEditWidget').linkEditWidget(mapModel);
-					jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
+					container.collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 					jQuery('#flexi-toolbar').rotatingToolbarWidget().nodeContextWidget(mapModel);
 					jQuery('[data-title]').tooltip({container: 'body'});
@@ -226,7 +306,7 @@
 						mapModel.requestContextMenu();
 						mapModel.editNode('flexi-toolbar', true);
 					});
-					jQuery('[data-mm-role=context-toolbar]').contextMenuLauncher(mapModel, jQuery('#container')).nodeContextWidget(mapModel);
+					jQuery('[data-mm-role=context-toolbar]').contextMenuLauncher(mapModel, container).nodeContextWidget(mapModel);
 					jQuery('#sendToDrive').sectionedModalWidget().sendToGoogleDriveWidget(googleDriveAdapter, hangoutsCollaboration.generateContentBlob);
 					jQuery('#flexi-toolbar [data-mm-role=send-to-drive]').click(function () {
 						jQuery('#sendToDrive').modal('show');
@@ -241,6 +321,7 @@
 					jQuery('[data-mm-role=node-color-picker]').click(function () {
 						jQuery('#nodeColorPicker').modal('show');
 					});
+					jQuery('#popoverLinkEditor').popoverLinkEditor(mapModel, container);
 				};
 
 		MAPJS.DOMRender.stageVisibilityMargin = {top: 20, bottom: 20, left: 160, right: 160}; /* required for popover positioning */
