@@ -46,7 +46,7 @@ module.exports = function (grunt) {
 				dest: 'compiled/mm-compiled.js'
 			},
 			hangouts: {
-				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/lib-ios/4/ios-popover-menu-widget.js', 'public/e/hangouts-collaboration.js'],
+				src: ['public/mapjs-compiled.js', 'public/mm.js', 'public/lib/*.js', 'public/e/hangouts-collaboration.js'],
 				dest: 'compiled/mm-hangouts.js'
 			},
 			mmios: {
@@ -108,7 +108,7 @@ module.exports = function (grunt) {
 			combine: {
 				files: {
 					'compiled/combined.css': ['public/mindmap.css', 'public/mapjs.css'],
-					'compiled/hangouts.css': ['public/mindmap.css', 'public/mapjs.css', 'public/ios/4/mindmap-ios.css', 'public/e/hangouts-collaboration.css'],
+					'compiled/hangouts.css': ['public/mindmap.css', 'public/mapjs.css', 'public/e/hangouts-collaboration.css'],
 					'compiled/combined-ios-3.css': ['public/ios/3/mindmap-ios.css', 'public/ios/3/mapjs.css'],
 					'compiled/combined-ios-4.css': ['public/ios/4/*-ios.css', 'public/ios/4/mapjs.css'],
 					'compiled/mapjs.css': ['public/mapjs.css']

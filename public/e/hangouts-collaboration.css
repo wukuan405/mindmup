@@ -153,28 +153,61 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 }
 
 
-/* End flexi toolbar */
 
-#flexi-toolbar .tool-button.disabled {
+
+#context-toolbar {
+	font-family: Helvetica, "Arial Unicode MS", sans-serif;
+	font-size: 8pt;
+	color: #22AAE0;
+	font-weight: normal;
+	line-height: 1.2;
+	color: #22AAE0;
+	vertical-align: top;
+}
+#context-toolbar a, #context-toolbar a:visited, #context-toolbar a:focus, #context-toolbar a:hover{
+	color: #22AAE0;
+  outline: none;
+	text-decoration: none;
+}
+#context-toolbar a:hover{
+	transform: scale(1.1);
+	transition: transform 1.2s;
+}
+
+#context-toolbar .toolbar-item {
+	display: inline-block;
+	height: 75px;
+	width: 60px;
+	text-align: center;
+	vertical-align: top;
+}
+#context-toolbar .toolbar-label {
+	display: block;
+	width: 100%;
+	height: 22px;
+}
+#context-toolbar .toolbar-icon {
+	display: block;
+	width: 100%;
+	height:40px;
+}
+#context-toolbar .toolbar-item.disabled, #flexi-toolbar .tool-button.disabled  {
 	opacity: 0.3;
 	cursor: not-allowed;
 }
 
-/* IOS overrides */
-.ios-toolbar {
-	left: 0;
-	width: 100%;
+.popover{
+	max-width: 350px; 
+	border: 1px solid #22AAE0;
+	background-color: #FFFFFF;
+	border-radius: 5px;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
 }
-.ios-toolbar-item {
-	display: inline-block;
+.popover.bottom .arrow {
+	border-bottom-color: #22AAE0;
 }
-.iosDisabled {
-	cursor: not-allowed;
+.popover.top .arrow {
+	border-top-color: #22AAE0;
 }
-#modalIconEdit .file-drop-zone {
-  position: initial;
-}
-/* hangouts UI overrides */
-a:visited {
-  color: black;
-}
+
+

@@ -1,5 +1,5 @@
 /*global jQuery */
-jQuery.fn.flexiToolbarWidget = function (mapModel) {
+jQuery.fn.rotatingToolbarWidget = function () {
 	'use strict';
 	return jQuery(this).each(function () {
 		var element = jQuery(this),
@@ -19,6 +19,12 @@ jQuery.fn.flexiToolbarWidget = function (mapModel) {
 		});
 		element.find('[data-mm-section=main]').addClass('active');
 		element.find('[data-mm-role=section]').click(showSection);
+	});
+};
+jQuery.fn.nodeContextWidget = function (mapModel) {
+	'use strict';
+	return jQuery(this).each(function () {
+		var element = jQuery(this);
 		mapModel.addEventListener('nodeSelectionChanged', function (id, isSelected) {
 			if (isSelected) {
 				var context = mapModel.contextForNode(id);
@@ -33,7 +39,7 @@ jQuery.fn.flexiToolbarWidget = function (mapModel) {
 			}
 		});
 		element.find('[data-mm-map-model]').click(function () {
-			mapModel[this.getAttribute('data-mm-map-model')]('flexi-toolbar');
+			mapModel[this.getAttribute('data-mm-map-model')]('context-widget');
 		});
 	});
 };

@@ -139,37 +139,55 @@
 		collaborationModel.addEventListener('sessionFocusRequested', handleFocusRequest);
 		collaborationModel.start(getCollaborators());
 	};
-	jQuery.fn.contextMenuLauncher = function (mapModel) {
+	jQuery.fn.contextMenuLauncher = function (mapModel, stageContainer) {
 		return jQuery.each(this, function () {
-			var element = jQuery(this);
-			mapModel.addEventListener('contextMenuRequested', function (nodeId, x, y) {
+			var element = jQuery(this),
+					currentContextMenu,
+					hideMenu = function () {
+						if (currentContextMenu)	{
+							currentContextMenu.popover('destroy');
+							currentContextMenu = undefined;
+						}
+					},
+					placement = function () {
+						if (currentContextMenu.offset().top > stageContainer.innerHeight() - 260) {
+							return 'top';
+						}
+						return 'bottom';
+					};
+			mapModel.addEventListener('contextMenuRequested', function (nodeId) {
 				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
-					element.find('[data-mm-menu]').hide();
-					element.find('[data-mm-menu=main]').show();
-					element.trigger(jQuery.Event('showPopover', {'x': x, 'y': y}));
+					var nodeElement = stageContainer.nodeWithId(nodeId);
+					if (nodeElement && nodeElement.length) {
+						currentContextMenu = nodeElement;
+						mapModel.dispatchEvent('nodeVisibilityRequested', nodeId);
+						element.find('[data-mm-menu]').hide();
+						currentContextMenu.popover({
+							html: true,
+							title: '',
+							placement: placement(),
+							trigger: 'manual',
+							container: 'body',
+							content: function () {
+								return element;
+							}
+						});
+						currentContextMenu.popover('show');
+					}
 				}
 			});
-			mapModel.addEventListener('nodeSelectionChanged', function (nodeId, isSelected) {
-				if (isSelected) {
-					element.trigger('hidePopover');
-				}
-			});
-			element.find('[data-mm-menu-role~="showMenu"]').click(function () {
-				var menu = jQuery(this).data('mm-action');
+			mapModel.addEventListener('nodeSelectionChanged', hideMenu);
+			element.find('[data-mm-show-menu]').click(function () {
+				var menu = jQuery(this).data('mm-show-menu');
 				element.find('[data-mm-menu=' + menu + ']').fadeToggle();
 			});
-			element.find('[data-mm-menu-role~="modelAction"]').click(function () {
-				var clickElement = jQuery(this),
-						action = clickElement.data('mm-action'),
-						source = 'context-widget',
-						additionalArgs = clickElement.data('mm-model-args') || [],
-						args = [source].concat(additionalArgs);
-				if (action && mapModel && mapModel[action] && !clickElement.hasClass('iosDisabled')) {
-					element.trigger('hidePopover');
-					mapModel[action].apply(mapModel, args);
+			element.find('[data-mm-map-model]').click(function () {
+				var clickElement = jQuery(this);
+				if (!clickElement.hasClass('disabled')) {
+					hideMenu();
 				}
 			});
-
+			stageContainer.on('scroll click blur', hideMenu);
 		});
 	};
 	MM.Hangouts.initMindMup = function (config) {
@@ -227,19 +245,22 @@
 					jQuery('#linkEditWidget').linkEditWidget(mapModel);
 					jQuery('#container').collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
-					jQuery('#flexi-toolbar').flexiToolbarWidget(mapModel);
+					jQuery('#flexi-toolbar').rotatingToolbarWidget().nodeContextWidget(mapModel);
 					jQuery('[data-title]').tooltip({container: 'body'});
 					jQuery('[data-mm-role=add-photo-node]').click(iconEditor.addIconNode);
 					jQuery('[data-mm-role=context-menu]').click(function () {
-						jQuery('[data-mapjs-role=stage]').trigger('forceContextMenu');
+						mapModel.requestContextMenu();
 						mapModel.editNode('flexi-toolbar', true);
 					});
-					jQuery('[data-mm-role="ios-context-menu"]').iosPopoverMenuWidget(mapModel).contextMenuLauncher(mapModel);
+					jQuery('[data-mm-role=context-toolbar]').contextMenuLauncher(mapModel, jQuery('#container')).nodeContextWidget(mapModel);
 					jQuery('#sendToDrive').sectionedModalWidget().sendToGoogleDriveWidget(googleDriveAdapter, hangoutsCollaboration.generateContentBlob);
 					jQuery('#flexi-toolbar [data-mm-role=send-to-drive]').click(function () {
 						jQuery('#sendToDrive').modal('show');
 					});
 				};
+
+		MAPJS.DOMRender.stageVisibilityMargin = {top: 20, bottom: 20, left: 160, right: 160}; /* required for popover positioning */
+		MAPJS.DOMRender.stageMargin = {top: 20, bottom: 20, left: 170, right: 170}; /* required for popover positioning */
 		initWidgets();
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
 

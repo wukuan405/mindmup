@@ -4222,19 +4222,6 @@ MAPJS.DOMRender.viewController = function (mapModel, stageElement, touchEnabled,
 			stageElement.nodeWithId(nodeId).removeClass('activated');
 		});
 	});
-	stageElement.on('forceContextMenu', function (event) {
-		var id = (event && event.ideaId) || mapModel.getCurrentlySelectedIdeaId(),
-				node = stageElement.nodeWithId(id),
-				dataBox,
-				midPoint;
-		if (node) {
-			ensureNodeVisible(node);
-			viewPort.finish();
-			dataBox = node.getDataBox();
-			midPoint = stageToViewCoordinates(dataBox.left + dataBox.width / 2,  dataBox.top + dataBox.height / 2);
-			mapModel.requestContextMenu(midPoint.x, midPoint.y);
-		}
-	});
 };
 
 /*jslint nomen: true, newcap: true, browser: true*/

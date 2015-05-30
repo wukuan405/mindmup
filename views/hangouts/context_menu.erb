@@ -1,93 +1,87 @@
-<div data-mm-role="ios-context-menu" class="iosContextMenu" style="display:none">
-	<div data-mm-role="popover-toolbar context-menu-toolbar" class="iosPopupToolbar iosPopupToolbarLarge">
-		<img src="<%=settings.static_image_host%>/ios_toolbar_pointer.svg" data-mm-role="popover-pointer-top" class="iosPopupToolbarPointerTop" />
-    <div data-mm-role="context-menu-tool-container" class="iosPopupToolContainer iosPopupToolContainerLarge ios-default-text">
-      <div data-mm-role="ios-toolbar" class="ios-toolbar ios-default-text">
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="addNodes" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_node.svg">
-            <div class="ios-icon-label">Add Node</div>
+<div style="display:none">
+      <div id="context-toolbar" data-mm-role="context-toolbar">
+        <a href="#" class="toolbar-item"  data-mm-show-menu="addNodes" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_node.svg">
+            <div class="toolbar-label">Add Node</div>
         </a>
-        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction" data-mm-action="addSubIdea">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
-            <div class="ios-icon-label">Add child</div>
+        <a href="#"  class="toolbar-item" data-mm-menu="addNodes"  data-mm-map-model="addSubIdea">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_child.svg">
+            <div class="toolbar-label">Add child</div>
         </a>
-        <a href="#"  class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction ios-node-context-notRoot" data-mm-action="addSiblingIdea">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_sibling.svg">
-            <div class="ios-icon-label">Add sibling</div>
+        <a href="#"  class="toolbar-item" data-mm-menu="addNodes"  data-mm-requirement="notRoot" data-mm-map-model="addSiblingIdea">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_sibling.svg">
+            <div class="toolbar-label">Add sibling</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="addNodes" data-mm-menu-role="modelAction ios-node-context-notRoot" data-mm-action="insertIntermediate">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_parent.svg">
-            <div class="ios-icon-label">Add parent</div>
+        <a href="#" class="toolbar-item" data-mm-menu="addNodes"  data-mm-requirement="notRoot" data-mm-map-model="insertIntermediate">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_add_parent.svg">
+            <div class="toolbar-label">Add parent</div>
         </a>
         
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="selectNodes" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_nodes.svg">
-            <div class="ios-icon-label">Select Nodes</div>
+        <a href="#" class="toolbar-item"  data-mm-show-menu="selectNodes" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_nodes.svg">
+            <div class="toolbar-label">Select Nodes</div>
         </a>
 
-        <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="activateNodeAndChildren">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_branch.svg">
-            <div class="ios-icon-label">Select Subtree</div>
+        <a href="#" class="toolbar-item" data-mm-menu="selectNodes" data-mm-requirement="hasChildren" data-mm-map-model="activateNodeAndChildren">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_branch.svg">
+            <div class="toolbar-label">Select Subtree</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="activateChildren">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_children.svg">
-            <div class="ios-icon-label">Select Children</div>
+        <a href="#" class="toolbar-item" data-mm-menu="selectNodes" data-mm-requirement="hasChildren" data-mm-map-model="activateChildren">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_children.svg">
+            <div class="toolbar-label">Select Children</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="selectNodes" data-mm-menu-role="modelAction context-menu ios-node-context-hasSiblings" data-mm-action="activateSiblingNodes">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_siblings.svg">
-            <div class="ios-icon-label">Select Siblings</div>
-        </a>
-
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showMenu" data-mm-action="clipboardMenu" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
-            <div class="ios-icon-label">Clipboard</div>
+        <a href="#" class="toolbar-item" data-mm-menu="selectNodes" data-mm-requirement="hasSiblings" data-mm-map-model="activateSiblingNodes">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_select_siblings.svg">
+            <div class="toolbar-label">Select Siblings</div>
         </a>
 
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="copy" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
-            <div class="ios-icon-label">Copy Subtree</div>
-        </a>
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction" data-mm-action="cut" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_cut.svg">
-            <div class="ios-icon-label">Cut Subtree</div>
+        <a href="#" class="toolbar-item"  data-mm-show-menu="clipboardMenu" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
+            <div class="toolbar-label">Clipboard</div>
         </a>
 
-        <a href="#" class="ios-toolbar-item ios-quick-edit-context-menu-shown" data-mm-menu="clipboardMenu" data-mm-menu-role="modelAction context-menu ios-node-context-canPaste" data-mm-action="paste" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_paste.svg">
-            <div class="ios-icon-label">Paste</div>
+        <a href="#" class="toolbar-item" data-mm-menu="clipboardMenu"  data-mm-map-model="copy" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard.svg">
+            <div class="toolbar-label">Copy Subtree</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="showModal" data-mm-widget-role="ios-node-background-color-picker">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_color.svg">
-            <div class="ios-icon-label">Node Color</div>
+        <a href="#" class="toolbar-item" data-mm-menu="clipboardMenu"  data-mm-map-model="cut" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_cut.svg">
+            <div class="toolbar-label">Cut Subtree</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction" data-mm-action="editIcon">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_image.svg">
-            <div class="ios-icon-label">Node Picture</div>
+
+        <a href="#" class="toolbar-item" data-mm-menu="clipboardMenu" data-mm-requirement="canPaste" data-mm-map-model="paste" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_clipboard_paste.svg">
+            <div class="toolbar-label">Paste</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction" data-mm-action="toggleAddLinkMode">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_connect.svg">
-            <div class="ios-icon-label">Toggle Link</div>
+        <a href="#" class="toolbar-item"  data-mm-menu-role="showModal" data-mm-widget-role="ios-node-background-color-picker">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_color.svg">
+            <div class="toolbar-label">Node Color</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction context-menu ios-node-context-hasChildren" data-mm-action="toggleCollapse">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_collapse.svg">
-            <div class="ios-icon-label">Toggle Collapse</div>
+        <a href="#" class="toolbar-item"   data-mm-map-model="editIcon">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_image.svg">
+            <div class="toolbar-label">Node Picture</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction ios-node-context-notRoot" data-mm-action="removeSubIdea">
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
-            <div class="ios-icon-label">Remove</div>
+        <a href="#" class="toolbar-item"   data-mm-map-model="toggleAddLinkMode">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_connect.svg">
+            <div class="toolbar-label">Toggle Link</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction ios-node-context-canUndo" data-mm-action="undo" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_undo.svg">
-            <div class="ios-icon-label">Undo</div>
+        <a href="#" class="toolbar-item"   data-mm-requirement="hasChildren" data-mm-map-model="toggleCollapse">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_collapse.svg">
+            <div class="toolbar-label">Toggle Collapse</div>
         </a>
-        <a href="#" class="ios-toolbar-item" data-mm-menu="main" data-mm-menu-role="modelAction ios-node-context-canRedo" data-mm-action="redo" >
-            <img class="ios-toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
-            <div class="ios-icon-label">Redo</div>
+        <a href="#" class="toolbar-item"   data-mm-requirement="notRoot" data-mm-map-model="removeSubIdea">
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
+            <div class="toolbar-label">Remove</div>
+        </a>
+        <a href="#" class="toolbar-item"   data-mm-requirement="canUndo" data-mm-map-model="undo" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_undo.svg">
+            <div class="toolbar-label">Undo</div>
+        </a>
+        <a href="#" class="toolbar-item"   data-mm-requirement="canRedo" data-mm-map-model="redo" >
+            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
+            <div class="toolbar-label">Redo</div>
         </a>
     </div>
-		</div>
-		<img src="<%=settings.static_image_host%>/ios_toolbar_pointer_bottom.svg" data-mm-role="popover-pointer-bottom" class="iosPopupToolbarPointerBottom" />
-	</div>
 </div>
 
 
