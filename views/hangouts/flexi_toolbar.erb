@@ -1,16 +1,11 @@
 <div id="flexi-toolbar">
   <div class="section" data-mm-section="main">
-    <div class="tool-container"><a data-placement="right" data-title="Add Node" class="tool-button tool-add" data-mm-role="section" data-mm-target-section="add" ></a></div>
+    <div class="tool-container"><a data-placement="right" data-title="Add a child" class="tool-button tool-add" data-mm-map-model="addSubIdea"></a></div>
+    <div class="tool-container"><a data-placmenet="top" data-title="Add an image" class="tool-button tool-add-photo-node" data-mm-role="add-photo-node"></a></div>
     <div class="tool-container"><a data-placement="right" data-title="Edit selected node" class="tool-button tool-edit" data-mm-role="context-menu"></a></div>
-		<div class="tool-container"><a data-mm-requirement="canUndo" data-placement="right" data-title="Undo" class="tool-button tool-undo" data-mm-role="undo" data-mm-map-model="undo"></a> </div>
+		<div class="tool-container"><a data-mm-requirement="canUndo" data-placement="left" data-title="Undo" class="tool-button tool-undo" data-mm-map-model="undo"></a> </div>
     <div class="tool-container"><a data-placement="top" data-title="Transfer to Google Drive" class="tool-button tool-export" data-mm-role="send-to-drive"></a></div>
     <div class="tool-container"><a target="_blank" href="http://discover.mindmup.com/hangouts_get_started" data-placement="top" data-title="Help" class="tool-button tool-help" data-mm-role="help"></a></div>
   </div>
-  <div class="section" data-mm-section="add">
-    <div class="tool-container"><a data-placement="right" data-title="Add a child" class="tool-button tool-add-child" data-mm-map-model="addSubIdea"></a></div>
-    <div class="tool-container"><a data-mm-requirement="notRoot" data-placement="right" data-title="Add a sibling" class="tool-button tool-add-sibling" data-mm-map-model="addSiblingIdea"></a></div>
-    <div class="tool-container"><a data-mm-requirement="notRoot" data-placement="right" data-title="Insert a parent node" class="tool-button tool-add-parent" data-mm-map-model="insertIntermediate"></a></div>
-    <div class="tool-container"><a data-placmenet="top" data-title="Add an image" class="tool-button tool-add-photo-node" data-mm-role="add-photo-node"></a></div>
-    <div class="tool-container"><a data-placement="top" data-title="Main menu" class="tool-button tool-back" data-mm-role="section" data-mm-target-section="main"></a></div>
-  </div>
+	<div class="controller" data-mm-role="controller" data-placmenet="left" data-title="Toggle Menu" ></div>
 </div>

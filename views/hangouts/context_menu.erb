@@ -60,7 +60,12 @@
         <a href="#" class="toolbar-item" data-mm-map-model="editIcon">
             <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_node_image.svg">
             <div class="toolbar-label">Node Picture</div>
+          </a>
+        <a href="#" class="toolbar-item" data-mm-map-model="undo" >
+          <div class="toolbar-icon tool-attachment"></div>
+            <div class="toolbar-label">Node Attachment</div>
         </a>
+          
         <a href="#" class="toolbar-item" data-mm-map-model="toggleAddLinkMode">
             <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_connect.svg">
             <div class="toolbar-label">Toggle Link</div>
@@ -73,10 +78,7 @@
             <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_remove_node.svg">
             <div class="toolbar-label">Remove</div>
         </a>
-        <a href="#" class="toolbar-item"   data-mm-requirement="canUndo" data-mm-map-model="undo" >
-            <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_undo.svg">
-            <div class="toolbar-label">Undo</div>
-        </a>
+
         <a href="#" class="toolbar-item"   data-mm-requirement="canRedo" data-mm-map-model="redo" >
             <img class="toolbar-icon" src="<%=settings.static_image_host%>/ios_icon_redo.svg">
             <div class="toolbar-label">Redo</div>

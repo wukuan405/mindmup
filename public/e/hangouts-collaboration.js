@@ -294,7 +294,7 @@
 					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config);
 					container.collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
-					jQuery('#flexi-toolbar').rotatingToolbarWidget().nodeContextWidget(mapModel);
+					jQuery('#flexi-toolbar').nodeContextWidget(mapModel);
 					jQuery('[data-title]').tooltip({container: 'body'});
 					jQuery('[data-mm-role=add-photo-node]').click(iconEditor.addIconNode);
 					jQuery('[data-mm-role=context-menu]').click(function () {
@@ -327,5 +327,9 @@
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
 
 		MM.Hangouts.PresenceMediator(collaborationModel);
+		jQuery('#flexi-toolbar .section').addClass('active');
+		jQuery('#flexi-toolbar .controller').on('click', function () {
+			jQuery('#flexi-toolbar .section').toggleClass('active');
+		});
 	};
 })();

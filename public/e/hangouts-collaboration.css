@@ -20,79 +20,86 @@ input.commandline {
 /* Flexi toolbar */
 
 #flexi-toolbar {
-	width: 220px;
-	height: 220px;
+	width: 150px;
+	height: 170px;
 	position: fixed;
-	top: 0;
-	right: 0;
+	top: 10px;
+	right: 20px;
 	z-index: 999;
 }
 
 #flexi-toolbar .tool-container {
 	width: 100%;
 	position: absolute;
-	top: -22px;
+	top: 0;
 	right: 0;
-	transform-origin: 100% 0;
+	transform-origin: 100% 50%;
 
 }
 
 #flexi-toolbar .tool-container:nth-of-type(1) {
-	transform: rotate(-10deg);
+  width: 100%;
 }
 #flexi-toolbar .tool-container:nth-of-type(2) {
-	transform: rotate(-26deg);
+	transform: rotate(-20grad);
 }
 #flexi-toolbar .tool-container:nth-of-type(3) {
-	transform: rotate(-41deg);
+	transform: rotate(-40grad);
 }
 #flexi-toolbar .tool-container:nth-of-type(4) {
-	transform: rotate(-57deg);
+	transform: rotate(-60grad);
 }
 #flexi-toolbar .tool-container:nth-of-type(5) {
-	transform: rotate(-74deg);
+	transform: rotate(-80grad);
 }
-#flexi-toolbar .tool-container:nth-of-type(1) .tool-button {
-	transform: rotate(10deg);
-}
-#flexi-toolbar .tool-container:nth-of-type(2) .tool-button {
-	transform: rotate(26deg);
-}
-#flexi-toolbar .tool-container:nth-of-type(3) .tool-button {
-	transform: rotate(41deg);
-}
-#flexi-toolbar .tool-container:nth-of-type(4) .tool-button {
-	transform: rotate(57deg);
-}
-#flexi-toolbar .tool-container:nth-of-type(5) .tool-button {
-	transform: rotate(74deg);
+#flexi-toolbar .tool-container:nth-of-type(6) {
+	transform: rotate(-100grad);
 }
 #flexi-toolbar .tool-button {
-	width: 44px;
-	height: 44px;
+	width: 36px;
+	height: 36px;
 	display: inline-block;
 	background-position:center center;
 	background-repeat:no-repeat;
 	background-size: 100% 100%;
 	transition: transform 0.5s ease-in;
-
+  cursor: pointer;
 }
-
+#flexi-toolbar .tool-container:nth-of-type(1) .tool-button {
+}
+#flexi-toolbar .tool-container:nth-of-type(2) .tool-button {
+	transform: rotate(20grad);
+}
+#flexi-toolbar .tool-container:nth-of-type(3) .tool-button {
+	transform: rotate(40grad);
+}
+#flexi-toolbar .tool-container:nth-of-type(4) .tool-button {
+	transform: rotate(60grad);
+}
+#flexi-toolbar .tool-container:nth-of-type(5) .tool-button {
+	transform: rotate(80grad);
+}
+#flexi-toolbar .tool-container:nth-of-type(6) .tool-button {
+	transform: rotate(100grad);
+}
 
 #flexi-toolbar .tool-container:nth-of-type(1) .tool-button:hover {
-	transform: rotate(10deg) scale(1.3, 1.3);
+	transform: scale(1.3, 1.3);
 }
 #flexi-toolbar .tool-container:nth-of-type(2) .tool-button:hover {
-	transform: rotate(26deg) scale(1.3, 1.3);
+	transform: rotate(20grad) scale(1.3, 1.3);
 }
 #flexi-toolbar .tool-container:nth-of-type(3) .tool-button:hover {
-	transform: rotate(41deg) scale(1.3, 1.3);
+	transform: rotate(40grad) scale(1.3, 1.3);
 }
 #flexi-toolbar .tool-container:nth-of-type(4) .tool-button:hover {
-	transform: rotate(57deg) scale(1.3, 1.3);
+	transform: rotate(60grad) scale(1.3, 1.3);
 }
 #flexi-toolbar .tool-container:nth-of-type(5) .tool-button:hover {
-	transform: rotate(74deg) scale(1.3, 1.3);
+	transform: rotate(80grad) scale(1.3, 1.3);
+}
+#flexi-toolbar .tool-container:nth-of-type(6) .tool-button:hover {
+	transform: rotate(100grad)  scale(1.3, 1.3);
 }
 
 #flexi-toolbar .section {
@@ -151,10 +158,43 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 #flexi-toolbar .tool-back {
  background-image:url('//static.mindmup.com/img/ios_icon_exit.svg');
 }
+#flexi-toolbar .tool-redo {
+ background-image:url('//static.mindmup.com/img/ios_icon_redo.svg');
+}
+#flexi-toolbar .tool-attachment, #context-toolbar .tool-attachment {
+  background-image:url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNjEyIDYxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNjEyIDYxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPGc+DQoJCTxwYXRoIHN0eWxlPSJmaWxsOiMyMkFBRTA7IiBkPSJNMzA2LDYxMmMtMjguMTUyLDAtNTUuMjg0LTMuNjcyLTgxLjM5Ni0xMS4wMTZjLTI2LjExMi03LjM0Ny01MC40OS0xNy42NDYtNzMuMTM0LTMwLjkwNg0KCQkJcy00My4yNDgtMjkuMTcyLTYxLjgxMi00Ny43MzZjLTE4LjU2NC0xOC41NjItMzQuNDc2LTM5LjE2OC00Ny43MzYtNjEuODEyYy0xMy4yNi0yMi42NDYtMjMuNTYyLTQ3LjAyMi0zMC45MDYtNzMuMTM1DQoJCQlDMy42NzIsMzYxLjI4NCwwLDMzNC4xNTIsMCwzMDZzMy42NzItNTUuMjg0LDExLjAxNi04MS4zOTZzMTcuNjQ2LTUwLjQ5LDMwLjkwNi03My4xMzRzMjkuMTcyLTQzLjI0OCw0Ny43MzYtNjEuODEyDQoJCQlzMzkuMTY4LTM0LjQ3Niw2MS44MTItNDcuNzM2czQ3LjAyMi0yMy41NjIsNzMuMTM0LTMwLjkwNlMyNzcuODQ4LDAsMzA2LDBjNDIuMDI0LDAsODEuNzAyLDguMDU4LDExOS4wMzQsMjQuMTc0DQoJCQlzNjkuNzY4LDM3Ljk0NCw5Ny4zMDgsNjUuNDg0czQ5LjM2OCw1OS45NzYsNjUuNDg0LDk3LjMwOFM2MTIsMjYzLjk3Niw2MTIsMzA2YzAsMjguMTUyLTMuNjcyLDU1LjI4NC0xMS4wMTYsODEuMzk2DQoJCQljLTcuMzQ3LDI2LjEwOS0xNy42NDYsNTAuNDg3LTMwLjkwNiw3My4xMzRjLTEzLjI2LDIyLjY0NC0yOS4xNzIsNDMuMjQ4LTQ3LjczNiw2MS44MTINCgkJCWMtMTguNTYyLDE4LjU2NC0zOS4xNjgsMzQuNDc5LTYxLjgxMiw0Ny43MzZjLTIyLjY0NiwxMy4yNi00Ny4wMjIsMjMuNTYyLTczLjEzNiwzMC45MDZDMzYxLjI4NCw2MDguMzI4LDMzNC4xNTIsNjEyLDMwNiw2MTJ6DQoJCQkgTTIxOC40ODQsNDkxLjQzNmMxNi43MjgtMi40NDUsMzIuODQ0LTExLjQyNCw0OC4zNDgtMjYuOTI4bDE1LjkxMi0xNS45MTJsMzAuOTA2LTMwLjkwM2wzOC4yNS0zOC4yNWwzNy45NDEtMzcuOTQ0DQoJCQljMCwwLDEwLjItMTAuMDk4LDMwLjYwMy0zMC4yOTRjMjAuMzk3LTIwLjE5NiwyNS43MDQtMjUuMzk4LDE1LjkxMS0xNS42MDZjMTguMzU4LTE5LjE3NiwyOS45ODYtMzcuOTQ0LDM0Ljg4NS01Ni4zMDQNCgkJCWMxLjYzMi01LjMwNCwyLjY0OS0xMS4zMjIsMy4wNi0xOC4wNTRjMC40MDgtNi43MzItMC4yMDQtMTMuODcyLTEuODM2LTIxLjQycy00LjY5LTE1LjQwMi05LjE4LTIzLjU2Mg0KCQkJYy00LjQ4OC04LjE2LTExLjAxOS0xNi41MjQtMTkuNTg0LTI1LjA5MmMtMjIuMDMyLTIyLjAzMi00NS41OTUtMzIuNDM2LTcwLjY4OC0zMS4yMTJjLTI1LjA5MiwxLjIyNC00OS44NzgsMTMuODcyLTc0LjM1NiwzNy45NDQNCgkJCUwxNDIuNTk2LDMxNC41N2MtMy4yNjQsMy4yNjQtNC44OTYsNy40NDMtNC44OTYsMTIuNTQ2YzAsNS4xLDEuNjMyLDkuMjgyLDQuODk2LDEyLjU0NmMzLjY3MiwzLjY3Miw4LjA1OCw1LjUwOCwxMy4xNTgsNS41MDgNCgkJCXM5LjI4Mi0xLjgzNiwxMi41NDYtNS41MDhMMzI0LjM2LDE4My42YzExLjQyNC0xMS40MjQsMjEuODI2LTE5LjA3NCwzMS4yMTItMjIuOTVjOS4zODQtMy44NzYsMTcuOTUyLTUuNDA2LDI1LjcwNC00LjU5DQoJCQlzMTQuNjg4LDMuMjY0LDIwLjgwOCw3LjM0NGM2LjEyLDQuMDgsMTEuNDI0LDguMzY0LDE1LjkxMiwxMi44NTJjMTcuNTQ0LDE3LjU0NCwyMy42NjQsMzUuNDk2LDE4LjM2LDUzLjg1Ng0KCQkJYy0yLjg1NiwxMS44MzItMTEuNDI3LDI1LjA5Mi0yNS43MDQsMzkuNzhsLTE1LjYwNiwxNS42MDZsLTMwLjI5NCwzMC4yOTRjMCwwLTEyLjc1LDEyLjY0OC0zOC4yNSwzNy45NDQNCgkJCXMtMzguMzUyLDM4LjA0Ni0zOC41NTYsMzguMjVMMjU3LjA0LDQyMi44OWwtMTUuOTEyLDE1LjkxMmMtMTAuMiwxMC4yLTE5LjM4LDE1LjkxMi0yNy41NCwxNy4xMzgNCgkJCWMtMS42MzIsMC00LjU5LTAuMzA4LTguODc0LTAuOTE4Yy00LjI4NC0wLjYxMS05LjY5LTMuOTc5LTE2LjIxOC0xMC4xYy05Ljc5Mi05Ljc5Mi0xNC4wNzYtMTkuMzgtMTIuODUyLTI4Ljc2NA0KCQkJYzAuNDA4LTUuMzA2LDIuMTQyLTEwLjEsNS4yMDItMTQuMzgyYzMuMDYtNC4yODQsNi4yMjItOC4wNjEsOS40ODYtMTEuMzIyTDMzMi45MjgsMjQ3Ljg2YzQuODk2LTQuODk2LDkuMDc4LTguNDY2LDEyLjU0Ni0xMC43MQ0KCQkJYzMuNDcxLTIuMjQ0LDYuMjI1LTMuNjcyLDguMjY1LTQuMjg0czMuNTY3LTAuNjEyLDQuNTksMGMxLjAyLDAuNjEyLDEuNzMxLDEuMTIyLDIuMTQyLDEuNTNjMC40MDgsMC44MTYsMC45MTgsMS43MzQsMS41MywyLjc1NA0KCQkJczAuNjEyLDIuNTUsMCw0LjU5cy0yLjA0LDQuNjkyLTQuMjg0LDcuOTU2cy01LjgxMiw3LjM0NC0xMC43MSwxMi4yNGwtMTMwLjk3LDEzMC45NjhsMjUuMDkyLDI1LjcwNGwxMzEuNTgtMTMwLjk2OA0KCQkJYzkuMzg0LTkuMzg0LDE2LjExNi0xOC4wNTQsMjAuMTk2LTI2LjAxczYuMjIyLTE1LjE5OCw2LjQyNi0yMS43MjZzLTEuMDIxLTEyLjM0Mi0zLjY3Mi0xNy40NDINCgkJCWMtMi42NTItNS4xLTUuODE0LTkuNDg2LTkuNDg2LTEzLjE1OGMtMy4yNjQtMi44NTYtNy4yNDItNS43MTItMTEuOTM0LTguNTY4cy0xMC40MDQtNC4zODYtMTcuMTM5LTQuNTkNCgkJCWMtNi43MjktMC4yMDQtMTQuMjc3LDEuNjMyLTIyLjY0NCw1LjUwOGMtOC4zNjYsMy44NzYtMTcuNDQyLDEwLjcxLTI3LjIzNCwyMC41MDJMMTY0LjYyOCwzNjQuNzUyDQoJCQljLTE0LjY4OCwxNC42ODgtMjMuMDUyLDMwLjYtMjUuMDkyLDQ3LjczNmMtMC44MTYsNi45MzYsMC4xMDIsMTUuNTA0LDIuNzU0LDI1LjcwNGMyLjY1MiwxMC4xOTcsOS42OSwyMS4wMTIsMjEuMTE0LDMyLjQzNg0KCQkJYzguMTYsOC41NjgsMTYuMzIsMTQuMjgsMjQuNDgsMTcuMTM2YzguMTYsMi44NTYsMTUuNzA4LDQuMjg0LDIyLjY0NCw0LjI4NEMyMTQuMiw0OTIuMDQ4LDIxNi44NTIsNDkxLjg0NCwyMTguNDg0LDQ5MS40MzZ6Ii8+DQoJPC9nPg0KPC9nPg0KPC9zdmc+DQo=)
+}
 
 
+#flexi-toolbar .controller {
+	background-image:url(//static.mindmup.com/img/logo_96.png);
+	width: 60px;
+	height: 60px;
+	display: block;
+	position: absolute;
+	top: 30px;
+	right: 10px;
+		background-position:center center;
+	background-repeat:no-repeat;
+	background-size: 75% 75%;
+	cursor: pointer;
+	border: 1px solid #22AAE0;
+	border-radius: 50%;
+	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.7);
+}
 
+@keyframes flip {
+    0% {transform: rotateY(0deg);}
+    50% {transform: rotateY(180deg)}
+    100% {transform: rotateY(0deg);}
+}
 
+#flexi-toolbar .controller:hover {
+	animation: flip 3s linear;
+	-webkit-animation: flip 3s linear;
+	animation-iteration-count: infinite; 
+	-webkit-animation-iteration-count: infinite; 
+}
 .popover-toolbar {
 	font-family: Helvetica, "Arial Unicode MS", sans-serif;
 	font-size: 8pt;
@@ -194,6 +234,9 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	display: block;
 	width: 100%;
 	height:40px;
+  background-position:center center;
+	background-repeat:no-repeat;
+	background-size: 100% 100%;
 }
 .popover-toolbar .toolbar-item.disabled, #flexi-toolbar .tool-button.disabled  {
 	opacity: 0.3;
