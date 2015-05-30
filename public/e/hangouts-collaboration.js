@@ -144,8 +144,7 @@
 
 			var element = jQuery(this),
 					palette = element.find('[data-mm-role="color-palette"]'),
-					template = element.find('[data-mm-role="color-selector-template"]').detach(),
-					modelMethod = element.data('mm-model-method') || 'updateStyle';
+					template = element.find('[data-mm-role="color-selector-template"]').detach();
 			element.modal({keyboard: true, show: false, backdrop: 'static'});
 			source = source || 'color-selector';
 			_.each(colors, function (color) {
@@ -157,7 +156,8 @@
 				}
 				colorSelector.css('background-color', colorHash);
 				colorSelector.appendTo(palette).show().click(function () {
-					var args = element.data('mm-model-args') || ['background'];
+					var args = element.data('mm-model-args') || ['background'],
+							modelMethod = element.data('mm-model-method') || 'updateStyle';
 					mapModel[modelMethod].apply(mapModel, [source].concat(args).concat(colorHash));
 					element.modal('hide');
 				});
@@ -218,11 +218,15 @@
 			toolbar.find('[data-mm-role~=link-removal]').click(function () {
 				mapModel.removeLink(source, currentLink.ideaIdFrom, currentLink.ideaIdTo);
 			});
+			toolbar.find('[data-mm-role~="link-color"]').click(function () {
+				element.trigger(jQuery.Event('color-requested', {currentLink: currentLink}));
+			});
 
 			mapModel.addEventListener('linkSelected', function (link, selectionPoint, linkStyle) {
 				currentLink = link;
 				if (!mapModel.getEditingEnabled || mapModel.getEditingEnabled()) {
-					//element.find('[data-mm-role~="link-color"]').data('mm-model-args', [link.ideaIdFrom, link.ideaIdTo, 'color']);
+
+
 					if (linkStyle && linkStyle.arrow) {
 						toolbar.find('[data-mm-role~="link-no-arrow"]').removeClass('hide');
 						toolbar.find('[data-mm-role~="link-arrow"]').addClass('hide');
@@ -290,13 +294,6 @@
 						.searchWidget('Meta+F Ctrl+F', mapModel);
 					jQuery('#uploadImg');
 					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config);
-					jQuery('.colorPicker-palette').addClass('topbar-color-picker');
-					jQuery('.updateStyle[data-mm-align!=top]').colorPicker();
-					jQuery('.colorPicker-picker').parent('a,button').click(function (e) {
-						if (e.target === this) {
-							jQuery(this).find('.colorPicker-picker').click();
-						}
-					});
 					container.collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 					jQuery('#flexi-toolbar').rotatingToolbarWidget().nodeContextWidget(mapModel);
@@ -319,9 +316,11 @@
 						'FFFF99', 'CCFFFF', 'FFFFFF', 'transparent'
 					]);
 					jQuery('[data-mm-role=node-color-picker]').click(function () {
-						jQuery('#nodeColorPicker').modal('show');
+						jQuery('#nodeColorPicker').data({'mm-model-args':['background'], 'mm-model-method': 'updateStyle'}).modal('show');
 					});
-					jQuery('#popoverLinkEditor').popoverLinkEditor(mapModel, container);
+					jQuery('#popoverLinkEditor').popoverLinkEditor(mapModel, container).on('color-requested', function (e) {
+						jQuery('#nodeColorPicker').data({'mm-model-args':[e.currentLink.ideaIdFrom, e.currentLink.ideaIdTo, 'color'], 'mm-model-method': 'updateLinkStyle'}).modal('show');
+					});
 				};
 
 		MAPJS.DOMRender.stageVisibilityMargin = {top: 20, bottom: 20, left: 160, right: 160}; /* required for popover positioning */
