@@ -319,6 +319,12 @@
 					jQuery('#popoverLinkEditor').popoverLinkEditor(mapModel, container).on('color-requested', function (e) {
 						jQuery('#nodeColorPicker').data({'mm-model-args':[e.currentLink.ideaIdFrom, e.currentLink.ideaIdTo, 'color'], 'mm-model-method': 'updateLinkStyle'}).modal('show');
 					});
+
+					jQuery('#flexi-toolbar .section').addClass('active');
+					jQuery('#flexi-toolbar .controller').on('click', function () {
+						jQuery('#flexi-toolbar .section').toggleClass('active');
+					});
+					jQuery('#googleAttachmentEdit').googleIntegratedAttachmentEditorWidget(mapModel, googleAuthenticator, config);
 				};
 
 		MAPJS.DOMRender.stageVisibilityMargin = {top: 20, bottom: 20, left: 160, right: 160}; /* required for popover positioning */
@@ -327,9 +333,7 @@
 		mapModel.setIdea(hangoutsCollaboration.getContentAggregate());
 
 		MM.Hangouts.PresenceMediator(collaborationModel);
-		jQuery('#flexi-toolbar .section').addClass('active');
-		jQuery('#flexi-toolbar .controller').on('click', function () {
-			jQuery('#flexi-toolbar .section').toggleClass('active');
-		});
+
+
 	};
 })();

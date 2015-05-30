@@ -1,0 +1,28 @@
+<div id="googleAttachmentEdit" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Node Attachment</h3>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-block alert-error" data-mm-role="unsupported-format">
+      This node has an attachment in an unsupported format. It was most likely created using a different application
+      and the current application cannot preview it.
+    </div>
+		<div class="details"><label>Name</label><span data-mm-attachment-info="name" ></span></div>
+		<div class="details"><label>Type</label><img data-mm-attachment-info="iconUrl">&nbsp;<span data-mm-attachment-info="type"></span></div>
+		<div data-mm-attachment-info="description" class="details"><label>Description</label><span data-mm-attachment-info="description"></span></div>
+		<div data-mm-attachment-info="embedUrl" class="embedDoc"><iframe data-mm-attachment-info="embedUrl"></iframe></div>
+		<div data-mm-attachment-info="thumbnail" class="details thumbnail"><img data-mm-attachment-info="thumbnail"/></div>          
+  </div>
+  <div class="modal-footer">
+
+    <a tabindex="100" target="_blank" href="#" class="btn btn-success pull-left" data-mm-show-for="initial" data-mm-role="open" data-mm-attachment-info="url">Open</a>
+    <a tabindex="101" href="#" class="btn btn-danger pull-left" data-mm-show-for="initial" data-mm-role="clear" data-dismiss="modal">Remove</a>
+    <a tabindex="102" href="#" class="btn pull-left" data-mm-show-for="initial" data-mm-role="change">Change</a>
+
+    <a tabindex="103" href="#" class="btn btn-primary" data-mm-show-for="changed" data-mm-role="confirm" data-dismiss="modal">Save</a>
+
+    <a tabindex="105" href="#" class="btn" data-mm-show-for="initial" data-dismiss="modal">Close</a>
+    <a tabindex="105" href="#" class="btn" data-mm-show-for="changed" data-dismiss="modal">Cancel</a>
+  </div>
+</div>

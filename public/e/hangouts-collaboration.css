@@ -286,3 +286,37 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 .link-popover .toolbar-item {
   height: 60px;
 }
+
+#googleAttachmentEdit .details {
+	text-align: left;
+}
+#googleAttachmentEdit .details label {
+	width: 20%;
+	margin-left: 10px;
+	margin-right: 10px;
+	font-weight: bold;
+	display: inline-block;
+}
+#googleAttachmentEdit .thumbnail {
+	text-align: center;
+}
+#googleAttachmentEdit .embedDoc {
+	max-height: 200px;
+	overflow: hidden;
+	border: 1px solid #22AAE0;
+	border-radius: 5px;
+	outline: none;
+	box-shadow: 2px 2px 1px rgba(104, 104, 104, 0.8);
+}
+#googleAttachmentEdit .embedDoc iframe {
+	max-height: 200px;
+	width: 100%;
+	overflow: hidden;
+	border: none;
+}
+#googleAttachmentEdit .thumbnail img {
+	max-height: 200px;
+	max-width: 200px;
+	text-align: center;
+	display: inline-block;
+}
