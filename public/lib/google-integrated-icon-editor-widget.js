@@ -1,5 +1,5 @@
-/*global jQuery, Image, google, _, gapi, window, document*/
-jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator, config, confirmationModal) {
+/*global jQuery, Image, google, _, gapi, window, document, MM*/
+jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, config, confirmationModal) {
 	'use strict';
 	var self = this,
 		confirmElement = self.find('[data-mm-role~=confirm]'),
@@ -14,6 +14,8 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 		fileUpload = self.find('input[name=selectfile]'),
 		selectFile = self.find('[data-mm-role=select-file]'),
 		downloadFile = self.find('[data-mm-role=download]'),
+		gapiScopes = 'https://www.googleapis.com/auth/photos.upload',
+		authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
 		doConfirm = function () {
 			iconEditor.save({
 				url: imgPreview.attr('src'),
@@ -81,21 +83,26 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 					picker.setVisible(true);
 				},
 				retryWithDialogs = function () {
-					confirmationModal.showModalToConfirm('Please authorise', 'This operation requires access to Google Drive, and we could not automatically get authorisation. Please select <b>Authorise</b> to open a new authentication window using Google.', 'Authorise using Google').then(function () {
+
+					confirmationModal.showModalToConfirm('Can we list your Google Photos?',
+							config.appName  + ' allows users to insert images and pictures from their Google Photos storage. ' +
+							' Google did not automatically allow this for your account, so please click <b>Allow</b> to open a Google Drive authorisation window ' +
+							'and approve access.', 'Allow').then(function () {
 						showPicker(true).then(deferred.resolve, deferred.reject, deferred.notify);
 					});
+
 				};
-			if (window.google && window.google.picker) {
-				launchGooglePicker();
-			} else {
-				authenticator.authenticate(withDialogs).then(
-					function () {
+			authenticator.authenticate(withDialogs).then(
+				function () {
+					if (window.google && window.google.picker) {
+						launchGooglePicker();
+					} else {
 						gapi.load('picker', launchGooglePicker);
-					},
-					retryWithDialogs,
-					deferred.notify
-				);
-			}
+					}
+				},
+				retryWithDialogs,
+				deferred.notify
+			);
 			return deferred.promise();
 		},
 		openPicker = function (fast) {

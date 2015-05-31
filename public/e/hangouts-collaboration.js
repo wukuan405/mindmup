@@ -280,9 +280,10 @@
 				activityLog = console,
 				collaborationModel = new MM.CollaborationModel(mapModel),
 				iconEditor = new MM.iconEditor(mapModel, hangoutsCollaboration),
-				gapiScopes = 'https://www.googleapis.com/auth/drive.readonly  https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/photos.upload https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-				googleAuthenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
-				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticator, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
+		/*		gapiScopes = 'https://www.googleapis.com/auth/drive.readonly  https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/photos.upload https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+		 */
+				googleAuthenticatorForFileUpload = new MM.GoogleAuthenticator(config.clientId, config.appId, 'https://www.googleapis.com/auth/drive.file'),
+				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticatorForFileUpload, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
 
 				initWidgets = function () {
 					var container = jQuery('#container'),
@@ -292,8 +293,8 @@
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
-					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config, modalConfirm);
-					jQuery('#googleAttachmentEdit').googleIntegratedAttachmentEditorWidget(mapModel, googleAuthenticator, config, modalConfirm);
+					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, config, modalConfirm);
+					jQuery('#googleAttachmentEdit').googleIntegratedAttachmentEditorWidget(mapModel, config, modalConfirm);
 
 					container.collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
