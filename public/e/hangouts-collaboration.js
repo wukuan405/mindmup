@@ -280,7 +280,7 @@
 				activityLog = console,
 				collaborationModel = new MM.CollaborationModel(mapModel),
 				iconEditor = new MM.iconEditor(mapModel, hangoutsCollaboration),
-				gapiScopes = 'https://www.googleapis.com/auth/photos https://www.googleapis.com/auth/drive.readonly  https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/photos.upload',
+				gapiScopes = 'https://www.googleapis.com/auth/drive.readonly  https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/photos.upload https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
 				googleAuthenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
 				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticator, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
 
