@@ -1,7 +1,7 @@
 <div id="modalIconEdit" class="modal hide fade">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Icon Editor</h3>
+    <h3>Node Image</h3>
   </div>
   <div class="modal-body">
 	  <p class="small">Click on the dashed area to select an image, or just drag and drop the file into the dashed area</p>
@@ -43,10 +43,11 @@
     </form>
   </div>
   <div class="modal-footer">
-    <a tabindex="104" href="#" class="btn" data-mm-role="select-file">Select File</a>
-    <a tabindex="105" href="#" class="btn btn-primary" data-mm-role="confirm" data-dismiss="modal">Save</a>
-    <a tabindex="106" href="#" class="btn btn-danger" data-mm-role="clear" data-dismiss="modal">Remove</a>
-    <a tabindex="107" href="#" class="btn" data-mm-role="download">Download</a>
-    <a tabindex="107" href="#" class="btn" data-dismiss="modal">Cancel</a>
+    <a tabindex="107" href="#" data-mm-show-for="initial" class="btn pull-left" data-mm-role="download">Download</a>
+    <a tabindex="104" href="#" data-mm-show-for="initial" class="btn pull-left" data-mm-role="select-file">Change Image</a>
+    <a tabindex="106" href="#" data-mm-show-for="initial" class="btn btn-danger pull-left" data-mm-role="clear" data-dismiss="modal">Remove</a>
+    <a tabindex="105" href="#" data-mm-show-for="changed" class="btn btn-primary" data-mm-role="confirm" data-dismiss="modal">Save</a>
+    <a tabindex="107" href="#" data-mm-show-for="changed" class="btn" data-dismiss="modal">Cancel</a>
+    <a tabindex="107" href="#" data-mm-show-for="initial" class="btn" data-dismiss="modal">Close</a>
   </div>
 </div>

@@ -26,24 +26,15 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 			iconEditor.save(false);
 		},
 		loadForm = function (icon) {
-			if (!icon) {
-				imgPreview.hide();
-				self.find('[data-mm-role=attribs]').hide();
-				clearButton.hide();
-				confirmElement.hide();
-				downloadFile.hide();
-			} else {
-				imgPreview.show();
-				imgPreview.attr('src', icon.url);
-				downloadFile.attr('href', icon.url).show();
-				self.find('[data-mm-role=attribs]').show();
-				positionSelect.val(icon.position);
-				widthBox.val(icon.width);
-				heightBox.val(icon.height);
-				fileUpload.val('');
-				clearButton.show();
-				confirmElement.show();
-			}
+			self.find('[data-mm-show-for=initial]').show();
+			self.find('[data-mm-show-for=changed]').hide();
+
+			imgPreview.attr('src', icon.url);
+			downloadFile.attr('href', icon.url).show();
+			positionSelect.val(icon.position);
+			widthBox.val(icon.width);
+			heightBox.val(icon.height);
+			fileUpload.val('');
 		},
 		getDimensions = function (src) {
 			var domImg = new Image(),
@@ -113,13 +104,11 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 							height: dimensions.height
 						});
 					} else {
+						buttonsForChange();
 						imgPreview.attr('src', url);
-						downloadFile.attr('href', url).show();
+						downloadFile.attr('href', url);
 						widthBox.val(dimensions.width);
 						heightBox.val(dimensions.height);
-						self.find('[data-mm-role=attribs]').show();
-						imgPreview.show();
-						confirmElement.show();
 						confirmElement.focus();
 						self.modal('show');
 					}
@@ -129,18 +118,29 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 		isDownloadSupported = function () {
 			var a = document.createElement('a');
 			return typeof a.download != 'undefined';
+		},
+		buttonsForChange = function () {
+			self.find('[data-mm-show-for=initial]').hide();
+			self.find('[data-mm-show-for=changed]').show();
+		},
+		openPickerForceDialog = function (/*event*/) {
+			openPicker(false);
 		};
-	selectFile.click(openPicker).keydown('space enter', openPicker);
+	selectFile.click(openPickerForceDialog).keydown('space enter', openPickerForceDialog);
 	widthBox.on('change', function () {
 		if (ratioBox[0].checked) {
 			heightBox.val(Math.round(imgPreview.height() * parseInt(widthBox.val(), 10) / imgPreview.width()));
 		}
+		buttonsForChange();
 	});
 	heightBox.on('change', function () {
 		if (ratioBox[0].checked) {
 			widthBox.val(Math.round(imgPreview.width() * parseInt(heightBox.val(), 10) / imgPreview.height()));
 		}
+		buttonsForChange();
 	});
+	positionSelect.on('change', buttonsForChange);
+
 	self.modal({keyboard: true, show: false});
 	confirmElement.click(function () {
 		doConfirm();
@@ -161,8 +161,13 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 			customSizeBox.hide();
 		}
 	});
+
+	/* overrides for the common ERB */
 	fileUpload.remove();
+	self.find('[data-mm-role=attribs]').show();
 	self.find('.modal-body .small').remove();
+	imgPreview.show();
+
 	iconEditor.addEventListener('iconEditRequested', function (icon, fast) {
 		if (!fast && icon) {
 			loadForm(icon);

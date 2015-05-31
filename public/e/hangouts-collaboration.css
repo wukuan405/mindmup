@@ -327,6 +327,6 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 a.btn:visited{
 	color: black;
 }
-a.btn-danger:visited, a.btn-warning:visited, a.btn-success:visited {
+a.btn.btn-danger:visited, a.btn.btn-warning:visited, a.btn.btn-success:visited, a.btn.btn-primary:visited {
 	color: white;
 }

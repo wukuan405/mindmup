@@ -130,6 +130,7 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 		if (blobUrl) {
 			URL.revokeObjectURL(blobUrl);
 		}
+		self.find('iframe[mm-attachment-info]').attr('src', '');
 		unsupported.hide();
 	});
 	changeFile.click(openPicker).keydown('space enter', openPicker);
