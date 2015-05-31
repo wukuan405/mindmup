@@ -1,5 +1,5 @@
 /*global jQuery, google, gapi, _, window, URL, Blob*/
-jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authenticator, config) {
+jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authenticator, config, confirmationModal) {
 	'use strict';
 	var self = this,
 		changeFile = self.find('[data-mm-role~=change]'),
@@ -44,9 +44,10 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 				thumbnail: item.thumbnails && _.sortBy(item.thumbnails, 'height').pop().url
 			});
 		},
-		showPicker = function () {
+
+		showPicker = function (withDialogs) {
 			var deferred = jQuery.Deferred(),
-				showPicker = function () {
+				launchGooglePicker = function () {
 					var picker,
 						uploadView = new google.picker.DocsUploadView(),
 						listView =  new google.picker.DocsView(google.picker.ViewId.DOCS);
@@ -74,15 +75,20 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 						.setOAuthToken(authenticator.gapiAuthToken())
 						.build();
 					picker.setVisible(true);
+				},
+				retryWithDialogs = function () {
+					confirmationModal.showModalToConfirm('Please authorise', 'This operation requires access to Google Drive, and we could not automatically get authorisation. Please select <b>Authorise</b> to open a new authentication window using Google.', 'Authorise using Google').then(function () {
+						showPicker(true).then(deferred.resolve, deferred.reject, deferred.notify);
+					});
 				};
 			if (window.google && window.google.picker) {
-				showPicker();
+				launchGooglePicker();
 			} else {
-				authenticator.authenticate(false).then(
+				authenticator.authenticate(withDialogs).then(
 					function () {
-						gapi.load('picker', showPicker);
+						gapi.load('picker', launchGooglePicker);
 					},
-					deferred.reject,
+					retryWithDialogs,
 					deferred.notify
 				);
 			}
@@ -113,6 +119,7 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 			if (attachment) {
 				if (contentType === myContentType) {
 					loadInfo();
+					unsupported.hide();
 				} else {
 					unsupported.show();
 					blobUrl = URL.createObjectURL(new Blob([attachment.content], {type : attachment.contentType}));

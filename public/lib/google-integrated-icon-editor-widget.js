@@ -1,5 +1,5 @@
 /*global jQuery, Image, google, _, gapi, window, document*/
-jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator, config) {
+jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator, config, confirmationModal) {
 	'use strict';
 	var self = this,
 		confirmElement = self.find('[data-mm-role~=confirm]'),
@@ -48,9 +48,9 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 			domImg.src = src;
 			return deferred.promise();
 		},
-		showPicker = function (config) {
+		showPicker = function (withDialogs) {
 			var deferred = jQuery.Deferred(),
-				showPicker = function () {
+				launchGooglePicker = function () {
 					var picker;
 					picker = new google.picker.PickerBuilder()
 						.enableFeature(google.picker.Feature.SIMPLE_UPLOAD_ENABLED)
@@ -79,15 +79,20 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 						.setOAuthToken(authenticator.gapiAuthToken())
 						.build();
 					picker.setVisible(true);
+				},
+				retryWithDialogs = function () {
+					confirmationModal.showModalToConfirm('Please authorise', 'This operation requires access to Google Drive, and we could not automatically get authorisation. Please select <b>Authorise</b> to open a new authentication window using Google.', 'Authorise using Google').then(function () {
+						showPicker(true).then(deferred.resolve, deferred.reject, deferred.notify);
+					});
 				};
 			if (window.google && window.google.picker) {
-				showPicker();
+				launchGooglePicker();
 			} else {
-				authenticator.authenticate(false).then(
+				authenticator.authenticate(withDialogs).then(
 					function () {
-						gapi.load('picker', showPicker);
+						gapi.load('picker', launchGooglePicker);
 					},
-					deferred.reject,
+					retryWithDialogs,
 					deferred.notify
 				);
 			}
@@ -95,7 +100,7 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, authenticator
 		},
 		openPicker = function (fast) {
 			self.modal('hide');
-			showPicker(config).then(function (url) {
+			showPicker().then(function (url) {
 				getDimensions(url).then(function (dimensions) {
 					if (fast) {
 						iconEditor.save({

@@ -285,13 +285,16 @@
 				googleDriveAdapter = new MM.GoogleDriveAdapter(googleAuthenticator, config.appId, config.networkTimeoutMillis, 'application/vnd.mindmup'),
 
 				initWidgets = function () {
-					var container = jQuery('#container');
+					var container = jQuery('#container'),
+							modalConfirm = jQuery('#modalConfirm').modalConfirmWidget();
+
 					container.domMapWidget(activityLog, mapModel, isTouch, imageInsertController, container, hangoutsCollaboration.getResource);
 					jQuery('body')
 						.commandLineWidget('Shift+Space Ctrl+Space', mapModel)
 						.searchWidget('Meta+F Ctrl+F', mapModel);
-					jQuery('#uploadImg');
-					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config);
+					jQuery('#modalIconEdit').googleIntegratedIconEditorWidget(iconEditor, googleAuthenticator, config, modalConfirm);
+					jQuery('#googleAttachmentEdit').googleIntegratedAttachmentEditorWidget(mapModel, googleAuthenticator, config, modalConfirm);
+
 					container.collaboratorPhotoWidget(collaborationModel, MM.deferredImageLoader, 'mm-collaborator');
 					jQuery('#collaboratorSpeechBubble').collaboratorSpeechBubbleWidget(collaborationModel);
 					jQuery('#flexi-toolbar').nodeContextWidget(mapModel);
@@ -324,7 +327,7 @@
 					jQuery('#flexi-toolbar .controller').on('click', function () {
 						jQuery('#flexi-toolbar .section').toggleClass('active');
 					});
-					jQuery('#googleAttachmentEdit').googleIntegratedAttachmentEditorWidget(mapModel, googleAuthenticator, config);
+
 				};
 
 		MAPJS.DOMRender.stageVisibilityMargin = {top: 20, bottom: 20, left: 160, right: 160}; /* required for popover positioning */
