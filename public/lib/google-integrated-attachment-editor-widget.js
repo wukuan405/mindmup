@@ -1,4 +1,4 @@
-/*global jQuery, google, gapi, _, window*/
+/*global jQuery, google, gapi, _, window, URL, Blob*/
 jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authenticator, config) {
 	'use strict';
 	var self = this,
@@ -19,7 +19,7 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 		},
 		loadInfo = function () {
 			self.find('.details').show();
-			unsupported.hide();
+
 			self.find('[data-mm-attachment-info]').each(function () {
 				var field = jQuery(this),
 					val = attachmentMetaData[field.data('mm-attachment-info')] || '';
@@ -98,12 +98,14 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 					self.modal('show');
 					self.find('[data-mm-show-for=initial]').hide();
 					self.find('[data-mm-show-for=changed]').show();
+					unsupported.hide();
 				} else {
 					doConfirm();
 				}
 			});
 		},
 		ideaId,
+		blobUrl,
 		open = function (activeIdea, attachment) {
 			var contentType = attachment && attachment.contentType;
 			ideaId = activeIdea;
@@ -113,8 +115,10 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 					loadInfo();
 				} else {
 					unsupported.show();
-					self.find('.details').hide();
+					blobUrl = URL.createObjectURL(new Blob([attachment.content], {type : attachment.contentType}));
+					attachmentMetaData = {embedUrl: blobUrl, url: blobUrl, type: 'HTML Document' };
 				}
+				loadInfo();
 				self.find('[data-mm-show-for=initial]').show();
 				self.find('[data-mm-show-for=changed]').hide();
 				self.modal('show');
@@ -122,6 +126,12 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 				openPicker();
 			}
 		};
+	self.on('hidden', function () {
+		if (blobUrl) {
+			URL.revokeObjectURL(blobUrl);
+		}
+		unsupported.hide();
+	});
 	changeFile.click(openPicker).keydown('space enter', openPicker);
 	self.modal({keyboard: true, show: false});
 	confirmElement.click(doConfirm).keydown('space', doConfirm);
