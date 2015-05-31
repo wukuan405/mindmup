@@ -320,3 +320,13 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	text-align: center;
 	display: inline-block;
 }
+
+
+/* hangouts ovverides */
+
+a.btn:visited{
+	color: black;
+}
+a.btn-danger:visited, a.btn-warning:visited, a.btn-success:visited {
+	color: white;
+}

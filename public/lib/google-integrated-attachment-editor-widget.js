@@ -55,10 +55,10 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, authentic
 					picker = new google.picker.PickerBuilder()
 						.disableFeature(google.picker.Feature.MULTISELECT_ENABLED)
 						.setAppId(config.appId)
-						.addView(uploadView)
 						.addView(listView)
 						.addView(google.picker.ViewId.DOCS_IMAGES)
 						.addView(google.picker.ViewId.PHOTOS)
+						.addView(uploadView)
 						.setOrigin(config.pickerOrigin || window.location.protocol + '//' + window.location.host)
 						.setCallback(function (choice) {
 							if (choice.action === 'picked') {
