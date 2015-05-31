@@ -20,11 +20,11 @@ input.commandline {
 /* Flexi toolbar */
 
 #flexi-toolbar {
-	width: 150px;
+	width: 200px;
 	height: 170px;
 	position: fixed;
 	top: 10px;
-	right: 20px;
+	right: 30px;
 	z-index: 999;
 }
 
@@ -56,14 +56,23 @@ input.commandline {
 	transform: rotate(-100grad);
 }
 #flexi-toolbar .tool-button {
-	width: 36px;
-	height: 36px;
+	width: 46px;
+	height: 46px;
 	display: inline-block;
 	background-position:center center;
 	background-repeat:no-repeat;
-	background-size: 100% 100%;
+	background-size: 70% 70%;
 	transition: transform 0.5s ease-in;
   cursor: pointer;
+
+	border: 1px solid #22AAE0;
+	border-radius: 50%;
+	box-shadow: 3px 3px 6px rgba(104, 104, 104, 0.7);
+	background-color: white;
+	
+}
+#flexi-toolbar .tool-button:hover {
+	z-index: 1000; 
 }
 #flexi-toolbar .tool-container:nth-of-type(1) .tool-button {
 }
@@ -168,8 +177,8 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 
 #flexi-toolbar .controller {
 	background-image:url(//static.mindmup.com/img/logo_96.png);
-	width: 60px;
-	height: 60px;
+	width: 100px;
+	height: 100px;
 	display: block;
 	position: absolute;
 	top: 30px;
@@ -180,7 +189,8 @@ background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 	cursor: pointer;
 	border: 1px solid #22AAE0;
 	border-radius: 50%;
-	box-shadow: 1px 1px 3px rgba(104, 104, 104, 0.7);
+	box-shadow: 3px 3px 6px rgba(104, 104, 104, 0.7);
+	background-color: white;
 }
 
 @keyframes flip {
