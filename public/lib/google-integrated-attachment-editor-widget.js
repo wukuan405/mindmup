@@ -8,7 +8,7 @@ jQuery.fn.googleIntegratedAttachmentEditorWidget = function (mapModel, config, c
 		source = 'googleIntegratedAttachmentEditor',
 		myContentType = 'application/vnd.google.drive',
 		unsupported = self.find('[data-mm-role~=unsupported-format]'),
-		gapiScopes = 'https://www.googleapis.com/auth/drive.file',
+		gapiScopes = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly',
 		authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
 		attachmentMetaData,
 		doConfirm = function () {

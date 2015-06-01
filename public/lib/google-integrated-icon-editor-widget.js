@@ -14,7 +14,7 @@ jQuery.fn.googleIntegratedIconEditorWidget = function (iconEditor, config, confi
 		fileUpload = self.find('input[name=selectfile]'),
 		selectFile = self.find('[data-mm-role=select-file]'),
 		downloadFile = self.find('[data-mm-role=download]'),
-		gapiScopes = 'https://www.googleapis.com/auth/photos.upload',
+		gapiScopes = 'https://www.googleapis.com/auth/photos.upload https://www.googleapis.com/auth/photos',
 		authenticator = new MM.GoogleAuthenticator(config.clientId, config.appId, gapiScopes),
 		doConfirm = function () {
 			iconEditor.save({
