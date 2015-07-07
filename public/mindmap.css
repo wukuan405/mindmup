@@ -1067,3 +1067,6 @@ body .modal.huge {
   margin-left: 3px;
   margin-right: 5px;
 }
+.hidden-topbar #mainMenu .dropdown-menu {
+  margin-top: 0;
+}
