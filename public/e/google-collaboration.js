@@ -184,13 +184,13 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				}) || {};
 			},
 			mmCollaborator = function (googleCollaborator) {
-				if (googleCollaborator.userId === me.userId) {
+				if (googleCollaborator.userId && googleCollaborator.userId === me.userId) {
 					return false;
 				}
 				return {
 					photoUrl: googleCollaborator.photoUrl,
 					focusNodeId: focusNodes.get(googleCollaborator.sessionId),
-					sessionId: googleCollaborator.userId,
+					sessionId: (googleCollaborator.userId || googleCollaborator.sessionId),
 					name: googleCollaborator.displayName,
 					color: googleCollaborator.color || '#000'
 				};
@@ -236,7 +236,7 @@ MM.RealtimeGoogleDocumentMediator = function (doc, collaborationModel, mindmupMa
 				}
 			},
 			handleFocusRequest = function (userId, focusProcessor) {
-				var googleCollaborator = getGoogleCollaboratorByUserId(userId),
+				var googleCollaborator = getGoogleCollaboratorByUserId(userId) || getGoogleCollaboratorBySession(userId),
 					focusNode = googleCollaborator && focusNodes.get(googleCollaborator.sessionId);
 				if (focusProcessor && focusNode) {
 					focusProcessor(focusNode);
