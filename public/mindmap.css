@@ -270,7 +270,7 @@ span.repo-g, span.repo-a, span.repo-b, span.repo-p {
 .hidden-topbar #topbar .navbar-inner {
 	visibility:hidden;
 }
-.hidden-topbar #topbar:hover .navbar-inner {
+.hidden-topbar #topbar:hover .navbar-inner, .column-split.hidden-topbar #topbar .navbar-inner {
 	visibility:visible;
 }
 .topbar-autohide {
@@ -704,10 +704,11 @@ body .modal.huge {
   -webkit-tap-highlight-color: transparent;
 }
 
-.hidden-topbar > #splittable  {
-  height: calc(100%);
+.hidden-topbar:not(.column-split) > #splittable  {
+  height: 100%;
   margin-top: 0px;
 }
+
 .ios-wkwebview > #splittable {
   width:100%; height: calc(100%);
   margin-top: 0px;
