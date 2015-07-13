@@ -192,6 +192,10 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				return meta;
 			},
 			exportFailed = function (reason, fileId) {
+				if (!fileId) {
+					reason = 'network-error';
+					fileId = 'NO-FILE-ID';
+				}
 				self.find('[data-mm-role=contact-email]').attr('href', function () {
 					return 'mailto:' + jQuery(this).text() + '?subject=MindMup%20' + selectedFormat().toUpperCase() + '%20Export%20Error%20' + fileId;
 				});

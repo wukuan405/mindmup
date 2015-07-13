@@ -287,12 +287,13 @@ describe('LayoutExportWidget', function () {
 				});
 			});
 			describe('when export fails', function () {
-				var genericError, customError;
+				var genericError, customError, networkError;
 				beforeEach(function () {
 					underTest.find('#bexport').click();
 					var errorDiv = jQuery('<div>').addClass('error').appendTo(underTest);
 					genericError = jQuery('<span>').attr('data-mm-role', 'error-message').appendTo(errorDiv);
 					customError = jQuery('<span>').attr('data-mm-role', 'nuclear-disaster').appendTo(errorDiv);
+					networkError = jQuery('<span>').attr('data-mm-role', 'network-error').appendTo(errorDiv);
 				});
 				describe('filling in error code fields', function () {
 					it('fills in data-mm-role file-id contents with the second argument of the failure rejection', function () {
@@ -304,6 +305,11 @@ describe('LayoutExportWidget', function () {
 						var errorContactLink = jQuery('<a data-mm-role="contact-email"/>').appendTo(underTest);
 						exportDeferred.reject('snafu', 'request124');
 						expect(errorContactLink.attr('href')).toBe('mailto:?subject=MindMup%20FORMAT-FROM-INPUT%20Export%20Error%20request124');
+					});
+					it('uses the NO-FILE-ID if file ID is not defined', function () {
+						var errorContactLink = jQuery('<a data-mm-role="contact-email"/>').appendTo(underTest);
+						exportDeferred.reject('snafu');
+						expect(errorContactLink.attr('href')).toBe('mailto:?subject=MindMup%20FORMAT-FROM-INPUT%20Export%20Error%20NO-FILE-ID');
 					});
 					it('switches state to error', function () {
 						exportDeferred.reject('snafu', 'request124');
@@ -321,6 +327,11 @@ describe('LayoutExportWidget', function () {
 						exportDeferred.reject('snafu', 'request124');
 						expect(genericError.css('display')).not.toBe('none');
 						expect(customError.css('display')).toBe('none');
+					});
+					it('shows a network error even if a custom section is defined, but no file ID', function () {
+						exportDeferred.reject('nuclear-disaster');
+						expect(genericError.css('display')).toBe('none');
+						expect(networkError.css('display')).not.toBe('none');
 					});
 				});
 			});
