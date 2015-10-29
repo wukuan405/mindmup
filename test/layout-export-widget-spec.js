@@ -287,13 +287,14 @@ describe('LayoutExportWidget', function () {
 				});
 			});
 			describe('when export fails', function () {
-				var genericError, customError, networkError;
+				var genericError, customError, networkError, emptyError;
 				beforeEach(function () {
 					underTest.find('#bexport').click();
 					var errorDiv = jQuery('<div>').addClass('error').appendTo(underTest);
 					genericError = jQuery('<span>').attr('data-mm-role', 'error-message').appendTo(errorDiv);
 					customError = jQuery('<span>').attr('data-mm-role', 'nuclear-disaster').appendTo(errorDiv);
 					networkError = jQuery('<span>').attr('data-mm-role', 'network-error').appendTo(errorDiv);
+					emptyError = jQuery('<span>').attr('data-mm-role', 'empty').appendTo(errorDiv);
 				});
 				describe('filling in error code fields', function () {
 					it('fills in data-mm-role file-id contents with the second argument of the failure rejection', function () {
@@ -328,10 +329,15 @@ describe('LayoutExportWidget', function () {
 						expect(genericError.css('display')).not.toBe('none');
 						expect(customError.css('display')).toBe('none');
 					});
-					it('shows a network error even if a custom section is defined, but no file ID', function () {
+					it('shows a network error even if a custom section is defined (but not "empty"), but no file ID', function () {
 						exportDeferred.reject('nuclear-disaster');
 						expect(genericError.css('display')).toBe('none');
 						expect(networkError.css('display')).not.toBe('none');
+					});
+					it('does not shows a network error if the custom section is "empty", regardless of file ID', function () {
+						exportDeferred.reject('empty');
+						expect(genericError.css('display')).toBe('none');
+						expect(emptyError.css('display')).not.toBe('none');
 					});
 				});
 			});

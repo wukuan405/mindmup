@@ -192,7 +192,7 @@ jQuery.fn.layoutExportWidget = function (layoutExportController) {
 				return meta;
 			},
 			exportFailed = function (reason, fileId) {
-				if (!fileId) {
+				if (!fileId && reason !== 'empty') {
 					reason = 'network-error';
 					fileId = 'NO-FILE-ID';
 				}
