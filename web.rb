@@ -82,10 +82,11 @@ get '/gd' do
     state = params[:state] && JSON.parse(params[:state])
     if !state || state['action']=='create' then
       mapid = "new-g"
+      erb :google_create 
     else
       mapid = "g1" + state['ids'][0]
+      redirect "/#m:"+mapid
     end
-    redirect "/#m:"+mapid
   rescue Exception=>e
     puts e
     halt 400, "Google drive state missing or invalid"

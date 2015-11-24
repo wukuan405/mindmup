@@ -296,12 +296,13 @@ MM.MapController.alerts = function (mapController, alert, modalConfirmation) {
 		alert.hide(googleLoadedAlertId);
 		googleLoadedAlertId = 0;
 	});
+	/*
 	mapController.addEventListener('mapLoaded', function (mapId) {
 		alert.hide(googleLoadedAlertId);
 		if (mapId && mapId.indexOf('g1') === 0) {
 			googleLoadedAlertId = alert.show('Upgrade to MindMup 2.0: ', 'Try out <a href="https://drive.mindmup.com">MindMup 2.0</a> for much better Google Drive integration. (<a target="_blank" href="https://youtube.com/watch?v=--v7ZfTHNJ8&feature=youtu.be">More info</a>)', 'success');
 		}
-	});
+	});*/
 };
 (function () {
 	'use strict';
