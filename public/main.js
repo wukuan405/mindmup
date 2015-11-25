@@ -85,13 +85,17 @@ MM.main = function (config) {
 			sendPostProcessing = MM.buildDecoratedResultProcessor(function (result) {
 					return jQuery.Deferred().resolve(result);
 				}, MM.sendExportDecorators),
+			contentExporter = MM.buildMapContentExporter(activeContentListener, activeContentResourceManager.getResource),
 			layoutExportController = new MM.LayoutExportController({
 				'png': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'pdf': MM.buildMapLayoutExporter(mapModel, activeContentResourceManager.getResource),
 				'presentation.pdf':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'presentation.pptx': {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'storyboard.docx':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
-				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
+				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing},
+				'outline.docx':  { exporter:  contentExporter, processor: sendPostProcessing },
+				'outline.md':  { exporter: contentExporter, processor: sendPostProcessing },
+				'outline.txt':  { exporter: contentExporter, processor: sendPostProcessing }
 			}, goldApi, s3Api, activityLog, goldFunnelModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
@@ -155,6 +159,7 @@ MM.main = function (config) {
 				jQuery('[data-mm-role="remote-export"]').remoteExportWidget(mapController, alert, measuresModel, goldApi, s3Api, modalConfirm);
 				jQuery('[data-mm-role~=layout-export]').layoutExportWidget(layoutExportController);
 				jQuery('#modalPresentationExport').sendToGoogleDriveWidget(googleDriveAdapter);
+				jQuery('#modalOutlineExport').sendToGoogleDriveWidget(googleDriveAdapter);
 				jQuery('[data-mm-role~=atlas-publish]').atlasPrepopulationWidget(activeContentListener, 40, 150);
 				jQuery('[data-mm-role~=google-drive-open]').googleDriveOpenWidget(googleDriveAdapter, mapController, modalConfirm, activityLog);
 				jQuery('#modalGoldStorageOpen').goldStorageOpenWidget(goldStorage, mapController);

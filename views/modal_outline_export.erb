@@ -1,0 +1,126 @@
+<div id="modalOutlineExport" data-mm-role="layout-export" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Export outline</h3>
+  </div>
+  <div class="modal-body">
+    <div class="visible initial">
+      <p>Please select the outline format and click the Export button to securely upload the map for conversion:</p>
+      <form class="form-horizontal" data-mm-role="export-parameters">
+      <div class="control-group">
+        <label class="control-label" for="outlineFormatSelector">Outline format</label>
+        <div class="controls">
+            <select name="format" data-mm-role="format-selector" id="outlineFormatSelector">
+              <option value="outline.docx">MS Word/Google Writer</option>
+              <option value="outline.md">Markdown</option>
+              <option value="outline.txt">Tab-indented text</option>
+            </select>
+        </div>
+      </div>
+       <div class="control-group">
+          <label class="control-label">Outline type:</label>
+          <div class="controls">
+            <select name="maxheading">
+              	<option value="0">Bullet points</option>
+                <option value="1">1 heading + bullet points</option>
+                <option value="2">2 heading levels + bullet points</option>
+                <option value="3">3 heading levels + bullet points</option>
+                <option value="4">4 heading levels + bullet points</option>
+                <option value="5">5 heading levels + bullet points</option>
+            </select>
+          </div>
+       </div>
+      </form>
+    </div>
+    <div class="visible inprogress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, exporting the outline:&nbsp; 
+			<span data-mm-role="publish-progress-message" />
+    </div>
+    <div class="visible done">
+      <div class="alert alert-success alert-block">
+        <h4>Your outline is ready</h4> 
+      </div>
+        <p>The file is now available on our servers and you can use the buttons below
+        to retrieve it, upload it to Google Drive, or send the link to someone else. </p>
+        <p class="text-center">
+          <a class="btn btn-large btn-share" href="#" download data-mm-role="output-url" rel="tooltip" data-title="Download" data-event-type="Download" data-category="Outline export" ><i class="icon-cloud-download"></i></a>
+          <a class="btn btn-large btn-share" href="#" data-mm-role="set-state" data-mm-state="google-upload" rel="tooltip" data-title="Save to Drive" data-event-type="Save To Drive" data-category="Outline export" ><i class="mm-icon-gdrive"></i></a>
+          <a class="btn btn-large btn-share" href="mailto:" data-mm-role="email-output-url" rel="tooltip" data-title="Email URL" data-event-type="Email Link" data-category="Outline export" ><i class="icon-envelope"></i></a>
+          <a href="#" class="btn btn-large btn-share" data-mm-role="gmail-output-url" rel="tooltip" data-title="Gmail URL" data-event-type="Gmail Link" data-category="Outline export" target="_blank" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"><i class="mm-icon-gmail"></i></a>
+        </p>
+        <p>Please note that the file will be available on our servers for 24 hours.</p>
+    </div>
+    <div class="visible google-upload">
+      <h4>Upload to Google Drive</h4>
+        <form class="form form-horizontal">
+          <div class="control-group">
+          <label class="control-label">File name:</label>
+            <div class="controls">
+              <input data-mm-role="send-to-drive-file-name" data-mm-show-focus placeholder="Google drive file name" />
+            </div>
+          </div>
+          <input type="hidden" data-mm-role="output-url send-to-drive-url"/>
+        </form>
+    </div>
+    <div class="visible send-to-drive-progress alert alert-info alert-block">
+      <i class="icon-spinner icon-spin"></i>&nbsp;Please wait, transferring file to Google Drive.<br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-error alert alert-error alert-block">
+      <h4>Unable to send file to Drive:</h4>
+      <br/>
+      <span data-mm-role="send-to-drive-status"/>
+    </div>
+    <div class="visible send-to-drive-unauthorised">
+      <h4>Authorisation required</h4>
+      <br/>
+      <p>Saving a file to Google Drive requires requires your authorisation using a Google account, and we could not automatically log you in. Please
+      click the <b>Log In</b> button below to open a new window and log on to your Google account.</p>
+    </div>
+    <div class="visible send-to-drive-done alert alert-success alert-block">
+        <h4>Your outline was saved to Google Drive</h4> Click the <b>Open</b> button below to open the Drive file in another window, or <b>Share</b> to send it directly to collaborators 
+    </div>
+    <div class="visible error alert alert-error alert-block">
+      <h4>Unable to export Outline:</h4>
+      <br/>
+
+      <span data-mm-role="error-message"></span>
+      <span data-mm-role="generation-error">
+        This outline contains a feature not currently supported by outline export. Please contact us at <a data-mm-role="contact-email">contact@mindmup.com</a> quoting the reference number: <b data-mm-role="file-id"></b>
+      </span>
+			<span data-mm-role="upload-failed">
+				There was a problem uploading the file to our servers. Please try again later. If the problem persists, save the file to your MindMup Gold storage,
+				and then send the link to us at <a data-mm-role="contact-email">contact@mindmup.com</a> for offline export. 
+			</span>
+      <span data-mm-role="file-too-large">
+         <p>
+           The outline you are exporting is too large. The maximum size of outline that can be exported online is:
+           <ul>
+              <li>Anonymous users: <%=settings.s3_max_upload_size%> Kb </li>
+              <li><a href="http://discover.mindmup.com/mindmup-gold" target="_blank">Mindmup Gold</a> users: <%=settings.gold_pdf_max_size.to_i/(1024*1024)%> Mb</li>
+           </ul>
+           <p>For outlines larger than  <%=settings.gold_pdf_max_size.to_i/(1024*1024)%>Mb, Mindmup Gold Users should contact us at <a href="mailto:contact@mindmup.com?subject=Offline%20MindMup%20Outline%20Export">contact@mindmup.com</a> to arrange an offline export.</p>
+
+         </p>
+      </span>
+      <span data-mm-role="polling-timeout">
+        The server is too busy. Please try again later, or if this error persists contact us at <a data-mm-role="contact-email">contact@mindmup.com</a>
+      </span>
+      <span data-mm-role="network-error">
+        This operation requires a network connection and we can't reach MindMup servers at the moment. Please ensure that you are online and try again.
+        If you are online, check out <a target="_blank" href="http://blog.mindmup.com/p/how-to-resolve-common-networking.html">How to resolve common networking problems</a>.
+      </span>
+      <span data-mm-role="empty">There are no slides in this outline. Add some slides before exporting.</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a tabstop="1" href="#" class="btn visible google-upload pull-left send-to-drive-done send-to-drive-error send-to-drive-unauthorised" data-mm-role="set-state" data-mm-state="done"><i class="icon-chevron-left"></i>&nbsp;Back</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible initial" data-mm-modal-shown-focus="true" data-mm-role="start-export" data-mm-show-focus>Export</a>
+    <a tabstop="1" href="#" class="btn btn-primary visible google-upload" data-mm-role="send-to-drive-kickoff" data-mm-show-focus>Upload</a>
+    <a tabstop="1" href="#" class="btn visible send-to-drive-done" data-mm-role="send-to-drive-share">Share</a>
+    <a tabstop="2" href="#" target="_blank" class="btn btn-primary visible send-to-drive-done" data-mm-role="send-to-drive-result-link" data-mm-show-focus>Open</a>
+    <a tabstop="2" data-mm-role="send-to-drive-kickoff" data-mm-showdialogs class="btn btn-primary visible send-to-drive-unauthorised data-mm-show-focus">Log in</a>
+    <a tabstop="3" href="#" class="btn visible initial google-upload inprogress send-to-drive-progress send-to-drive-unauthorised" data-dismiss="modal">Cancel</a>
+    <a tabstop="3" href="#" class="btn visible done error send-to-drive-done" data-dismiss="modal">Close</a>
+  </div>
+</div>

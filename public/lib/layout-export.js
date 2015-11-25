@@ -1,4 +1,4 @@
-/*global jQuery, MM, _ */
+/*global jQuery, MM, _, MAPJS */
 /**
  * Utility class that implements the workflow for requesting an export and polling for results.
  *
@@ -247,6 +247,18 @@ MM.buildMapLayoutExporter = function (mapModel, resourceTranslator) {
 			});
 		}
 		return layout;
+	};
+};
+MM.buildMapContentExporter = function (activeContentListener, resourceTranslator) {
+	'use strict';
+	return function () {
+		var clone = MAPJS.content(JSON.parse(JSON.stringify(activeContentListener.getActiveContent())));
+		clone.traverse(function (node) {
+			if (node.attr && node.attr.icon && node.attr.icon.url) {
+				node.attr.icon.url = resourceTranslator(node.attr.icon.url);
+			}
+		});
+		return clone;
 	};
 };
 MM.ajaxResultProcessor = function (exportConfig) {
