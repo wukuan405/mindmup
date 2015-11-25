@@ -161,7 +161,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
 	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
 
-	grunt.registerTask('compile', ['concat:lib', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
+	grunt.registerTask('compile', ['jasmine', 'concat:lib', 'concat:libios3', 'concat:libios4', 'uglify', 'cssmin:combine']);
 	grunt.registerTask('compile-ios', ['concat:mmios', 'compile']);
 
 	// Load local tasks.

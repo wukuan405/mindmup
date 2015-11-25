@@ -50,7 +50,7 @@
  * @param {function} storageApi.poll (URL urlToPoll, Object options)
  * @param {ActivityLog} activityLog logging interface
  */
-MM.LayoutExportController = function (formatFunctions, configurationGenerator, storageApi, activityLog) {
+MM.LayoutExportController = function (formatFunctions, configurationGenerator, storageApi, activityLog, goldFunnelModel) {
 	'use strict';
 	var self = this,
 		category = 'Map',
@@ -70,7 +70,7 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 			}
 			return jQuery.Deferred().resolve(result).promise();
 		};
-    /**
+	/**
      * Kick-off an export workflow
      *
      * This method will generate the content to export by calling the appropriate export function, merge optional
@@ -88,6 +88,9 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 				return deferred.state() !== 'pending';
 			},
 			reject = function (reason, fileId) {
+				if (reason === 'file-too-large' && goldFunnelModel) {
+					goldFunnelModel.step('layout-export', 'file-too-large');
+				}
 				activityLog.log(category, eventType + ' failed', reason);
 				deferred.reject(reason, fileId);
 			},
@@ -101,6 +104,9 @@ MM.LayoutExportController = function (formatFunctions, configurationGenerator, s
 		}
 		activityLog.log(category, eventType + ' started');
 		deferred.notify('Setting up the export');
+		if (goldFunnelModel) {
+			goldFunnelModel.setFunnelId('export-' + format);
+		}
 		configurationGenerator.generateExportConfiguration(format).then(
 			function (exportConfig) {
 				var fileId = exportConfig.s3UploadIdentifier;

@@ -12,7 +12,7 @@ jQuery.fn.mmUpdateInputField = function () {
 	});
 };
 
-jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget, googleAuthenticator) {
+jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLog, messageTarget, googleAuthenticator, goldFunnelModel) {
 	'use strict';
 	messageTarget = messageTarget || window;
 	var self = this,
@@ -96,6 +96,9 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 		pollerIntervalId = false,
 		previousSection,
 		showSection = function (sectionName) {
+			if (currentSection !== sectionName && goldFunnelModel) {
+				goldFunnelModel.step('account-widget', sectionName);
+			}
 			var section = self.find('[data-mm-section~=' + sectionName + ']');
 			if (pollerIntervalId) {
 				window.clearInterval(pollerIntervalId);
@@ -112,6 +115,7 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 					},
 				5000);
 			}
+
 		},
 		initialSection = function (hasLicense, wasEntryRequired) {
 			if (wasEntryRequired) {
@@ -135,6 +139,10 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 			}
 			self.find('[data-mm-role=license-email]').text(apiResponse.email);
 			self.find('[data-mm-role=account-name]').text(account).val(account);
+			if (goldFunnelModel) {
+				goldFunnelModel.step('account-widget', 'registration-complete');
+			}
+
 			showSection('registration-success');
 		},
 		regFail = function (apiReason) {
@@ -153,23 +161,39 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 				emailField = registrationForm.find('input[name=email]'),
 				accountNameField = registrationForm.find('input[name=account-name]'),
 				termsField = registrationForm.find('input[name=terms]');
+
+			if (goldFunnelModel) {
+				goldFunnelModel.step('account-widget', 'registration-requested');
+			}
 			if (!/^[^@]+@[^@.]+\.[^@]+[^@.]$/.test(emailField.val())) {
 				emailField.parents('div.control-group').addClass('error');
+				if (goldFunnelModel) {
+					goldFunnelModel.step('account-widget', 'registration-attempt-rejected:email');
+				}
 			} else {
 				emailField.parents('div.control-group').removeClass('error');
 			}
 			if (!/^[a-z][a-z0-9]{3,20}$/.test(accountNameField.val())) {
 				accountNameField.parents('div.control-group').addClass('error');
+				if (goldFunnelModel) {
+					goldFunnelModel.step('account-widget', 'registration-attempt-rejected:account-name');
+				}
 			} else {
 				accountNameField.parents('div.control-group').removeClass('error');
 			}
 			if (!termsField.prop('checked')) {
 				termsField.parents('div.control-group').addClass('error');
+				if (goldFunnelModel) {
+					goldFunnelModel.step('account-widget', 'registration-attempt-rejected:terms');
+				}
 			} else {
 				termsField.parents('div.control-group').removeClass('error');
 			}
 			if (registrationForm.find('div.control-group').hasClass('error')) {
 				return false;
+			}
+			if (goldFunnelModel) {
+				goldFunnelModel.step('account-widget', 'registration-initiated');
 			}
 			goldApi.register(accountNameField.val(), emailField.val()).then(regSuccess, regFail);
 			showSection('registration-progress');
@@ -258,6 +282,11 @@ jQuery.fn.goldLicenseEntryWidget = function (licenseManager, goldApi, activityLo
 	});
 
 	self.find('button[data-mm-role~=register]').click(register);
+	self.find('button[data-mm-role~=action-BuySubscription]').click(function () {
+		if (goldFunnelModel) {
+			goldFunnelModel.step('account-widget', 'payment-initiated');
+		}
+	});
 	self.find('button[data-mm-role~=action-CancelSubscription]').click(function () {
 		showSection('cancelling-subscription');
 		goldApi.cancelSubscription().then(

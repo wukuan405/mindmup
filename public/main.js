@@ -55,6 +55,7 @@ MM.main = function (config) {
 			oldShowPalette,
 			s3Api = new MM.S3Api(),
 			alert = new MM.Alert(),
+			goldFunnelModel = new MM.GoldFunnelModel(activityLog),
 			modalConfirm = jQuery('#modalConfirm').modalConfirmWidget(),
 			objectStorage = new MM.JsonStorage(browserStorage),
 			ajaxPublishingConfigGenerator = new MM.S3ConfigGenerator(config.s3Url, config.publishingConfigUrl, config.s3Folder),
@@ -91,7 +92,7 @@ MM.main = function (config) {
 				'presentation.pptx': {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'storyboard.docx':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing}
-			}, goldApi, s3Api, activityLog),
+			}, goldApi, s3Api, activityLog, goldFunnelModel),
 			iconEditor = new MM.iconEditor(mapModel, activeContentResourceManager),
 			mapBookmarks = new MM.Bookmark(mapController, objectStorage, 'created-maps'),
 			autoSave = new MM.AutoSave(mapController, objectStorage, alert, mapModel),
@@ -178,7 +179,7 @@ MM.main = function (config) {
 						jQuery(this).find('.colorPicker-picker').click();
 					}
 				});
-				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog, window, googleAuthenticator);
+				jQuery('#modalGoldLicense').goldLicenseEntryWidget(goldLicenseManager, goldApi, activityLog, window, googleAuthenticator, goldFunnelModel);
 				jQuery('#modalIconEdit').iconEditorWidget(iconEditor, config.corsProxyUrl);
 				jQuery('#measuresSheet').measuresSheetWidget(measuresModel);
 				jQuery('[data-mm-role=measures-display-control]').measuresDisplayControlWidget(measuresModel, mapModel);
