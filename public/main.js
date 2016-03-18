@@ -28,20 +28,20 @@ MM.main = function (config) {
 		mapModelAnalytics = false,
 		setupTracking = function (activityLog, mapModel) {
 			activityLog.addEventListener('log', function () {
-			// jscs:disable disallowDanglingUnderscores
+				// jscs:disable disallowDanglingUnderscores
 				_gaq.push(['_trackEvent'].concat(Array.prototype.slice.call(arguments, 0, 3)));
-			// jscs:enable disallowDanglingUnderscores
+				// jscs:enable disallowDanglingUnderscores
 			});
 			activityLog.addEventListener('timer', function (category, action, time) {
-			// jscs:disable disallowDanglingUnderscores
+				// jscs:disable disallowDanglingUnderscores
 				_gaq.push(['_trackEvent', category,  action, '', time]);
-			// jscs:enable disallowDanglingUnderscores
+				// jscs:enable disallowDanglingUnderscores
 			});
 			if (mapModelAnalytics) {
 				mapModel.addEventListener('analytic', activityLog.log);
 			}
 		};
-		// jscs:disable disallowDanglingUnderscores
+	// jscs:disable disallowDanglingUnderscores
 	window._gaq = window._gaq || [];
 
 	window._gaq = [['_setAccount', config.googleAnalyticsAccount],
@@ -49,7 +49,7 @@ MM.main = function (config) {
 		['_setCustomVar', 2, 'Active Extensions', browserStorage['active-extensions'], 1],
 		['_trackPageview']
 			].concat(window._gaq);
-		// jscs:enable disallowDanglingUnderscores
+	// jscs:enable disallowDanglingUnderscores
 	jQuery(function () {
 		var activityLog = new MM.ActivityLog(10000),
 			oldShowPalette,
@@ -92,7 +92,7 @@ MM.main = function (config) {
 				'presentation.pdf':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'presentation.pptx': {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
 				'storyboard.docx':  {exporter: MM.buildStoryboardExporter(storyboardModel, storyboardDimensionProvider, activeContentResourceManager.getResource), processor: sendPostProcessing},
-				'publish.json': { exporter: activeContentListener.getActiveContent, processor: sharePostProcessing},
+				'publish.json': { exporter: contentExporter, processor: sharePostProcessing},
 				'outline.docx':  { exporter:  contentExporter, processor: sendPostProcessing },
 				'outline.md':  { exporter: contentExporter, processor: sendPostProcessing },
 				'outline.txt':  { exporter: contentExporter, processor: sendPostProcessing }
